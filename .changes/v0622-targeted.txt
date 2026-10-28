@@ -19,4 +19,4 @@ E       AssertionError: assert 'front three-quarter label-readable view' in '[RE
 tests/test_v0622_relevance_driven_prompt_projection.py:67: AssertionError
 =========================== short test summary info ============================
 FAILED tests/test_v0622_relevance_driven_prompt_projection.py::test_actual_real_photo_decisions_are_preserved_end_to_end - AssertionError: assert 'front three-quarter label-readable view' in '[RENDER OBJECTIVE]\nVisual task: One decision-critical relationship\n\n[SUBJECT / ACTION / ENVIRONMENT]\nSubject: ver.... Do not add arbitrary premium splashes, particles, laboratory symbolism, abstract halos or repetitive card layouts.\n'
-1 failed, 12 passed in 0.06s
+1 failed, 12 passed in 0.10s
