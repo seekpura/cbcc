@@ -1,34 +1,97 @@
-# Cross-Border Commerce Creative — v0.6.12
+# Cross-Border Commerce Creative — v0.6.29
 
-CBCC 是跨境电商 Product Truth、市场/竞品/人群、产品/SKU/Offer、Listing/Search、文化本地化、视觉/摄影、动态图片/视频、广告、评论闭环、生产与学习系统。
+CBCC 是面向跨境电商的 Commerce Agent：从 Product Truth、证据与平台约束出发，动态完成市场/竞品/人群研究、SKU/Offer、策略、Listing/Search、内容、视觉/摄影/CMF、图片/视频资产、生产、Review 与学习闭环。
 
-## 当前权威能力
-- RACE = **Research → Action → Communication → Evaluation**；与购物漏斗/行为阶段分离。
-- A/B/C Claim Authority：A=检测/认证/可复现实测；B=供应链/规格/配方/机理；C=主观体验/假设/待验证，C 不得硬宣称。
-- FULL 策略强制九段输出、交叉性/文化适配、P0/P1/P2、平台执行/归因、输出前自检。
-- Product Visual Intelligence → Creative Opportunity Universe → Direction Council → Dynamic Surface/Assets；不固定 9 图/12 图。
-- 摄影/CMF/构图/材质/包容性摄影不仅写在策略里，还通过 Parameter Trace 进入每个图片/视频 Render Contract 与 Canonical Prompt。
-- Render Prompt 不包含内部 Asset/Project/Direction ID、RACE、KPI 等工程元数据；精确文字后期 deterministic composition。
-- 七大本地 Runtime 工具：Market / Product Strategy / Listing / Image / Video / Ads / Review。
-- Human Delivery 的 `index.html` 是完整**离线 SaaS Workspace**，而不是 Markdown 索引或长篇流水报告；完整内容仍全部内嵌。
-- v0.6.7 开始，Strategy / Content / Visual / Listing / Prompt / Evidence 使用不同的信息架构与交互语法；Content 是一级工作区，主策略第 6/7 章不再塞回 Strategy。
-- v0.6.8 将单资产详情升级为独立生产台：Design Card / 购买决策、画面执行、摄影 / CMF、文案、Prompt、QA / 来源按真实内容动态出现，不再复用通用模块页。
-- v0.6.9 将显式 Photography Contract 的拍摄/合成模式、完整构图执行字典（含商品占画、负空间与未来扩展字段）、输出色彩管理贯穿到 Design Card、CN/EN Canonical Prompt、Parameter Trace、Machine Visual Contract 与单资产生产台。
-- v0.6.10 将 Approved Visual Elements、Precision Boundaries、Editable/Frozen Layers 与 Product Fidelity 贯穿到 Render Prompt 和人类 Visual 工作台；锁定可见文案只保留在 deterministic overlay / Copy 工作台，不再通过 Surface / Copy Budget JSON 泄漏给图像模型。
-- v0.6.11 将真实商品母版从 compile-time 记录升级为 Provider handoff 的机器可执行 Source Binding：绑定 resolver、SHA256、pixel lock、允许变换与身份字段；handoff 时重新校验本地文件/hash，LOCKED_PIXEL 结果必须回报母版 ID/hash lineage，局部修订报告触碰 frozen layer 时直接进入 Review。
-- v0.6.12 将 Provider Job 升级为可携带自包含执行包：本地商品母版复制进 job 并改绑 PACKAGE_RELATIVE_PATH；外部 result 必须返回绑定 job/package/source/output 的 production receipt，LOCKED_PIXEL 回执携带 layer_manifest，真实拍摄/视频携带 capture_metadata。
+## 当前状态
+
+- **唯一源码真源**：`main`
+- **当前稳定版本**：`0.6.29-final-stabilization`
+- **发行语义版本**：`v0.6.29`
+- **开发状态**：主线能力已收口；停止为了版本号继续扩张，只在真实商品/平台/生产案例暴露可复现业务缺口时修改。
+- **稳定化证据**：v0.6.29 已通过 targeted real-defect tests、近期 Agent autonomy continuity 与 full-regression node-id diff；发布门槛是 `NEW_FAILURE_COUNT = 0` 且 `FIXED_FAILURE_COUNT > 0`。
+
+详细变更见 `CHANGELOG_V0629.md`，当前交接状态见 `CURRENT_HANDOFF.md`。
+
+## 核心主线
+
+`Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discovery → Agent Strategy & Surface Decisions → Dynamic Content / Asset Architecture → Dynamic Creative / Photography / CMF → CN/EN Canonical Prompt / Production Contract → Production / Review / Learning → Agent Replan or Stop → Chinese-first Semantic Workspace`
+
+关键原则：
+
+- Agent 根据当前商品、市场、平台、证据与任务范围决定研究、策略、内容、Surface、资产与创意方向；不以固定 9 图/12 图、固定方向数、固定 RACE/AIDA/4P 流程或摄影字段配额替代判断。
+- Product Truth、Claim Authority、Compliance、平台当前证据与 Review 作为后台约束；未知项保持 UNKNOWN / 待查证，不由 Runtime 猜测。
+- 中文优先做人类交付；目标市场可见文案保持目标语言并提供中文释义/说明。
+- 摄影、CMF、构图、材质、色彩管理、真实商品锁定、可编辑/冻结层与 Product Fidelity 进入真实执行合同与 Canonical Prompt，而不是只停留在策略文字。
+- Render Prompt 隔离 Product Name、Asset/Project/Direction ID、RACE、KPI 等内部工程元数据；精确可见文案由 deterministic composition / Copy 权威负责。
+- Completion 以 current scope 的真实 blocker、required review、revision 与 Agent frontier 派生；“还有可研究”不等于“当前任务不能完成”。
+
+## 三种使用/安装方式
+
+### 1. ChatGPT 私人 Plugin / Skill
+
+正式 Release 会生成：
+
+- `cross-border-commerce-creative-plugin-v0.6.29.zip`
+- `cross-border-commerce-creative-skill-v0.6.29.zip`
+
+Plugin 包保持 Agent Plugins 1.0 清单，并把当前 GitHub 源码完整快照放入 Skill resources。私人 ChatGPT Plugin 默认使用 Skill 能力；**本地 Python Runtime 不会因为被打包进 Plugin 就自动变成云端工具**。如需直接调用 Provider/MCP/HTTP Runtime，必须使用已验证的宿主或 MCP/HTTP 部署。
+
+### 2. 本地 Runtime
+
+CBCC 当前按“完整仓库 Runtime”运行，不把资源拆成一个不完整的 `pip install cbcc` 包：
+
+```bash
+python bin/cbcc.py --help
+bash tests/run_smoke.sh
+python bin/cbcc.py audit --root .
+```
+
+CLI 主入口：`bin/cbcc.py`；实现位于 `runtime/cbcc/`。完整安装与验证见 `INSTALL.md`。
+
+### 3. Provider / Plugin HTTP / MCP Host
+
+Plugin/OpenAPI HTTP Host：
+
+```bash
+PYTHONPATH=runtime python -m cbcc.plugin_http_cli --bind 127.0.0.1 --port 8787
+```
+
+MCP stdio Host：
+
+```bash
+PYTHONPATH=runtime python -m cbcc.mcp_stdio_cli
+```
+
+Provider credentials、SDK/client 与 authorization 由宿主瞬时注入，不写入项目状态、descriptor 或命令行参数。
+
+## 发行产物
+
+源码内提供两层构建：
+
+```bash
+python scripts/build_plugin_dist.py --output-dir dist
+python scripts/build_dist.py dist/cross-border-commerce-creative-runtime-v0.6.29.zip
+```
+
+GitHub release workflow 会在构建前执行 smoke + v0.6.29 定向/连续性验证，随后生成 Plugin / Skill / Runtime ZIP、SHA256 校验文件并发布到 `v0.6.29` Release。
 
 ## 主要入口
-- `SKILL.md`
-- `runtime/cbcc/compiler.py`
-- `runtime/cbcc/claim_authority.py`
-- `runtime/cbcc/prompt_compiler.py`
-- `runtime/cbcc/video_creator.py`
-- `runtime/cbcc/delivery_html.py`
-- `runtime/cbcc/tools/seven_agent.py`
-- `builders/project_delivery_builder.py`
-- `references/FINAL_OUTPUT_CONTRACT.md`
-- `references/PLUGIN_RUNTIME_BOUNDARY.md`
+
+- `SKILL.md` — 当前 Agent/Skill 主权威
+- `runtime/cbcc/compiler.py` — 项目编译主线
+- `runtime/cbcc/decision_authority.py` — 当前任务/决策问题权威
+- `runtime/cbcc/completion.py` — current-scope completion
+- `runtime/cbcc/claim_authority.py` / `compliance.py` — Claim / Compliance
+- `runtime/cbcc/prompt_compiler.py` — CN/EN Canonical Prompt
+- `runtime/cbcc/provider_surface.py` — Provider Execution Surface
+- `runtime/cbcc/plugin_http.py` / `plugin_http_cli.py` — Plugin/OpenAPI HTTP Host
+- `runtime/cbcc/mcp_stdio.py` / `mcp_stdio_cli.py` — MCP stdio Host
+- `transport/plugin_openapi.json` / `transport/mcp_tools.json` — canonical transport descriptors
+- `CURRENT_HANDOFF.md` — 当前唯一交接说明
 
 ## 重要边界
-ChatGPT 私有插件当前仍是 **Skills-only**；本地 Python 七大工具尚未通过 MCP Server 暴露给聊天插件。实时平台类目/规则/法规也必须通过当前 Web/API/官方信息获取，离线包缺失时标 `待查证`。
+
+1. 精确平台类目、规则、费率、法规与时效信息必须来自当前官方数据、用户资料或实时研究。
+2. MCP / HTTP / Plugin / Provider Host 是接入与执行层，不取代 Commerce Agent 的研究、策略、内容和设计权威。
+3. GitHub `main` 是源码真源；ChatGPT 私人 Plugin、Skill ZIP 与 Runtime ZIP 都是从 `main` 派生的发行物。
+4. 发布包不得重新引入固定研究清单、固定资产数、固定创意方向、固定页面模板或流水线 Workspace。
