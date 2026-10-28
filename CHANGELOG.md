@@ -1,3 +1,11 @@
+## 0.6.19 — Plugin/OpenAPI HTTP Host
+- Added a real startable WSGI Plugin/OpenAPI host over generated action routes.
+- Kept the only runtime chain through PluginActionTransportAdapter → ProviderActionDispatcher.
+- Added health/schema endpoints, JSON/media-type/request-size validation and stable transport-level HTTP mapping.
+- Added host-injected default-deny ActionAuthorization with fail-closed redacted resolver failures.
+- Added HTTP 202 pending semantics with operation/resume headers and a standard-library startup entrypoint.
+- See `CHANGELOG_V0619.md`.
+
 ## 0.6.18 — Transport Descriptor Parity
 - Added generated MCP tool and Plugin/OpenAPI 3.1 descriptors from the canonical host action catalog.
 - Added checked-in transport artifacts with exact schema/scope parity hashes and credential-field lint.

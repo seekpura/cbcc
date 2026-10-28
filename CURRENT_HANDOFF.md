@@ -1,7 +1,7 @@
-# CBCC v0.6.18 CURRENT HANDOFF
+# CBCC v0.6.19 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.18-transport-descriptor-parity`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.19-plugin-http-host`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -122,5 +122,17 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 9. v0.6.13–v0.6.18 provider continuity + transport parity 定向联测：40 passed。
 10. 全量回归与 v0.6.17 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；descriptor 发布必须保持 canonical schema parity。
 
+## v0.6.19 已完成
+1. 新增真正可启动的 Plugin/OpenAPI WSGI host；action path 全部从 v0.6.18 generated OpenAPI descriptor 派生。
+2. HTTP host 唯一调用链为 request → operationId → `PluginActionTransportAdapter` → `ProviderActionDispatcher`；transport module 不直接 import/call ProviderExecutionSurface、Bridge 或 Executor。
+3. `/health`、`/openapi.json`、`/actions.json` 可直接读取运行状态与 canonical schema；descriptor bundle 自身仍保持 descriptor-only 语义。
+4. action POST 强制 JSON media type、Content-Length、JSON object 与 request-size 上限；400/403/404/405/409/411/413/415/422/500 由 transport 统一映射。
+5. `CBCC_ACTION_AUTH_MODULE` 只指定宿主 auth module；ActionAuthorization 由 host hook 瞬时注入，不进入 action payload / project state / provider runtime state。
+6. 默认 DENY；auth resolver 自身异常按 403 fail-closed，且宿主异常文本不返回客户端。
+7. PENDING → HTTP 202 + Retry-After + operation headers；status/resume 继续使用 v0.6.17 稳定 operation ID 与现有 provider persisted state，没有第二套 async DB。
+8. 新增 `cbcc.plugin_http_cli` composition root；默认 reference server 仅使用 Python 标准库，WSGI application 可被其他宿主 server 挂载。
+9. v0.6.13–v0.6.19 provider continuity + transport HTTP 定向联测：48 passed。
+10. 全量回归与 v0.6.18 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；HTTP transport 发布保持 canonical descriptor/dispatcher authority。
+
 ## 下一步唯一主任务
-**在 v0.6.18 descriptors 之上实现一个真正可启动但仍然薄的 transport host：优先实现 Plugin/OpenAPI HTTP host（与当前 ChatGPT/Plugin 使用面最接近），只负责 HTTP request → operationId → `PluginActionTransportAdapter` → `ProviderActionDispatcher`，并把 `ActionAuthorization` 作为宿主注入而不是请求体 credential。补 health/schema endpoints、request size/JSON validation、authorization hook、pending/resume/status HTTP semantics 与 transport-level error mapping；禁止 transport host 直接调用 ProviderExecutionSurface / Bridge / Executor。MCP server 后续复用同一 canonical descriptors/dispatcher。**
+**在 v0.6.19 HTTP host 完成后，为 v0.6.18 已生成的 MCP tool descriptors 实现同样薄的真实 MCP transport host。实施前先核对当前 MCP 官方 transport/SDK 规范，再选择宿主最合适的 stdio / Streamable HTTP 入口；无论 transport 形式如何，都必须复用 canonical `mcp_tools.json` / Action Catalog / `ProviderActionDispatcher` / `ActionAuthorization`，不得复制 ProviderExecutionSurface、Bridge、Executor 或另建 completion/state authority。补 MCP initialize/list-tools/call-tool、authorization 注入、pending/status/resume 语义、schema parity 与 transport-level error mapping。**

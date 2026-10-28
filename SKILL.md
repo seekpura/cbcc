@@ -1,13 +1,23 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.18-transport-descriptor-parity
+version: 0.6.19-plugin-http-host
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.19 Plugin/OpenAPI HTTP Host
+- 新增真正可启动的 `PluginHTTPApplication` / WSGI host；HTTP action route 全部来自 v0.6.18 generated OpenAPI descriptor，不手写第二套路由表。
+- 唯一调用链保持 `HTTP request → operationId → PluginActionTransportAdapter → ProviderActionDispatcher`；`plugin_http.py` 不 import `ProviderExecutionSurface / ProviderExecutorBridge / ProviderExecutor`。
+- 提供 `/health`、`/openapi.json`、`/actions.json`（含 schema aliases）；checked-in descriptor bundle 仍保持 descriptor-only，因此其 `plugin_http_server_included=false` 不等于仓库没有 host runtime。
+- POST action 强制 `application/json`、`Content-Length`、JSON object 与可配置 request-size limit；transport error 使用稳定 HTTP/code 映射。
+- `ActionAuthorization` 由宿主 hook 注入；`CBCC_ACTION_AUTH_MODULE` 只指定 auth module 名，不把 API key/token/credential 放进 action body 或 CLI 参数。
+- 默认授权 DENY；authorization resolver 异常按 403 fail-closed 且不回显宿主异常文本。
+- canonical `PENDING` 映射 HTTP 202，并返回 `Retry-After`、`X-CBCC-Operation-Id`、`X-CBCC-Operation-State`；status/resume 继续复用 v0.6.17 operation/state lineage。
+- 新增 `cbcc.plugin_http_cli` composition root，可用标准库 `wsgiref.simple_server` 启动 reference host；生产宿主也可直接挂载标准 WSGI application。
 
 ## v0.6.18 Transport Descriptor Parity
 - 从 v0.6.17 canonical Action Catalog 自动派生 MCP tool descriptors 与 Plugin/OpenAPI 3.1 descriptors；transport 不维护第二份 action schema。
