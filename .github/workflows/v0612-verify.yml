@@ -20,106 +20,7 @@ jobs:
         run: |
           cat .changes/apply_v0612.part*.b64 | base64 -d > .changes/apply_v0612.py
           python .changes/apply_v0612.py
-          python - <<'PY'
-          from pathlib import Path
-
-          portability=Path('runtime/cbcc/provider_portability.py')
-          text=portability.read_text(encoding='utf-8')
-          old="_CAPTURE_METADATA_MODES = {'REAL_PHOTO', 'VIDEO?}"
-          new="_CAPTURE_METADATA_MODES = {'REAL_PHOTO', 'VIDEO'}"
-          if old not in text:
-              raise SystemExit('malformed capture mode line not found')
-          text=text.replace(old,new,1)
-          helper='''\ndef rebind_portable_execution_metadata(value: Any, upstream_bindings: list[dict[str, Any]] | None, portable_bindings: list[dict[str, Any]] | None) -> Any:\n    """Replace only source-master host paths with their verified portable job locators.\n\n    Frozen package hashes still bind the original compiled package. This projection is only the\n    provider-facing execution metadata, so stale host paths cannot accidentally become execution\n    locators after the job leaves the CBCC runtime host.\n    """\n    portable_by_id = {str(row.get('asset_id')): row for row in (portable_bindings or []) if isinstance(row, dict) and row.get('asset_id')}\n    replacements: dict[str, str] = {}\n    for row in upstream_bindings or []:\n        if not isinstance(row, dict):\n            continue\n        locator = row.get('locator') or {}\n        if str(locator.get('kind') or '').upper() != 'LOCAL_FILE_PATH' or not locator.get('value'):\n            continue\n        portable = portable_by_id.get(str(row.get('asset_id'))) or {}\n        portable_locator = portable.get('locator') or {}\n        if str(portable_locator.get('kind') or '').upper() == 'PACKAGE_RELATIVE_PATH' and portable_locator.get('value'):\n            replacements[str(locator.get('value'))] = str(portable_locator.get('value'))\n\n    def walk(node: Any) -> Any:\n        if isinstance(node, dict):\n            return {key: walk(item) for key, item in node.items()}\n        if isinstance(node, list):\n            return [walk(item) for item in node]\n        if isinstance(node, tuple):\n            return tuple(walk(item) for item in node)\n        if isinstance(node, str) and node in replacements:\n            return replacements[node]\n        return node\n\n    return walk(value)\n'''
-          anchor='\ndef build_production_receipt_contract('
-          if 'def rebind_portable_execution_metadata(' not in text:
-              if anchor not in text:
-                  raise SystemExit('provider portability helper anchor not found')
-              text=text.replace(anchor,helper+anchor,1)
-          portability.write_text(text,encoding='utf-8')
-
-          production=Path('runtime/cbcc/production.py')
-          p=production.read_text(encoding='utf-8')
-          old_import='from .provider_portability import materialize_portable_job_inputs, build_production_receipt_contract, production_receipt_template, validate_production_receipt'
-          new_import=old_import+', rebind_portable_execution_metadata'
-          if old_import not in p:
-              raise SystemExit('provider portability import anchor not found')
-          p=p.replace(old_import,new_import,1)
-          quality_anchor="        quality['canonical_prompt_contract']=canonical\n"
-          quality_new=quality_anchor+"        quality=rebind_portable_execution_metadata(quality,upstream_qc.get('source_product_bindings') or [],portable_bindings)\n        quality.setdefault('provider_job_portability',{})['host_source_paths_rebound']=True\n"
-          if quality_anchor not in p:
-              raise SystemExit('quality portability anchor not found')
-          p=p.replace(quality_anchor,quality_new,1)
-          binding_anchor="        binding['canonical_prompt_contract']=bound_canonical\n"
-          binding_new=binding_anchor+"        binding=rebind_portable_execution_metadata(binding,upstream_qc.get('source_product_bindings') or [],portable_bindings)\n"
-          if binding_anchor not in p:
-              raise SystemExit('binding portability anchor not found')
-          p=p.replace(binding_anchor,binding_new,1)
-
-          # Materialization creates a provider-specific contract projection; it must not overwrite
-          # the upstream run contract used by direct/internal result application.
-          old_assign="        row['production_quality_contract']=quality\n        row['production_contract_binding']=binding\n        row['provider_job_id']=job_id\n"
-          new_assign="        row['provider_job_quality_contract']=quality\n        row['provider_job_contract_binding']=binding\n        row['provider_job_source_binding_hash']=portable_hash\n        row['provider_job_source_product_bindings']=portable_bindings\n        row['provider_job_id']=job_id\n"
-          if old_assign not in p:
-              raise SystemExit('provider job contract assignment anchor not found')
-          p=p.replace(old_assign,new_assign,1)
-
-          # External job ingestion validates against the portable provider projection. Direct/internal
-          # results continue to validate against the immutable upstream run contract.
-          local_anchor="        local=[]\n        if row.get('status')!='READY_TO_HANDOFF': local.append('PRODUCTION_PREFLIGHT_NOT_READY')\n"
-          local_new="        contract_row=row\n        if r.get('_provider_job_ingest'):\n            contract_row={**row}\n            if isinstance(row.get('provider_job_quality_contract'),dict): contract_row['production_quality_contract']=row['provider_job_quality_contract']\n            if isinstance(row.get('provider_job_contract_binding'),dict): contract_row['production_contract_binding']=row['provider_job_contract_binding']\n        local=[]\n        if row.get('status')!='READY_TO_HANDOFF': local.append('PRODUCTION_PREFLIGHT_NOT_READY')\n"
-          if local_anchor not in p:
-              raise SystemExit('apply production contract projection anchor not found')
-          p=p.replace(local_anchor,local_new,1)
-          replacements={
-              "local.extend(_quality_result_issues(row,r))":"local.extend(_quality_result_issues(contract_row,r))",
-              "local.extend(validate_production_receipt(row,r))":"local.extend(validate_production_receipt(contract_row,r))",
-              "binding=row.get('production_contract_binding') or {}":"binding=contract_row.get('production_contract_binding') or {}",
-              "fidelity=str((row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()":"fidelity=str((contract_row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()",
-              "qc=row.get('production_quality_contract') or {}":"qc=contract_row.get('production_quality_contract') or {}",
-          }
-          for old,new in replacements.items():
-              if old not in p:
-                  raise SystemExit('apply production projection replacement not found: '+old)
-              p=p.replace(old,new,1)
-          production.write_text(p,encoding='utf-8')
-
-          # v0.6.11 continuity expectation advances from local-host binding to portable package binding.
-          test=Path('tests/test_v0611_provider_source_binding.py')
-          t=test.read_text(encoding='utf-8')
-          old="assert job['source_product_bindings'][0]['handoff_status']=='READY_LOCAL_VERIFIED'"
-          new="assert job['source_product_bindings'][0]['handoff_status']=='READY_PACKAGE_VERIFIED'"
-          if old not in t:
-              raise SystemExit('remaining v0.6.11 continuity assertion not found')
-          test.write_text(t.replace(old,new,1),encoding='utf-8')
-
-          # Legacy provider lifecycle tests now return the mandatory v0.6.12 portable production receipt.
-          receipt_helper='''\n\ndef _portable_receipt(job):\n    bindings=job.get('source_product_bindings') or []\n    return {\n        'job_id':job['job_id'],'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],\n        'portable_manifest_hash':job['portable_package']['portable_manifest_hash'],'source_binding_hash':job.get('source_binding_hash'),\n        'output_artifacts':[{'uri':'fixture://provider-output/'+job['asset_id'],'sha256':'b'*64,'role':'FINAL'}],\n        'layer_manifest':[{'layer_id':'product-'+str(i),'role':'PRODUCT_MASTER','source_asset_id':x['asset_id'],'source_sha256':x['sha256'],'operation':'COMPOSITE_LOCKED','frozen':True} for i,x in enumerate(bindings)],\n        'capture_metadata':{},\n    }\n'''
-
-          alpha6=Path('tests/test_alpha6_review_provider_overlays.py')
-          a=alpha6.read_text(encoding='utf-8')
-          if 'def _portable_receipt(job):' not in a:
-              marker='\n\ndef _asset():\n'
-              if marker not in a: raise SystemExit('alpha6 receipt helper anchor not found')
-              a=a.replace(marker,receipt_helper+marker,1)
-          old="'quality_observations':_quality_observations(job)}"
-          new="'quality_observations':_quality_observations(job),'production_receipt':_portable_receipt(job)}"
-          if a.count(old)<2: raise SystemExit('alpha6 provider result anchors not found')
-          a=a.replace(old,new)
-          alpha6.write_text(a,encoding='utf-8')
-
-          v512=Path('tests/test_v0512_production_learning_loop.py')
-          v=v512.read_text(encoding='utf-8')
-          if 'def _portable_receipt(job):' not in v:
-              marker='\n\ndef test_v0512_host_final_copy_can_reach_approved_only_with_exact_review():\n'
-              if marker not in v: raise SystemExit('v0512 receipt helper anchor not found')
-              v=v.replace(marker,receipt_helper+marker,1)
-          for var in ('job','rjob'):
-              old=f"'quality_observations':_quality_observations({var})}}"
-              new=f"'quality_observations':_quality_observations({var}),'production_receipt':_portable_receipt({var})}}"
-              if old in v: v=v.replace(old,new)
-          v512.write_text(v,encoding='utf-8')
-          PY
+          python .changes/v0612_finalize_patch.py
       - name: Capture patched source snapshot
         uses: actions/upload-artifact@v4
         with:
@@ -197,7 +98,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          rm -f .changes/apply_v0612.py .changes/apply_v0612.part*.b64 .changes/v0612.trigger .github/workflows/v0612-verify.yml
+          rm -f .changes/apply_v0612.py .changes/apply_v0612.part*.b64 .changes/v0612.trigger .changes/v0612_finalize_patch.py .github/workflows/v0612-verify.yml
           git add -A
           git commit -m 'fix: make provider handoff portable and receipt-bound'
           git push origin HEAD:work/v0612-portable-provider
