@@ -34,8 +34,8 @@ jobs:
       - name: v0.6.27-v0.6.29 release continuity
         run: |
           pytest -q \
-            tests/test_v0627_current_scope_completion.py \
-            tests/test_v0628_blocking_advisory_frontier.py \
+            tests/test_v0627_completion_authority.py \
+            tests/test_v0628_agent_frontier.py \
             tests/test_v0629_final_stabilization.py
 
       - name: Build Plugin and Skill archives
