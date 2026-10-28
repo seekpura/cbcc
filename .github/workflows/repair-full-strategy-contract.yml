@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/repair_full_strategy_contract.py'
+      - 'scripts/repair_full_skill_authority.py'
       - '.github/workflows/repair-full-strategy-contract.yml'
   workflow_dispatch:
 
@@ -21,8 +22,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Apply deterministic repair
-        run: python scripts/repair_full_strategy_contract.py
+      - name: Apply deterministic runtime and Skill repairs
+        run: |
+          python scripts/repair_full_strategy_contract.py
+          python scripts/repair_full_skill_authority.py
       - name: Install test dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
       - name: Verify FULL and task-scoped semantics together
@@ -33,14 +36,17 @@ jobs:
             tests/test_full_strategy_hard_contract.py \
             tests/test_v0624_strategy_asset_scope.py \
             tests/test_v0625_decision_question_authority.py
+          grep -q 'FULL vs TASK_SCOPED Delivery Authority' SKILL.md
+          grep -q 'C 级证据不得形成硬宣称' SKILL.md
+          grep -q '自包含 `index.html`' SKILL.md
       - name: Commit repaired authority if changed
         run: |
-          if git diff --quiet -- runtime/cbcc/strategy_depth.py; then
-            echo 'strategy_depth.py already repaired'
+          if git diff --quiet -- runtime/cbcc/strategy_depth.py SKILL.md; then
+            echo 'Runtime and Skill authority already repaired'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add runtime/cbcc/strategy_depth.py
-          git commit -m 'fix: restore FULL strategy hard contract without regressing task scope'
+          git add runtime/cbcc/strategy_depth.py SKILL.md
+          git commit -m 'fix: reconcile FULL hard contract with task-scoped autonomy'
           git push origin HEAD:main
