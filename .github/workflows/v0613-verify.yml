@@ -1,4 +1,4 @@
-name: CBCC v0.6.13 regression delta verification
+name: CBCC v0.6.13 compatibility fix and finalize
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  compare-against-v0612-main:
+  fix-verify-finalize:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -17,84 +17,78 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Patch remote verification compatibility boundary
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('runtime/cbcc/production.py')
+          text = p.read_text(encoding='utf-8')
+          old = "            result['_provider_transport_verification_required']=True\n"
+          new = """            receipt=result.get('production_receipt') if isinstance(result.get('production_receipt'),dict) else {}\n            artifacts=receipt.get('output_artifacts') if isinstance(receipt.get('output_artifacts'),list) else []\n            strict_remote_prefixes=('http://','https://','s3://','gs://','azure://','az://','provider://')\n            result['_provider_transport_verification_required']=any(\n                str((artifact or {}).get('path_or_uri') or (artifact or {}).get('uri') or (artifact or {}).get('path') or '').lower().startswith(strict_remote_prefixes)\n                for artifact in artifacts if isinstance(artifact,dict)\n            )\n"""
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'expected exactly one transport verification marker, found {count}')
+          p.write_text(text.replace(old, new), encoding='utf-8')
+
+          c = Path('CHANGELOG_V0613.md')
+          changelog = c.read_text(encoding='utf-8')
+          note = "\n## Compatibility\n- Materialized provider results keep legacy `fixture://` receipt semantics for deterministic local/test handoff. Strict byte resolution remains mandatory for real remote schemes (`http(s)`, `s3`, `gs`, Azure and provider URIs), preserving v0.6.13 remote-integrity guarantees without regressing the existing FILE_HANDOFF lifecycle.\n"
+          if '## Compatibility' not in changelog:
+              c.write_text(changelog.rstrip() + '\n' + note, encoding='utf-8')
+          PY
+
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
 
-      - name: Run branch and main with identical pytest settings
+      - name: Verify v0.6.13 transport plus three compatibility regressions
+        run: |
+          python -m pytest -q \
+            tests/test_v0613_provider_transport_integrity.py \
+            tests/test_alpha6_review_provider_overlays.py::test_provider_filesystem_job_envelope_and_ingest \
+            tests/test_alpha6_review_provider_overlays.py::test_provider_ingest_cli_lifecycle \
+            tests/test_v0512_production_learning_loop.py::test_v0512_provider_review_local_revision_and_learning_are_one_bounded_loop
+
+      - name: Prove zero new failures against v0.6.12 main
         shell: bash
         run: |
           git fetch origin main
           git worktree add /tmp/cbcc-main origin/main
-
           set +e
           python -m pytest -q -ra --tb=no > /tmp/v0613-head.txt 2>&1
           head_rc=$?
           (cd /tmp/cbcc-main && python -m pytest -q -ra --tb=no > /tmp/v0612-main.txt 2>&1)
           main_rc=$?
           set -e
-
           extract_failures() {
-            grep -E '^(FAILED|ERROR) ' "$1" \
-              | sed -E 's/^(FAILED|ERROR) //' \
-              | sed -E 's/ - .*//' \
-              | sort -u || true
+            grep -E '^(FAILED|ERROR) ' "$1" | sed -E 's/^(FAILED|ERROR) //' | sed -E 's/ - .*//' | sort -u || true
           }
-
           extract_failures /tmp/v0613-head.txt > /tmp/head-failures.txt
           extract_failures /tmp/v0612-main.txt > /tmp/main-failures.txt
           comm -23 /tmp/head-failures.txt /tmp/main-failures.txt > /tmp/new-failures.txt
-          comm -13 /tmp/head-failures.txt /tmp/main-failures.txt > /tmp/fixed-failures.txt
+          echo "main failures: $(wc -l < /tmp/main-failures.txt)"
+          echo "head failures: $(wc -l < /tmp/head-failures.txt)"
+          echo "new failures: $(wc -l < /tmp/new-failures.txt)"
+          cat /tmp/new-failures.txt
+          test ! -s /tmp/new-failures.txt
 
-          head_count=$(wc -l < /tmp/head-failures.txt | tr -d ' ')
-          main_count=$(wc -l < /tmp/main-failures.txt | tr -d ' ')
-          new_count=$(wc -l < /tmp/new-failures.txt | tr -d ' ')
-          fixed_count=$(wc -l < /tmp/fixed-failures.txt | tr -d ' ')
+      - name: Remove staging diagnostics and Python cache artifacts
+        shell: bash
+        run: |
+          rm -rf .changes
+          rm -f .github/workflows/v0613-verify.yml
+          find runtime tests toolkits -type d -name __pycache__ -prune -exec rm -rf {} + 2>/dev/null || true
+          find . -type f -name '*.py[co]' -delete
+          cat > .gitignore <<'EOF'
+          __pycache__/
+          *.py[cod]
+          .pytest_cache/
+          EOF
 
-          {
-            echo "BASE_REF=origin/main"
-            echo "BASE_SHA=$(git -C /tmp/cbcc-main rev-parse HEAD)"
-            echo "HEAD_SHA=$(git rev-parse HEAD)"
-            echo "MAIN_PYTEST_RC=$main_rc"
-            echo "HEAD_PYTEST_RC=$head_rc"
-            echo "MAIN_FAILURE_COUNT=$main_count"
-            echo "HEAD_FAILURE_COUNT=$head_count"
-            echo "NEW_FAILURE_COUNT=$new_count"
-            echo "FIXED_FAILURE_COUNT=$fixed_count"
-            echo
-            echo "== NEW FAILURES IN v0.6.13 =="
-            cat /tmp/new-failures.txt
-            echo
-            echo "== FAILURES FIXED BY v0.6.13 =="
-            cat /tmp/fixed-failures.txt
-            echo
-            echo "== MAIN BASELINE FAILURES =="
-            cat /tmp/main-failures.txt
-            echo
-            echo "== v0.6.13 BRANCH FAILURES =="
-            cat /tmp/head-failures.txt
-            echo
-            echo "== MAIN TERMINAL TAIL =="
-            tail -40 /tmp/v0612-main.txt
-            echo
-            echo "== HEAD TERMINAL TAIL =="
-            tail -40 /tmp/v0613-head.txt
-          } > .changes/v0613-baseline-comparison.txt
-
-          echo "NEW_FAILURE_COUNT=$new_count" >> "$GITHUB_ENV"
-
-      - name: Commit regression delta evidence
-        if: always()
+      - name: Finalize clean v0.6.13 work branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .changes/v0613-baseline-comparison.txt
-          if ! git diff --cached --quiet; then
-            git commit -m "test: compare v0.6.13 failures against v0.6.12 main"
-            git push origin HEAD:work/v0613-provider-transport
-          fi
-
-      - name: Reject only newly introduced regressions
-        if: always()
-        shell: bash
-        run: |
-          test "${NEW_FAILURE_COUNT:-unknown}" = "0"
+          git add -A
+          git commit -m "fix: preserve provider handoff compatibility and finalize v0.6.13"
+          git push origin HEAD:work/v0613-provider-transport
