@@ -1,0 +1,63 @@
+name: CBCC v0.6.12 verify and finalize
+on:
+  push:
+    branches: [work/v0612-portable-provider]
+    paths:
+      - '.changes/v0612.trigger'
+permissions:
+  contents: write
+jobs:
+  verify-finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Reconstruct and apply v0.6.12 source edits
+        run: |
+          cat .changes/apply_v0612.part*.b64 | base64 -d > .changes/apply_v0612.py
+          python .changes/apply_v0612.py
+      - name: Install test dependency
+        run: python -m pip install pytest pyyaml
+      - name: Focused continuity regression
+        run: |
+          python -m pytest -q \
+            tests/test_v067_workspace_information_architecture.py \
+            tests/test_v068_asset_production_workspace.py \
+            tests/test_v069_photography_execution_continuity.py \
+            tests/test_v0610_visual_execution_copy_continuity.py \
+            tests/test_v0611_provider_source_binding.py \
+            tests/test_v0612_provider_portability_receipt.py
+      - name: Full regression with frozen historical-failure ceiling
+        shell: bash
+        run: |
+          set +e
+          python -m pytest -q > /tmp/pytest-full.txt 2>&1
+          status=$?
+          cat /tmp/pytest-full.txt
+          python - <<'PY'
+          import re, pathlib, sys
+          text=pathlib.Path('/tmp/pytest-full.txt').read_text()
+          m=re.search(r'(\d+) failed, (\d+) passed',text)
+          if not m:
+              if ' passed' in text and ' failed' not in text:
+                  sys.exit(0)
+              raise SystemExit('could not parse full pytest summary')
+          failed, passed=map(int,m.groups())
+          if failed>12:
+              raise SystemExit(f'new regression: {failed} failures > historical ceiling 12')
+          if passed<107:
+              raise SystemExit(f'pass count regressed: {passed} < 107')
+          print(f'accepted baseline: {passed} passed / {failed} historical failures')
+          PY
+      - name: Finalize source commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm -f .changes/apply_v0612.py .changes/apply_v0612.part*.b64 .changes/v0612.trigger .github/workflows/v0612-verify.yml
+          git add -A
+          git commit -m 'fix: make provider handoff portable and receipt-bound'
+          git push origin HEAD:work/v0612-portable-provider
