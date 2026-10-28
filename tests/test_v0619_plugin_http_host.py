@@ -163,9 +163,10 @@ def test_pending_dispatch_maps_to_202_and_operation_headers():
         code, headers, payload = _request(base, path, method='POST', body={})
         assert code == 202
         assert payload['status'] == 'PENDING'
-        assert headers['retry-after'] == '3'
-        assert headers['x-cbcc-operation-id'] == 'OP-live-123'
-        assert headers['x-cbcc-operation-state'] == 'PENDING'
+        normalized_headers = {str(key).lower(): value for key, value in headers.items()}
+        assert normalized_headers['retry-after'] == '3'
+        assert normalized_headers['x-cbcc-operation-id'] == 'OP-live-123'
+        assert normalized_headers['x-cbcc-operation-state'] == 'PENDING'
     finally:
         server.shutdown(); server.server_close(); thread.join(timeout=5)
 
@@ -223,6 +224,30 @@ def test_authorization_module_is_host_injected_and_not_payload_driven(monkeypatc
     ))
     assert authorization.actor_id == 'host-user'
     assert authorization.allows(SCOPE_ADAPTER_READ)
+
+
+def test_authorization_resolver_exception_fails_closed_without_detail_leak():
+    path = _path_for(ACTION_ADAPTER_LIST)
+    dispatcher = ProviderActionDispatcher(FakeSurface())
+
+    def broken_resolver(context):
+        raise RuntimeError('opaque-sensitive-auth-detail')
+
+    server = make_plugin_http_server(
+        dispatcher,
+        host='127.0.0.1',
+        port=0,
+        authorization_resolver=broken_resolver,
+    )
+    thread, base = _run_server(server)
+    try:
+        code, _, payload = _request(base, path, method='POST', body={})
+        assert code == 403
+        serialized = json.dumps(payload, ensure_ascii=False)
+        assert 'opaque-sensitive-auth-detail' not in serialized
+        assert payload['errors'][0]['code'] == 'AUTHORIZATION_RESOLVER_FAILED'
+    finally:
+        server.shutdown(); server.server_close(); thread.join(timeout=5)
 
 
 def test_transport_module_does_not_import_provider_runtime_layers():
