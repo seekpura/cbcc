@@ -1,0 +1,187 @@
+diff --git a/runtime/cbcc/compiler.py b/runtime/cbcc/compiler.py
+--- a/runtime/cbcc/compiler.py
++++ b/runtime/cbcc/compiler.py
+@@ -122,8 +122,8 @@
+ def build_project(project_dir:Path,request:dict,packs_dir:Path):
+     p=Path(project_dir)
+     try: st=ProjectState.load(p)
+-    except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.7-semantic-workspaces')
+-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.7-semantic-workspaces'; st.save(); _write(st.meta/'request.json',request)
++    except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.8-asset-production-workspace')
++    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.8-asset-production-workspace'; st.save(); _write(st.meta/'request.json',request)
+ 
+     evidence={'sources':request.get('sources',[]),'assumptions':request.get('assumptions',[])}
+     ep=_write(p/'artifacts/evidence.json',evidence); st.set_gate('EVIDENCE','READY_REVIEW',[ep],evidence); st.checkpoint('EVIDENCE','READY_REVIEW')
+diff --git a/runtime/cbcc/learning_loop.py b/runtime/cbcc/learning_loop.py
+--- a/runtime/cbcc/learning_loop.py
++++ b/runtime/cbcc/learning_loop.py
+@@ -312,7 +312,7 @@
+         elif any(x in key for x in ['VISUAL','HERO','CREATIVE','PHOTO']):
+             _append_overlay_once(visual.setdefault('learning_revision_overlays',[]))
+     strategy.setdefault('learning_history',[]).append({'cycle_id':learning.get('cycle_id'),'recommendation':learning.get('recommendation'),'applied_at':_now()})
+-    strategy['runtime_strategy_depth']='0.6.7-semantic-workspaces'
++    strategy['runtime_strategy_depth']='0.6.8-asset-production-workspace'
+     # Add an explicit decision-index record even if deterministic index builders do not know the new overlay shape.
+     strategy.setdefault('decision_index',[]).append({'decision_id':'DEC-LEARN-'+str(learning.get('cycle_id')),'domain':'LEARNING','what':learning.get('recommendation'),'why':learning.get('why'),'evidence':[x.get('metric') for x in learning.get('metric_comparison',[])],'execution':'Apply only to '+', '.join(learning.get('edit_layers') or [])+'; freeze '+', '.join(learning.get('freeze_layers') or []),'measurement':'Re-check the original symptom after the local revision; causal credit only when the supplied causal evidence supports it.'})
+     materialize_strategy(project/'artifacts/strategy',strategy)
+diff --git a/runtime/cbcc/production.py b/runtime/cbcc/production.py
+--- a/runtime/cbcc/production.py
++++ b/runtime/cbcc/production.py
+@@ -50,7 +50,7 @@
+     if fidelity=='LOCKED_PIXEL':
+         required_observations += ['product_identity_preserved','source_product_asset_ids_used','product_layer_operation']
+     return {
+-        'version':'0.6.7-semantic-workspaces',
++        'version':'0.6.8-asset-production-workspace',
+         'preflight_status':'READY' if not preflight_errors else 'HOLD',
+         'preflight_errors':preflight_errors,
+         'product_fidelity':fidelity,
+diff --git a/runtime/cbcc/state.py b/runtime/cbcc/state.py
+--- a/runtime/cbcc/state.py
++++ b/runtime/cbcc/state.py
+@@ -13,7 +13,7 @@
+     @property
+     def meta(self): return self.project_dir/'.cbcc'
+     @classmethod
+-    def init(cls, project_dir:Path, project_id:str, version='0.6.7-semantic-workspaces'):
++    def init(cls, project_dir:Path, project_id:str, version='0.6.8-asset-production-workspace'):
+         p=Path(project_dir); (p/'.cbcc/checkpoints').mkdir(parents=True,exist_ok=True); (p/'artifacts/objects').mkdir(parents=True,exist_ok=True)
+         data={'project_id':project_id,'runtime_version':version,'revision':0,'current_stage':'INIT','created_at':now(),'updated_at':now(),
+               'gates':{g:{'status':'PENDING','artifact_paths':[],'authority_hash':None,'updated_at':None} for g in CANONICAL_GATES},
+diff --git a/runtime/cbcc/strategy_depth.py b/runtime/cbcc/strategy_depth.py
+--- a/runtime/cbcc/strategy_depth.py
++++ b/runtime/cbcc/strategy_depth.py
+@@ -1082,7 +1082,7 @@
+         if isinstance(val,dict) and bindings.get(key): val['reasoning_authorities']=bindings.get(key)
+     executive=build_executive_summary_depth(info,market_depth,sku,positioning,visual,portfolio,risk,request.get('target') or {})
+     decision_index=build_decision_index_depth(sections)
+-    return {'status':'STRATEGY_AUTHORITY_COMPILED','runtime_strategy_depth':'0.6.7-semantic-workspaces','positive_design_first':True,'governance_role':'BACKGROUND_GUARDRAIL','strategy_decision_contract':'WHAT → WHY → EVIDENCE → CONSUMER → PLATFORM → CULTURE → BUSINESS → EXECUTION → MEASUREMENT','asset_package_preservation':'REQUIRED','platform_compile_status':platform_compile.get('status'),'authoring_context':authoring_context or {},'reasoning_authority_bindings':bindings,'executive_summary':executive,'decision_index':decision_index,'sections':sections}
++    return {'status':'STRATEGY_AUTHORITY_COMPILED','runtime_strategy_depth':'0.6.8-asset-production-workspace','positive_design_first':True,'governance_role':'BACKGROUND_GUARDRAIL','strategy_decision_contract':'WHAT → WHY → EVIDENCE → CONSUMER → PLATFORM → CULTURE → BUSINESS → EXECUTION → MEASUREMENT','asset_package_preservation':'REQUIRED','platform_compile_status':platform_compile.get('status'),'authoring_context':authoring_context or {},'reasoning_authority_bindings':bindings,'executive_summary':executive,'decision_index':decision_index,'sections':sections}
+ 
+ def _cn_human(v):
+     if isinstance(v,dict): return {k:_cn_human(x) for k,x in v.items()}
+@@ -1653,7 +1653,7 @@
+         last['output_self_check']={'fabrication_check':'未来源化事实不得输出为确定事实。','why_check':'关键策略需有WHY。','culture_check':'需完成交叉性/包容性校验。','compliance_check':'强监管与Claim P0。','metric_check':'关键动作需指标/归因。','assumption_check':'事实/假设分离。'}
+     s['09_risk_measurement_priority_next_steps']=last
+     strategy['sections']=s
+-    strategy['runtime_strategy_depth']='0.6.7-semantic-workspaces'
++    strategy['runtime_strategy_depth']='0.6.8-asset-production-workspace'
+     strategy['race_authority']='Research → Action → Communication → Evaluation'
+     strategy['evidence_grade_authority']=EVIDENCE_LEVELS
+     strategy['delivery_contract']=validate_strategy_delivery(strategy)
+diff --git a/runtime/cbcc/strategy_sources.py b/runtime/cbcc/strategy_sources.py
+--- a/runtime/cbcc/strategy_sources.py
++++ b/runtime/cbcc/strategy_sources.py
+@@ -193,7 +193,7 @@
+     bindings={k:[x for x in v if x in prompt_ids or x in knowledge_ids] for k,v in bindings.items()}
+ 
+     return {
+-        'status':'STRATEGY_REASONING_CONTEXT_COMPILED','version':'0.6.7-semantic-workspaces','active_domains':sorted(domains),
++        'status':'STRATEGY_REASONING_CONTEXT_COMPILED','version':'0.6.8-asset-production-workspace','active_domains':sorted(domains),
+         'purpose':'Project-specific selection and content-level consumption of professional reasoning authorities. Deterministic truth/calculations remain separate authorities.',
+         'selected_prompts':prompts,'selected_knowledge':knowledge,
+         'authority_bindings':bindings,
+diff --git a/tests/test_v068_asset_production_workspace.py b/tests/test_v068_asset_production_workspace.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_v068_asset_production_workspace.py
+@@ -0,0 +1,99 @@
++from pathlib import Path
++import sys
++
++ROOT=Path(__file__).resolve().parents[1]
++sys.path.insert(0,str(ROOT/'runtime'))
++
++from cbcc.delivery_html import _asset_page
++
++
++def _asset(**overrides):
++    base={
++        'id':'LST-03',
++        'title':'配方平衡证据',
++        'original_title':'FORMULA BUILT FOR BALANCE',
++        'summary':'TikTok Shop Malaysia · 配方平衡 · 购买判断',
++        'surface':'PDP gallery',
++        'intent':'DECISION_SUPPORT',
++        'asset_type':'IMAGE',
++        'prompt_cn':'中文执行提示词：保持真实商品像素，执行构图和灯光合同。',
++        'prompt_en':'English execution prompt: preserve product fidelity and execute the visual contract.',
++        'source_files':['asset_packages/LST-03/12_design_card.json','asset_packages/LST-03/13_prompt_contract.json'],
++        'views':[
++            {'key':'overview','title':'资产概览','html':'<div>Design Card 概览</div>'},
++            {'key':'strategy','title':'策划与决策','html':'<div>购买障碍与目标信念</div>'},
++            {'key':'visual','title':'画面与版式','html':'<div>主体 / 动作 / 构图 / Surface</div>'},
++            {'key':'photo','title':'摄影 / CMF','html':'<div>50mm · key light · CCT</div>'},
++            {'key':'copy','title':'文案','html':'<div>FORMULA BUILT FOR BALANCE / 中文释义</div>'},
++            {'key':'production','title':'生成与生产','html':'<div>后期精确排字</div>'},
++            {'key':'trace','title':'合同 / QA / 来源','html':'<div>parameter trace</div>'},
++        ],
++    }
++    base.update(overrides)
++    return base
++
++
++def test_asset_page_is_a_production_workspace_not_module_shell():
++    page=_asset_page(_asset())
++    assert 'data-workspace-kind="asset-production"' in page
++    assert 'asset-production-rail' in page
++    assert 'asset-production-stage' in page
++    assert 'module-shell' not in page
++    assert 'subnav-btn' not in page
++
++
++def test_asset_production_workspace_groups_decisions_by_work_object():
++    page=_asset_page(_asset())
++    for label in ['决策 / Design Card','画面执行','摄影 / CMF','文案','Prompt 执行','QA / 来源']:
++        assert label in page
++    # overview + strategy are one decision stage, not two report tabs.
++    assert page.count('data-view="asset-stage-lst-03-decision"') == 2  # switch + panel
++    assert 'Design Card 概览' in page
++    assert '购买障碍与目标信念' in page
++
++
++def test_cn_and_en_prompts_share_one_execution_stage():
++    page=_asset_page(_asset())
++    assert page.count('Prompt 执行') >= 1
++    assert 'asset-lst-03-prompt-cn' in page
++    assert 'asset-lst-03-prompt-en' in page
++    assert '中文执行提示词：保持真实商品像素' in page
++    assert 'English execution prompt: preserve product fidelity' in page
++    assert 'prompt-cn' not in [x.split('data-view="',1)[1].split('"',1)[0] for x in page.split('<button class="asset-phase')[1:]]
++    assert 'Prompt 是执行合同，不是独立创意来源' in page
++
++
++def test_asset_stage_count_is_dynamic_from_available_content():
++    minimal=_asset(
++        views=[{'key':'visual','title':'画面与版式','html':'<div>only visual</div>'}],
++        prompt_cn='',prompt_en='',source_files=[]
++    )
++    page=_asset_page(minimal)
++    assert '2 个动态阶段' not in page
++    assert '1 个动态阶段' in page
++    assert page.count('class="asset-phase workspace-switch') == 1
++    assert '画面执行' in page
++    assert '摄影 / CMF' not in page
++    assert 'Prompt 执行' not in page
++    assert 'QA / 来源' not in page
++
++
++def test_source_files_and_trace_live_in_qa_not_prompt():
++    page=_asset_page(_asset())
++    qa_pos=page.index('TRACE · QA')
++    source_pos=page.index('asset_packages/LST-03/12_design_card.json')
++    prompt_pos=page.index('EXECUTION')
++    assert source_pos > qa_pos
++    assert source_pos > prompt_pos
++    assert '2 个源文件可追溯' in page
++
++
++def test_unknown_legacy_views_remain_recoverable_in_qa():
++    legacy=_asset(
++        views=[{'key':'v1','title':'旧版补充说明','html':'<div>legacy content</div>'}],
++        prompt_cn='',prompt_en='',source_files=[]
++    )
++    page=_asset_page(legacy)
++    assert 'QA / 来源' in page
++    assert '旧版补充说明' in page
++    assert 'legacy content' in page
