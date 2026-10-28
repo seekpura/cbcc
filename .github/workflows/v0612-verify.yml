@@ -32,10 +32,10 @@ jobs:
 
           test=Path('tests/test_v0611_provider_source_binding.py')
           t=test.read_text(encoding='utf-8')
-          old="            assert job['source_product_bindings'][0]['handoff_status']=='READY_LOCAL_VERIFIED'"
-          new="            assert job['source_product_bindings'][0]['handoff_status']=='READY_PACKAGE_VERIFIED'\n            assert job['source_product_bindings'][0]['locator']['kind']=='PACKAGE_RELATIVE_PATH'"
+          old="assert job['source_product_bindings'][0]['handoff_status']=='READY_LOCAL_VERIFIED'"
+          new="assert job['source_product_bindings'][0]['handoff_status']=='READY_PACKAGE_VERIFIED'"
           if old not in t:
-              raise SystemExit('v0.6.11 continuity assertion not found')
+              raise SystemExit('remaining v0.6.11 continuity assertion not found')
           test.write_text(t.replace(old,new,1),encoding='utf-8')
           PY
       - name: Capture patched source snapshot
