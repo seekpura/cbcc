@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "primary_direction",
+    "photography",
+    "visual_semantics"
+  ],
+  "properties": {
+    "primary_direction": {
+      "type": "object"
+    },
+    "photography": {
+      "type": "object"
+    },
+    "visual_semantics": {
+      "type": "array"
+    }
+  }
+}

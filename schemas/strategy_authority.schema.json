@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CBCC Strategy Authority",
+  "type": "object",
+  "required": [
+    "status",
+    "positive_design_first",
+    "governance_role",
+    "strategy_decision_contract",
+    "asset_package_preservation",
+    "sections",
+    "executive_summary",
+    "decision_index"
+  ],
+  "properties": {
+    "status": {
+      "const": "STRATEGY_AUTHORITY_COMPILED"
+    },
+    "positive_design_first": {
+      "const": true
+    },
+    "governance_role": {
+      "const": "BACKGROUND_GUARDRAIL"
+    },
+    "asset_package_preservation": {
+      "const": "REQUIRED"
+    },
+    "strategy_decision_contract": {
+      "type": "string"
+    },
+    "sections": {
+      "type": "object",
+      "required": [
+        "01_information_completeness_assumptions_decisions",
+        "02_product_truth_value_ladder",
+        "03_platform_region_audience_culture_insight",
+        "04_marketing_core_strategy",
+        "05_visual_photography_strategy",
+        "06_platform_content_matrix",
+        "07_race_execution_table",
+        "08_culture_adaptation_checklist",
+        "09_risk_measurement_priority_next_steps"
+      ]
+    },
+    "executive_summary": {
+      "type": "object"
+    },
+    "decision_index": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "authoring_context": {
+      "type": "object"
+    }
+  }
+}

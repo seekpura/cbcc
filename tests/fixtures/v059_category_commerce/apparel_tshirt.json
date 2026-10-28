@@ -1,0 +1,80 @@
+{
+  "project_id": "V059-APPAREL-TSHIRT",
+  "product": {
+    "name": "Validation Oversized Cotton T-Shirt",
+    "category": "apparel",
+    "product_type": "oversized t-shirt",
+    "primary_conversion_proposition": "Relaxed oversized cotton T-shirt with measurable garment dimensions.",
+    "material": "100% cotton fixture fact",
+    "fit": "oversized / relaxed fixture fit",
+    "size_chart": "S–XL garment measurements supplied in fixture",
+    "model_context": "Model/body measurements are not supplied; do not generalize fit from imagery.",
+    "care": "machine wash cold fixture care instruction"
+  },
+  "target": {
+    "target_id": "MY-TTS-V059",
+    "market": "Malaysia",
+    "jurisdiction": "MY",
+    "platform_family": "tiktok_shop",
+    "site": "MY",
+    "program": "cross_border",
+    "primary_locale": "en-MY",
+    "support_locales": [
+      "ms-MY"
+    ],
+    "visible_copy_locales": [
+      "en-MY",
+      "ms-MY"
+    ],
+    "prompt_instruction_locale": "zh-CN",
+    "surfaces": [
+      "SEARCH_RESULTS",
+      "PDP",
+      "GALLERY",
+      "PDP_VIDEO",
+      "CREATOR",
+      "FAQ"
+    ],
+    "currency": "MYR",
+    "category": "apparel"
+  },
+  "shopper_questions": [
+    "What is this T-shirt?",
+    "Which size should I choose from the size chart and garment measurements?",
+    "How does the oversized cut sit on a real body?",
+    "What fabric and construction should I expect?",
+    "How should I wash and care for it?"
+  ],
+  "listing_input": {
+    "fields": {
+      "title": "Validation Oversized Cotton T-Shirt",
+      "attributes": {
+        "material": "100% cotton",
+        "fit": "oversized",
+        "sizes": "S–XL"
+      },
+      "usage": [
+        "Choose size from verified garment measurements."
+      ],
+      "faq": [
+        "Model measurements not supplied in fixture."
+      ],
+      "_source_refs": {
+        "title": [
+          "SRC-APP"
+        ],
+        "attributes": [
+          "SRC-APP"
+        ],
+        "usage": [
+          "SRC-APP"
+        ],
+        "faq": [
+          "SRC-APP"
+        ]
+      }
+    },
+    "keywords": []
+  },
+  "compile_assets": true
+}

@@ -1,0 +1,79 @@
+{
+  "project_id": "V059-FOOD-TEA",
+  "product": {
+    "name": "Validation Black Tea Bags",
+    "category": "food_beverage",
+    "product_type": "black tea bags",
+    "primary_conversion_proposition": "Straightforward black tea bags for daily hot brewing.",
+    "net_content": "20 tea bags / 40 g",
+    "ingredients": "black tea",
+    "allergen_statement": "No allergen statement supplied in this fixture; verify current label before publication.",
+    "preparation": "Steep 1 tea bag in hot water; exact time/temperature requires source confirmation.",
+    "storage": "Store in a cool, dry place."
+  },
+  "target": {
+    "target_id": "MY-TTS-V059",
+    "market": "Malaysia",
+    "jurisdiction": "MY",
+    "platform_family": "tiktok_shop",
+    "site": "MY",
+    "program": "cross_border",
+    "primary_locale": "en-MY",
+    "support_locales": [
+      "ms-MY"
+    ],
+    "visible_copy_locales": [
+      "en-MY",
+      "ms-MY"
+    ],
+    "prompt_instruction_locale": "zh-CN",
+    "surfaces": [
+      "SEARCH_RESULTS",
+      "PDP",
+      "GALLERY",
+      "PDP_VIDEO",
+      "CREATOR",
+      "FAQ"
+    ],
+    "currency": "MYR",
+    "category": "food_beverage"
+  },
+  "shopper_questions": [
+    "What is this tea and what pack am I buying?",
+    "What ingredients, nutrition, allergens or certifications should I check?",
+    "How should I brew it and what flavor description is actually supported?",
+    "What exactly is included in the pack?",
+    "How should I store it and what freshness information is known?"
+  ],
+  "listing_input": {
+    "fields": {
+      "title": "Validation Black Tea Bags 20 Count",
+      "attributes": {
+        "net_content": "20 tea bags / 40 g",
+        "ingredients": "black tea"
+      },
+      "package": [
+        "20 tea bags"
+      ],
+      "usage": [
+        "Brew according to verified pack instructions before publication."
+      ],
+      "_source_refs": {
+        "title": [
+          "SRC-FOOD"
+        ],
+        "attributes": [
+          "SRC-FOOD"
+        ],
+        "package": [
+          "SRC-FOOD"
+        ],
+        "usage": [
+          "SRC-FOOD"
+        ]
+      }
+    },
+    "keywords": []
+  },
+  "compile_assets": true
+}

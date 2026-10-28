@@ -1,0 +1,31 @@
+[
+  {
+    "asset_id": "LST-01",
+    "asset_name": "Main Product Identification",
+    "asset_type": "IMAGE",
+    "status": "ACTIVATE",
+    "platform": "example",
+    "market": "example",
+    "languages": [
+      "en"
+    ],
+    "consumer_question": "What is the product?",
+    "strategic_job": "Identify the product clearly.",
+    "funnel_stage": "IDENTIFY",
+    "race_stage": "COMMUNICATION",
+    "jtbd_role": "Functional",
+    "production_mode": "AI_GENERATIVE",
+    "product_fidelity": "LOCKED_PIXEL",
+    "priority": "P0",
+    "dependencies": [],
+    "source_ids": [
+      "SRC-PACK-01"
+    ],
+    "claim_ids": [
+      "CLM-01"
+    ],
+    "listing_reference": [],
+    "success_metric": "PDP comprehension",
+    "editable_fields": []
+  }
+]

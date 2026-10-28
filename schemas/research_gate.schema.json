@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["status","resolved","pending","actions"],"properties":{"status":{"enum":["READY","RESEARCH_REQUIRED"]},"resolved":{"type":"array"},"pending":{"type":"array"},"actions":{"type":"array"}}}

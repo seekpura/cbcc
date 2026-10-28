@@ -1,0 +1,272 @@
+{
+  "project_id": "KIYUU-K01-MY-TTS-E2E",
+  "sku": "KIYUU-K01-GEL",
+  "planning_only": true,
+  "product": {
+    "name": "KIYUU K01 Oil Control Anti Acne Moisturizing Gel",
+    "net_content": "30g / 1.01 oz",
+    "product_type": "gel moisturiser",
+    "formula_facts": {
+      "salicylic_acid": "0.57%",
+      "niacinamide": "1%",
+      "panthenol": "2%",
+      "glycerin": "4.001%"
+    }
+  },
+  "sources": [
+    {
+      "source_id": "SRC-PACK",
+      "kind": "USER_PROVIDED_FACT"
+    },
+    {
+      "source_id": "SRC-FORMULA",
+      "kind": "USER_PROVIDED_FACT"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "CLM-01",
+      "text": "Daily gel moisturiser for oily & blemish-prone skin.",
+      "status": "APPROVED",
+      "evidence_source_ids": [
+        "SRC-PACK"
+      ]
+    }
+  ],
+  "target": {
+    "target_id": "MY-TTS",
+    "market": "Malaysia",
+    "jurisdiction": "MY",
+    "platform_family": "tiktok_shop",
+    "site": "MY",
+    "program": "cross_border",
+    "primary_locale": "en-MY",
+    "support_locales": [
+      "ms-MY"
+    ],
+    "visible_copy_locales": [
+      "en-MY",
+      "ms-MY"
+    ],
+    "prompt_instruction_locale": "zh-CN",
+    "surfaces": [
+      "PDP",
+      "GALLERY",
+      "PDP_VIDEO",
+      "CREATOR"
+    ],
+    "category": "beauty",
+    "currency": "MYR"
+  },
+  "content_families": [
+    "LISTING",
+    "SEARCH",
+    "OFFER_PROMOTION",
+    "VISUAL",
+    "VIDEO",
+    "CREATOR_AFFILIATE",
+    "PAID",
+    "CX",
+    "MEASUREMENT",
+    "COMPLIANCE"
+  ],
+  "shopper_questions": [
+    "What is this product?",
+    "Is it relevant to oily or blemish-prone daily routines?",
+    "What verified formula facts support the proposition?",
+    "How does it fit into a daily routine?"
+  ],
+  "required_platform_rules": [
+    "TEST-LANGUAGE-CONTRACT",
+    "TEST-TITLE-CONTRACT"
+  ],
+  "audience_culture": {
+    "statements": [
+      {
+        "statement": "Use Malaysia-localized language hierarchy appropriate to the selected asset surface.",
+        "status": "VERIFIED",
+        "confidence": 1.0,
+        "source_ids": [
+          "SRC-TEST"
+        ],
+        "implications": [
+          "Keep en-MY and ms-MY visible-copy variants separately reviewable."
+        ]
+      }
+    ],
+    "intersectionality": {
+      "ethnicity": [
+        "multi-ethnic audience"
+      ],
+      "gender": [
+        "inclusive"
+      ],
+      "age": [
+        "adult"
+      ],
+      "geography": [
+        "Malaysia"
+      ],
+      "lifestyle": [
+        "daily skincare"
+      ]
+    },
+    "casting": {
+      "age": "adult",
+      "skin_tone": "range appropriate to the target market",
+      "styling": "natural daily skincare"
+    },
+    "visual_implications": [
+      "Use authentic adult Malaysian context when a human is strategically required.",
+      "Preserve natural skin texture and truthful product appearance."
+    ],
+    "copy_implications": [
+      "Use target-native wording rather than literal translation."
+    ]
+  },
+  "listing_input": {
+    "fields": {
+      "title": "KIYUU K01 Oil Control Anti Acne Moisturizing Gel 30g",
+      "highlights": [
+        "Daily gel moisturiser for oily & blemish-prone skin."
+      ],
+      "_source_refs": {
+        "title": [
+          "SRC-PACK"
+        ],
+        "highlights": [
+          "SRC-PACK"
+        ]
+      },
+      "_claim_refs": {
+        "highlights": [
+          "CLM-01"
+        ]
+      }
+    },
+    "keywords": [
+      {
+        "term": "oil control gel",
+        "cluster": "CORE",
+        "priority": 10,
+        "source_id": "SRC-TEST"
+      }
+    ]
+  },
+  "foundation_needs": {
+    "front": true,
+    "cutout": true
+  },
+  "product_fidelity": "LOCKED_PIXEL",
+  "photography_contract": {
+    "capture_mode": "COMPOSITE",
+    "camera": {
+      "focal_length_mm": 85,
+      "camera_height": "product center",
+      "focus_plane": "front label"
+    },
+    "composition": {
+      "product_occupancy": {
+        "height_pct": 68
+      }
+    },
+    "lighting": {
+      "key": {
+        "direction": "camera-left",
+        "modifier": "large diffusion"
+      },
+      "cct": 5200,
+      "highlight_policy": "protect white packaging and label"
+    },
+    "color_management": {
+      "output_space": "sRGB",
+      "product_color_fidelity": "locked real-product layer"
+    },
+    "cmf": {
+      "color": "warm neutral white with authentic deep green brand accents",
+      "material": "real supplied package layer",
+      "finish": "controlled soft highlights"
+    }
+  },
+  "asset_jobs": [
+    {
+      "asset_name": "Product Identification Hero",
+      "consumer_question": "What is this product?",
+      "surface": "GALLERY",
+      "family": "VISUAL",
+      "strategic_job": "Identify the exact product and establish the primary proposition.",
+      "production_mode": "REAL_PRODUCT_COMPOSITE",
+      "product_fidelity": "LOCKED_PIXEL",
+      "priority": "P0",
+      "source_ids": [
+        "SRC-PACK"
+      ],
+      "claim_ids": [
+        "CLM-01"
+      ],
+      "visible_copy": {
+        "en-MY": "Daily gel moisturiser",
+        "ms-MY": "Gel pelembap harian"
+      },
+      "approved_visual_elements": [
+        "real locked product layer",
+        "warm neutral set",
+        "controlled shadow"
+      ],
+      "creative_brief": {
+        "composition": "single hero product with deliberate mobile-safe negative space",
+        "lighting": "large diffused key with restrained fill",
+        "color": "warm neutral white + authentic brand green"
+      }
+    },
+    {
+      "asset_name": "Formula Facts",
+      "consumer_question": "What verified formula facts support the proposition?",
+      "surface": "GALLERY",
+      "family": "VISUAL",
+      "strategic_job": "Present verified formula facts with traceable evidence.",
+      "production_mode": "GRAPHIC_DESIGN",
+      "product_fidelity": "LOCKED_PIXEL",
+      "priority": "P1",
+      "source_ids": [
+        "SRC-FORMULA"
+      ],
+      "visible_copy": {
+        "en-MY": "0.57% SA · 1% Nia · 2% Pan",
+        "ms-MY": "0.57% SA · 1% Nia · 2% Pan"
+      },
+      "approved_visual_elements": [
+        "typographic formula hierarchy",
+        "real product signature"
+      ],
+      "creative_brief": {
+        "composition": "large verified numbers with product as secondary signature",
+        "lighting": "graphic-design asset; retain product layer lighting family",
+        "color": "warm neutral white + deep green typography"
+      }
+    },
+    {
+      "asset_name": "Local Routine Context",
+      "consumer_question": "How does it fit into a daily routine?",
+      "surface": "CREATOR",
+      "family": "CREATOR_AFFILIATE",
+      "strategic_job": "Show realistic daily-routine relevance without inventing results.",
+      "production_mode": "AI_HUMAN_REAL_PRODUCT",
+      "product_fidelity": "LOCKED_PIXEL",
+      "priority": "P1",
+      "source_ids": [
+        "SRC-PACK"
+      ],
+      "approved_visual_elements": [
+        "adult Malaysian daily skincare context",
+        "real locked product layer"
+      ],
+      "creative_brief": {
+        "composition": "human context with product visible but not oversized",
+        "lighting": "soft natural beauty light preserving real skin tone",
+        "color": "warm humid tropical-neutral atmosphere"
+      }
+    }
+  ],
+  "compile_assets": true
+}

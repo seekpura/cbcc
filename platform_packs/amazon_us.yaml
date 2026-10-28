@@ -1,0 +1,112 @@
+pack_id: amazon-us-current-2026-10-27
+platform_family: amazon
+site: US
+program: null
+status: VERIFIED_SITE_GENERIC
+capabilities: [LISTING, SEARCH, VISUAL, VIDEO, CX, COMPLIANCE]
+business_capabilities:
+  planning_only: false
+  exact_site_rules: true
+  category_style_guides_included: false
+  category_claim_rules_included: false
+  fees_included: false
+  logistics_included: false
+surfaces: [SEARCH_RESULTS, PDP, GALLERY, PDP_VIDEO, FAQ]
+surface_capabilities:
+  - surface: SEARCH_RESULTS
+    content_families: [LISTING, SEARCH, VISUAL]
+    planning_role: discovery_and_product_identity
+  - surface: GALLERY
+    content_families: [VISUAL]
+    planning_role: accurate_product_evaluation
+  - surface: PDP
+    content_families: [LISTING, CX]
+    planning_role: product_detail_and_purchase_decision
+rule_atoms:
+  - rule_id: AMZ-US-TITLE-MAX-75-NONMEDIA
+    scope: {site: US, surface: [SEARCH_RESULTS, PDP], locale: ['*']}
+    statement: Product titles must not exceed 75 characters including spaces for all product types except media product types.
+    source_url: https://sellercentral.amazon.com/help/hub/reference/external/G200390640?locale=en-US
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      listing_field: title
+      constraints: {max_chars: 75, category_exception: media}
+  - rule_id: AMZ-US-DETAIL-ACCURACY
+    scope: {site: US, surface: PDP, locale: ['*']}
+    statement: Product detail pages must accurately categorize and describe the product and follow relevant style guides.
+    source_url: https://sellercentral.amazon.com/help/hub/reference/external/G200390640?locale=en-US
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload: {rule_kind: listing_accuracy}
+  - rule_id: AMZ-US-DETAIL-CONTENT-BOUNDARIES
+    scope: {site: US, surface: PDP, locale: ['*']}
+    statement: Product detail page titles, descriptions, bullet points and images must not contain contact details, external ordering links, price or availability details, reviews or testimonials, promotional material, or watermarks.
+    source_url: https://sellercentral.amazon.com/help/hub/reference/external/G200390640?locale=en-US
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      listing_field: all_customer_facing_fields
+      constraints: {contact_details: false, external_links: false, price_availability_copy: false, reviews_testimonials: false, promotional_material: false, watermarks: false}
+  - rule_id: AMZ-US-MAIN-IMAGE-IDENTITY
+    scope: {site: US, surface: [SEARCH_RESULTS, GALLERY], locale: ['*']}
+    statement: The main image must accurately represent the sold product, show the entire product, show it once, and show only one unit plus included accessories.
+    source_url: https://sellercentral.amazon.com/help/hub/reference/external/G1881?ld=a
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: primary_image
+      constraints: {entire_product_visible: true, single_view: true, one_unit_plus_included_accessories: true, accurate_scale_quantity_color: true}
+  - rule_id: AMZ-US-MAIN-IMAGE-OCCUPANCY
+    scope: {site: US, surface: [SEARCH_RESULTS, GALLERY], locale: ['*']}
+    statement: The product should occupy 85 percent of the main image.
+    source_url: https://sellercentral.amazon.com/help/hub/reference/external/G1881?ld=a
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: primary_image
+      constraints: {product_occupancy_pct: 85}
+  - rule_id: AMZ-US-MAIN-IMAGE-WHITE
+    scope: {site: US, surface: [SEARCH_RESULTS, GALLERY], locale: ['*']}
+    statement: The main image shown in search must show only the product on a white background.
+    source_url: https://sellercentral.amazon.com/help/hub/reference/external/G200216080?locale=en-US
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: primary_image
+      constraints: {white_background: true, product_only: true}
+  - rule_id: AMZ-US-IMAGE-NO-OVERLAY
+    scope: {site: US, surface: [SEARCH_RESULTS, GALLERY], locale: ['*']}
+    statement: Main product images must not use text, logos, borders, color blocks, watermarks, or other graphics covering the product or background.
+    source_url: https://sellercentral.amazon.com/gp/help/external/GB6V3RU3M5XG24GC
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: primary_image
+      constraints: {text_overlay: false, logo_overlay: false, borders: false, color_blocks: false, watermark: false}
+source_records:
+  - source_id: AMZ-US-OFFICIAL-DETAIL-2026-10
+    kind: OFFICIAL_PLATFORM_POLICY
+    title: Product detail page rules - United States
+    url: https://sellercentral.amazon.com/help/hub/reference/external/G200390640?locale=en-US
+    verified_at: '2026-10-27'
+  - source_id: AMZ-US-OFFICIAL-IMAGE-2026-10
+    kind: OFFICIAL_PLATFORM_POLICY
+    title: Product image guide / image requirements - United States
+    url: https://sellercentral.amazon.com/help/hub/reference/external/G1881?ld=a
+    verified_at: '2026-10-27'
+  - source_id: AMZ-US-OFFICIAL-ADD-IMAGES-2026-10
+    kind: OFFICIAL_PLATFORM_POLICY
+    title: Add product images and video - United States
+    url: https://sellercentral.amazon.com/help/hub/reference/external/G200216080?locale=en-US
+    verified_at: '2026-10-27'
+notes:
+  - The re-verification horizon is internal and does not represent an Amazon policy expiry date.
+  - Category-specific style guides, claim rules, restricted-product rules, fees, fulfillment, and advertising rules are outside this pack.

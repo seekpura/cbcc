@@ -1,0 +1,31 @@
+{
+  "version": "v0.5.4-complete-00-11",
+  "required_per_asset_files": [
+    "00_asset_manifest.yaml",
+    "01_strategy.md",
+    "02_visual_spec.md",
+    "03_photography_contract.json",
+    "04_layout_contract.json",
+    "05_prompt_CN.txt",
+    "06_prompt_EN.txt",
+    "07_generation_guidance.txt",
+    "08_copy.md",
+    "09_production_notes.md",
+    "10_source_trace.md",
+    "11_strategy_authority_trace.json"
+  ],
+  "conditional_per_asset_files": [],
+  "required_root_files": [
+    "ASSET_PACKAGE_INDEX.json"
+  ],
+  "preserved_workflows": [
+    "Dynamic Asset Architecture",
+    "Independent Asset Package",
+    "Provider Job Envelope",
+    "Provider Result Ingest",
+    "Item-level Review",
+    "Local Revision Scope",
+    "Package Hash Continuity"
+  ],
+  "rule": "Strategy Authority enriches upstream WHY/context but never replaces or collapses individual asset packages. Non-applicable contracts remain explicit status-bearing files."
+}

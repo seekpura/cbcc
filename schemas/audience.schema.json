@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "primary_target",
+    "segments",
+    "intersectionality"
+  ],
+  "properties": {
+    "primary_target": {
+      "type": "object"
+    },
+    "secondary_target": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "segments": {
+      "type": "array"
+    },
+    "intersectionality": {
+      "type": "array"
+    }
+  }
+}

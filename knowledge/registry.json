@@ -1,0 +1,220 @@
+{
+  "version": "0.6.1-hard-contract-html",
+  "documents": [
+    {
+      "id": "KNOW-README",
+      "path": "README.md",
+      "title": "CBCC Commerce Knowledge Layer"
+    },
+    {
+      "id": "KNOW-CONTENT_ASSETS",
+      "path": "content_assets.md",
+      "title": "Content & Asset Architecture"
+    },
+    {
+      "id": "KNOW-CREATIVE_PHOTOGRAPHY",
+      "path": "creative_photography.md",
+      "title": "Creative & Photography Strategy"
+    },
+    {
+      "id": "KNOW-CULTURE",
+      "path": "culture.md",
+      "title": "Culture, Race/Ethnicity & Intersectionality"
+    },
+    {
+      "id": "KNOW-MARKET_STRATEGY",
+      "path": "market_strategy.md",
+      "title": "Market Interpretation"
+    },
+    {
+      "id": "KNOW-MEASUREMENT",
+      "path": "measurement.md",
+      "title": "Measurement & Learning"
+    },
+    {
+      "id": "KNOW-POSITIONING",
+      "path": "positioning.md",
+      "title": "Positioning & Message Architecture"
+    },
+    {
+      "id": "KNOW-PRODUCT_VALUE",
+      "path": "product_value.md",
+      "title": "Product Truth → Value Translation"
+    },
+    {
+      "path": "professional_strategy_authoring.md",
+      "purpose": "Decision depth and nine-section authoring quality.",
+      "id": "KNOW-PROFESSIONAL-STRATEGY-AUTHORING"
+    },
+    {
+      "path": "asset_portfolio_curation.md",
+      "purpose": "Dynamic asset reason-to-exist and reuse logic.",
+      "id": "KNOW-ASSET-PORTFOLIO-CURATION"
+    },
+    {
+      "path": "market_to_strategy.md",
+      "purpose": "Translate deterministic market evidence into strategic decisions.",
+      "id": "KNOW-MARKET-TO-STRATEGY"
+    },
+    {
+      "path": "listing_decision_system.md",
+      "purpose": "Listing/Search as purchase-decision architecture.",
+      "id": "KNOW-LISTING-DECISION-SYSTEM"
+    },
+    {
+      "path": "visual_why_framework.md",
+      "purpose": "Commercial rationale for visual and photography choices.",
+      "id": "KNOW-VISUAL-WHY-FRAMEWORK"
+    },
+    {
+      "id": "KNOW-COMPETITOR-INTEL",
+      "path": "competitor_intelligence.md",
+      "title": "Competitor Structure → Message → Customer Voice"
+    },
+    {
+      "id": "KNOW-SKU-PORTFOLIO",
+      "path": "sku_portfolio_economics.md",
+      "title": "SKU Portfolio Economics / Cannibalization / Trade-up"
+    },
+    {
+      "id": "KNOW-TRANScreation",
+      "path": "transcreation_platform_authoring.md",
+      "title": "Transcreation & Platform-native Authoring"
+    },
+    {
+      "id": "KNOW-RESEARCH-QUALITY",
+      "path": "research_source_quality.md",
+      "title": "Research Source Quality / Freshness / Representativeness"
+    },
+    {
+      "id": "KNOW-PORTFOLIO-BEHAVIOR",
+      "path": "portfolio_behavior_incrementality.md",
+      "title": "Portfolio Behavior / Cohort / Incrementality"
+    },
+    {
+      "id": "KNOW-FINAL-COPY",
+      "path": "final_copy_release.md",
+      "title": "Local-language Final Copy Release"
+    },
+    {
+      "id": "KNOW-PLATFORM-NATIVE-SYSTEMS",
+      "path": "platform_native_commerce_systems.md",
+      "title": "Platform-native Commerce Authoring Systems"
+    },
+    {
+      "id": "KNOW-EVIDENCE-INGESTION",
+      "path": "evidence_ingestion_lineage.md",
+      "title": "Research Evidence Ingestion / Dedup / Version Lineage"
+    },
+    {
+      "id": "KNOW-MARGINAL-CONTRIBUTION",
+      "path": "marginal_contribution_holdout.md",
+      "title": "Portfolio Switch / Holdout / Marginal Contribution"
+    },
+    {
+      "id": "KNOW-COPY-ITERATION",
+      "path": "copy_iteration_loop.md",
+      "title": "Local Copy Author / Review / Revise Loop"
+    },
+    {
+      "id": "KNOW-ASSET-PHOTO-WHY",
+      "path": "asset_photography_causal_reasoning.md",
+      "title": "Asset-level Photography Causal Reasoning"
+    },
+    {
+      "id": "KNOW-SOURCE-ADAPTERS",
+      "path": "source_adapter_incremental_research.md",
+      "title": "Source Adapter / Incremental Research"
+    },
+    {
+      "id": "KNOW-CAUSAL-EXPERIMENT",
+      "path": "causal_experiment_design.md",
+      "title": "Causal Experiment Design"
+    },
+    {
+      "id": "KNOW-HOST-COPY",
+      "path": "host_copy_authoring_orchestration.md",
+      "title": "Host / Model Final Copy Orchestration"
+    },
+    {
+      "id": "KNOW-SURFACE-PRODUCTION",
+      "path": "surface_production_contracts.md",
+      "title": "Surface Production Contracts"
+    },
+    {
+      "id": "KNOW-CMF-LIGHTING",
+      "path": "cmf_material_lighting.md",
+      "title": "CMF / Material-specific Lighting"
+    },
+    {
+      "id": "KNOW-ADAPTER-CURSOR",
+      "path": "adapter_family_cursor_checkpoint.md",
+      "title": "Adapter Families / Cursor / Checkpoint"
+    },
+    {
+      "id": "KNOW-ADVANCED-CAUSAL",
+      "path": "advanced_causal_design.md",
+      "title": "Cluster / Geo / CUPED / Sequential Experiment Design"
+    },
+    {
+      "id": "KNOW-TERMINOLOGY-MEMORY",
+      "path": "terminology_memory_consistency.md",
+      "title": "Terminology Memory / Cross-field Copy Consistency"
+    },
+    {
+      "id": "KNOW-PRODUCTION-BINDING",
+      "path": "production_contract_provider_binding.md",
+      "title": "Production Contract → Provider Job Binding"
+    },
+    {
+      "id": "KNOW-PRELIGHT-COLOR",
+      "path": "prelight_color_consistency.md",
+      "title": "Prelight / Exposure / Polarization / Color Consistency"
+    },
+    {
+      "id": "KNOW-MULTICATEGORY-SPECIFICITY",
+      "path": "multicategory_category_specificity.md",
+      "title": "Multi-category Commerce Specificity / Anti-template Reasoning"
+    },
+    {
+      "id": "KNOW-CATEGORY-COMMERCE-DEPTH",
+      "path": "category_commerce_depth.md",
+      "title": "Category-specific Objection / Proof / Offer / Message / Cadence Strategy"
+    },
+    {
+      "id": "KNOW-CATEGORY-EVIDENCE-RECONCILIATION",
+      "path": "category_evidence_reconciliation.md",
+      "title": "Category Prior × Current Evidence Reconciliation"
+    },
+    {
+      "id": "KNOW-OFFER-RESPONSE-EVIDENCE",
+      "path": "offer_response_evidence.md",
+      "title": "Offer Economics / Promo / Bundle / Repeat Evidence"
+    },
+    {
+      "id": "KNOW-EVIDENCE-QUALITY-WEIGHTING",
+      "path": "evidence_quality_weighted_reconciliation.md",
+      "title": "Evidence Quality Weighted Reconciliation"
+    },
+    {
+      "id": "KNOW-REVISION-INTEGRATION",
+      "path": "strategy_revision_integration.md",
+      "title": "Ads / Feedback / Market Learning Revision Integration"
+    },
+    {
+      "id": "KNOW-PRODUCTION-LEARNING-LOOP",
+      "path": "production_learning_loop.md",
+      "title": "Production / Review / Local Revision / Learning Loop"
+    },
+    {
+      "id": "KNOW-CREATIVE-SURFACE-CANONICAL",
+      "path": "creative_direction_surface_prompt_system.md",
+      "title": "Creative Direction → Surface → Per-Asset Prompt System"
+    },
+    {
+      "id": "KNOW-SEVEN-TOOLS",
+      "path": "seven_agent_first_class_contracts.md",
+      "purpose": "Closed-loop seven-tool capability contracts."
+    }
+  ]
+}

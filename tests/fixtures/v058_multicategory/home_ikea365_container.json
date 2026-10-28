@@ -1,0 +1,180 @@
+{
+  "project_id": "V058-IKEA365-HOME",
+  "planning_only": true,
+  "sku": "IKEA365-34OZ-GLASS-PLASTIC",
+  "product": {
+    "name": "IKEA 365+ Food container with lid",
+    "category": "home_kitchen",
+    "product_type": "rectangular food storage container with lid",
+    "primary_conversion_proposition": "Clear 34 oz glass storage with an airtight, leak-resistant plastic lid.",
+    "capacity": "34 oz",
+    "container_material": "glass",
+    "lid_material": "plastic",
+    "shape": "rectangular",
+    "airtight": "airtight lid",
+    "leak_resistant": "leak-resistant design",
+    "stacking": "stackable system"
+  },
+  "sources": [
+    {
+      "source_id": "SRC-IKEA-OFFICIAL",
+      "kind": "OFFICIAL_PRODUCT_PAGE_OR_CATEGORY",
+      "url": "https://www.ikea.com/us/en/cat/ikea-365-food-storage-49524/",
+      "verified_at": "2026-10-27"
+    },
+    {
+      "source_id": "SRC-CONTEXT",
+      "kind": "VALIDATION_CONTEXT"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "CLM-I-01",
+      "claim": "34 oz rectangular glass container with plastic lid.",
+      "status": "VERIFIED",
+      "evidence_level": "A",
+      "source_ids": [
+        "SRC-IKEA-OFFICIAL"
+      ]
+    },
+    {
+      "claim_id": "CLM-I-02",
+      "claim": "Airtight lid and leak-resistant design.",
+      "status": "VERIFIED",
+      "evidence_level": "A",
+      "source_ids": [
+        "SRC-IKEA-OFFICIAL"
+      ]
+    },
+    {
+      "claim_id": "CLM-I-03",
+      "claim": "Stackable food-storage system.",
+      "status": "VERIFIED",
+      "evidence_level": "A",
+      "source_ids": [
+        "SRC-IKEA-OFFICIAL"
+      ]
+    }
+  ],
+  "target": {
+    "target_id": "MY-TTS-V058",
+    "market": "Malaysia",
+    "jurisdiction": "MY",
+    "platform_family": "tiktok_shop",
+    "site": "MY",
+    "program": "cross_border",
+    "primary_locale": "en-MY",
+    "support_locales": [
+      "ms-MY"
+    ],
+    "visible_copy_locales": [
+      "en-MY",
+      "ms-MY"
+    ],
+    "prompt_instruction_locale": "zh-CN",
+    "surfaces": [
+      "SEARCH_RESULTS",
+      "PDP",
+      "GALLERY",
+      "PDP_VIDEO",
+      "CREATOR",
+      "FAQ"
+    ],
+    "category": "home_kitchen",
+    "currency": "MYR"
+  },
+  "audience_culture": {
+    "statements": [
+      {
+        "statement": "Use Malaysia-localized language hierarchy and avoid identity stereotyping.",
+        "status": "VERIFIED",
+        "confidence": 1.0,
+        "source_ids": [
+          "SRC-CONTEXT"
+        ],
+        "implications": [
+          "Keep en-MY and ms-MY separately reviewable."
+        ]
+      }
+    ],
+    "intersectionality": {
+      "geography": [
+        "Malaysia"
+      ],
+      "age": [
+        "adult"
+      ],
+      "lifestyle": [
+        "meal prep and home food storage"
+      ]
+    },
+    "visual_implications": [
+      "Use context only when it answers a purchase decision; do not add people as a default decoration."
+    ],
+    "copy_implications": [
+      "Transcreate by surface and decision job rather than literal translation."
+    ]
+  },
+  "shopper_questions": [
+    "What exactly is included?",
+    "Is 34 oz the right capacity for my meal prep?",
+    "What capacity does the 34 oz size provide in real use?",
+    "Will the lid help contain soups or sauces?",
+    "Can I stack it efficiently in the fridge?",
+    "What material am I getting and how transparent is the container?",
+    "How should the shape and lid closure be shown before I buy?"
+  ],
+  "listing_input": {
+    "fields": {
+      "title": "IKEA 365+ Food container with lid rectangular glass/plastic 34 oz",
+      "attributes": {
+        "capacity": "34 oz",
+        "container_material": "glass",
+        "lid_material": "plastic",
+        "shape": "rectangular"
+      },
+      "highlights": [
+        "Airtight lid",
+        "Leak-resistant design",
+        "Stackable system"
+      ],
+      "package": [
+        "1 rectangular glass container with plastic lid"
+      ],
+      "_source_refs": {
+        "title": [
+          "SRC-IKEA-OFFICIAL"
+        ],
+        "attributes": [
+          "SRC-IKEA-OFFICIAL"
+        ],
+        "highlights": [
+          "SRC-IKEA-OFFICIAL"
+        ],
+        "package": [
+          "SRC-IKEA-OFFICIAL"
+        ]
+      },
+      "_claim_refs": {
+        "highlights": [
+          "CLM-I-02",
+          "CLM-I-03"
+        ]
+      }
+    },
+    "keywords": []
+  },
+  "cmf": {
+    "color": "clear glass + translucent/white plastic lid",
+    "material": "clear glass container + plastic lid",
+    "finish": "transparent glossy glass + molded plastic",
+    "surface_behavior": {
+      "container": "transparent specular glass",
+      "lid": "molded semi-gloss plastic"
+    }
+  },
+  "compile_assets": true,
+  "production_run": {
+    "asset_ids": []
+  }
+}

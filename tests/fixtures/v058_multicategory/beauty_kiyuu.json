@@ -1,0 +1,146 @@
+{
+  "project_id": "V058-KIYUU-BEAUTY",
+  "planning_only": true,
+  "sku": "KIYUU-K01-GEL",
+  "product": {
+    "name": "KIYUU K01 Oil Control Anti Acne Moisturizing Gel",
+    "category": "beauty",
+    "product_type": "gel moisturiser",
+    "net_content": "30g / 1.01 oz",
+    "primary_conversion_proposition": "Daily gel moisturiser for oily & blemish-prone skin.",
+    "formula_facts": {
+      "salicylic_acid": "0.57%",
+      "niacinamide": "1%",
+      "panthenol": "2%",
+      "glycerin": "4.001%"
+    }
+  },
+  "sources": [
+    {
+      "source_id": "SRC-KIYUU-PACK",
+      "kind": "USER_PROVIDED_PRODUCT_TRUTH"
+    },
+    {
+      "source_id": "SRC-KIYUU-FORMULA",
+      "kind": "USER_PROVIDED_PRODUCT_TRUTH"
+    },
+    {
+      "source_id": "SRC-CONTEXT",
+      "kind": "USER_PROVIDED_CONTEXT"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "CLM-K-01",
+      "claim": "Daily gel moisturiser for oily & blemish-prone skin.",
+      "status": "APPROVED",
+      "evidence_level": "B",
+      "source_ids": [
+        "SRC-KIYUU-PACK"
+      ]
+    }
+  ],
+  "target": {
+    "target_id": "MY-TTS-V058",
+    "market": "Malaysia",
+    "jurisdiction": "MY",
+    "platform_family": "tiktok_shop",
+    "site": "MY",
+    "program": "cross_border",
+    "primary_locale": "en-MY",
+    "support_locales": [
+      "ms-MY"
+    ],
+    "visible_copy_locales": [
+      "en-MY",
+      "ms-MY"
+    ],
+    "prompt_instruction_locale": "zh-CN",
+    "surfaces": [
+      "SEARCH_RESULTS",
+      "PDP",
+      "GALLERY",
+      "PDP_VIDEO",
+      "CREATOR",
+      "FAQ"
+    ],
+    "category": "beauty",
+    "currency": "MYR"
+  },
+  "audience_culture": {
+    "statements": [
+      {
+        "statement": "Use Malaysia-localized language hierarchy and avoid identity stereotyping.",
+        "status": "VERIFIED",
+        "confidence": 1.0,
+        "source_ids": [
+          "SRC-CONTEXT"
+        ],
+        "implications": [
+          "Keep en-MY and ms-MY separately reviewable."
+        ]
+      }
+    ],
+    "intersectionality": {
+      "geography": [
+        "Malaysia"
+      ],
+      "age": [
+        "adult"
+      ],
+      "lifestyle": [
+        "daily skincare"
+      ]
+    },
+    "visual_implications": [
+      "Use context only when it answers a purchase decision; do not add people as a default decoration."
+    ],
+    "copy_implications": [
+      "Transcreate by surface and decision job rather than literal translation."
+    ]
+  },
+  "shopper_questions": [
+    "What is this product?",
+    "Is it relevant to oily or blemish-prone daily routines?",
+    "What verified formula facts support the proposition?",
+    "How does it fit into a daily routine?"
+  ],
+  "listing_input": {
+    "fields": {
+      "title": "KIYUU K01 Oil Control Anti Acne Moisturizing Gel 30g",
+      "highlights": [
+        "Daily gel moisturiser for oily & blemish-prone skin."
+      ],
+      "_source_refs": {
+        "title": [
+          "SRC-KIYUU-PACK"
+        ],
+        "highlights": [
+          "SRC-KIYUU-PACK"
+        ]
+      },
+      "_claim_refs": {
+        "highlights": [
+          "CLM-K-01"
+        ]
+      }
+    },
+    "keywords": [
+      {
+        "term": "oil control gel",
+        "cluster": "CORE",
+        "priority": 10,
+        "source_id": "SRC-CONTEXT"
+      }
+    ]
+  },
+  "cmf": {
+    "color": "warm neutral white with deep green brand graphics",
+    "material": "laminated cosmetic tube",
+    "finish": "semi-gloss print"
+  },
+  "compile_assets": true,
+  "production_run": {
+    "asset_ids": []
+  }
+}

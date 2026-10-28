@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "desired_output",
+    "execution",
+    "precision_boundaries"
+  ],
+  "properties": {
+    "desired_output": {
+      "type": "object"
+    },
+    "execution": {
+      "type": "object"
+    },
+    "approved_semantic_elements": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "precision_boundaries": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "internal_state_excluded": {
+      "type": "boolean"
+    }
+  }
+}

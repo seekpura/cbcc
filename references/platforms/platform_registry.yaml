@@ -1,0 +1,237 @@
+version: 0.5.8-multicategory-strategy-specificity-depth
+platforms:
+  shopee_br:
+    support: REFERENCE_SPECIALIZED
+    capabilities:
+    - listing
+    - image
+    - video
+    - pricing
+    - ads
+    - reviews
+    rules_status: REVERIFY_REQUIRED
+  mercadolivre_br:
+    support: REFERENCE_SPECIALIZED
+    capabilities:
+    - listing
+    - image
+    - video
+    - pricing
+    - ads
+    - reviews
+    rules_status: REVERIFY_REQUIRED
+  amazon:
+    support: ADAPTER_GENERAL
+    capabilities:
+    - listing
+    - image
+    - pricing
+    - ads
+    - a_plus
+    rules_status: VERIFIED_SITE_GENERIC
+    exact_packs:
+    - site: US
+      pack_id: amazon-us-current-2026-10-27
+      verified_at: '2026-10-27'
+      scope: site-generic listing/detail-page/image; category-specific guides/claims/fees/logistics
+        excluded
+    - site: US
+      pack_id: amazon-us-cosmetics-overlay-2026-10-27
+      verified_at: '2026-10-27'
+      scope: 'category overlay: cosmetics/beauty listing and compliance requirements'
+  tiktok_shop:
+    support: ADAPTER_GENERAL
+    capabilities:
+    - listing
+    - gallery
+    - shoppable_photos
+    - video
+    - creator
+    - live
+    - ads
+    - pricing
+    rules_status: VERIFIED_SITE_GENERIC
+    market_subadapters:
+    - MY
+    - SG
+    - ID
+    - PH
+    - TH
+    - VN
+    - US
+    - UK
+    exact_packs:
+    - site: MY
+      pack_id: tiktok-shop-my-current-2026-10-27
+      verified_at: '2026-10-27'
+      scope: site-generic listing/image/video; category claims/fees/logistics excluded
+    - site: MY
+      pack_id: tiktok-shop-my-beauty-overlay-2026-10-27
+      verified_at: '2026-10-27'
+      scope: 'category overlay: beauty listing guidance; regulatory approval and product-specific
+        claim substantiation excluded'
+    - site: US
+      pack_id: tiktok-shop-us-current-2026-10-27
+      verified_at: '2026-10-27'
+      scope: site-generic restricted-product qualification boundary; image dimensions/fees/fulfillment
+        excluded
+    - site: US
+      pack_id: tiktok-shop-us-beauty-overlay-2026-10-27
+      verified_at: '2026-10-27'
+      scope: 'category overlay: beauty qualification, shelf-life, skin-whitening claim
+        boundary and creator authenticity'
+  shopify:
+    support: ADAPTER_GENERAL
+    capabilities:
+    - listing
+    - pdp
+    - longform
+    - seo
+    - email
+    - ads
+    rules_status: REVERIFY_REQUIRED
+  noon_uae:
+    support: EXTENSION
+    capabilities:
+    - listing
+    - gallery
+    - pricing
+    - ads
+    rules_status: VERIFIED_SITE_GENERIC
+    exact_packs:
+    - site: AE
+      pack_id: noon-ae-images-current-2026-10-27
+      verified_at: '2026-10-27'
+      scope: image requirements only
+  noon_ksa:
+    support: EXTENSION
+    capabilities:
+    - listing
+    - gallery
+    - pricing
+    - ads
+    rules_status: REVERIFY_REQUIRED
+  ebay:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - image
+    - video
+    - pricing
+    - ads
+    - cx
+    rules_status: REVERIFY_REQUIRED
+  etsy:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - image
+    - video
+    - pricing
+    - ads
+    - cx
+    rules_status: REVERIFY_REQUIRED
+  walmart:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - image
+    - video
+    - pricing
+    - ads
+    - cx
+    rules_status: REVERIFY_REQUIRED
+  ozon:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - image
+    - video
+    - pricing
+    - ads
+    - cx
+    rules_status: REVERIFY_REQUIRED
+  wayfair:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - image
+    - video
+    - pricing
+    - ads
+    - cx
+    rules_status: REVERIFY_REQUIRED
+  lazada:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - gallery
+    - video
+    - creator
+    - ads
+    - pricing
+    - cx
+    rules_status: REVERIFY_REQUIRED
+  temu:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - gallery
+    - video
+    - ads
+    - pricing
+    - cx
+    rules_status: REVERIFY_REQUIRED
+  shopee:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - image
+    - video
+    - creator
+    - ads
+    - pricing
+    - cx
+    rules_status: VERIFIED_SITE_GENERIC
+    exact_packs:
+    - site: MY
+      pack_id: shopee-my-listing-current-2026-10-27
+      verified_at: '2026-10-27'
+      scope: listing accuracy/category/restricted-item responsibility; image rules
+        excluded
+  mercadolivre:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - image
+    - video
+    - ads
+    - pricing
+    - cx
+    rules_status: REVERIFY_REQUIRED
+  noon:
+    support: FAMILY_PLANNING
+    capabilities:
+    - listing
+    - search
+    - gallery
+    - video
+    - ads
+    - pricing
+    - cx
+    rules_status: VERIFIED_SITE_GENERIC
+    exact_packs:
+    - site: AE
+      pack_id: noon-ae-images-current-2026-10-27
+      verified_at: '2026-10-27'
+      scope: image requirements only; listing-copy/category claims/fees/logistics
+        excluded

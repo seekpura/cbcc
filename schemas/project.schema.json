@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cross Border Commerce Project",
+  "type": "object",
+  "required": [
+    "project_id",
+    "product",
+    "platform",
+    "market",
+    "mode",
+    "state"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "product": {
+      "type": "string",
+      "minLength": 1
+    },
+    "platform": {
+      "type": "string",
+      "minLength": 1
+    },
+    "market": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "enum": [
+        "DISCOVERY",
+        "STRATEGY",
+        "LISTING",
+        "VISUAL",
+        "COMPILE",
+        "PRODUCE",
+        "AUDIT",
+        "ITERATE",
+        "LOCAL_REVISION"
+      ]
+    },
+    "state": {
+      "enum": [
+        "NEW",
+        "TRUTH_READY",
+        "RESEARCH_READY",
+        "STRATEGY_READY",
+        "LISTING_READY",
+        "VISUAL_READY",
+        "ASSET_MAP_READY",
+        "COMPILED",
+        "PRODUCTION_READY",
+        "LAUNCHED",
+        "DATA_AVAILABLE",
+        "ITERATION_READY"
+      ]
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "freeze": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "TRUTH_FROZEN",
+          "STRATEGY_FROZEN",
+          "LISTING_FROZEN",
+          "VISUAL_FROZEN",
+          "ASSET_FROZEN"
+        ]
+      }
+    },
+    "strategy_version": {
+      "type": "string"
+    },
+    "package_version": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

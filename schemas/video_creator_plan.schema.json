@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","type":"object","required":["status","dynamic_count","assets"],"properties":{"dynamic_count":{"type":"integer","minimum":0},"fixed_duration_authority":{"type":"boolean"},"assets":{"type":"array"}}}

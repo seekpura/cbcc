@@ -1,0 +1,6 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "required":["locale","script","direction","line_break","profile_id"],
+  "properties":{"locale":{"type":"string"},"script":{"type":"string"},"direction":{"enum":["LTR","RTL"]},"line_break":{"type":"string"},"density":{"type":"string"},"notes":{"type":"array","items":{"type":"string"}},"profile_id":{"type":"string"}}
+}

@@ -1,0 +1,26 @@
+asset_id: LST-01
+asset_name: ""
+asset_type: IMAGE
+status: ACTIVATE
+
+platform: ""
+market: ""
+languages: []
+
+consumer_question: ""
+strategic_job: ""
+funnel_stage: ""
+race_stage: COMMUNICATION
+jtbd_role: ""
+
+production_mode: REAL_PRODUCT_COMPOSITE
+product_fidelity: LOCKED_PIXEL
+priority: P0
+
+dependencies: []
+source_ids: []
+claim_ids: []
+listing_reference: []
+
+success_metric: ""
+editable_fields: []

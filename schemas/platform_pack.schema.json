@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "pack_id",
+    "platform_family",
+    "site",
+    "status",
+    "capabilities",
+    "surfaces"
+  ],
+  "properties": {
+    "pack_id": {
+      "type": "string"
+    },
+    "platform_family": {
+      "type": "string"
+    },
+    "site": {
+      "type": "string"
+    },
+    "program": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": "string"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "business_capabilities": {
+      "type": "object"
+    },
+    "surfaces": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "surface_capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "rule_atoms": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "research_required_for": {
+      "type": "array"
+    },
+    "source_records": {
+      "type": "array"
+    },
+    "match": {
+      "type": "object",
+      "properties": {
+        "category": {},
+        "locale": {},
+        "surface": {}
+      }
+    }
+  }
+}

@@ -1,0 +1,87 @@
+pack_id: noon-ae-images-current-2026-10-27
+platform_family: noon
+site: AE
+program: null
+status: VERIFIED_SITE_GENERIC
+capabilities: [VISUAL, COMPLIANCE]
+business_capabilities:
+  planning_only: false
+  exact_site_rules: true
+  listing_copy_rules_included: false
+  category_claim_rules_included: false
+  fees_included: false
+  logistics_included: false
+surfaces: [GALLERY]
+surface_capabilities:
+  - surface: GALLERY
+    content_families: [VISUAL]
+    planning_role: product_representation
+rule_atoms:
+  - rule_id: NOON-AE-IMAGE-FORMAT
+    scope: {site: AE, surface: GALLERY, locale: ['*']}
+    statement: Product images must be JPEG or JPG, at least 660 pixels wide, at least 72 PPI, no more than 10 MB, and use RGB or sRGB.
+    source_url: https://helpcenter.noon.partners/en/category/product-listing/image-requirements-and-rejection-reasons-for-the-seller-sku
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: image
+      constraints: {formats: [JPEG, JPG], min_width: 660, min_ppi: 72, max_file_mb: 10, color_spaces: [RGB, sRGB]}
+  - rule_id: NOON-AE-PRIMARY-FRONT
+    scope: {site: AE, surface: GALLERY, locale: ['*']}
+    statement: The primary image should show a full front view of the sold product and use a pure white background except fashion, where light grey is recommended.
+    source_url: https://helpcenter.noon.partners/en/category/product-listing/image-requirements-and-rejection-reasons-for-the-seller-sku
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: primary_image
+      constraints: {front_view: true, full_product_visible: true, white_background_general: true, fashion_light_grey_recommended: true}
+  - rule_id: NOON-AE-PRIMARY-PACKAGING
+    scope: {site: AE, surface: GALLERY, locale: ['*']}
+    statement: The primary image should display the product outside its packaging; packaging elements should not appear unless the sold product itself requires the documented category exception.
+    source_url: https://helpcenter.noon.partners/en/category/product-listing/image-requirements-and-rejection-reasons-for-the-seller-sku
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: primary_image
+      constraints: {product_outside_packaging: true}
+  - rule_id: NOON-AE-PRIMARY-SHADOW
+    scope: {site: AE, surface: GALLERY, locale: ['*']}
+    statement: Light believable shadows are accepted on the primary image while hard shadows or hard reflections should be avoided.
+    source_url: https://helpcenter.noon.partners/en/category/product-listing/image-requirements-and-rejection-reasons-for-the-seller-sku
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: primary_image
+      constraints: {light_shadow_allowed: true, hard_shadow: false, hard_reflection: false}
+  - rule_id: NOON-AE-ALT-ACCURACY
+    scope: {site: AE, surface: GALLERY, locale: ['*']}
+    statement: Additional images must match the product title and description, show the actual sold product clearly, and must not imply accessories that are not included.
+    source_url: https://helpcenter.noon.partners/en/category/product-listing/image-requirements-and-rejection-reasons-for-the-seller-sku
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: additional_images
+      constraints: {match_listing: true, actual_product: true, non_included_accessories: false}
+  - rule_id: NOON-AE-ALT-OCCUPANCY
+    scope: {site: AE, surface: GALLERY, locale: ['*']}
+    statement: Products should have good visibility and cover about 70 to 80 percent of the image frame.
+    source_url: https://helpcenter.noon.partners/en/category/product-listing/image-requirements-and-rejection-reasons-for-the-seller-sku
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      asset_field: additional_images
+      constraints: {recommended_product_occupancy_pct: [70, 80]}
+source_records:
+  - source_id: NOON-AE-OFFICIAL-IMAGE-2026-10
+    kind: OFFICIAL_PLATFORM_POLICY
+    title: Image requirements and rejection reasons for the seller SKU
+    url: https://helpcenter.noon.partners/en/category/product-listing/image-requirements-and-rejection-reasons-for-the-seller-sku
+    verified_at: '2026-10-27'
+notes:
+  - This pack certifies only the image requirements captured above. Listing-copy rules, beauty claims, fees, fulfillment and ads remain outside scope.

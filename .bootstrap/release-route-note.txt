@@ -1,1 +1,0 @@
-Binary release route probe prepared for CBCC v0.6.7.

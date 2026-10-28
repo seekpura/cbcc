@@ -1,0 +1,30 @@
+pack_id: tiktok-shop-us-current-2026-10-27
+platform_family: tiktok_shop
+site: US
+program: null
+status: VERIFIED_SITE_GENERIC
+capabilities: [LISTING, CREATOR_AFFILIATE, COMPLIANCE]
+business_capabilities:
+  planning_only: false
+  exact_site_rules: true
+  category_qualification_possible: true
+surfaces: [PDP, CREATOR]
+rule_atoms:
+  - rule_id: TTS-US-RESTRICTED-PRODUCT-QUALIFICATION
+    scope: {site: US, locale: ['*']}
+    statement: Restricted products may require category-level or product-level qualification before listing, and approval is not guaranteed.
+    source_url: https://seller-us.tiktok.com/university/course?content_id=3238037484275457&learning_id=6037851293763342
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-27'
+    authority: OFFICIAL
+    payload:
+      rule_kind: restricted_product_qualification
+      constraints: {qualification_may_be_required: true}
+source_records:
+  - source_id: TTS-US-RESTRICTED-2026-04
+    kind: OFFICIAL_PLATFORM_POLICY
+    title: Restricted Products Policy - United States
+    url: https://seller-us.tiktok.com/university/course?content_id=3238037484275457&learning_id=6037851293763342
+    verified_at: '2026-10-27'
+notes:
+  - This base pack does not establish image dimensions, fees, fulfillment, or category-specific eligibility. Category overlays provide additional exact rules where current official evidence exists.

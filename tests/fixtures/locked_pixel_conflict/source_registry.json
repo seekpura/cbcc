@@ -1,0 +1,16 @@
+[
+  {
+    "source_id": "SRC-PACK-01",
+    "type": "PACKAGE_COPY",
+    "content": "30 ml",
+    "origin": "real packaging",
+    "supports": [
+      "volume"
+    ],
+    "does_not_support": [
+      "efficacy"
+    ],
+    "status": "VERIFIED",
+    "confidence": 1.0
+  }
+]

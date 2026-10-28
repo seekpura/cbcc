@@ -1,0 +1,58 @@
+pack_id: shopee-my-listing-current-2026-10-27
+platform_family: shopee
+site: MY
+program: null
+status: VERIFIED_SITE_GENERIC
+capabilities: [LISTING, SEARCH, CX, COMPLIANCE]
+business_capabilities:
+  planning_only: false
+  exact_site_rules: true
+  image_rules_included: false
+  category_claim_rules_included: false
+  fees_included: false
+  logistics_included: false
+surfaces: [SEARCH_RESULTS, PDP, FAQ]
+surface_capabilities:
+  - surface: PDP
+    content_families: [LISTING, CX]
+    planning_role: accurate_item_information
+rule_atoms:
+  - rule_id: SHOPEE-MY-LISTING-ACCURACY
+    scope: {site: MY, surface: [SEARCH_RESULTS, PDP], locale: ['*']}
+    statement: Sellers must keep item price, details, inventory and sales terms updated and must not post inaccurate or misleading information.
+    source_url: https://help.shopee.com.my/portal/4/article/77215
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload: {rule_kind: listing_accuracy}
+  - rule_id: SHOPEE-MY-CATEGORY-ACCURACY
+    scope: {site: MY, surface: PDP, locale: ['*']}
+    statement: Sellers are responsible for correctly categorising each product and following the current Seller Education Hub categorisation guidance.
+    source_url: https://help.shopee.com.my/portal/4/article/77215
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload:
+      listing_field: category
+      constraints: {correct_category_required: true}
+  - rule_id: SHOPEE-MY-RESTRICTED-ITEM-RESPONSIBILITY
+    scope: {site: MY, surface: PDP, locale: ['*']}
+    statement: Sellers are responsible for ensuring products comply with applicable laws and Shopee prohibited and restricted item policies before listing.
+    source_url: https://help.shopee.com.my/portal/4/article/77220-Prohibited%20and%20Restricted%20Items%20policy?seo=1
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-25'
+    authority: OFFICIAL
+    payload: {rule_kind: prohibited_restricted_item_responsibility}
+source_records:
+  - source_id: SHOPEE-MY-OFFICIAL-TOS-2026-10
+    kind: OFFICIAL_PLATFORM_POLICY
+    title: Shopee Terms of Service - Malaysia
+    url: https://help.shopee.com.my/portal/4/article/77215
+    verified_at: '2026-10-27'
+  - source_id: SHOPEE-MY-OFFICIAL-RESTRICTED-2026-10
+    kind: OFFICIAL_PLATFORM_POLICY
+    title: Prohibited and Restricted Items Policy - Malaysia
+    url: https://help.shopee.com.my/portal/4/article/77220-Prohibited%20and%20Restricted%20Items%20policy?seo=1
+    verified_at: '2026-10-27'
+notes:
+  - This pack intentionally does not assert product-image dimensions or gallery limits because a current official seller image rule was not verified in this research pass.

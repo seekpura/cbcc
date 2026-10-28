@@ -1,0 +1,41 @@
+pack_id: tiktok-shop-my-beauty-overlay-2026-10-27
+platform_family: tiktok_shop
+site: MY
+program: null
+match:
+  category: [beauty, skincare, beauty_personal_care, cosmetics]
+status: VERIFIED_CATEGORY_OVERLAY
+capabilities: [LISTING, VISUAL, CREATOR_AFFILIATE, COMPLIANCE]
+business_capabilities:
+  category_overlay: true
+  beauty_listing_guidance_included: true
+surfaces: [PDP, GALLERY, CREATOR]
+rule_atoms:
+  - rule_id: TTS-BEAUTY-GLOBAL-LISTING-ACCURACY
+    scope: {site: MY, category: [beauty, skincare, beauty_personal_care, cosmetics], surface: [PDP, GALLERY], locale: ['*']}
+    statement: Beauty and personal care titles, attributes, images and claims should accurately represent the product and avoid exaggerated or misleading presentation.
+    source_url: https://seller-us.tiktok.com/university/essay?knowledge_id=3026065007494925
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-27'
+    authority: OFFICIAL
+    payload:
+      rule_kind: category_listing_accuracy
+      constraints: {accurate_title_attributes_images_claims: true, misleading_presentation: false}
+  - rule_id: TTS-BEAUTY-GLOBAL-TITLE-STRUCTURE
+    scope: {site: MY, category: [beauty, skincare, beauty_personal_care, cosmetics], surface: PDP, locale: ['*']}
+    statement: TikTok Shop recommends beauty titles identify the brand when authorized, core category, key features or efficacy language, target audience or skin/hair type when relevant, and specification.
+    source_url: https://seller-us.tiktok.com/university/essay?knowledge_id=3026065007494925
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-27'
+    authority: OFFICIAL
+    payload:
+      listing_field: title
+      constraints: {category_guidance: true, brand_if_authorized: true, core_category: true, specification_recommended: true}
+source_records:
+  - source_id: TTS-GLOBAL-BEAUTY-LISTING-2026-09
+    kind: OFFICIAL_PLATFORM_POLICY
+    title: Guidelines For Listing Beauty & Personal Care Products
+    url: https://seller-us.tiktok.com/university/essay?knowledge_id=3026065007494925
+    verified_at: '2026-10-27'
+notes:
+  - The source states that the beauty listing guidance applies globally. This overlay captures listing guidance only; Malaysia regulatory approval, cosmetic notification, ingredient legality and product-specific claim substantiation remain separate research/compliance questions.

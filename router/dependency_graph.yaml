@@ -1,0 +1,133 @@
+version: 1
+
+modules:
+  00_truth_intake:
+    requires: []
+    produces:
+      - source_registry
+      - product_facts
+      - spec_table
+      - claim_ledger
+      - real_asset_registry
+
+  01_market_intelligence:
+    requires: [source_registry]
+    produces:
+      - market_analysis
+      - competitor_analysis
+      - price_opportunity
+      - configuration_opportunity
+
+  02_product_strategy:
+    requires: [product_facts, market_analysis]
+    produces:
+      - product_strategy
+      - sku_roles
+      - unit_economics
+
+  03_audience_culture:
+    requires: [product_facts]
+    produces:
+      - audience
+      - jtbd
+      - culture_constraints
+      - intersectionality
+
+  04_positioning:
+    requires: [product_strategy, audience, jtbd]
+    produces:
+      - positioning
+      - primary_conversion_proposition
+      - information_hierarchy
+
+  05_listing_conversion:
+    requires:
+      - product_facts
+      - claim_ledger
+      - positioning
+      - information_hierarchy
+    produces:
+      - listing
+      - listing_traceability
+      - forbidden_words
+
+  06_visual_strategy:
+    requires:
+      - product_facts
+      - audience
+      - culture_constraints
+      - listing
+    produces:
+      - visual_strategy
+      - photography_framework
+      - casting_strategy
+
+  07_asset_architecture:
+    requires:
+      - listing
+      - visual_strategy
+      - claim_ledger
+      - real_asset_registry
+    produces:
+      - master_asset_map
+
+  08_asset_compiler:
+    requires:
+      - source_registry
+      - product_facts
+      - claim_ledger
+      - listing
+      - visual_strategy
+      - master_asset_map
+    produces:
+      - compiled_asset_package
+
+  09_production_runner:
+    requires: [compiled_asset_package]
+    produces:
+      - production_outputs
+      - qa_report
+
+  10_video_creator:
+    requires:
+      - listing
+      - visual_strategy
+      - claim_ledger
+    produces:
+      - video_assets
+
+  11_platform_localization:
+    requires: []
+    produces:
+      - verified_platform_rule_cards
+
+  12_compliance:
+    requires:
+      - source_registry
+      - claim_ledger
+    produces:
+      - compliance_report
+
+  13_advertising_economics:
+    requires:
+      - unit_economics
+    produces:
+      - ad_diagnosis
+      - break_even_roas
+      - allowable_cpc
+
+  14_feedback_intelligence:
+    requires:
+      - product_facts
+      - listing
+    produces:
+      - feedback_diagnosis
+      - root_causes
+
+  15_causal_iteration:
+    requires:
+      - feedback_diagnosis
+      - root_causes
+    produces:
+      - revision_request
+      - experiment_plan

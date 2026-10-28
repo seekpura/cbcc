@@ -1,0 +1,18 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "type":"object",
+  "required":["project_id","revision"],
+  "properties":{
+    "project_id":{"type":"string"},
+    "revision":{"type":"integer","minimum":0},
+    "accept":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "hold":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "revise":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "accept_items":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "hold_items":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+    "revise_items":{"type":"array","items":{"oneOf":[{"type":"string"},{"type":"object","required":["item_id"],"properties":{"item_id":{"type":"string"},"requested_change":{"type":"string"},"allowed_fields":{"type":"array","items":{"type":"string"},"uniqueItems":true},"note":{"type":"string"}}}]}},
+    "item_revision_requests":{"type":"object"},
+    "notes":{"type":"object"},
+    "item_notes":{"type":"object"}
+  }
+}

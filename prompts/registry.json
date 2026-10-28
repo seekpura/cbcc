@@ -1,0 +1,230 @@
+{
+  "version": "0.6.1-hard-contract-html",
+  "prompts": [
+    {
+      "id": "PROMPT-MASTER-STRATEGY",
+      "path": "master_strategy_authoring.md",
+      "purpose": "Full nine-part strategy authority with WHY trace."
+    },
+    {
+      "id": "PROMPT-ASSET-COMPILER",
+      "path": "../references/ASSET_COMPILER_SPEC.md",
+      "purpose": "Compile approved asset strategy into independent production packages."
+    },
+    {
+      "id": "PROMPT-MARKET-STRATEGY",
+      "path": "market_strategy_interpretation.md",
+      "purpose": "Interpret deterministic market evidence into commercial decisions."
+    },
+    {
+      "id": "PROMPT-SKU-OFFER",
+      "path": "product_sku_offer_strategy.md",
+      "purpose": "Dynamic SKU and offer strategy."
+    },
+    {
+      "id": "PROMPT-POSITIONING",
+      "path": "positioning_message_architecture.md",
+      "purpose": "Positioning and message hierarchy with WHY."
+    },
+    {
+      "id": "PROMPT-LISTING",
+      "path": "listing_conversion_architecture.md",
+      "purpose": "Search/listing conversion architecture."
+    },
+    {
+      "id": "PROMPT-VISUAL-PHOTO",
+      "path": "visual_photography_strategy.md",
+      "purpose": "Visual and photography rationale."
+    },
+    {
+      "id": "PROMPT-PLATFORM-MATRIX",
+      "path": "platform_content_matrix.md",
+      "purpose": "Platform-native content matrix."
+    },
+    {
+      "id": "PROMPT-ASSET-CURATION",
+      "path": "dynamic_asset_curation.md",
+      "purpose": "Dynamic asset reason-to-exist curation."
+    },
+    {
+      "id": "PROMPT-CULTURE",
+      "path": "culture_intersectionality.md",
+      "purpose": "Culture/intersectionality execution."
+    },
+    {
+      "id": "PROMPT-MEASUREMENT",
+      "path": "measurement_iteration.md",
+      "purpose": "Measurement and causal iteration."
+    },
+    {
+      "id": "PROMPT-TRUTH-VALUE",
+      "path": "truth_value_translation.md",
+      "purpose": "Product fact/claim → value ladder with claim boundaries."
+    },
+    {
+      "id": "PROMPT-ECONOMICS",
+      "path": "economics_offer_strategy.md",
+      "purpose": "Unit economics → pricing/offer/affiliate/paid strategy."
+    },
+    {
+      "id": "PROMPT-ADS",
+      "path": "advertising_diagnosis.md",
+      "purpose": "Economics-aware advertising causal diagnosis."
+    },
+    {
+      "id": "PROMPT-FEEDBACK",
+      "path": "feedback_revision_routing.md",
+      "purpose": "Review/return/CS → product defect vs communication revision routing."
+    },
+    {
+      "id": "PROMPT-COMPETITOR-INTEL",
+      "path": "competitor_listing_review_intelligence.md",
+      "purpose": "Competitor listing/message/offer/proof × review intelligence without semantic invention."
+    },
+    {
+      "id": "PROMPT-PORTFOLIO-STRATEGY",
+      "path": "sku_portfolio_cannibalization.md",
+      "purpose": "Multi-SKU overlap, cannibalization, trade-up and lifecycle architecture."
+    },
+    {
+      "id": "PROMPT-TRANScreation-AUTHORING",
+      "path": "transcreation_native_authoring.md",
+      "purpose": "Locale × field/surface transcreation and platform-native authoring."
+    },
+    {
+      "id": "PROMPT-RESEARCH-QUALITY",
+      "path": "research_source_quality.md",
+      "purpose": "Source-level freshness, scope and representativeness interpretation for market/competitor/customer research."
+    },
+    {
+      "id": "PROMPT-PORTFOLIO-BEHAVIOR",
+      "path": "portfolio_behavior_incrementality.md",
+      "purpose": "Behavior/cohort/incrementality validation for multi-SKU portfolio decisions."
+    },
+    {
+      "id": "PROMPT-FINAL-COPY",
+      "path": "final_copy_local_authoring.md",
+      "purpose": "Generate and review locale-specific Final Copy under truth/claim/platform/culture invariants."
+    },
+    {
+      "id": "PROMPT-PLATFORM-NATIVE-SYSTEMS",
+      "path": "platform_native_commerce_systems.md",
+      "purpose": "TikTok Shop / Shopee / Amazon / DTC native authoring systems from one Strategy Authority."
+    },
+    {
+      "id": "PROMPT-EVIDENCE-INGESTION",
+      "path": "evidence_ingestion_lineage.md",
+      "purpose": "Source dedup/version/provenance interpretation without semantic invention."
+    },
+    {
+      "id": "PROMPT-MARGINAL-CONTRIBUTION",
+      "path": "marginal_contribution_holdout.md",
+      "purpose": "Switch/holdout/net marginal contribution portfolio interpretation."
+    },
+    {
+      "id": "PROMPT-COPY-ITERATION",
+      "path": "copy_iteration_loop.md",
+      "purpose": "Version-bound locale copy author/revise/re-review workflow."
+    },
+    {
+      "id": "PROMPT-ASSET-PHOTO-WHY",
+      "path": "asset_photography_causal_reasoning.md",
+      "purpose": "Asset-level photography parameter causal reasoning from decision job and CMF."
+    },
+    {
+      "id": "PROMPT-SOURCE-ADAPTERS",
+      "path": "source_adapter_incremental_research.md",
+      "purpose": "Source adapter/schema map/incremental refresh interpretation."
+    },
+    {
+      "id": "PROMPT-CAUSAL-EXPERIMENT",
+      "path": "causal_experiment_design.md",
+      "purpose": "Experiment design, pre-period balance, MDE/power and interference reasoning."
+    },
+    {
+      "id": "PROMPT-HOST-COPY",
+      "path": "host_copy_authoring_orchestration.md",
+      "purpose": "Host/model locale copy author/revise orchestration with version-bound review."
+    },
+    {
+      "id": "PROMPT-SURFACE-PRODUCTION",
+      "path": "surface_production_contracts.md",
+      "purpose": "Per-surface native production contract reasoning."
+    },
+    {
+      "id": "PROMPT-CMF-LIGHTING",
+      "path": "cmf_material_lighting.md",
+      "purpose": "Shot-level CMF/material-specific lighting reasoning."
+    },
+    {
+      "id": "PROMPT-ADAPTER-CURSOR",
+      "path": "adapter_family_cursor_checkpoint.md",
+      "purpose": "Marketplace/search/review adapter-family cursor/checkpoint and resumability reasoning."
+    },
+    {
+      "id": "PROMPT-ADVANCED-CAUSAL",
+      "path": "advanced_causal_design.md",
+      "purpose": "Cluster/geo/CUPED/sequential experiment interpretation without causal overclaiming."
+    },
+    {
+      "id": "PROMPT-TERMINOLOGY-MEMORY",
+      "path": "terminology_memory_consistency.md",
+      "purpose": "Locale terminology-memory and cross-field copy consistency."
+    },
+    {
+      "id": "PROMPT-PRODUCTION-BINDING",
+      "path": "production_contract_provider_binding.md",
+      "purpose": "Bind surface/platform/photography production contracts into frozen provider jobs."
+    },
+    {
+      "id": "PROMPT-PRELIGHT-COLOR",
+      "path": "prelight_color_consistency.md",
+      "purpose": "Prelight, test-shot, exposure ratio, polarization and cross-asset color-consistency planning."
+    },
+    {
+      "id": "PROMPT-MULTICATEGORY-SPECIFICITY",
+      "path": "multicategory_strategy_debias.md",
+      "purpose": "Prevent beauty-template reuse by forcing category-specific decision, surface and photography reasoning."
+    },
+    {
+      "id": "PROMPT-CATEGORY-COMMERCE-DEPTH",
+      "path": "category_commerce_strategy_debias.md",
+      "purpose": "Force category-specific objection, proof, offer, message and content-cadence reasoning without inventing product facts."
+    },
+    {
+      "id": "PROMPT-CATEGORY-EVIDENCE-RECONCILIATION",
+      "path": "category_evidence_reconciliation.md",
+      "purpose": "Reconcile category priors against current project and market evidence without creating Product Truth."
+    },
+    {
+      "id": "PROMPT-OFFER-RESPONSE-EVIDENCE",
+      "path": "offer_response_evidence.md",
+      "purpose": "Validate category Offer hypotheses with contribution, promo response, bundle affinity, lifecycle and incrementality evidence."
+    },
+    {
+      "id": "PROMPT-EVIDENCE-QUALITY-WEIGHTING",
+      "path": "evidence_quality_weighted_reconciliation.md",
+      "purpose": "Weight market/search/review/competitor evidence by freshness, traceability, representativeness metadata, scope, explicit source quality and agreement before reordering strategy."
+    },
+    {
+      "id": "PROMPT-REVISION-INTEGRATION",
+      "path": "strategy_revision_integration.md",
+      "purpose": "Route Ads/Feedback/Market learning into local strategy revisions while freezing unrelated layers."
+    },
+    {
+      "id": "PROMPT-PRODUCTION-LEARNING-LOOP",
+      "path": "production_learning_loop.md",
+      "purpose": "Interpret production/review/local-revision/post-change evidence into bounded Strategy Authority learning."
+    },
+    {
+      "id": "PROMPT-CREATIVE-SURFACE-CANONICAL",
+      "path": "creative_direction_surface_prompt_compiler.md",
+      "purpose": "Compile divergent creative directions, dynamic surface representation and per-asset Design Card into executable CN/EN canonical production prompts."
+    },
+    {
+      "id": "PROMPT-SEVEN-TOOLS",
+      "path": "seven_agent_orchestration.md",
+      "purpose": "First-class closed-loop orchestration of Market/Product/Listing/Image/Video/Ads/Review tools."
+    }
+  ]
+}

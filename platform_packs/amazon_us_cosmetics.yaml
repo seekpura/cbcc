@@ -1,0 +1,41 @@
+pack_id: amazon-us-cosmetics-overlay-2026-10-27
+platform_family: amazon
+site: US
+program: null
+match:
+  category: [beauty, skincare, beauty_personal_care, cosmetics]
+status: VERIFIED_CATEGORY_OVERLAY
+capabilities: [LISTING, VISUAL, COMPLIANCE]
+business_capabilities:
+  category_overlay: true
+  cosmetics_policy_included: true
+surfaces: [SEARCH_RESULTS, PDP, GALLERY]
+rule_atoms:
+  - rule_id: AMZ-US-COSMETICS-PDP-ATTRIBUTES
+    scope: {site: US, category: [beauty, skincare, beauty_personal_care, cosmetics], surface: PDP, locale: ['*']}
+    statement: Amazon US cosmetics product detail pages require core listing attributes including item name, product identifier/type, brand, age range, manufacturer, product features and number of items; children’s cosmetics have additional caution/age fields.
+    source_url: https://sellercentral.amazon.com/help/hub/reference/external/G200164470?itemid=201817720&locale=en-us
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-27'
+    authority: OFFICIAL
+    payload:
+      listing_field: cosmetics_attributes
+      constraints:
+        required_fields: [item_name, product_identifier_and_type, brand_name, age_range_description, manufacturer, product_features, number_of_items]
+        childrens_cosmetics_additional_fields: true
+  - rule_id: AMZ-US-COSMETICS-US-COMPLIANCE
+    scope: {site: US, category: [beauty, skincare, beauty_personal_care, cosmetics], locale: ['*']}
+    statement: Cosmetics sold in the Amazon US store must comply with applicable US laws and regulations; products that are both cosmetics and drugs must meet the requirements for both product types.
+    source_url: https://sellercentral.amazon.com/help/hub/reference/external/G200164470?locale=en-
+    verified_at: '2026-10-27'
+    expires_at: '2027-01-27'
+    authority: OFFICIAL
+    payload: {rule_kind: category_compliance_boundary, constraints: {us_law_compliance_required: true, dual_cosmetic_drug_dual_requirements: true}}
+source_records:
+  - source_id: AMZ-US-COSMETICS-2026-10
+    kind: OFFICIAL_PLATFORM_POLICY
+    title: Cosmetics policy - Amazon US
+    url: https://sellercentral.amazon.com/help/hub/reference/external/G200164470?itemid=201817720&locale=en-us
+    verified_at: '2026-10-27'
+notes:
+  - This overlay captures category-specific Amazon listing/compliance requirements from the cited Seller Central policy. It does not establish FDA approval, testing completion, or legal compliance for a particular SKU.

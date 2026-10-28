@@ -1,0 +1,83 @@
+{
+  "project_id": "V059-ELECTRONICS-POWERBANK",
+  "product": {
+    "name": "Validation USB-C Power Bank",
+    "category": "electronics",
+    "product_type": "USB-C power bank",
+    "primary_conversion_proposition": "Portable USB-C charging with a compact travel-oriented format.",
+    "battery_capacity": "10000 mAh nominal",
+    "ports": "USB-C input/output; USB-A output",
+    "max_output": "20 W declared fixture value",
+    "compatibility": "USB charging compatibility must be verified per target device/protocol",
+    "package_contents": "power bank + cable",
+    "warranty": "12-month fixture warranty fact for validation only"
+  },
+  "target": {
+    "target_id": "MY-TTS-V059",
+    "market": "Malaysia",
+    "jurisdiction": "MY",
+    "platform_family": "tiktok_shop",
+    "site": "MY",
+    "program": "cross_border",
+    "primary_locale": "en-MY",
+    "support_locales": [
+      "ms-MY"
+    ],
+    "visible_copy_locales": [
+      "en-MY",
+      "ms-MY"
+    ],
+    "prompt_instruction_locale": "zh-CN",
+    "surfaces": [
+      "SEARCH_RESULTS",
+      "PDP",
+      "GALLERY",
+      "PDP_VIDEO",
+      "CREATOR",
+      "FAQ"
+    ],
+    "currency": "MYR",
+    "category": "electronics"
+  },
+  "shopper_questions": [
+    "What is this power bank?",
+    "Will it work with my phone, cable and charging protocol?",
+    "What charging performance is actually supported and under what conditions?",
+    "How do I set it up and use the ports?",
+    "What warranty or service route applies?",
+    "What exactly is included in the box?"
+  ],
+  "listing_input": {
+    "fields": {
+      "title": "Validation USB-C Power Bank 10000mAh 20W",
+      "attributes": {
+        "capacity": "10000mAh",
+        "ports": "USB-C / USB-A",
+        "max_output": "20W"
+      },
+      "package": [
+        "Power bank",
+        "Cable"
+      ],
+      "faq": [
+        "Compatibility depends on target device and protocol; verify before purchase."
+      ],
+      "_source_refs": {
+        "title": [
+          "SRC-EL"
+        ],
+        "attributes": [
+          "SRC-EL"
+        ],
+        "package": [
+          "SRC-EL"
+        ],
+        "faq": [
+          "SRC-EL"
+        ]
+      }
+    },
+    "keywords": []
+  },
+  "compile_assets": true
+}

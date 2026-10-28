@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "job_id",
+    "asset_id",
+    "provider",
+    "adapter",
+    "production_mode",
+    "package_hash",
+    "provider_contract",
+    "execution_policy",
+    "result_contract",
+    "production_quality_contract",
+    "execution_brief"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string"
+    },
+    "asset_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "adapter": {
+      "type": "string"
+    },
+    "production_mode": {
+      "type": "string"
+    },
+    "package_hash": {
+      "type": "string",
+      "minLength": 32
+    },
+    "package_dir": {
+      "type": "string"
+    },
+    "provider_contract": {
+      "type": "object"
+    },
+    "revision_scope": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "execution_policy": {
+      "type": "object"
+    },
+    "result_contract": {
+      "type": "object"
+    },
+    "production_quality_contract": {
+      "type": "object"
+    },
+    "execution_brief": {
+      "type": "object"
+    }
+  }
+}

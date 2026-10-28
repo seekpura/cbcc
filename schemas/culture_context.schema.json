@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string"
+    },
+    "statements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "statement",
+          "status"
+        ],
+        "properties": {
+          "statement": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "VERIFIED",
+              "LIKELY",
+              "ASSUMPTION",
+              "PENDING"
+            ]
+          },
+          "confidence": {},
+          "source_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "implications": {
+            "type": "array"
+          }
+        }
+      }
+    },
+    "intersectionality": {
+      "type": "object"
+    },
+    "casting_constraints": {
+      "type": "object"
+    },
+    "visual_implications": {
+      "type": "array"
+    },
+    "copy_implications": {
+      "type": "array"
+    },
+    "race_ethnicity": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array"
+        },
+        "source_ids": {
+          "type": "array"
+        },
+        "status": {
+          "type": "string"
+        },
+        "relevance": {
+          "type": "array"
+        },
+        "behavior_inference_allowed": {
+          "const": false
+        }
+      }
+    }
+  }
+}

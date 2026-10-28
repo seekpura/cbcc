@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "assets"
+  ],
+  "properties": {
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "asset_id",
+          "consumer_question",
+          "strategic_job",
+          "production_mode",
+          "status"
+        ],
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "consumer_question": {
+            "type": "string"
+          },
+          "strategic_job": {
+            "type": "string"
+          },
+          "production_mode": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ACTIVATE",
+              "CONDITIONAL",
+              "HOLD",
+              "BLOCKED"
+            ]
+          },
+          "approved_visual_elements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blocked_visual_implications": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "asset_name": {
+            "type": "string"
+          },
+          "surface": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "family": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "purchase_barrier": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "belief_target": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reason_to_exist": {
+            "type": "string"
+          },
+          "incremental_information": {
+            "type": "string"
+          },
+          "handoff": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "product_fidelity": {
+            "type": "string"
+          },
+          "source_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "precision_boundaries": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visible_copy": {
+            "type": "object"
+          },
+          "creative_brief": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

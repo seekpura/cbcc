@@ -1,0 +1,30 @@
+pack_id: amazon-family-planning
+platform_family: amazon
+site: '*'
+program: null
+status: FAMILY_PLANNING_ONLY
+capabilities:
+- LISTING
+- SEARCH
+- OFFER_PROMOTION
+- VISUAL
+- VIDEO
+- PAID
+- CX
+- MEASUREMENT
+- COMPLIANCE
+business_capabilities:
+  planning_only: true
+surfaces:
+- SEARCH_RESULTS
+- PDP
+- GALLERY
+- PDP_VIDEO
+- PAID_AD
+- FAQ
+rule_atoms: []
+research_required_for:
+- SUBMISSION_RULES
+- CATEGORY_CLAIM_RULES
+- FEES_AND_LOGISTICS_WHEN_RELEVANT
+source_records: []

@@ -1,1 +1,0 @@
-CBCC recovery transport locked to canonical v0.6.7 archive SHA256 90f4421e6a2df07c7cdc63c07741714edfb136f9290b5277349c1046aca73abd.

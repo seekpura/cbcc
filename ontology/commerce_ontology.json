@@ -1,0 +1,1213 @@
+{
+  "version": "0.6.1-hard-contract-html",
+  "entities": [
+    "ProductTruth",
+    "Source",
+    "Fact",
+    "Claim",
+    "Evidence",
+    "SKU",
+    "SKUFamily",
+    "Offer",
+    "Variant",
+    "Bundle",
+    "Packaging",
+    "Market",
+    "Competitor",
+    "PriceBand",
+    "Configuration",
+    "Audience",
+    "CultureContext",
+    "IdentityContext",
+    "TargetContext",
+    "Platform",
+    "Site",
+    "Program",
+    "Surface",
+    "Locale",
+    "Positioning",
+    "ValueProposition",
+    "Message",
+    "Objection",
+    "DecisionJob",
+    "RACEStage",
+    "ContentObject",
+    "Asset",
+    "PhotographyContract",
+    "CMFContract",
+    "ProviderJob",
+    "ReviewDecision",
+    "Experiment",
+    "Metric",
+    "FeedbackIssue",
+    "StrategyDecision",
+    "MessageHierarchy",
+    "ListingArchitecture",
+    "AssetPortfolio",
+    "PerformanceDiagnosis",
+    "RevisionAction",
+    "KeywordIntent",
+    "UnitEconomics",
+    "SearchDemand",
+    "CompetitorCluster",
+    "MarketOpportunity",
+    "OfferRoom",
+    "SharedGrowthBudget",
+    "SurfaceNeed",
+    "BusinessHypothesis",
+    "TranscreationContract",
+    "IncrementalityEvidence",
+    "CompetitorListingObservation",
+    "CustomerVoiceTheme",
+    "CannibalizationHypothesis",
+    "TradeUpStep",
+    "LifecycleOfferRole",
+    "LocaleAuthoringTask",
+    "ResearchDataset",
+    "ResearchSourceQuality",
+    "BehaviorObservation",
+    "CohortObservation",
+    "PortfolioIncrementalityEvidence",
+    "FinalCopy",
+    "CopyReview",
+    "NativeAuthoringSystem",
+    "EvidenceFingerprint",
+    "SourceVersion",
+    "SourceLineage",
+    "SwitchObservation",
+    "HoldoutExperiment",
+    "MarginalContribution",
+    "CopyVersion",
+    "CopyRevisionTask",
+    "SurfaceAuthoringContract",
+    "AssetPhotographyReasoning",
+    "SourceAdapter",
+    "RefreshState",
+    "ResearchChangeSet",
+    "SemanticDuplicateCandidate",
+    "ExperimentDesign",
+    "PowerPlan",
+    "BalanceDiagnostic",
+    "InterferenceRisk",
+    "HostAuthoringResponse",
+    "SurfaceProductionContract",
+    "MaterialLightingProfile",
+    "ShotLightingReasoning",
+    "AdapterCheckpoint",
+    "CursorWindow",
+    "ClusterDesign",
+    "GeoExperiment",
+    "CUPEDPlan",
+    "SequentialMonitoringPlan",
+    "TerminologyMemory",
+    "TerminologyAudit",
+    "ProductionContractBinding",
+    "PrelightPlan",
+    "LightingDiagram",
+    "ExposureRatioPlan",
+    "PolarizationPlan",
+    "ColorConsistencyPlan",
+    "CategoryDecisionProfile",
+    "DecisionIntent",
+    "CategoryPhotographyPlan",
+    "CategoryCommerceProfile",
+    "ObjectionPriority",
+    "ProofHierarchy",
+    "OfferArchitecture",
+    "ContentCadence",
+    "EvidencePriority",
+    "CategoryEvidenceReconciliation",
+    "ProofEvidenceCondition",
+    "PromoResponseObservation",
+    "BundleAffinityObservation",
+    "RepeatReplacementCycle",
+    "PlatformCategoryIntersection",
+    "EvidenceQualityWeight",
+    "MarketEvidenceFitContract",
+    "StrategyRevisionRoute",
+    "CapabilityIntegrationMap",
+    "LocalRevisionRequest",
+    "LocalRevisionLineage",
+    "RevisionProviderJob",
+    "RevisionProviderResult",
+    "LearningCycle",
+    "StrategyLearningOverlay",
+    "DecisionQuestionAudit",
+    "StrategyHostAuthoringRequest",
+    "StrategyAnnotationApplication",
+    "ProductVisualIntelligence",
+    "FoundationAsset",
+    "CreativeDirection",
+    "CreativeCouncil",
+    "CreativeAnchor",
+    "SurfaceArchitecture",
+    "InformationAssetization",
+    "ProductPresence",
+    "SurfaceCopyBudget",
+    "VisualExpressionVariant",
+    "DesignCard",
+    "CanonicalPromptContract",
+    "RendererRecipe",
+    "PaidCampaignArchitecture",
+    "CreatorVideoPlan",
+    "CreativeOpportunity",
+    "CreativeOpportunityUniverse",
+    "DirectionSynthesis"
+  ],
+  "relations": [
+    {
+      "from": "Fact",
+      "relation": "supported_by",
+      "to": "Source"
+    },
+    {
+      "from": "Claim",
+      "relation": "supported_by",
+      "to": "Evidence"
+    },
+    {
+      "from": "Claim",
+      "relation": "derived_from",
+      "to": "Fact"
+    },
+    {
+      "from": "SKU",
+      "relation": "belongs_to",
+      "to": "SKUFamily"
+    },
+    {
+      "from": "Offer",
+      "relation": "sells",
+      "to": "SKU"
+    },
+    {
+      "from": "TargetContext",
+      "relation": "combines",
+      "to": "Market"
+    },
+    {
+      "from": "TargetContext",
+      "relation": "combines",
+      "to": "Platform"
+    },
+    {
+      "from": "TargetContext",
+      "relation": "combines",
+      "to": "Audience"
+    },
+    {
+      "from": "TargetContext",
+      "relation": "uses",
+      "to": "Locale"
+    },
+    {
+      "from": "Positioning",
+      "relation": "targets",
+      "to": "TargetContext"
+    },
+    {
+      "from": "Positioning",
+      "relation": "uses",
+      "to": "ValueProposition"
+    },
+    {
+      "from": "Message",
+      "relation": "supports",
+      "to": "ValueProposition"
+    },
+    {
+      "from": "DecisionJob",
+      "relation": "drives",
+      "to": "ContentObject"
+    },
+    {
+      "from": "ContentObject",
+      "relation": "renders_on",
+      "to": "Surface"
+    },
+    {
+      "from": "ContentObject",
+      "relation": "compiles_to",
+      "to": "Asset"
+    },
+    {
+      "from": "Asset",
+      "relation": "uses",
+      "to": "PhotographyContract"
+    },
+    {
+      "from": "Asset",
+      "relation": "uses",
+      "to": "CMFContract"
+    },
+    {
+      "from": "Asset",
+      "relation": "executed_by",
+      "to": "ProviderJob"
+    },
+    {
+      "from": "FeedbackIssue",
+      "relation": "routes_to",
+      "to": "ContentObject"
+    },
+    {
+      "from": "Experiment",
+      "relation": "measures",
+      "to": "Metric"
+    },
+    {
+      "from": "Market",
+      "relation": "informs",
+      "to": "StrategyDecision"
+    },
+    {
+      "from": "UnitEconomics",
+      "relation": "informs",
+      "to": "Offer"
+    },
+    {
+      "from": "Positioning",
+      "relation": "orders",
+      "to": "MessageHierarchy"
+    },
+    {
+      "from": "MessageHierarchy",
+      "relation": "informs",
+      "to": "ListingArchitecture"
+    },
+    {
+      "from": "KeywordIntent",
+      "relation": "informs",
+      "to": "ListingArchitecture"
+    },
+    {
+      "from": "DecisionJob",
+      "relation": "justifies",
+      "to": "Asset"
+    },
+    {
+      "from": "AssetPortfolio",
+      "relation": "contains",
+      "to": "Asset"
+    },
+    {
+      "from": "Metric",
+      "relation": "feeds",
+      "to": "PerformanceDiagnosis"
+    },
+    {
+      "from": "FeedbackIssue",
+      "relation": "feeds",
+      "to": "PerformanceDiagnosis"
+    },
+    {
+      "from": "PerformanceDiagnosis",
+      "relation": "creates",
+      "to": "RevisionAction"
+    },
+    {
+      "from": "SearchDemand",
+      "relation": "informs",
+      "to": "Positioning"
+    },
+    {
+      "from": "SearchDemand",
+      "relation": "informs",
+      "to": "ListingArchitecture"
+    },
+    {
+      "from": "CompetitorCluster",
+      "relation": "informs",
+      "to": "MarketOpportunity"
+    },
+    {
+      "from": "MarketOpportunity",
+      "relation": "informs",
+      "to": "StrategyDecision"
+    },
+    {
+      "from": "UnitEconomics",
+      "relation": "bounds",
+      "to": "SharedGrowthBudget"
+    },
+    {
+      "from": "SharedGrowthBudget",
+      "relation": "bounds",
+      "to": "OfferRoom"
+    },
+    {
+      "from": "OfferRoom",
+      "relation": "informs",
+      "to": "Offer"
+    },
+    {
+      "from": "SurfaceNeed",
+      "relation": "justifies",
+      "to": "Asset"
+    },
+    {
+      "from": "BusinessHypothesis",
+      "relation": "justifies",
+      "to": "Asset"
+    },
+    {
+      "from": "Asset",
+      "relation": "tests",
+      "to": "BusinessHypothesis"
+    },
+    {
+      "from": "ListingArchitecture",
+      "relation": "uses",
+      "to": "TranscreationContract"
+    },
+    {
+      "from": "Metric",
+      "relation": "supports",
+      "to": "IncrementalityEvidence"
+    },
+    {
+      "from": "IncrementalityEvidence",
+      "relation": "informs",
+      "to": "PerformanceDiagnosis"
+    },
+    {
+      "from": "Competitor",
+      "relation": "has_observation",
+      "to": "CompetitorListingObservation"
+    },
+    {
+      "from": "CompetitorListingObservation",
+      "relation": "compared_with",
+      "to": "CustomerVoiceTheme"
+    },
+    {
+      "from": "CustomerVoiceTheme",
+      "relation": "informs",
+      "to": "MarketOpportunity"
+    },
+    {
+      "from": "SKU",
+      "relation": "compared_in",
+      "to": "CannibalizationHypothesis"
+    },
+    {
+      "from": "TradeUpStep",
+      "relation": "links",
+      "to": "SKU"
+    },
+    {
+      "from": "LifecycleOfferRole",
+      "relation": "assigned_to",
+      "to": "SKU"
+    },
+    {
+      "from": "TranscreationContract",
+      "relation": "creates",
+      "to": "LocaleAuthoringTask"
+    },
+    {
+      "from": "LocaleAuthoringTask",
+      "relation": "renders_on",
+      "to": "Surface"
+    },
+    {
+      "from": "ResearchDataset",
+      "relation": "qualified_by",
+      "to": "ResearchSourceQuality"
+    },
+    {
+      "from": "ResearchSourceQuality",
+      "relation": "bounds",
+      "to": "MarketOpportunity"
+    },
+    {
+      "from": "SKU",
+      "relation": "observed_in",
+      "to": "BehaviorObservation"
+    },
+    {
+      "from": "SKU",
+      "relation": "observed_in",
+      "to": "CohortObservation"
+    },
+    {
+      "from": "BehaviorObservation",
+      "relation": "validates",
+      "to": "CannibalizationHypothesis"
+    },
+    {
+      "from": "PortfolioIncrementalityEvidence",
+      "relation": "validates",
+      "to": "LifecycleOfferRole"
+    },
+    {
+      "from": "LocaleAuthoringTask",
+      "relation": "creates",
+      "to": "FinalCopy"
+    },
+    {
+      "from": "FinalCopy",
+      "relation": "reviewed_by",
+      "to": "CopyReview"
+    },
+    {
+      "from": "NativeAuthoringSystem",
+      "relation": "guides",
+      "to": "ContentObject"
+    },
+    {
+      "from": "ResearchDataset",
+      "relation": "DEDUPED_BY",
+      "to": "EvidenceFingerprint"
+    },
+    {
+      "from": "ResearchSourceQuality",
+      "relation": "HAS_VERSION",
+      "to": "SourceVersion"
+    },
+    {
+      "from": "SourceVersion",
+      "relation": "PART_OF",
+      "to": "SourceLineage"
+    },
+    {
+      "from": "SKU",
+      "relation": "HAS_SWITCH_OBSERVATION",
+      "to": "SwitchObservation"
+    },
+    {
+      "from": "HoldoutExperiment",
+      "relation": "ESTIMATES",
+      "to": "MarginalContribution"
+    },
+    {
+      "from": "FinalCopy",
+      "relation": "HAS_VERSION",
+      "to": "CopyVersion"
+    },
+    {
+      "from": "CopyVersion",
+      "relation": "MAY_REQUIRE",
+      "to": "CopyRevisionTask"
+    },
+    {
+      "from": "NativeAuthoringSystem",
+      "relation": "COMPILES",
+      "to": "SurfaceAuthoringContract"
+    },
+    {
+      "from": "Asset",
+      "relation": "HAS_PHOTOGRAPHY_REASONING",
+      "to": "AssetPhotographyReasoning"
+    },
+    {
+      "from": "SourceAdapter",
+      "relation": "INGESTS",
+      "to": "ResearchDataset"
+    },
+    {
+      "from": "SourceAdapter",
+      "relation": "PRODUCES",
+      "to": "RefreshState"
+    },
+    {
+      "from": "RefreshState",
+      "relation": "HAS_CHANGE_SET",
+      "to": "ResearchChangeSet"
+    },
+    {
+      "from": "ResearchDataset",
+      "relation": "HAS_REVIEW_CANDIDATE",
+      "to": "SemanticDuplicateCandidate"
+    },
+    {
+      "from": "Experiment",
+      "relation": "HAS_DESIGN",
+      "to": "ExperimentDesign"
+    },
+    {
+      "from": "ExperimentDesign",
+      "relation": "HAS_POWER_PLAN",
+      "to": "PowerPlan"
+    },
+    {
+      "from": "ExperimentDesign",
+      "relation": "HAS_BALANCE_DIAGNOSTIC",
+      "to": "BalanceDiagnostic"
+    },
+    {
+      "from": "ExperimentDesign",
+      "relation": "REVIEWS",
+      "to": "InterferenceRisk"
+    },
+    {
+      "from": "LocaleAuthoringTask",
+      "relation": "RETURNS",
+      "to": "HostAuthoringResponse"
+    },
+    {
+      "from": "HostAuthoringResponse",
+      "relation": "CREATES",
+      "to": "CopyVersion"
+    },
+    {
+      "from": "SurfaceAuthoringContract",
+      "relation": "COMPILES_TO",
+      "to": "SurfaceProductionContract"
+    },
+    {
+      "from": "CMFContract",
+      "relation": "GUIDES",
+      "to": "MaterialLightingProfile"
+    },
+    {
+      "from": "MaterialLightingProfile",
+      "relation": "GUIDES",
+      "to": "ShotLightingReasoning"
+    },
+    {
+      "from": "Asset",
+      "relation": "HAS_SHOT_LIGHTING_REASONING",
+      "to": "ShotLightingReasoning"
+    },
+    {
+      "from": "SourceAdapter",
+      "relation": "HAS_CHECKPOINT",
+      "to": "AdapterCheckpoint"
+    },
+    {
+      "from": "AdapterCheckpoint",
+      "relation": "TRACKS",
+      "to": "CursorWindow"
+    },
+    {
+      "from": "ExperimentDesign",
+      "relation": "MAY_USE",
+      "to": "ClusterDesign"
+    },
+    {
+      "from": "ExperimentDesign",
+      "relation": "MAY_USE",
+      "to": "GeoExperiment"
+    },
+    {
+      "from": "ExperimentDesign",
+      "relation": "MAY_USE",
+      "to": "CUPEDPlan"
+    },
+    {
+      "from": "ExperimentDesign",
+      "relation": "MAY_USE",
+      "to": "SequentialMonitoringPlan"
+    },
+    {
+      "from": "FinalCopy",
+      "relation": "CONSTRAINED_BY",
+      "to": "TerminologyMemory"
+    },
+    {
+      "from": "TerminologyMemory",
+      "relation": "AUDITED_BY",
+      "to": "TerminologyAudit"
+    },
+    {
+      "from": "SurfaceProductionContract",
+      "relation": "BOUND_IN",
+      "to": "ProductionContractBinding"
+    },
+    {
+      "from": "ProductionContractBinding",
+      "relation": "GUIDES",
+      "to": "Asset"
+    },
+    {
+      "from": "MaterialLightingProfile",
+      "relation": "COMPILES",
+      "to": "PrelightPlan"
+    },
+    {
+      "from": "PrelightPlan",
+      "relation": "RECORDS",
+      "to": "LightingDiagram"
+    },
+    {
+      "from": "PrelightPlan",
+      "relation": "RECORDS",
+      "to": "ExposureRatioPlan"
+    },
+    {
+      "from": "PrelightPlan",
+      "relation": "RECORDS",
+      "to": "PolarizationPlan"
+    },
+    {
+      "from": "PrelightPlan",
+      "relation": "RECORDS",
+      "to": "ColorConsistencyPlan"
+    },
+    {
+      "from": "ProductTruth",
+      "relation": "INFORMS",
+      "to": "CategoryDecisionProfile"
+    },
+    {
+      "from": "CategoryDecisionProfile",
+      "relation": "PRIORITIZES",
+      "to": "DecisionIntent"
+    },
+    {
+      "from": "DecisionIntent",
+      "relation": "CURATES",
+      "to": "AssetPortfolio"
+    },
+    {
+      "from": "CategoryDecisionProfile",
+      "relation": "GUIDES",
+      "to": "CategoryPhotographyPlan"
+    },
+    {
+      "from": "CategoryPhotographyPlan",
+      "relation": "GUIDES",
+      "to": "PhotographyContract"
+    },
+    {
+      "from": "CategoryCommerceProfile",
+      "relation": "prioritizes",
+      "to": "ObjectionPriority"
+    },
+    {
+      "from": "CategoryCommerceProfile",
+      "relation": "orders",
+      "to": "ProofHierarchy"
+    },
+    {
+      "from": "CategoryCommerceProfile",
+      "relation": "constrains",
+      "to": "OfferArchitecture"
+    },
+    {
+      "from": "CategoryCommerceProfile",
+      "relation": "drives",
+      "to": "ContentCadence"
+    },
+    {
+      "from": "ListingArchitecture",
+      "relation": "resolves",
+      "to": "ObjectionPriority"
+    },
+    {
+      "from": "MessageHierarchy",
+      "relation": "uses",
+      "to": "ProofHierarchy"
+    },
+    {
+      "from": "Market",
+      "relation": "informs",
+      "to": "EvidencePriority"
+    },
+    {
+      "from": "CustomerVoiceTheme",
+      "relation": "informs",
+      "to": "EvidencePriority"
+    },
+    {
+      "from": "SearchDemand",
+      "relation": "informs",
+      "to": "EvidencePriority"
+    },
+    {
+      "from": "CategoryCommerceProfile",
+      "relation": "is_prior_for",
+      "to": "CategoryEvidenceReconciliation"
+    },
+    {
+      "from": "EvidencePriority",
+      "relation": "reorders",
+      "to": "CategoryEvidenceReconciliation"
+    },
+    {
+      "from": "CategoryEvidenceReconciliation",
+      "relation": "reorders",
+      "to": "ObjectionPriority"
+    },
+    {
+      "from": "CategoryEvidenceReconciliation",
+      "relation": "reorders",
+      "to": "ProofHierarchy"
+    },
+    {
+      "from": "ProofHierarchy",
+      "relation": "requires",
+      "to": "ProofEvidenceCondition"
+    },
+    {
+      "from": "PromoResponseObservation",
+      "relation": "validates_hypothesis_for",
+      "to": "OfferArchitecture"
+    },
+    {
+      "from": "BundleAffinityObservation",
+      "relation": "validates_hypothesis_for",
+      "to": "OfferArchitecture"
+    },
+    {
+      "from": "RepeatReplacementCycle",
+      "relation": "validates_hypothesis_for",
+      "to": "OfferArchitecture"
+    },
+    {
+      "from": "CategoryEvidenceReconciliation",
+      "relation": "intersects_with",
+      "to": "PlatformCategoryIntersection"
+    },
+    {
+      "from": "PlatformCategoryIntersection",
+      "relation": "guides",
+      "to": "ContentObject"
+    },
+    {
+      "from": "ResearchSourceQuality",
+      "relation": "weights",
+      "to": "EvidenceQualityWeight"
+    },
+    {
+      "from": "EvidenceQualityWeight",
+      "relation": "weights",
+      "to": "EvidencePriority"
+    },
+    {
+      "from": "CustomerVoiceTheme",
+      "relation": "requires_fit_review_via",
+      "to": "MarketEvidenceFitContract"
+    },
+    {
+      "from": "SearchDemand",
+      "relation": "requires_fit_review_via",
+      "to": "MarketEvidenceFitContract"
+    },
+    {
+      "from": "MarketEvidenceFitContract",
+      "relation": "may_create_after_confirmation",
+      "to": "DecisionJob"
+    },
+    {
+      "from": "PerformanceDiagnosis",
+      "relation": "routes_via",
+      "to": "StrategyRevisionRoute"
+    },
+    {
+      "from": "FeedbackIssue",
+      "relation": "routes_via",
+      "to": "StrategyRevisionRoute"
+    },
+    {
+      "from": "StrategyRevisionRoute",
+      "relation": "may_create",
+      "to": "RevisionAction"
+    },
+    {
+      "from": "ProductionResult",
+      "relation": "may_trigger",
+      "to": "LocalRevisionRequest"
+    },
+    {
+      "from": "LocalRevisionRequest",
+      "relation": "materializes_as",
+      "to": "RevisionProviderJob"
+    },
+    {
+      "from": "RevisionProviderJob",
+      "relation": "returns",
+      "to": "RevisionProviderResult"
+    },
+    {
+      "from": "RevisionProviderResult",
+      "relation": "records",
+      "to": "LocalRevisionLineage"
+    },
+    {
+      "from": "LocalRevisionLineage",
+      "relation": "may_feed",
+      "to": "LearningCycle"
+    },
+    {
+      "from": "LearningCycle",
+      "relation": "applies_bounded",
+      "to": "StrategyLearningOverlay"
+    },
+    {
+      "from": "StrategyLearningOverlay",
+      "relation": "updates",
+      "to": "StrategyAuthority"
+    },
+    {
+      "from": "DecisionJob",
+      "relation": "audited_by",
+      "to": "DecisionQuestionAudit"
+    },
+    {
+      "from": "StrategyHostAuthoringRequest",
+      "relation": "constrains",
+      "to": "StrategyDecision"
+    },
+    {
+      "from": "StrategyAnnotationApplication",
+      "relation": "deepens",
+      "to": "StrategyDecision"
+    },
+    {
+      "from": "StrategyAnnotationApplication",
+      "relation": "preserves",
+      "to": "ProductTruth"
+    }
+  ],
+  "constraints": [
+    {
+      "id": "C-TRUTH-001",
+      "scope": "claim",
+      "statement": "Hard claims retain source/evidence lineage before publication-sensitive execution.",
+      "type": "evidence"
+    },
+    {
+      "id": "C-STRAT-001",
+      "scope": "strategy",
+      "statement": "Every major strategy decision carries WHY plus consumer/platform/culture/business logic where relevant.",
+      "type": "quality"
+    },
+    {
+      "id": "C-ASSET-001",
+      "scope": "asset",
+      "statement": "Asset count is dynamic and justified by shopper questions and surface jobs.",
+      "type": "architecture"
+    },
+    {
+      "id": "C-ASSET-002",
+      "scope": "asset-package",
+      "statement": "Every dynamic asset package retains the complete 00_asset_manifest.yaml through 11_strategy_authority_trace.json contract; non-applicable contracts remain explicit placeholders rather than disappearing.",
+      "type": "compatibility"
+    },
+    {
+      "id": "C-REV-001",
+      "scope": "local-revision",
+      "statement": "Only approved fields may change during a local revision.",
+      "type": "execution"
+    },
+    {
+      "id": "C-PLAT-001",
+      "scope": "platform",
+      "statement": "Family planning capability does not imply exact site/category submission readiness.",
+      "type": "evidence"
+    },
+    {
+      "id": "C-CULT-001",
+      "scope": "culture",
+      "statement": "Race/ethnicity/religion may inform contextual adaptation but not unsupported behavioral stereotypes.",
+      "type": "quality"
+    },
+    {
+      "id": "C-PHOTO-001",
+      "scope": "photography",
+      "statement": "Photography choices preserve product identity/color and explain the commercial role of key choices.",
+      "type": "quality"
+    },
+    {
+      "id": "C-TEST-001",
+      "scope": "experiment",
+      "statement": "Statistical significance alone is not causal attribution when multiple variables changed.",
+      "type": "measurement"
+    },
+    {
+      "id": "C-STRAT-002",
+      "scope": "strategy",
+      "statement": "Market calculations must be interpreted into a commercial implication before they appear as recommendations.",
+      "type": "quality"
+    },
+    {
+      "id": "C-STRAT-003",
+      "scope": "positioning",
+      "statement": "A strategy locks one primary conversion proposition before secondary reasons and trust layers.",
+      "type": "architecture"
+    },
+    {
+      "id": "C-LIST-001",
+      "scope": "listing",
+      "statement": "Every listing field has a distinct decision job and source/claim lineage where relevant.",
+      "type": "quality"
+    },
+    {
+      "id": "C-ASSET-003",
+      "scope": "asset",
+      "statement": "Each asset records consumer question, strategic job, surface need, incremental information, business hypothesis, purchase barrier/belief target where relevant, and success metric.",
+      "type": "architecture"
+    },
+    {
+      "id": "C-MEAS-002",
+      "scope": "measurement",
+      "statement": "Advertising and feedback diagnostics route revisions to the causal layer rather than triggering broad redesign by default.",
+      "type": "measurement"
+    },
+    {
+      "id": "C-MKT-001",
+      "scope": "strategy",
+      "statement": "Market whitespace, price valleys and competitor clusters are hypotheses until cross-checked against demand, product fit, unit economics and platform execution evidence.",
+      "type": "quality"
+    },
+    {
+      "id": "C-OFFER-001",
+      "scope": "strategy",
+      "statement": "Coupon, affiliate commission and paid media consume a shared contribution pool; channel budgets are not independent percentages.",
+      "type": "economics"
+    },
+    {
+      "id": "C-LIST-002",
+      "scope": "listing",
+      "statement": "Localization is transcreation: preserve truth, claim strength and message hierarchy while adapting natural language, search intent and surface constraints.",
+      "type": "quality"
+    },
+    {
+      "id": "C-ASSET-004",
+      "scope": "asset",
+      "statement": "No asset exists only to fill a slot; repeated consumer questions require a distinct surface need or incremental information and a testable business hypothesis.",
+      "type": "architecture"
+    },
+    {
+      "id": "C-MEAS-003",
+      "scope": "measurement",
+      "statement": "Attribution metrics do not establish incrementality; scale decisions distinguish observed attribution from causal evidence.",
+      "type": "measurement"
+    },
+    {
+      "id": "C-COMP-001",
+      "scope": "strategy",
+      "statement": "Competitor differentiation decisions distinguish observed listing/offer/proof evidence from interpretation and join review themes only through source-bounded labels.",
+      "type": "evidence"
+    },
+    {
+      "id": "C-PORT-001",
+      "scope": "strategy",
+      "statement": "Multi-SKU portfolio strategy reviews overlap/cannibalization and requires each price step or SKU to earn a distinct buyer, lifecycle, channel or value role.",
+      "type": "economics"
+    },
+    {
+      "id": "C-LOC-001",
+      "scope": "listing",
+      "statement": "Locale authoring preserves product identity, numerical facts, claim strength and decision job while allowing native syntax, order, hook and CTA adaptation.",
+      "type": "quality"
+    },
+    {
+      "id": "C-RES-001",
+      "scope": "strategy",
+      "statement": "Market/competitor/customer research conclusions preserve source IDs, time scope and sampling/representativeness boundaries; sample size alone never proves representativeness.",
+      "type": "evidence"
+    },
+    {
+      "id": "C-PORT-002",
+      "scope": "measurement",
+      "statement": "Observed cross-shopping, switching and cohort differences are descriptive evidence; causal cannibalization/incrementality requires a valid counterfactual or experiment design.",
+      "type": "measurement"
+    },
+    {
+      "id": "C-LOC-002",
+      "scope": "listing",
+      "statement": "Localized copy becomes APPROVED_FINAL only after deterministic hard checks and explicit native fluency, claim-equivalence, platform-fit and culture-fit approval.",
+      "type": "quality"
+    },
+    {
+      "id": "C-PLAT-002",
+      "scope": "strategy",
+      "statement": "Platform reuse shares Strategy Authority and evidence, not identical copy, beat sequence, information density or CTA across TikTok Shop, Shopee, Amazon and DTC.",
+      "type": "architecture"
+    },
+    {
+      "id": "C-EVIDENCE-DEDUP",
+      "scope": "strategy",
+      "statement": "Cross-source content equality must not be auto-deduplicated; exact deterministic dedup is opt-in and source-bounded."
+    },
+    {
+      "id": "C-SWITCH-RATE",
+      "scope": "strategy",
+      "statement": "Directional switch rate requires an explicit eligible-from denominator; descriptive switching is not causal cannibalization."
+    },
+    {
+      "id": "C-COPY-VERSION",
+      "scope": "listing",
+      "statement": "A professional review approves only the current copy version it explicitly reviewed when version history is present."
+    },
+    {
+      "id": "C-ASSET-PHOTO-WHY",
+      "scope": "photography",
+      "statement": "Photography parameters should be justified at asset level by decision visibility, CMF/material truth, surface and business hypothesis."
+    },
+    {
+      "id": "C-ING-002",
+      "scope": "strategy",
+      "statement": "Incremental adapters may carry forward prior rows only when refresh mode is explicitly INCREMENTAL_BATCH; semantic-near-duplicate detection is review-only and never silently deletes evidence.",
+      "type": "evidence"
+    },
+    {
+      "id": "C-EXP-003",
+      "scope": "experiment",
+      "statement": "Experiment scale decisions review assignment, pre-period balance, MDE/power, contamination and interference before interpreting outcome significance or lift.",
+      "type": "measurement"
+    },
+    {
+      "id": "C-COPY-003",
+      "scope": "listing",
+      "statement": "Host/model authoring responses create new draft CopyVersion records only; they never create or inherit professional approval.",
+      "type": "quality"
+    },
+    {
+      "id": "C-SURF-002",
+      "scope": "asset",
+      "statement": "Each active surface compiles an executable production contract while exact submission limits remain sourced from current platform authority.",
+      "type": "architecture"
+    },
+    {
+      "id": "C-PHOTO-003",
+      "scope": "photography",
+      "statement": "Shot-level lighting choices are justified by supplied CMF/material behavior and consumer decision visibility; unknown finish/material behavior remains provisional rather than invented.",
+      "type": "quality"
+    },
+    {
+      "id": "C-ADAPTER-003",
+      "scope": "strategy",
+      "statement": "Cursor/checkpoint metadata records resumability only; it never proves complete marketplace/search/review coverage.",
+      "type": "evidence"
+    },
+    {
+      "id": "C-EXP-004",
+      "scope": "experiment",
+      "statement": "Cluster, geo, CUPED and sequential designs require design-appropriate inference; naive individual z-tests or repeated peeking do not establish valid causal evidence.",
+      "type": "measurement"
+    },
+    {
+      "id": "C-COPY-004",
+      "scope": "listing",
+      "statement": "Explicit terminology memory constrains locale copy across fields; forbidden variants or required-term violations can block Final Copy, while non-blocking variation requires review.",
+      "type": "quality"
+    },
+    {
+      "id": "C-PROD-004",
+      "scope": "asset-package",
+      "statement": "Provider jobs bind the frozen surface/platform/photography contracts by package and contract hashes; contract changes require a new package/job.",
+      "type": "architecture"
+    },
+    {
+      "id": "C-PHOTO-004",
+      "scope": "photography",
+      "statement": "Prelight records actual lighting geometry, exposure relationship, polarization choice and color reference before repeated production capture; missing numeric ratios are measured, not invented.",
+      "type": "quality"
+    },
+    {
+      "id": "C-CATEGORY-SPECIFICITY",
+      "scope": "strategy",
+      "rule": "Different commerce categories must not inherit one fixed asset sequence or photography recipe; category profiles may guide decisions but never invent product facts or claims."
+    },
+    {
+      "id": "C-CAT-COMMERCE-001",
+      "scope": "strategy",
+      "statement": "Category commerce profiles may reorder objections, proof, offers, messages and content cadence, but must not create unsupported product facts, policies, sensory claims, compatibility, performance or service promises.",
+      "type": "truth-boundary"
+    },
+    {
+      "id": "C-EVIDENCE-PRIOR-01",
+      "scope": "strategy",
+      "rule": "Product Truth/current verified policy outrank market evidence; market evidence outranks category prior for priority/sequence only and may not create product facts or claims."
+    },
+    {
+      "id": "C-OFFER-EVIDENCE-01",
+      "scope": "strategy",
+      "rule": "Observational promo response, bundle affinity and repeat timing may support a test candidate but do not establish causal incrementality or an optimal offer."
+    },
+    {
+      "id": "C-PROOF-CONDITION-01",
+      "scope": "claim",
+      "rule": "Each proof type must declare evidence conditions and do-not-infer boundaries before it is treated as publishable proof."
+    },
+    {
+      "id": "C-EVIDENCE-QUALITY-01",
+      "scope": "strategy",
+      "rule": "External market/search/review/competitor evidence must be quality-weighted by documented freshness, traceability, representativeness metadata, scope match, explicit source quality and agreement/conflict before it reorders a category prior."
+    },
+    {
+      "id": "C-MARKET-FIT-01",
+      "scope": "asset",
+      "rule": "Market/search/review/competitor observations may create fit-review tasks but may not create own-product claims or dynamic asset jobs until Product Truth fit is explicitly confirmed."
+    },
+    {
+      "id": "C-REVISION-LOCAL-01",
+      "scope": "local-revision",
+      "rule": "Ads/feedback diagnostics must route to the smallest plausible strategy layer and freeze unrelated layers; no broad redesign is auto-applied from a single symptom."
+    },
+    {
+      "id": "C-LOCAL-REVISION-IMMUTABLE-01",
+      "scope": "local-revision",
+      "rule": "A local revision must not mutate the parent 00–11 asset package; it must retain the parent package hash, explicit allowed_fields and separate revised-output lineage."
+    },
+    {
+      "id": "C-LEARNING-CAUSAL-01",
+      "scope": "learning",
+      "rule": "Before/after movement is descriptive by default. Causal credit for a local revision requires explicit valid causal evidence; otherwise learning may recommend keep/rollback/continue-test without causal attribution."
+    },
+    {
+      "id": "C-LEARNING-LOCALITY-01",
+      "scope": "learning",
+      "rule": "Post-production learning may update only the evidence-implicated strategy layers; Product Truth and unrelated frozen layers remain authoritative unless separate evidence implicates them."
+    }
+  ],
+  "processes": [
+    {
+      "id": "P-STRATEGY",
+      "name": "Strategy Authoring",
+      "stages": [
+        "Information Audit",
+        "Product Truth & Value Ladder",
+        "Market / Competitor / Customer Understanding",
+        "Product / SKU / Offer Strategy",
+        "Positioning / Value Proposition",
+        "Message Architecture",
+        "RACE / 4P / Funnel",
+        "Listing / Search Architecture",
+        "Platform Content Strategy",
+        "Creative / Visual Strategy",
+        "Photography / CMF",
+        "Dynamic Asset Architecture",
+        "Asset Compiler",
+        "Production",
+        "Measurement / Feedback / Iteration"
+      ]
+    },
+    {
+      "id": "P-ASSET",
+      "name": "Asset Production",
+      "stages": [
+        "Asset Architecture",
+        "Asset Package",
+        "Provider Job",
+        "Production Result",
+        "QA",
+        "Review",
+        "Local Revision Request",
+        "Revision Provider Job",
+        "Revision Provider Result",
+        "Revision Review",
+        "Package/Output Lineage"
+      ]
+    },
+    {
+      "id": "P-LEARN",
+      "name": "Learning Loop",
+      "stages": [
+        "Launch",
+        "Measure",
+        "Feedback Diagnosis",
+        "Local Revision",
+        "Post-change Measurement",
+        "Causal Readiness Check",
+        "Learning Ledger",
+        "Bounded Strategy Overlay",
+        "Re-measure"
+      ]
+    }
+  ]
+}

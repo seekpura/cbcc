@@ -1,0 +1,34 @@
+version: 2
+modes:
+  DISCOVERY:
+    sequence: [00_truth_intake]
+  STRATEGY:
+    sequence: [00_truth_intake, 11_platform_localization, 01_market_intelligence, 02_product_strategy, 03_audience_culture, 04_positioning, 05_listing_conversion, 06_visual_strategy, 07_asset_architecture, 10_video_creator, 12_compliance]
+  LISTING:
+    sequence: [00_truth_intake, 11_platform_localization, 03_audience_culture, 04_positioning, 05_listing_conversion, 12_compliance]
+  VISUAL:
+    sequence: [00_truth_intake, 11_platform_localization, 03_audience_culture, 05_listing_conversion, 06_visual_strategy, 07_asset_architecture, 12_compliance]
+  COMPILE:
+    sequence: [08_asset_compiler]
+  PRODUCE:
+    sequence: [09_production_runner]
+  AUDIT:
+    sequence: [11_platform_localization, 12_compliance, validators]
+  ITERATE:
+    sequence: [13_advertising_economics, 14_feedback_intelligence, 15_causal_iteration]
+  LOCAL_REVISION:
+    sequence: [09_production_runner]
+intent_routes:
+  full_commerce_strategy: {modules: [00_truth_intake, 11_platform_localization, 01_market_intelligence, 02_product_strategy, 03_audience_culture, 04_positioning, 05_listing_conversion, 06_visual_strategy, 07_asset_architecture, 10_video_creator, 12_compliance]}
+  market_research: {modules: [00_truth_intake, 11_platform_localization, 01_market_intelligence]}
+  pricing_or_sku: {modules: [00_truth_intake, 01_market_intelligence, 02_product_strategy]}
+  listing: {modules: [00_truth_intake, 11_platform_localization, 03_audience_culture, 04_positioning, 05_listing_conversion, 12_compliance]}
+  image_strategy: {modules: [00_truth_intake, 11_platform_localization, 03_audience_culture, 05_listing_conversion, 06_visual_strategy, 07_asset_architecture, 12_compliance]}
+  video_creator: {modules: [00_truth_intake, 11_platform_localization, 03_audience_culture, 05_listing_conversion, 06_visual_strategy, 10_video_creator, 12_compliance]}
+  platform_rules: {modules: [11_platform_localization]}
+  compile_asset_package: {modules: [08_asset_compiler]}
+  produce_from_package: {modules: [09_production_runner]}
+  compliance: {modules: [12_compliance]}
+  advertising: {modules: [13_advertising_economics]}
+  review_returns_cs: {modules: [14_feedback_intelligence]}
+  revise_from_data: {modules: [13_advertising_economics, 14_feedback_intelligence, 15_causal_iteration]}

@@ -1,0 +1,17 @@
+[
+  {
+    "claim_id": "CLM-01",
+    "claim": "30 ml",
+    "claim_type": "REAL_SELLING_POINT",
+    "evidence_level": "A",
+    "source_ids": [
+      "SRC-PACK-01"
+    ],
+    "allowed_scope": [
+      "listing",
+      "image"
+    ],
+    "prohibited_scope": [],
+    "status": "ACTIVE"
+  }
+]

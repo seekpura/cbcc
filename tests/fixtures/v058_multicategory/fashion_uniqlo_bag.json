@@ -1,0 +1,170 @@
+{
+  "project_id": "V058-UNIQLO-BAG",
+  "planning_only": true,
+  "sku": "UNIQLO-RMSB",
+  "product": {
+    "name": "UNIQLO Round Mini Shoulder Bag",
+    "category": "fashion_accessories",
+    "product_type": "crossbody shoulder bag",
+    "primary_conversion_proposition": "Compact everyday carry with adjustable wear and approximately 4 L capacity.",
+    "capacity": "approximately 4 L",
+    "dimensions": "approximately 11 in wide at top × 6.7 in high × 3.9 in deep",
+    "strap_length": "approximately 45.7 in",
+    "shell_material": "100% nylon (uses recycled nylon fiber)",
+    "lining": "100% polyester",
+    "organization": "interior pockets; gusset design with side tucks",
+    "water_repellent_finish": "helps with exposure to light rain; finish is not permanent",
+    "care": "do not wash; do not dry clean"
+  },
+  "sources": [
+    {
+      "source_id": "SRC-UNIQLO-OFFICIAL",
+      "kind": "OFFICIAL_PRODUCT_PAGE",
+      "url": "https://www.uniqlo.com/us/en/products/E481610-000/00",
+      "verified_at": "2026-10-27"
+    },
+    {
+      "source_id": "SRC-CONTEXT",
+      "kind": "VALIDATION_CONTEXT"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "CLM-U-01",
+      "claim": "Approximate 4 L capacity.",
+      "status": "VERIFIED",
+      "evidence_level": "A",
+      "source_ids": [
+        "SRC-UNIQLO-OFFICIAL"
+      ]
+    },
+    {
+      "claim_id": "CLM-U-02",
+      "claim": "Water-repellent finish helps with light rain; finish is not permanent.",
+      "status": "VERIFIED",
+      "evidence_level": "A",
+      "source_ids": [
+        "SRC-UNIQLO-OFFICIAL"
+      ]
+    }
+  ],
+  "target": {
+    "target_id": "MY-TTS-V058",
+    "market": "Malaysia",
+    "jurisdiction": "MY",
+    "platform_family": "tiktok_shop",
+    "site": "MY",
+    "program": "cross_border",
+    "primary_locale": "en-MY",
+    "support_locales": [
+      "ms-MY"
+    ],
+    "visible_copy_locales": [
+      "en-MY",
+      "ms-MY"
+    ],
+    "prompt_instruction_locale": "zh-CN",
+    "surfaces": [
+      "SEARCH_RESULTS",
+      "PDP",
+      "GALLERY",
+      "PDP_VIDEO",
+      "CREATOR",
+      "FAQ"
+    ],
+    "category": "fashion_accessories",
+    "currency": "MYR"
+  },
+  "audience_culture": {
+    "statements": [
+      {
+        "statement": "Use Malaysia-localized language hierarchy and avoid identity stereotyping.",
+        "status": "VERIFIED",
+        "confidence": 1.0,
+        "source_ids": [
+          "SRC-CONTEXT"
+        ],
+        "implications": [
+          "Keep en-MY and ms-MY separately reviewable."
+        ]
+      }
+    ],
+    "intersectionality": {
+      "geography": [
+        "Malaysia"
+      ],
+      "age": [
+        "adult"
+      ],
+      "lifestyle": [
+        "commuting, travel and everyday carry"
+      ]
+    },
+    "visual_implications": [
+      "Use context only when it answers a purchase decision; do not add people as a default decoration."
+    ],
+    "copy_implications": [
+      "Transcreate by surface and decision job rather than literal translation."
+    ]
+  },
+  "shopper_questions": [
+    "What is this bag?",
+    "Will it hold my everyday essentials without feeling bulky?",
+    "How large is it and how does it sit on the body?",
+    "How can I adjust and wear the strap?",
+    "What material and light-rain boundary should I expect?",
+    "What care limits should I know before buying?"
+  ],
+  "listing_input": {
+    "fields": {
+      "title": "UNIQLO Round Mini Shoulder Bag approx. 4L",
+      "attributes": {
+        "capacity": "approx. 4 L",
+        "dimensions": "approx. 11 × 6.7 × 3.9 in",
+        "shell": "100% nylon"
+      },
+      "highlights": [
+        "Adjustable shoulder strap",
+        "Interior pockets",
+        "Water-repellent finish for light rain; finish is not permanent"
+      ],
+      "usage": [
+        "Adjust strap for shoulder/crossbody wear."
+      ],
+      "_source_refs": {
+        "title": [
+          "SRC-UNIQLO-OFFICIAL"
+        ],
+        "attributes": [
+          "SRC-UNIQLO-OFFICIAL"
+        ],
+        "highlights": [
+          "SRC-UNIQLO-OFFICIAL"
+        ],
+        "usage": [
+          "SRC-UNIQLO-OFFICIAL"
+        ]
+      },
+      "_claim_refs": {
+        "highlights": [
+          "CLM-U-01",
+          "CLM-U-02"
+        ]
+      }
+    },
+    "keywords": []
+  },
+  "cmf": {
+    "color": "black",
+    "material": "wrinkled nylon textile + polyester strap",
+    "finish": "soft woven low-gloss",
+    "surface_behavior": {
+      "shell": "woven synthetic textile with subtle sheen",
+      "strap": "woven polyester"
+    }
+  },
+  "compile_assets": true,
+  "production_run": {
+    "asset_ids": []
+  }
+}

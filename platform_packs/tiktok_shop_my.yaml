@@ -1,0 +1,226 @@
+pack_id: tiktok-shop-my-current-2026-10-27
+platform_family: tiktok_shop
+site: MY
+program: null
+status: VERIFIED_SITE_GENERIC
+capabilities:
+- LISTING
+- SEARCH
+- OFFER_PROMOTION
+- VISUAL
+- VIDEO
+- CREATOR_AFFILIATE
+- LIVE
+- PAID
+- CX
+- MEASUREMENT
+- COMPLIANCE
+business_capabilities:
+  planning_only: false
+  exact_site_rules: true
+  category_claim_rules_included: false
+  fees_included: false
+  logistics_included: false
+surfaces:
+- SEARCH_RESULTS
+- PDP
+- GALLERY
+- PDP_VIDEO
+- CREATOR
+- LIVE
+- PAID_AD
+- FAQ
+surface_capabilities:
+- surface: GALLERY
+  content_families:
+  - VISUAL
+  planning_role: product_representation_and_purchase_decision_support
+- surface: PDP_VIDEO
+  content_families:
+  - VIDEO
+  planning_role: product_representation
+rule_atoms:
+- rule_id: TTS-MY-LISTING-ACCURACY
+  scope:
+    site: MY
+    locale:
+    - '*'
+  statement: Product listing text, images and videos must accurately represent the
+    product and relevant characteristics.
+  source_url: https://seller-my.tiktok.com/university/essay?knowledge_id=10008559&lang=en
+  verified_at: '2026-10-27'
+  expires_at: '2027-01-27'
+  authority: OFFICIAL
+  payload:
+    rule_kind: listing_accuracy
+- rule_id: TTS-MY-TITLE-DESCRIPTIVE
+  scope:
+    site: MY
+    surface: PDP
+    locale:
+    - '*'
+  statement: Product titles should be accurate and concise, contain essential descriptive
+    information, and not use promotional material such as discount claims.
+  source_url: https://seller-my.tiktok.com/university/essay?knowledge_id=10008559&lang=en
+  verified_at: '2026-10-27'
+  expires_at: '2027-01-27'
+  authority: OFFICIAL
+  payload:
+    listing_field: title
+    constraints:
+      required: true
+      descriptive_only: true
+      promotional_copy: false
+- rule_id: TTS-MY-IMAGE-MIN-600
+  scope:
+    site: MY
+    surface: GALLERY
+    locale:
+    - '*'
+  statement: Product images must be at least 600 x 600 pixels, in colour, high quality,
+    and must not obscure the product.
+  source_url: https://seller-my.tiktok.com/university/essay?knowledge_id=4138822087902977&lang=en
+  verified_at: '2026-10-27'
+  expires_at: '2027-01-27'
+  authority: OFFICIAL
+  payload:
+    asset_field: image
+    constraints:
+      min_width: 600
+      min_height: 600
+      color_required: true
+      high_quality_required: true
+- rule_id: TTS-MY-IMAGE-COUNT
+  scope:
+    site: MY
+    surface: GALLERY
+    locale:
+    - '*'
+  statement: Sellers may upload up to 9 square product images; each image should show
+    a different angle or product detail.
+  source_url: https://seller-my.tiktok.com/university/essay?knowledge_id=4138822087902977&lang=en
+  verified_at: '2026-10-27'
+  expires_at: '2027-01-27'
+  authority: OFFICIAL
+  payload:
+    asset_field: gallery
+    constraints:
+      max_images: 9
+      square: true
+      distinct_views: true
+- rule_id: TTS-MY-PRIMARY-IMAGE
+  scope:
+    site: MY
+    surface: GALLERY
+    locale:
+    - '*'
+  statement: The primary image should show the front physical view, use a solid-colour
+    background with white recommended, show the entire product, and the product should
+    occupy at least 60 percent of the frame.
+  source_url: https://seller-my.tiktok.com/university/essay?knowledge_id=4138822087902977&lang=en
+  verified_at: '2026-10-27'
+  expires_at: '2027-01-27'
+  authority: OFFICIAL
+  payload:
+    asset_field: primary_image
+    constraints:
+      front_view: true
+      solid_background: true
+      white_recommended: true
+      entire_product_visible: true
+      min_product_occupancy_pct: 60
+- rule_id: TTS-MY-PDP-VIDEO
+  scope:
+    site: MY
+    surface: PDP_VIDEO
+    locale:
+    - '*'
+  statement: Sellers may upload up to one product video per listing and the video
+    must not exceed 5MB.
+  source_url: https://seller-my.tiktok.com/university/essay?knowledge_id=4138822087902977&lang=en
+  verified_at: '2026-10-27'
+  expires_at: '2027-01-27'
+  authority: OFFICIAL
+  payload:
+    asset_field: product_video
+    constraints:
+      max_videos: 1
+      max_file_mb: 5
+- rule_id: TTS-MY-WHATS-IN-BOX
+  scope:
+    site: MY
+    surface: PDP
+    locale:
+    - '*'
+  statement: The listing must state the product and all accompanying accessories included
+    in the package.
+  source_url: https://seller-my.tiktok.com/university/essay?knowledge_id=10008559&lang=en
+  verified_at: '2026-10-27'
+  expires_at: '2027-01-27'
+  authority: OFFICIAL
+  payload:
+    listing_field: package_contents
+    constraints:
+      required_when_applicable: true
+- rule_id: TTS-MY-PACKAGE-DIMENSIONS
+  scope:
+    site: MY
+    surface: PDP
+    locale:
+    - '*'
+  statement: Sellers must provide accurate package weight and dimensions in Seller
+    Center.
+  source_url: https://seller-my.tiktok.com/university/essay?knowledge_id=10008559&lang=en
+  verified_at: '2026-10-27'
+  expires_at: '2027-01-27'
+  authority: OFFICIAL
+  payload:
+    listing_field: package_dimensions
+    constraints:
+      accurate_required: true
+- rule_id: TTS-MY-BM-TITLE-DESCRIPTION
+  scope:
+    site: MY
+    surface: PDP
+    locale:
+    - '*'
+  statement: Online product titles and descriptions in Malaysia must be provided in
+    Bahasa Melayu; additional translations may also be included.
+  source_url: https://seller-my.tiktok.com/university/essay?knowledge_id=755956737378065&lang=en
+  verified_at: '2026-10-27'
+  expires_at: '2027-01-27'
+  authority: OFFICIAL
+  payload:
+    rule_kind: visible_copy_locale
+    constraints:
+      required_visible_copy_locale: ms-MY
+      additional_translations_allowed: true
+      applies_to:
+      - title
+      - description
+research_required_for: []
+source_records:
+- source_id: TTS-MY-OFFICIAL-LISTING-2026-1
+  kind: OFFICIAL_PLATFORM_POLICY
+  title: TikTok Shop Product Listing Guidelines - Malaysia
+  url: https://seller-my.tiktok.com/university/essay?knowledge_id=10008559&lang=en
+  verified_at: '2026-10-27'
+- source_id: TTS-MY-OFFICIAL-IMAGES-2026-1
+  kind: OFFICIAL_PLATFORM_POLICY
+  title: Product Titles, Descriptions, Images & Videos - Malaysia
+  url: https://seller-my.tiktok.com/university/essay?knowledge_id=4138822087902977&lang=en
+  verified_at: '2026-10-27'
+- source_id: TTS-MY-OFFICIAL-ETT-REG-2026-10
+  kind: OFFICIAL_PLATFORM_POLICY
+  title: Consumer Protection (Electronic Trade Transactions) Regulations - Malaysia
+  url: https://seller-my.tiktok.com/university/essay?knowledge_id=755956737378065&lang=en
+  verified_at: '2026-10-27'
+notes:
+- The 2027-01-27 expires_at values are an internal 90-day re-verification horizon,
+  not a TikTok policy expiry date.
+- This pack does not assert beauty-category claim rules, cross-border fees, logistics,
+  creator commission, advertising eligibility, or regulatory approval.
+- Malaysia title/description Bahasa Melayu requirement is captured from TikTok Shop
+  Malaysia guidance summarizing the Consumer Protection (Electronic Trade Transactions)
+  Regulations 2024; legal applicability beyond the platform context should still be
+  reviewed when material.

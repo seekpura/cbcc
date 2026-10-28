@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "asset_id",
+    "provider",
+    "package_hash",
+    "output_path",
+    "qa",
+    "quality_observations"
+  ],
+  "properties": {
+    "asset_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "package_hash": {
+      "type": "string",
+      "minLength": 32
+    },
+    "output_path": {
+      "type": "string",
+      "minLength": 1
+    },
+    "changed_fields": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "qa": {
+      "type": "object",
+      "required": [
+        "product",
+        "fact",
+        "claim",
+        "visual",
+        "culture",
+        "platform"
+      ],
+      "properties": {
+        "product": {
+          "type": "boolean"
+        },
+        "fact": {
+          "type": "boolean"
+        },
+        "claim": {
+          "type": "boolean"
+        },
+        "visual": {
+          "type": "boolean"
+        },
+        "culture": {
+          "type": "boolean"
+        },
+        "platform": {
+          "type": "boolean"
+        }
+      }
+    },
+    "provider_metadata": {
+      "type": "object"
+    },
+    "quality_observations": {
+      "type": "object",
+      "properties": {
+        "product_identity_preserved": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "type": "string"
+                },
+                "evidence": {},
+                "observation": {},
+                "notes": {}
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_product_asset_ids_used": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "product_layer_operation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decision_answer_visible": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "type": "string"
+                },
+                "evidence": {},
+                "observation": {},
+                "notes": {}
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "surface_contract_met": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "type": "string"
+                },
+                "evidence": {},
+                "observation": {},
+                "notes": {}
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "copy_visual_alignment": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "type": "string"
+                },
+                "evidence": {},
+                "observation": {},
+                "notes": {}
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "photography_cmf_alignment": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "type": "string"
+                },
+                "evidence": {},
+                "observation": {},
+                "notes": {}
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "visual_differentiation_preserved": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "type": "string"
+                },
+                "evidence": {},
+                "observation": {},
+                "notes": {}
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "type": [
+            "object",
+            "array",
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "production_contract_ack": {
+      "type": "boolean"
+    },
+    "layout_contract_hash": {
+      "type": "string"
+    },
+    "photography_contract_hash": {
+      "type": "string"
+    }
+  }
+}

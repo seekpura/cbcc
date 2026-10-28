@@ -1,0 +1,56 @@
+pack_id: fixture-tiktok-shop-my
+platform_family: tiktok_shop
+site: MY
+program: cross_border
+status: TEST_FIXTURE_VERIFIED
+synthetic_for_test: true
+capabilities:
+- LISTING
+- SEARCH
+- OFFER_PROMOTION
+- VISUAL
+- VIDEO
+- CREATOR_AFFILIATE
+- LIVE
+- PAID
+- CX
+- MEASUREMENT
+- COMPLIANCE
+business_capabilities:
+  affiliate: true
+  live: true
+  paid_ads: true
+  fulfillment_mode: TEST_ONLY
+surfaces: [SEARCH_RESULTS, PDP, GALLERY, PDP_VIDEO, CREATOR, LIVE, PAID_AD, FAQ]
+surface_capabilities:
+- surface: GALLERY
+  content_families: [VISUAL]
+  planning_role: purchase_decision_support
+- surface: CREATOR
+  content_families: [CREATOR_AFFILIATE, VIDEO]
+  planning_role: creator_conversion
+rule_atoms:
+- rule_id: TEST-LANGUAGE-CONTRACT
+  scope: {site: MY, program: cross_border, locale: [en-MY, ms-MY]}
+  statement: 'Synthetic test rule only: asset language contract remains distinct from human delivery language.'
+  source_url: fixture://local
+  verified_at: '2026-10-27'
+  expires_at: '2099-12-31'
+  authority: TEST_FIXTURE
+- rule_id: TEST-TITLE-CONTRACT
+  scope: {site: MY, program: cross_border, category: beauty, surface: PDP}
+  statement: 'Synthetic field rule used only to verify field-contract compilation.'
+  source_url: fixture://local
+  verified_at: '2026-10-27'
+  expires_at: '2099-12-31'
+  authority: TEST_FIXTURE
+  payload:
+    listing_field: title
+    constraints:
+      required: true
+      max_chars: 80
+research_required_for: []
+source_records:
+- source_id: SRC-TEST
+  kind: TEST_FIXTURE
+  note: Not an official platform rule.

@@ -1,0 +1,9 @@
+{
+  "product_name": "Example Product",
+  "volume": {
+    "value": "30 ml",
+    "source_ids": [
+      "SRC-PACK-01"
+    ]
+  }
+}

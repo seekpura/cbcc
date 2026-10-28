@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Source Registry",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "source_id",
+      "type",
+      "content",
+      "status"
+    ],
+    "properties": {
+      "source_id": {
+        "type": "string",
+        "pattern": "^SRC-[A-Z0-9_-]+$"
+      },
+      "type": {
+        "enum": [
+          "PRODUCT_FACT",
+          "SPEC",
+          "INGREDIENT",
+          "CLAIM",
+          "PACKAGE_COPY",
+          "CERTIFICATION",
+          "TEST_REPORT",
+          "PRICE",
+          "COST",
+          "PLATFORM_RULE",
+          "MARKET_DATA",
+          "KEYWORD_DATA",
+          "REVIEW_DATA",
+          "REAL_ASSET",
+          "CULTURE_SOURCE",
+          "REGULATORY_SOURCE"
+        ]
+      },
+      "content": {
+        "type": "string",
+        "minLength": 1
+      },
+      "origin": {
+        "type": "string"
+      },
+      "supports": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "does_not_support": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "status": {
+        "enum": [
+          "VERIFIED",
+          "USER_CONFIRMED",
+          "ASSUMPTION",
+          "PENDING",
+          "CONFLICT"
+        ]
+      },
+      "confidence": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "additionalProperties": true
+  }
+}

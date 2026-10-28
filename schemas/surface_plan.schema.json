@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "surface_id",
+      "platform",
+      "market",
+      "journey_stage",
+      "consumer_question",
+      "asset_ids"
+    ],
+    "properties": {
+      "surface_id": {
+        "type": "string"
+      },
+      "platform": {
+        "type": "string"
+      },
+      "market": {
+        "type": "string"
+      },
+      "locale": {
+        "type": [
+          "string",
+          "array",
+          "null"
+        ]
+      },
+      "journey_stage": {
+        "type": "string"
+      },
+      "entry_state": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "exit_state": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "purchase_barrier": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "consumer_question": {
+        "type": "string"
+      },
+      "asset_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "information_gain": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "handoff": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "metric_hypothesis": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  }
+}

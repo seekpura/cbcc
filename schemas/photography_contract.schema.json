@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "capture_mode",
+    "composition",
+    "lighting",
+    "color_management"
+  ],
+  "properties": {
+    "capture_mode": {
+      "enum": [
+        "REAL_PHOTO",
+        "COMPOSITE",
+        "PHOTOREAL_AI",
+        "CG"
+      ]
+    },
+    "camera": {
+      "type": "object",
+      "properties": {
+        "focal_length_mm": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "camera_height": {
+          "type": [
+            "string",
+            "number",
+            "null"
+          ]
+        },
+        "working_distance": {
+          "type": [
+            "string",
+            "number",
+            "null"
+          ]
+        },
+        "yaw_deg": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pitch_deg": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "roll_deg": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "aperture_dof_intent": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "focus_plane": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "composition": {
+      "type": "object",
+      "required": [
+        "product_occupancy"
+      ],
+      "properties": {
+        "product_occupancy": {
+          "type": "object"
+        },
+        "negative_space": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "typography_safe_zone": {
+          "type": [
+            "string",
+            "object"
+          ]
+        },
+        "crop_policy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "lighting": {
+      "type": "object",
+      "required": [
+        "key",
+        "cct"
+      ],
+      "properties": {
+        "key": {
+          "type": "object"
+        },
+        "fill": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "negative_fill": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "rim": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "cct": {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        "contrast_target": {
+          "type": [
+            "string",
+            "number",
+            "null"
+          ]
+        },
+        "shadow": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "highlight_policy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reflection_control": {
+          "type": [
+            "string",
+            "object",
+            "null"
+          ]
+        }
+      }
+    },
+    "color_management": {
+      "type": "object",
+      "required": [
+        "output_space",
+        "product_color_fidelity"
+      ],
+      "properties": {
+        "output_space": {
+          "type": "string"
+        },
+        "white_balance": {
+          "type": [
+            "string",
+            "number",
+            "null"
+          ]
+        },
+        "product_color_fidelity": {
+          "type": "string"
+        }
+      }
+    },
+    "cmf": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "human": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "styling_props": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  }
+}

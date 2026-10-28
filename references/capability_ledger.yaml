@@ -1,0 +1,637 @@
+version: 7
+policy: required capabilities are additive unless explicitly deprecated with rationale
+capabilities:
+- id: TRUTH
+  required: true
+  name: Source of Truth + Product Truth + Spec Table + Claim Ledger + Real Asset Registry
+  implementation_paths:
+  - skills/00_truth_intake/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use TRUTH for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: COMMERCE_GRAPH
+  required: true
+  name: Commerce Entity Graph and single-SKU ordering/dependency model
+  implementation_paths:
+  - schemas/commerce_entity_graph.schema.json
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use COMMERCE_GRAPH for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: RESEARCH
+  required: true
+  name: Market, audience, competitor, keyword, culture and platform research
+  implementation_paths:
+  - skills/01_market_intelligence/SKILL.md
+  - skills/03_audience_culture/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use RESEARCH for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: MARKET_METRICS
+  required: true
+  name: Market capacity, CR3/CR10/HHI, price bands, configuration opportunity
+  implementation_paths:
+  - toolkits/01_market/market_metrics.py
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use MARKET_METRICS for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/tools/market.py
+  behavior_test: tests/test_domain_engines.py
+  e2e_evidence: tests/test_domain_runtime_integration.py
+- id: PRODUCT_SKU
+  required: true
+  name: Product strategy, dynamic SKU roles, unit economics, after-sales risk
+  implementation_paths:
+  - skills/02_product_strategy/SKILL.md
+  - toolkits/02_pricing_economics/unit_economics.py
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use PRODUCT_SKU for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/tools/economics.py
+  behavior_test: tests/test_domain_engines.py
+  e2e_evidence: tests/test_domain_runtime_integration.py
+- id: RACE
+  required: true
+  name: RACE Research/Action/Communication/Evaluation
+  implementation_paths:
+  - SKILL.md
+  - references/DECISION_SYSTEM_SPEC.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use RACE for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: STP_JTBD
+  required: true
+  name: STP + functional/emotional/social JTBD
+  implementation_paths:
+  - skills/03_audience_culture/SKILL.md
+  - references/DECISION_SYSTEM_SPEC.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use STP_JTBD for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: AIDA_FABE_4P
+  required: true
+  name: AIDA/FABE optional persuasion + 4P/conversion funnel
+  implementation_paths:
+  - runtime/cbcc/decision.py
+  - references/DECISION_SYSTEM_SPEC.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use AIDA_FABE_4P for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/decision.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha4_creative_research.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: DECISION_MODELS
+  required: true
+  name: Fogg, Means-End, Signaling, FIRST Hero Gate, Cognitive Budget, Commerce Response
+    Ladder, Belief Sequence
+  implementation_paths:
+  - references/DECISION_SYSTEM_SPEC.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use DECISION_MODELS for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: RACE_ETHNICITY
+  required: true
+  name: race/ethnicity analysis with evidence/confidence
+  implementation_paths:
+  - runtime/cbcc/culture.py
+  - skills/03_audience_culture/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use RACE_ETHNICITY for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/culture.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha4_creative_research.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: INTERSECTIONALITY
+  required: true
+  name: ethnicity × gender × age × income × geography × lifestyle
+  implementation_paths:
+  - runtime/cbcc/culture.py
+  - skills/03_audience_culture/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use INTERSECTIONALITY for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/culture.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha4_creative_research.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: CULTURE
+  required: true
+  name: cross-cultural and language localization
+  implementation_paths:
+  - runtime/cbcc/culture.py
+  - runtime/cbcc/locale.py
+  - skills/03_audience_culture/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use CULTURE for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/culture.py
+  behavior_test: tests/test_alpha3_platform_listing_assets.py
+  e2e_evidence: tests/test_alpha3_platform_listing_assets.py
+- id: LISTING
+  required: true
+  name: Search→Click→Understand→Trust→Objection→Action listing conversion system
+  implementation_paths:
+  - runtime/cbcc/tools/listing.py
+  - skills/05_listing_conversion/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use LISTING for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/tools/listing.py
+  behavior_test: tests/test_alpha3_platform_listing_assets.py
+  e2e_evidence: tests/test_alpha3_platform_listing_assets.py
+- id: LISTING_COPY
+  required: true
+  name: keywords/title/bullets/description/attributes/usage/package/FAQ/claim mapping
+  implementation_paths:
+  - runtime/cbcc/tools/listing.py
+  - skills/05_listing_conversion/SKILL.md
+  - toolkits/03_listing/title_lint.py
+  - toolkits/03_listing/spec_consistency.py
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use LISTING_COPY for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/tools/listing.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha3_platform_listing_assets.py
+  e2e_evidence: tests/test_alpha3_platform_listing_assets.py
+- id: CREATIVE_SYSTEM
+  required: true
+  name: research→curation→territories→CMF→photo/CG→information design→prompt→production→QA
+  implementation_paths:
+  - runtime/cbcc/creative.py
+  - references/CREATIVE_SYSTEM_SPEC.md
+  - skills/06_visual_strategy/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use CREATIVE_SYSTEM for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/creative.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha4_creative_research.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: CURATION
+  required: true
+  name: curation sources, category clichés/white space, references as reference not
+    truth
+  implementation_paths:
+  - runtime/cbcc/creative.py
+  - references/CREATIVE_SYSTEM_SPEC.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use CURATION for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/creative.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha4_creative_research.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: CMF
+  required: true
+  name: Color/Material/Finish and surface behavior
+  implementation_paths:
+  - runtime/cbcc/creative.py
+  - references/PHOTOGRAPHY_CMF_SPEC.md
+  - skills/06_visual_strategy/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use CMF for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/creative.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha4_creative_research.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: PHOTOGRAPHY
+  required: true
+  name: production-grade camera/lens/composition/lighting/exposure/color-management
+    contract
+  implementation_paths:
+  - references/PHOTOGRAPHY_CMF_SPEC.md
+  - schemas/photography_contract.schema.json
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use PHOTOGRAPHY for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/tools/visual.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_visual_and_foundation_runtime.py
+  e2e_evidence: tests/test_domain_runtime_integration.py
+- id: INCLUSIVE_PHOTO
+  required: true
+  name: skin tone/hair/body/age/disability/religious representation and dark-skin
+    exposure guidance
+  implementation_paths:
+  - runtime/cbcc/creative.py
+  - references/PHOTOGRAPHY_CMF_SPEC.md
+  - skills/03_audience_culture/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use INCLUSIVE_PHOTO for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/creative.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha4_creative_research.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: FOUNDATION_ANCHOR
+  required: true
+  name: Foundation/Creative Anchor Asset concept
+  implementation_paths:
+  - references/CREATIVE_SYSTEM_SPEC.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use FOUNDATION_ANCHOR for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/assets.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_visual_and_foundation_runtime.py
+  e2e_evidence: tests/test_domain_runtime_integration.py
+- id: DYNAMIC_ASSETS
+  required: true
+  name: dynamic asset count from consumer decision questions; no fixed 9-image default
+  implementation_paths:
+  - runtime/cbcc/asset_architecture.py
+  - skills/07_asset_architecture/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use DYNAMIC_ASSETS for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/asset_architecture.py
+  behavior_test: tests/test_alpha3_platform_listing_assets.py
+  e2e_evidence: tests/test_alpha3_platform_listing_assets.py
+- id: SURFACES
+  required: true
+  name: Listing/PDP/Gallery/Longform/A+/Shop/Shoppable/Ads/Video/Social/FAQ/UGC/Live/Email
+    surfaces
+  implementation_paths:
+  - references/SURFACE_ARCHITECTURE.md
+  - schemas/surface_plan.schema.json
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use SURFACES for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: ASSET_METADATA
+  required: true
+  name: curation source, journey stage, entry/exit state, barrier, surface, reason-to-exist,
+    incremental info, handoff, platform/market/locale
+  implementation_paths:
+  - runtime/cbcc/asset_architecture.py
+  - schemas/asset_map.schema.json
+  - skills/07_asset_architecture/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use ASSET_METADATA for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/asset_architecture.py
+  behavior_test: tests/test_alpha3_platform_listing_assets.py
+  e2e_evidence: tests/test_alpha3_platform_listing_assets.py
+- id: ASSET_COMPILER
+  required: true
+  name: strategy→independent production-ready per-asset packages
+  implementation_paths:
+  - runtime/cbcc/asset_compiler.py
+  - skills/08_asset_compiler/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use ASSET_COMPILER for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/asset_compiler.py
+  behavior_test: tests/test_alpha3_platform_listing_assets.py
+  e2e_evidence: tests/test_alpha3_platform_listing_assets.py
+- id: PROMPT_ISOLATION
+  required: true
+  name: final prompt isolated from internal workflow/state/QA/version metadata
+  implementation_paths:
+  - references/PROMPT_STATE_ISOLATION.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use PROMPT_ISOLATION for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: PRODUCTION_RUNNER
+  required: true
+  name: execute frozen compiled assets without re-planning
+  implementation_paths:
+  - runtime/cbcc/production.py
+  - skills/09_production_runner/SKILL.md
+  - runtime/cbcc/providers.py
+  - schemas/provider_job.schema.json
+  - schemas/provider_result.schema.json
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use PRODUCTION_RUNNER for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/production.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha6_review_provider_overlays.py
+  e2e_evidence: tests/test_alpha6_review_provider_overlays.py
+- id: PLATFORM_ADAPTERS
+  required: true
+  name: multi-platform market-scoped adapters and freshness
+  implementation_paths:
+  - runtime/cbcc/platform.py
+  - schemas/platform_pack.schema.json
+  - skills/11_platform_localization/SKILL.md
+  - references/platforms/platform_registry.yaml
+  - platform_packs/tiktok_shop_my.yaml
+  - platform_packs/amazon_us.yaml
+  - platform_packs/noon_ae.yaml
+  - platform_packs/shopee_my.yaml
+  - platform_packs/tiktok_shop_my_beauty.yaml
+  - platform_packs/tiktok_shop_us.yaml
+  - platform_packs/tiktok_shop_us_beauty.yaml
+  - platform_packs/amazon_us_cosmetics.yaml
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use PLATFORM_ADAPTERS for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/platform.py
+  behavior_test: tests/test_alpha6_review_provider_overlays.py
+  e2e_evidence: tests/test_alpha6_review_provider_overlays.py
+- id: VIDEO_CREATOR
+  required: true
+  name: dynamic product video/creator/UGC planning and timing
+  implementation_paths:
+  - runtime/cbcc/video_creator.py
+  - skills/10_video_creator/SKILL.md
+  - toolkits/05_video/video_timing.py
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use VIDEO_CREATOR for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/video_creator.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha4_production_video_compliance.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: ADS
+  required: true
+  name: advertising economics, funnel diagnosis, break-even ROAS/CPC/contribution
+  implementation_paths:
+  - skills/13_advertising_economics/SKILL.md
+  - toolkits/06_ads/ad_economics.py
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use ADS for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/tools/ads.py
+  behavior_test: tests/test_domain_engines.py
+  e2e_evidence: tests/test_domain_runtime_integration.py
+- id: FEEDBACK
+  required: true
+  name: reviews/CS/returns/refunds/search/creator feedback root-cause analysis
+  implementation_paths:
+  - skills/14_feedback_intelligence/SKILL.md
+  - toolkits/07_feedback/feedback_stats.py
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use FEEDBACK for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/tools/feedback.py
+  behavior_test: tests/test_domain_engines.py
+  e2e_evidence: tests/test_domain_runtime_integration.py
+- id: CAUSAL_ITERATION
+  required: true
+  name: baseline/hypothesis/root-cause/local revision/retest
+  implementation_paths:
+  - skills/15_causal_iteration/SKILL.md
+  - toolkits/08_experiment/experiment_metrics.py
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use CAUSAL_ITERATION for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/tools/experiment.py
+  behavior_test: tests/test_domain_engines.py
+  e2e_evidence: tests/test_domain_runtime_integration.py
+- id: DEPENDENCY_LOCK
+  required: true
+  name: dependency lock, freeze/unfreeze and local revision session
+  implementation_paths:
+  - router/dependency_graph.yaml
+  - skills/15_causal_iteration/SKILL.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use DEPENDENCY_LOCK for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: RESEARCH_GATE
+  required: true
+  name: Research Gate and evidence confidence before fact-dependent strategy
+  implementation_paths:
+  - runtime/cbcc/research.py
+  - references/RESEARCH_GATE.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use RESEARCH_GATE for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/research.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_alpha4_creative_research.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: HOST_ACTION_CONTRACT
+  required: true
+  name: host/tool action contract for external work and artifacts
+  implementation_paths:
+  - references/HOST_ACTION_CONTRACT.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use HOST_ACTION_CONTRACT for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: TOOLKITS
+  required: true
+  name: deterministic calculators/linters/validators for market, price, listing, image,
+    video, ads, feedback, experiments
+  implementation_paths:
+  - toolkits/README.md
+  - references/TOOLKIT_MAP.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use TOOLKITS for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/tools/market.py
+  - runtime/cbcc/tools/economics.py
+  - runtime/cbcc/tools/listing.py
+  - runtime/cbcc/tools/ads.py
+  - runtime/cbcc/tools/feedback.py
+  - runtime/cbcc/tools/experiment.py
+  behavior_test: tests/test_domain_toolkit_cli.py
+  e2e_evidence: tests/test_domain_runtime_integration.py
+- id: MACHINE_AUDIT
+  required: true
+  name: machine-readable audit of capability, traceability, package completeness and
+    revision scope
+  implementation_paths:
+  - validators/machine_audit.py
+  - validators/validate_capability_ledger.py
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use MACHINE_AUDIT for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/audit.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: POSITIVE_FIRST
+  required: true
+  name: positive-first creative instructions; conditional semantics instead of broad
+    aesthetic blacklists
+  implementation_paths:
+  - references/POSITIVE_FIRST_POLICY.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use POSITIVE_FIRST for its declared commerce task.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_capability_contracts.py
+  e2e_evidence: tests/test_golden_e2e.py
+- id: LOCALE_TRANSCREATION
+  required: true
+  name: Asset-language contract, script/direction/line-break typography profiles and
+    transcreation routing
+  implementation_paths:
+  - runtime/cbcc/locale.py
+  - schemas/language_profile.schema.json
+  - runtime/cbcc/models.py
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Compile target-native language and typography execution contracts for a market/locale.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/asset_compiler.py
+  behavior_test: tests/test_alpha3_platform_listing_assets.py
+  e2e_evidence: tests/test_alpha3_platform_listing_assets.py
+- id: PRODUCTION_PROVIDER_ROUTING
+  required: true
+  name: Route compiled assets to human photography/design, composite, AI image/video,
+    CG/3D or external creative provider contracts
+  implementation_paths:
+  - runtime/cbcc/providers.py
+  - runtime/cbcc/asset_compiler.py
+  - runtime/cbcc/production.py
+  - schemas/provider_job.schema.json
+  - schemas/provider_result.schema.json
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Route each approved asset to a production provider class without claiming execution.
+  runtime_consumers:
+  - runtime/cbcc/providers.py
+  - runtime/cbcc/production.py
+  - runtime/cbcc/asset_compiler.py
+  behavior_test: tests/test_alpha6_review_provider_overlays.py
+  e2e_evidence: tests/test_alpha6_review_provider_overlays.py
+- id: COMPLIANCE
+  required: true
+  name: Product/claim/creative/platform compliance compiler with evidence and research
+    boundaries
+  implementation_paths:
+  - runtime/cbcc/compliance.py
+  - skills/12_compliance/SKILL.md
+  - schemas/compliance_report.schema.json
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Compile evidence-bounded product, claim, creative and platform compliance before
+    execution.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/compliance.py
+  behavior_test: tests/test_alpha4_production_video_compliance.py
+  e2e_evidence: tests/test_alpha4_exact_platform_and_e2e.py
+- id: REVIEW_WORKSPACE
+  required: true
+  name: Human review workspace, addressable delivery manifest, decision template and
+    stale-review guard
+  implementation_paths:
+  - runtime/cbcc/review.py
+  - runtime/cbcc/state.py
+  - runtime/cbcc/cli.py
+  - schemas/review_decision.schema.json
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Build a review workspace and apply explicit ACCEPT / REVISE / HOLD decisions without
+    browser-side authority mutation.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/cli.py
+  behavior_test: tests/test_alpha6_review_provider_overlays.py
+  e2e_evidence: tests/test_alpha6_review_provider_overlays.py
+- id: STRATEGY_AUTHORITY
+  required: true
+  name: Nine-part positive-first professional strategy output with WHY decision trace
+  implementation_paths:
+  - runtime/cbcc/strategy_authority.py
+  - schemas/strategy_authority.schema.json
+  - references/FINAL_OUTPUT_CONTRACT.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Build a complete strategy plan that explains why each major decision exists and
+    feeds asset production.
+  runtime_consumers:
+  - runtime/cbcc/compiler.py
+  - runtime/cbcc/asset_compiler.py
+  behavior_test: tests/test_v05_strategy_authority.py
+  e2e_evidence: tests/test_v05_strategy_authority.py
+- id: KNOWLEDGE_ONTOLOGY_PROMPTS
+  required: true
+  name: Separated commerce knowledge, ontology and prompt registry layers
+  implementation_paths:
+  - knowledge/README.md
+  - ontology/commerce_ontology.json
+  - prompts/registry.json
+  - prompts/master_strategy_authoring.md
+  maturity: RUNTIME_VERIFIED
+  trigger_examples:
+  - Use shared commerce entities/relations/constraints and the registered master strategy
+    prompt instead of burying all knowledge in one SKILL.md.
+  runtime_consumers:
+  - runtime/cbcc/strategy_authority.py
+  - runtime/cbcc/compiler.py
+  behavior_test: tests/test_v05_strategy_authority.py
+  e2e_evidence: tests/test_v05_strategy_authority.py
+audit_semantics: Required capability binds declaration + implementation + runtime
+  consumption + executable behavior/E2E evidence. RUNTIME_VERIFIED means the package
+  test suite exercises the runtime path; external market approval, legal approval,
+  provider execution and commercial lift remain outside package self-certification.
