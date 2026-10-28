@@ -1,13 +1,20 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.8-asset-production-workspace
+version: 0.6.9-photography-execution-continuity
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.9 摄影执行合同连续性
+- 显式 `Photography Contract` 是生产执行权威之一。`capture_mode`、完整 `composition` 字典与显式 `color_management` 必须原样进入 Design Card 的 `photography_execution`；不得只抽取旧白名单中的镜头、机位和灯光字段。
+- `photography_execution` 必须继续进入 CN/EN Canonical Prompt、Parameter Trace、Machine Visual Contract 与人类单资产「摄影 / CMF」工作区。策划里用于出图的参数，最终必须能在执行层找到。
+- Composition 使用开放字典语义：`product_occupancy`、`negative_space`、`subject_clearance` 或未来新增的执行字段均不得因编译器未预登记字段名而丢失。
+- 显式输出色彩管理（例如 `output_space=sRGB`、真实商品颜色锁定）优先作为执行合同保留；策略派生的颜色一致性计划可以补充解释，但不能覆盖或吞掉显式合同。
+- 仍然禁止把 Asset / Project / Direction ID、RACE、KPI 等内部元数据塞进 Render Prompt；摄影合同连续性只传递真正影响画面生成/拍摄/合成的参数。
 
 ## v0.6.8 单资产生产工作区
 - 单资产详情页不再复用通用 `module-shell`。每张资产按当前真实内容动态形成 **决策 / Design Card → 画面执行 → 摄影 / CMF → 文案 → Prompt 执行 → QA / 来源** 的生产工作区；缺失阶段不占位，不预设固定阶段数。

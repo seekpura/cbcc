@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.9 — Photography Execution Continuity
+- Preserved explicit capture/composite mode, complete composition execution data, and output color-management contract in each Design Card.
+- Propagated that contract into CN/EN Canonical Prompts, Parameter Trace, Machine Visual Contract, and the human Photography / CMF production workspace.
+- Removed composition-field whitelist fragility: future execution keys such as negative-space or subject-clearance survive without compiler-specific registration.
+- Locked the continuity with the real KIYUU Malaysia TikTok fixture and a future-field regression case.
+- Full suite: 100 passed / 13 pre-existing baseline failures; no new failures.
+- See `CHANGELOG_V069.md`.
+
 ## 0.6.8 — Asset Production Workspace
 - Replaced the generic per-asset `module-shell` with a production-decision workspace.
 - Dynamically groups asset content into Design Card / decision, visual execution, photography / CMF, copy, Prompt execution, and QA / source trace.

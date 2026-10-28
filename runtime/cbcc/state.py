@@ -13,7 +13,7 @@ class ProjectState:
     @property
     def meta(self): return self.project_dir/'.cbcc'
     @classmethod
-    def init(cls, project_dir:Path, project_id:str, version='0.6.8-asset-production-workspace'):
+    def init(cls, project_dir:Path, project_id:str, version='0.6.9-photography-execution-continuity'):
         p=Path(project_dir); (p/'.cbcc/checkpoints').mkdir(parents=True,exist_ok=True); (p/'artifacts/objects').mkdir(parents=True,exist_ok=True)
         data={'project_id':project_id,'runtime_version':version,'revision':0,'current_stage':'INIT','created_at':now(),'updated_at':now(),
               'gates':{g:{'status':'PENDING','artifact_paths':[],'authority_hash':None,'updated_at':None} for g in CANONICAL_GATES},
