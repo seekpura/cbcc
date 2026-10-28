@@ -1,7 +1,7 @@
-# CBCC v0.6.11 CURRENT HANDOFF
+# CBCC v0.6.12 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.11-source-master-binding-frozen-revision`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.12-portable-provider-package-production-receipt`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -48,5 +48,12 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 6. 真实 KIYUU 三资产 production run：3/3 Provider Job 绑定同一经过 handoff 校验的商品母版。
 7. v0.6.7–v0.6.11 定向联测：18 passed；全量：107 passed / 12 个既有历史失败。
 
+## v0.6.12 已完成
+1. `materialize_provider_jobs()` 不再把主机 `package_dir` / LOCAL_FILE_PATH 当作外部执行路径；冻结资产包与本地商品母版进入 job 内部 `inputs/`。
+2. 本地商品母版在物化时再次校验 SHA256 后复制，并重绑为 `PACKAGE_RELATIVE_PATH`；外部 Provider handle 继续保持显式 handle。
+3. 新增 `PORTABLE_JOB_MANIFEST.json`，绑定冻结 package 文件 hash、upstream source binding、portable source binding 与 portable manifest hash。
+4. 外部 `result.json` 必须返回 `production_receipt`；系统校验 job/package/source/output lineage，并对 job 内本地输出重新计算 SHA256。
+5. LOCKED_PIXEL receipt 必须有 source-bound `layer_manifest`；REAL_PHOTO / VIDEO receipt 必须有真实 `capture_metadata`。
+
 ## 下一步唯一主任务
-**继续审计 Provider Adapter Bridge 的“可携带执行”能力：LOCAL_FILE_PATH、PROVIDER_ASSET_HANDLE、package/job 导出与外部 Provider 实际可解析资源之间是否存在断链；重点确认 job 离开当前文件系统后不会出现“合同完整但母版拿不到”的伪可执行状态，并检查 layer_manifest / capture_metadata 能否形成真实生产回执。只修实际断链。**
+**继续审计真实 Provider Adapter 的传输边界：PROVIDER_ASSET_HANDLE 的获取/刷新/失效语义、远程输出 URI 的可验证 hash/下载回收、以及不同 Provider adapter 如何把统一 portable job contract 映射到真实 API 请求与回执。只修真实断链。**

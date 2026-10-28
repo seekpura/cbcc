@@ -92,6 +92,20 @@ def test_materialized_job_is_self_contained_after_original_master_disappears(tmp
     assert portable_master.exists()
 
 
+def test_materialization_preserves_upstream_contract_and_adds_provider_projection(tmp_path):
+    packs = tmp_path / 'packs'; master = tmp_path / 'master.png'; _compile(packs, master)
+    run = build_production_run(packs); row = run['assets'][0]
+    upstream_hash = row['production_quality_contract']['source_binding_hash']
+    upstream_locator = dict(row['production_quality_contract']['source_product_bindings'][0]['locator'])
+    jobs = tmp_path / 'jobs'; materialize_provider_jobs(packs, run, jobs)
+    job = json.loads((jobs / row['asset_id'] / 'job.json').read_text(encoding='utf-8'))
+    assert row['production_quality_contract']['source_binding_hash'] == upstream_hash
+    assert row['production_quality_contract']['source_product_bindings'][0]['locator'] == upstream_locator
+    assert upstream_locator['kind'] == 'LOCAL_FILE_PATH'
+    assert row['provider_job_quality_contract']['source_binding_hash'] == job['source_binding_hash']
+    assert row['provider_job_quality_contract']['source_product_bindings'][0]['locator']['kind'] == 'PACKAGE_RELATIVE_PATH'
+
+
 def test_external_result_receipt_binds_job_source_layer_and_output_hash(tmp_path):
     packs = tmp_path / 'packs'; master = tmp_path / 'master.png'; source_sha = _compile(packs, master)
     run = build_production_run(packs)

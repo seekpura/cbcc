@@ -6,7 +6,7 @@ import hashlib, json, re, shutil
 from .models import stable_hash
 
 VERSION = '0.6.12-portable-provider-package-production-receipt'
-_CAPTURE_METADATA_MODES = {'REAL_PHOTO', 'VIDEO?}
+_CAPTURE_METADATA_MODES = {'REAL_PHOTO', 'VIDEO'}
 
 
 def _sha256_file(path: Path) -> str:
@@ -124,6 +124,39 @@ def materialize_portable_job_inputs(package_dir: Path, job_dir: Path, source_bin
     (job_dir / 'PORTABLE_JOB_MANIFEST.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
     return payload
 
+
+def rebind_portable_execution_metadata(value: Any, upstream_bindings: list[dict[str, Any]] | None, portable_bindings: list[dict[str, Any]] | None) -> Any:
+    """Replace only source-master host paths with verified portable job locators.
+
+    Frozen package hashes still bind the original compiled package. This projection is only the
+    provider-facing execution metadata, so stale host paths cannot become execution locators after
+    the job leaves the CBCC runtime host.
+    """
+    portable_by_id = {str(row.get('asset_id')): row for row in (portable_bindings or []) if isinstance(row, dict) and row.get('asset_id')}
+    replacements: dict[str, str] = {}
+    for row in upstream_bindings or []:
+        if not isinstance(row, dict):
+            continue
+        locator = row.get('locator') or {}
+        if str(locator.get('kind') or '').upper() != 'LOCAL_FILE_PATH' or not locator.get('value'):
+            continue
+        portable = portable_by_id.get(str(row.get('asset_id'))) or {}
+        portable_locator = portable.get('locator') or {}
+        if str(portable_locator.get('kind') or '').upper() == 'PACKAGE_RELATIVE_PATH' and portable_locator.get('value'):
+            replacements[str(locator.get('value'))] = str(portable_locator.get('value'))
+
+    def walk(node: Any) -> Any:
+        if isinstance(node, dict):
+            return {key: walk(item) for key, item in node.items()}
+        if isinstance(node, list):
+            return [walk(item) for item in node]
+        if isinstance(node, tuple):
+            return tuple(walk(item) for item in node)
+        if isinstance(node, str) and node in replacements:
+            return replacements[node]
+        return node
+
+    return walk(value)
 
 def build_production_receipt_contract(job_id: str, asset_id: str, provider: str, package_hash: str, source_binding_hash: str | None, production_mode: str, product_fidelity: str, portable_manifest_hash: str) -> dict[str, Any]:
     mode = str(production_mode or '').upper()

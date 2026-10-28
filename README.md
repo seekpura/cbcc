@@ -1,4 +1,4 @@
-# Cross-Border Commerce Creative — v0.6.11
+# Cross-Border Commerce Creative — v0.6.12
 
 CBCC 是跨境电商 Product Truth、市场/竞品/人群、产品/SKU/Offer、Listing/Search、文化本地化、视觉/摄影、动态图片/视频、广告、评论闭环、生产与学习系统。
 
@@ -16,6 +16,7 @@ CBCC 是跨境电商 Product Truth、市场/竞品/人群、产品/SKU/Offer、L
 - v0.6.9 将显式 Photography Contract 的拍摄/合成模式、完整构图执行字典（含商品占画、负空间与未来扩展字段）、输出色彩管理贯穿到 Design Card、CN/EN Canonical Prompt、Parameter Trace、Machine Visual Contract 与单资产生产台。
 - v0.6.10 将 Approved Visual Elements、Precision Boundaries、Editable/Frozen Layers 与 Product Fidelity 贯穿到 Render Prompt 和人类 Visual 工作台；锁定可见文案只保留在 deterministic overlay / Copy 工作台，不再通过 Surface / Copy Budget JSON 泄漏给图像模型。
 - v0.6.11 将真实商品母版从 compile-time 记录升级为 Provider handoff 的机器可执行 Source Binding：绑定 resolver、SHA256、pixel lock、允许变换与身份字段；handoff 时重新校验本地文件/hash，LOCKED_PIXEL 结果必须回报母版 ID/hash lineage，局部修订报告触碰 frozen layer 时直接进入 Review。
+- v0.6.12 将 Provider Job 升级为可携带自包含执行包：本地商品母版复制进 job 并改绑 PACKAGE_RELATIVE_PATH；外部 result 必须返回绑定 job/package/source/output 的 production receipt，LOCKED_PIXEL 回执携带 layer_manifest，真实拍摄/视频携带 capture_metadata。
 
 ## 主要入口
 - `SKILL.md`
