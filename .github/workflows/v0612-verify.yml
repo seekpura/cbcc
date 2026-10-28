@@ -20,6 +20,16 @@ jobs:
         run: |
           cat .changes/apply_v0612.part*.b64 | base64 -d > .changes/apply_v0612.py
           python .changes/apply_v0612.py
+          python - <<'PY'
+          from pathlib import Path
+          path=Path('runtime/cbcc/provider_portability.py')
+          text=path.read_text(encoding='utf-8')
+          old="_CAPTURE_METADATA_MODES = {'REAL_PHOTO', 'VIDEO?}"
+          new="_CAPTURE_METADATA_MODES = {'REAL_PHOTO', 'VIDEO'}"
+          if old not in text:
+              raise SystemExit('malformed capture mode line not found')
+          path.write_text(text.replace(old,new,1),encoding='utf-8')
+          PY
       - name: Install test dependency
         run: python -m pip install pytest pyyaml
       - name: Focused continuity regression
