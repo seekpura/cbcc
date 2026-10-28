@@ -60,6 +60,13 @@ def main() -> int:
 
     text = replace_once(
         text,
+        """      '7':'RACE 执行（当前项目显式启用）','8':'文化适配（当前任务相关）','9':'风险 / 评估 / 下一动作'}\n""",
+        """      '7':'RACE传播框架执行表','8':'族裔文化适配检查表','9':'合规、文化敏感、风险、评估与 P0/P1/P2 下一步'}\n""",
+        'full visible headings',
+    )
+
+    text = replace_once(
+        text,
         """    insert=f\"\\n> 人类策略投影：{hp.get('mode') or 'TASK_SCOPED'}；当前显示 {len(active)} 个相关决策域；固定九段人类配额：无。\\n\"\n""",
         """    if str(hp.get('mode') or '').upper()=='FULL':\n        insert=\"\\n> 人类策略投影：FULL；完整商品项目按 9 个硬交付域全部物化；RACE=Research → Action → Communication → Evaluation。页面/交互仍按业务对象设计，不等于固定页面模板。\\n\"\n    else:\n        insert=f\"\\n> 人类策略投影：{hp.get('mode') or 'TASK_SCOPED'}；当前显示 {len(active)} 个相关决策域；固定九段人类配额：无。\\n\"\n""",
         'full render note',
