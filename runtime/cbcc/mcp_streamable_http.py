@@ -8,10 +8,12 @@ import base64
 import binascii
 import json
 import os
+import re
 
 from .action_transports import mcp_tool_descriptors
 from .host_actions import ActionAuthorization, ProviderActionDispatcher
 from .mcp_protocol import (
+    JSONRPC_INVALID_PARAMS,
     JSONRPC_INVALID_REQUEST,
     JSONRPC_METHOD_NOT_FOUND,
     MCPAuthorizationContext,
@@ -322,7 +324,11 @@ class MCPStreamableHTTPApplication:
                 seen_headers: set[str] = set()
                 for path, annotation, type_name in _reachable_header_annotations(schema):
                     normalized = annotation.lower()
-                    if not annotation or normalized in seen_headers:
+                    if (
+                        not annotation
+                        or normalized in seen_headers
+                        or re.fullmatch(r"[!#$%&'*+\-.^_`|~0-9A-Za-z]+", annotation) is None
+                    ):
                         return None, _jsonrpc_error(request_id, HEADER_MISMATCH, 'Header mismatch: invalid x-mcp-header annotation')
                     seen_headers.add(normalized)
                     present, value = _value_at_path(arguments, path)
@@ -372,7 +378,7 @@ class MCPStreamableHTTPApplication:
     def _http_status_for_protocol_response(self, response: dict[str, Any]) -> int:
         error = response.get('error') if isinstance(response, dict) else None
         code = error.get('code') if isinstance(error, dict) else None
-        if code in {HEADER_MISMATCH, MCP_UNSUPPORTED_PROTOCOL_VERSION, JSONRPC_INVALID_REQUEST}:
+        if code in {HEADER_MISMATCH, MCP_UNSUPPORTED_PROTOCOL_VERSION, JSONRPC_INVALID_REQUEST, JSONRPC_INVALID_PARAMS}:
             return 400
         if code == JSONRPC_METHOD_NOT_FOUND:
             return 404
