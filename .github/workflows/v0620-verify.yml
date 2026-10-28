@@ -36,6 +36,7 @@ jobs:
             tests/test_v0619_http_auth_failclosed.py \
             tests/test_v0620_mcp_host.py \
             tests/test_v0620_mcp_transports.py \
+            tests/test_v0620_mcp_http_security.py \
             > .changes/v0620-test-output.txt 2>&1
           rc=$?
           set -e
