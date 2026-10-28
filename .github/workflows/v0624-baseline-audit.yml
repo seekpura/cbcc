@@ -1,0 +1,35 @@
+name: CBCC v0.6.24 baseline strategy asset audit
+
+on:
+  push:
+    branches:
+      - work/v0624-strategy-asset-scope
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m pip install -q pytest pyyaml
+      - name: Full pytest diagnostic
+        env:
+          PYTHONPATH: runtime
+        run: |
+          set +e
+          pytest -q > /tmp/full.txt 2>&1
+          rc=$?
+          set -e
+          cat /tmp/full.txt
+          echo "PYTEST_RC=$rc"
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          t=Path('/tmp/full.txt').read_text(encoding='utf-8',errors='replace')
+          failed=re.findall(r'^FAILED\s+([^\s]+)',t,re.M)
+          print('FAILURE_COUNT=',len(failed))
+          print('FAILED_NODE_IDS:')
+          print('\n'.join(failed))
+          PY
