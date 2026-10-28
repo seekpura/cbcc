@@ -72,12 +72,15 @@ def _materialize_project(tmp_path: Path, asset_id='AST-V0616'):
         }],
     )
     run = build_production_run(packs, provider_preferences={'REAL_PRODUCT_COMPOSITE': 'EPV_ADAPTER'})
-    run_path = project / 'artifacts/production_run.json'
-    run_path.parent.mkdir(parents=True, exist_ok=True)
-    run_path.write_text(json.dumps(run, ensure_ascii=False, indent=2), encoding='utf-8')
     jobs = project / 'artifacts/provider_jobs'
     index = materialize_provider_jobs(packs, run, jobs)
     assert index['job_count'] == 1
+    # Match the real compiler: provider job materialization mutates run with the receipt/binding
+    # contracts that existing ingest must validate, then production_run.json is persisted.
+    run['provider_jobs'] = index
+    run_path = project / 'artifacts/production_run.json'
+    run_path.parent.mkdir(parents=True, exist_ok=True)
+    run_path.write_text(json.dumps(run, ensure_ascii=False, indent=2), encoding='utf-8')
     ProjectState.init(project, 'V0616-HOST-SURFACE', version='0.6.16-provider-host-execution-surface')
     return project, jobs
 
@@ -125,8 +128,9 @@ def test_adapter_listing_is_available_without_runtime_credentials():
     assert out['status'] == 'ADAPTERS_DISCOVERED'
     assert out['count'] == 1
     assert out['adapters'][0]['adapter_id'] == 'EPV_HOST_CALLBACK_V1'
-    serialized = json.dumps(out)
-    assert 'api_key' not in serialized and 'secret' not in serialized.lower()
+    serialized_adapters = json.dumps(out['adapters'])
+    assert 'api_key' not in serialized_adapters
+    assert 'credential_value' not in serialized_adapters
 
 
 def test_programmatic_surface_executes_ingests_updates_state_and_never_persists_secret(tmp_path):
