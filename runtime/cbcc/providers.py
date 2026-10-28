@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Any
 
+from .provider_transport import adapter_profile_for
+
 DEFAULT_PROVIDER_BY_MODE={
     'REAL_PHOTO':'HUMAN_PHOTOGRAPHY',
     'REAL_PRODUCT_COMPOSITE':'COMPOSITE_PIPELINE',
@@ -21,7 +23,7 @@ PROVIDER_REGISTRY={
     'CG_3D_PROVIDER': {'modes':['THREE_D'],'locked_pixel':'REFERENCE_ONLY','human_review':True,'adapter':'FILE_HANDOFF','outputs':['render','scene_manifest','qa']},
     'VIDEO_PROVIDER': {'modes':['VIDEO'],'locked_pixel':'SUPPORTED_BY_COMPOSITE','human_review':True,'adapter':'FILE_HANDOFF','outputs':['video','edit_manifest','qa']},
     'DOCUMENT_RENDERER': {'modes':['DOCUMENTATION'],'locked_pixel':'NOT_APPLICABLE','human_review':False,'adapter':'FILE_HANDOFF','outputs':['document','qa']},
-    'EPV_ADAPTER': {'modes':['REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','AI_GENERATIVE','GRAPHIC_DESIGN','THREE_D','VIDEO'],'locked_pixel':'CONTRACT_DRIVEN','human_review':True,'adapter':'EXTERNAL_ADAPTER','outputs':['provider_manifest','artifact','qa']},
+    'EPV_ADAPTER': {'modes':['REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','AI_GENERATIVE','GRAPHIC_DESIGN','THREE_D','VIDEO'],'locked_pixel':'CONTRACT_DRIVEN','human_review':True,'adapter':'EXTERNAL_ADAPTER','outputs':['provider_manifest','artifact','qa'],'adapter_profile':adapter_profile_for('EXTERNAL_ADAPTER','EPV_ADAPTER')},
 }
 
 
@@ -42,13 +44,19 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
     return {
         'status':'READY' if not errors else 'HOLD','provider':provider,'production_mode':mode,'product_fidelity':fidelity,
         'required_inputs':required_inputs,'expected_outputs':list(dict.fromkeys(list(spec['outputs'])+['production_receipt'])),'human_review_required':spec['human_review'],
-        'adapter':spec.get('adapter','FILE_HANDOFF'),'locked_pixel_support':spec['locked_pixel'],
+        'adapter':spec.get('adapter','FILE_HANDOFF'),'adapter_profile':spec.get('adapter_profile') or adapter_profile_for(spec.get('adapter','FILE_HANDOFF'),provider),'locked_pixel_support':spec['locked_pixel'],
         'source_binding_contract':{
             'required': source_binding_required,
             'resolver_precedence':['PROVIDER_ASSET_HANDLE','PACKAGE_RELATIVE_PATH','LOCAL_FILE_PATH'],
             'integrity_key':'sha256',
             'required_binding_fields':['asset_id','locator','sha256','pixel_lock','allowed_transforms','identity_features'],
             'locked_pixel_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_layer_operation','product_identity_preserved'] if fidelity=='LOCKED_PIXEL' else [],
+            'provider_asset_handle_lifecycle':{
+                'supported':True,
+                'structured_fields':['handle_id','provider','state','sha256','issued_at','verified_at','expires_at','supersedes_handle','generation'],
+                'legacy_string_semantics':'DECLARED_ONLY',
+                'rule':'Structured handles must be executable, unexpired and content-hash bound. Refreshes must rotate the handle and declare predecessor lineage.'
+            },
         },
         'errors':errors
     }

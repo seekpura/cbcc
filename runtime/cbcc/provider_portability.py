@@ -4,6 +4,7 @@ from typing import Any
 import hashlib, json, re, shutil
 
 from .models import stable_hash
+from .provider_transport import validate_provider_asset_binding, verify_artifact_reference
 
 VERSION = '0.6.12-portable-provider-package-production-receipt'
 _CAPTURE_METADATA_MODES = {'REAL_PHOTO', 'VIDEO'}
@@ -84,10 +85,11 @@ def materialize_portable_job_inputs(package_dir: Path, job_dir: Path, source_bin
             binding['handoff_status'] = 'READY_PACKAGE_VERIFIED'
             binding['handoff_sha256'] = copied
         elif kind == 'PROVIDER_ASSET_HANDLE':
-            if not value or not declared:
-                errors.append({'asset_id': aid, 'code': 'PORTABLE_PROVIDER_HANDLE_INCOMPLETE'})
+            handle_issues = validate_provider_asset_binding(binding)
+            if handle_issues:
+                errors.extend({'asset_id': aid, 'code': code} for code in handle_issues)
                 continue
-            binding['handoff_status'] = 'READY_PROVIDER_HANDLE_VERIFIED'
+            binding['handoff_status'] = 'READY_PROVIDER_HANDLE_LIFECYCLE_VERIFIED'
             binding['handoff_sha256'] = declared
         elif kind == 'PACKAGE_RELATIVE_PATH':
             rel = Path(str(value or ''))
@@ -207,7 +209,7 @@ def production_receipt_template(contract: dict[str, Any]) -> dict[str, Any]:
     return receipt
 
 
-def validate_production_receipt(row: dict[str, Any], result: dict[str, Any]) -> list[str]:
+def validate_production_receipt(row: dict[str, Any], result: dict[str, Any], *, remote_artifact_resolver=None, require_remote_verification: bool = False) -> list[str]:
     """Validate portable external-provider receipt lineage.
 
     Inline/internal results remain backward-compatible. Results ingested from materialized provider
@@ -245,21 +247,13 @@ def validate_production_receipt(row: dict[str, Any], result: dict[str, Any]) -> 
             if not isinstance(artifact, dict):
                 issues.append('PRODUCTION_RECEIPT_OUTPUT_ARTIFACT_INVALID')
                 continue
-            locator = artifact.get('path_or_uri') or artifact.get('path') or artifact.get('uri')
-            declared = str(artifact.get('sha256') or '').lower()
-            if not locator or not re.fullmatch(r'[0-9a-f]{64}', declared):
-                issues.append('PRODUCTION_RECEIPT_OUTPUT_ARTIFACT_INVALID')
-                continue
-            if base and artifact.get('uri') is None and '://' not in str(locator):
-                rel = Path(str(locator))
-                if rel.is_absolute():
-                    issues.append('PRODUCTION_RECEIPT_OUTPUT_PATH_NOT_PORTABLE')
-                    continue
-                target = base / rel
-                if not target.exists() or not target.is_file():
-                    issues.append('PRODUCTION_RECEIPT_OUTPUT_ARTIFACT_MISSING')
-                elif _sha256_file(target) != declared:
-                    issues.append('PRODUCTION_RECEIPT_OUTPUT_ARTIFACT_HASH_MISMATCH')
+            check = verify_artifact_reference(
+                artifact,
+                base_dir=base,
+                resolver=remote_artifact_resolver,
+                require_remote_verification=require_remote_verification,
+            )
+            issues.extend(check.get('issues') or [])
 
     fidelity = str(qc.get('product_fidelity') or '').upper()
     if fidelity == 'LOCKED_PIXEL':

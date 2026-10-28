@@ -1,3 +1,9 @@
+## 0.6.13 — Provider Transport Integrity
+- Added structured provider-asset-handle lifecycle validation with expiry, terminal states and refresh lineage while preserving legacy declared-only string handles.
+- Added normalized adapter transmission profiles with deterministic field mapping, request hash, idempotency key and external-job acknowledgement binding.
+- Remote provider output URIs are no longer treated as byte-verified during real job ingestion without an injected resolver; resolved bytes are rehashed against the production receipt.
+- Added verified remote-artifact recovery that persists only hash-matching bytes.
+
 ## 0.6.12 — Portable Provider Package + Production Receipt Lineage
 - Materialized provider jobs are self-contained: local product masters are copied into each job and rebound to `PACKAGE_RELATIVE_PATH`; frozen asset packages travel under `inputs/asset_package`.
 - Added `PORTABLE_JOB_MANIFEST.json` with file hashes, upstream/portable source-binding lineage and a portable manifest hash.

@@ -1,7 +1,7 @@
-# CBCC v0.6.12 CURRENT HANDOFF
+# CBCC v0.6.13 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.12-portable-provider-package-production-receipt`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.13-provider-transport-integrity`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -55,5 +55,12 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 4. 外部 `result.json` 必须返回 `production_receipt`；系统校验 job/package/source/output lineage，并对 job 内本地输出重新计算 SHA256。
 5. LOCKED_PIXEL receipt 必须有 source-bound `layer_manifest`；REAL_PHOTO / VIDEO receipt 必须有真实 `capture_metadata`。
 
+## v0.6.13 已完成
+1. `PROVIDER_ASSET_HANDLE` 增加结构化 lifecycle：provider/state/expiry/supersedes/generation/content SHA256；失效、过期或内容 hash 不一致在 handoff HOLD。
+2. 旧字符串 handle 保持兼容，但明确为 `DECLARED_ONLY`，不再伪称已远程验证。
+3. `EXTERNAL_ADAPTER` 增加统一 Adapter Profile → vendor request 映射、request hash、idempotency key、transmission ID 和 external job acknowledgement。
+4. 真实 provider-job ingestion 遇到远程 URI 必须由 adapter/resolver 提供实际字节并重新计算 SHA256；无 resolver / 下载失败 / hash 不匹配进入 Review。
+5. 新增远程输出 recovery，只有 hash 匹配的实际字节才能落入恢复副本。
+
 ## 下一步唯一主任务
-**继续审计真实 Provider Adapter 的传输边界：PROVIDER_ASSET_HANDLE 的获取/刷新/失效语义、远程输出 URI 的可验证 hash/下载回收、以及不同 Provider adapter 如何把统一 portable job contract 映射到真实 API 请求与回执。只修真实断链。**
+**把 transport contract 接到真实 Provider Adapter Executor 生命周期：upload/create-or-refresh asset → submit idempotent job → poll/resume → download/resolve outputs → production receipt。凭证与网络客户端保持 adapter 外置；优先实现可插拔 executor protocol + 一个可验证的 mock/reference adapter，再根据实际接入的 Provider 增加具体 API profile。**

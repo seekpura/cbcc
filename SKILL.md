@@ -1,13 +1,19 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.12-portable-provider-package-production-receipt
+version: 0.6.13-provider-transport-integrity
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.13 Provider Transport Integrity
+- `PROVIDER_ASSET_HANDLE` 支持结构化 lifecycle：provider / state / expires_at / supersedes_handle / generation / content SHA256；过期、撤销、内容 hash 不一致会在 handoff HOLD。旧字符串 handle 继续兼容，但只具有 `DECLARED_ONLY` 语义。
+- `EXTERNAL_ADAPTER` 现在有统一 Adapter Profile、字段映射、request hash、idempotency key、transmission ID 与 external job acknowledgement contract；统一 portable job 可以映射到真实 Provider API，而不把“已映射”误报为“已调用”。
+- 外部 Provider Job ingestion 对远程输出 URI 要求 resolver 提供真实字节并重算 SHA256；没有 resolver、下载失败或 hash 不一致均进入 Review。Runtime 本身不伪装拥有网络权限。
+- 新增可验证远程 artifact recovery：下载/解析后的字节必须先匹配 receipt SHA256，再写入本地恢复副本并再次校验。
 
 ## v0.6.12 可携带 Provider Package + Production Receipt
 - 外部 Provider Job 必须自包含执行资源：LOCAL_FILE_PATH 商品母版在 handoff 时复制到 job `inputs/product_masters/` 并重绑为 `PACKAGE_RELATIVE_PATH`；Provider handle 保持显式 handle。

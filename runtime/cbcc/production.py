@@ -5,6 +5,7 @@ import json, yaml, hashlib
 from .models import stable_hash
 from .providers import route_production, validate_provider_result
 from .provider_portability import materialize_portable_job_inputs, build_production_receipt_contract, production_receipt_template, validate_production_receipt, rebind_portable_execution_metadata
+from .provider_transport import normalize_provider_asset_handle, validate_provider_asset_binding, build_adapter_transmission, adapter_result_template, validate_adapter_result
 
 
 def _read_manifest(d:Path)->dict[str,Any]:
@@ -26,11 +27,10 @@ def _sha256_file(path:Path)->str:
     return h.hexdigest()
 
 def _source_product_bindings(manifest:dict[str,Any])->tuple[list[dict[str,Any]],list[dict[str,Any]]]:
-    """Resolve production-time source bindings and re-check local-file integrity at handoff.
+    """Resolve production-time source bindings and validate provider-handle lifecycle.
 
-    Compile-time ingest status alone is not enough: a local master may move or change between
-    package compilation and provider handoff. External handles remain explicit adapter bindings
-    and are integrity-bound by their declared SHA256.
+    Local masters are re-hashed at handoff. Provider handles may be legacy strings (declared-only
+    compatibility) or structured lifecycle records with provider/state/expiry/refresh lineage.
     """
     ready=[]; errors=[]
     for row in manifest.get('source_product_assets') or []:
@@ -38,11 +38,31 @@ def _source_product_bindings(manifest:dict[str,Any])->tuple[list[dict[str,Any]],
             continue
         aid=row.get('asset_id'); handle=row.get('provider_asset_handle'); raw_path=row.get('path'); declared=str(row.get('sha256') or '').lower() or None
         locator_kind='PROVIDER_ASSET_HANDLE' if handle else ('LOCAL_FILE_PATH' if raw_path else 'UNRESOLVED')
-        locator_value=handle or raw_path
-        status='UNRESOLVED_AT_HANDOFF'; actual=None
-        if handle and declared:
-            status='READY_PROVIDER_HANDLE'
-        elif raw_path:
+        actual=None; lifecycle=None; lifecycle_issues=[]
+        if handle:
+            lifecycle=normalize_provider_asset_handle(handle,source_sha256=declared,default_provider=row.get('provider_asset_provider'),source_row=row)
+            locator_value=lifecycle.get('handle_id')
+            binding={
+                'asset_id':aid,'role':row.get('role'),
+                'locator':{'kind':'PROVIDER_ASSET_HANDLE','value':locator_value},
+                'sha256':declared,'handoff_sha256':declared,
+                'pixel_lock':bool(row.get('pixel_lock')),
+                'allowed_transforms':list(row.get('allowed_transforms') or []),
+                'identity_features':list(row.get('identity_features') or []),
+                'provider_asset_lifecycle':lifecycle,
+            }
+            lifecycle_issues=validate_provider_asset_binding(binding)
+            status=('READY_PROVIDER_HANDLE' if lifecycle.get('legacy_declared') else 'READY_PROVIDER_HANDLE_LIFECYCLE_VERIFIED') if not lifecycle_issues else 'PROVIDER_HANDLE_LIFECYCLE_HOLD'
+            binding['handoff_status']=status
+            if not lifecycle_issues:
+                ready.append(binding)
+            else:
+                binding['lifecycle_errors']=lifecycle_issues
+                errors.append({'asset_id':aid,'status':status,'locator_kind':'PROVIDER_ASSET_HANDLE','errors':lifecycle_issues})
+            continue
+        locator_value=raw_path
+        status='UNRESOLVED_AT_HANDOFF'
+        if raw_path:
             path=Path(str(raw_path)).expanduser()
             if path.exists() and path.is_file():
                 actual=_sha256_file(path)
@@ -57,7 +77,7 @@ def _source_product_bindings(manifest:dict[str,Any])->tuple[list[dict[str,Any]],
             'allowed_transforms':list(row.get('allowed_transforms') or []),
             'identity_features':list(row.get('identity_features') or []),
         }
-        if status in {'READY_PROVIDER_HANDLE','READY_LOCAL_VERIFIED'}:
+        if status=='READY_LOCAL_VERIFIED':
             ready.append(binding)
         else:
             errors.append({'asset_id':aid,'status':status,'locator_kind':locator_kind})
@@ -223,7 +243,7 @@ def build_production_run(asset_packages_root:Path, provider_preferences:dict[str
     return {'status':'RUN_COMPILED','asset_count':len(rows),'assets':rows,'replanning_allowed':False,'one_asset_one_output':True,'preflight_holds':[{'asset_id':x.get('asset_id'),'errors':(x.get('production_quality_contract') or {}).get('preflight_errors',[])} for x in rows if x.get('status')=='HOLD_REAL_PRODUCT_PREFLIGHT']}
 
 
-def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]])->dict[str,Any]:
+def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]], remote_artifact_resolver=None)->dict[str,Any]:
     by={r.get('asset_id'):r for r in results}; out=[]; issues=[]
     for row in run.get('assets',[]):
         r=by.get(row['asset_id'])
@@ -238,7 +258,8 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]])->dic
         if row.get('status')!='READY_TO_HANDOFF': local.append('PRODUCTION_PREFLIGHT_NOT_READY')
         local.extend(validate_provider_result({'provider':row.get('provider'),'provider_contract':row.get('provider_contract')},r))
         local.extend(_quality_result_issues(contract_row,r))
-        local.extend(validate_production_receipt(contract_row,r))
+        local.extend(validate_production_receipt(contract_row,r,remote_artifact_resolver=remote_artifact_resolver,require_remote_verification=bool(r.get('_provider_transport_verification_required'))))
+        local.extend(validate_adapter_result(contract_row,r))
         if r.get('package_hash') != row.get('package_hash'):
             local.append('PACKAGE_HASH_MISMATCH')
         binding=contract_row.get('production_contract_binding') or {}
@@ -382,6 +403,19 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
                 'optional':['changed_fields','changed_layers','provider_metadata','production_contract_ack','source_binding_hash','layout_contract_hash','photography_contract_hash','prompt_contract_hash']
             }
         }
+        adapter_tx=build_adapter_transmission(job,(row.get('provider_contract') or {}).get('adapter_profile'))
+        job['adapter_transmission']=adapter_tx
+        row['provider_adapter_transmission']=adapter_tx
+        if adapter_tx.get('status')!='READY':
+            row['status']='HOLD_ADAPTER_TRANSMISSION'
+            row['adapter_transmission_errors']=adapter_tx.get('mapping_errors') or []
+            holds.append({'asset_id':aid,'errors':row['adapter_transmission_errors']})
+            (d/'job.json').write_text(json.dumps(job,ensure_ascii=False,indent=2),encoding='utf-8')
+            continue
+        if str(job.get('adapter') or '').upper()=='EXTERNAL_ADAPTER':
+            required=job['result_contract'].setdefault('required',[])
+            if 'adapter_result' not in required: required.append('adapter_result')
+
         (d/'job.json').write_text(json.dumps(job,ensure_ascii=False,indent=2),encoding='utf-8')
         qkeys=quality.get('required_result_observations',[])
         qobs={k:([] if k=='source_product_asset_ids_used' else ({} if k=='source_product_hashes_used' else ('' if k=='product_layer_operation' else {'status':'UNVERIFIED','evidence':None}))) for k in qkeys}
@@ -393,6 +427,8 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
             'layout_contract_hash':binding.get('layout_contract_hash'),'photography_contract_hash':binding.get('photography_contract_hash'),'prompt_contract_hash':binding.get('prompt_contract_hash'),
             'production_receipt':production_receipt_template(receipt_contract),
         }
+        if str(job.get('adapter') or '').upper()=='EXTERNAL_ADAPTER':
+            template['adapter_result']=adapter_result_template(adapter_tx)
         (d/'result.template.json').write_text(json.dumps(template,ensure_ascii=False,indent=2),encoding='utf-8')
         index.append({
             'asset_id':aid,'job_id':job_id,'provider':job['provider'],'adapter':job['adapter'],
@@ -407,7 +443,7 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
     (jobs/'PROVIDER_JOB_INDEX.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
     return manifest
 
-def ingest_provider_job_results(run:dict[str,Any], jobs_root:Path)->dict[str,Any]:
+def ingest_provider_job_results(run:dict[str,Any], jobs_root:Path, remote_artifact_resolver=None)->dict[str,Any]:
     """Read external provider result.json files and require portable production receipts."""
     jobs=Path(jobs_root); results=[]; missing=[]
     for row in run.get('assets',[]):
@@ -418,10 +454,11 @@ def ingest_provider_job_results(run:dict[str,Any], jobs_root:Path)->dict[str,Any
             result=json.loads(rp.read_text(encoding='utf-8'))
             result['_provider_job_ingest']=True
             result['_provider_job_dir']=str(rp.parent)
+            result['_provider_transport_verification_required']=True
             results.append(result)
         except Exception as e:
             results.append({'asset_id':row['asset_id'],'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':None,'qa':{},'_provider_job_ingest':True,'_provider_job_dir':str(rp.parent),'_parse_error':f'{type(e).__name__}: {e}'})
-    applied=apply_production_result(run,results)
+    applied=apply_production_result(run,results,remote_artifact_resolver=remote_artifact_resolver)
     if missing:
         existing={x['asset_id'] for x in applied.get('issues',[])}
         for aid in missing:
