@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/release-v0629.yml'
       - 'scripts/build_plugin_dist.py'
+      - 'scripts/build_dist.py'
       - 'README.md'
       - 'INSTALL.md'
       - 'requirements-runtime.txt'
@@ -17,6 +18,7 @@ permissions:
 jobs:
   package-and-release:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
