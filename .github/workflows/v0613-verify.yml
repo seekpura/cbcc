@@ -1,4 +1,4 @@
-name: CBCC v0.6.13 provider transport materialize and diagnose
+name: CBCC v0.6.13 provider transport diagnostics
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  materialize-and-diagnose:
+  summarize-existing-regression:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -17,35 +17,35 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Apply v0.6.13 transport patch
-        run: python .changes/stage_v0613.py
-
-      - name: Install test dependencies
-        run: python -m pip install -q pytest pyyaml
-
-      - name: Focused provider continuity regression
-        run: |
-          pytest -q \
-            tests/test_v0611_provider_source_binding.py \
-            tests/test_v0612_provider_portability_receipt.py \
-            tests/test_v0613_provider_transport_integrity.py
-
-      - name: Capture full regression without hiding diagnostics
+      - name: Build concise failure summary from committed regression evidence
         shell: bash
         run: |
-          set +e
-          pytest -q > .changes/v0613-full-regression.txt 2>&1
-          rc=$?
-          set -e
-          echo "$rc" > .changes/v0613-full-regression.rc
-          cat .changes/v0613-full-regression.txt
-          echo "FULL_REGRESSION_RC=$rc"
+          rc="unknown"
+          if [ -f .changes/v0613-full-regression.rc ]; then
+            rc="$(tr -d '\r\n' < .changes/v0613-full-regression.rc)"
+          fi
+          {
+            echo "FULL_REGRESSION_RC=$rc"
+            echo
+            echo "== PYTEST TERMINAL SUMMARY =="
+            grep -E '^[=]+ .* (failed|error|errors|passed|skipped|xfailed|xpassed|warning|warnings).* [=]+$' .changes/v0613-full-regression.txt | tail -30 || true
+            echo
+            echo "== FAILED / ERROR NODE IDS =="
+            grep -E '^(FAILED|ERROR) ' .changes/v0613-full-regression.txt | tail -400 || true
+            echo
+            echo "== SHORT TEST SUMMARY =="
+            awk '/short test summary info/{flag=1} flag' .changes/v0613-full-regression.txt | tail -500 || true
+            echo
+            echo "== LAST 250 LINES =="
+            tail -250 .changes/v0613-full-regression.txt || true
+          } > .changes/v0613-failures-summary.txt
 
-      - name: Materialize patch and diagnostic evidence on work branch
+      - name: Commit concise diagnostic summary
         run: |
-          rm -f .changes/v0613.trigger
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "chore: materialize CBCC v0.6.13 provider transport diagnostics"
-          git push origin HEAD:work/v0613-provider-transport
+          git add .changes/v0613-failures-summary.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: summarize v0.6.13 full regression failures"
+            git push origin HEAD:work/v0613-provider-transport
+          fi
