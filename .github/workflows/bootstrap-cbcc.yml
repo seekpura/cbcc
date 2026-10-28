@@ -25,9 +25,9 @@ jobs:
           import base64, hashlib, shutil, tarfile
 
           repo = Path.cwd()
-          manifest_path = repo / '.bootstrap' / 'manifest.txt'
+          manifest_path = repo / '.bootstrap' / 'manifest-hex.txt'
           if not manifest_path.is_file():
-              raise SystemExit('missing .bootstrap/manifest.txt')
+              raise SystemExit('missing .bootstrap/manifest-hex.txt')
 
           manifest = {}
           for raw in manifest_path.read_text(encoding='utf-8').splitlines():
@@ -39,12 +39,14 @@ jobs:
               key, value = line.split('=', 1)
               manifest[key.strip()] = value.strip()
 
-          required_manifest = {'version', 'format', 'prefix', 'chunks', 'sha256', 'root'}
+          required_manifest = {'version', 'format', 'encoding', 'prefix', 'chunks', 'sha256', 'root'}
           missing_manifest = sorted(required_manifest - manifest.keys())
           if missing_manifest:
               raise SystemExit(f'manifest missing keys: {missing_manifest}')
           if manifest['format'] != 'tar.xz':
               raise SystemExit(f"unexpected bootstrap format: {manifest['format']}")
+          if manifest['encoding'] not in {'hex', 'base64'}:
+              raise SystemExit(f"unexpected bootstrap encoding: {manifest['encoding']}")
 
           try:
               expected_count = int(manifest['chunks'])
@@ -68,19 +70,23 @@ jobs:
 
           payload = ''.join(p.read_text(encoding='utf-8') for p in chunks)
           payload = ''.join(payload.split())
-          if len(payload) % 4:
-              raise SystemExit(f'base64 payload length is not divisible by 4: {len(payload)}')
           try:
-              archive_bytes = base64.b64decode(payload, validate=True)
+              if manifest['encoding'] == 'hex':
+                  archive_bytes = bytes.fromhex(payload)
+              else:
+                  if len(payload) % 4:
+                      raise ValueError(f'base64 payload length is not divisible by 4: {len(payload)}')
+                  archive_bytes = base64.b64decode(payload, validate=True)
           except Exception as exc:
-              raise SystemExit(f'invalid bootstrap base64 payload: {exc}')
+              raise SystemExit(f"invalid {manifest['encoding']} bootstrap payload: {exc}")
 
           digest = hashlib.sha256(archive_bytes).hexdigest()
           if digest != manifest['sha256']:
               raise SystemExit(f"archive sha256 mismatch: {digest} != {manifest['sha256']}")
           print(
               f"validated bootstrap version={manifest['version']} "
-              f"chunks={expected_count} bytes={len(archive_bytes)} sha256={digest}"
+              f"encoding={manifest['encoding']} chunks={expected_count} "
+              f"bytes={len(archive_bytes)} sha256={digest}"
           )
 
           archive = Path('/tmp/cbcc-bootstrap.tar.xz')
