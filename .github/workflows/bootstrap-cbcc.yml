@@ -20,12 +20,16 @@ jobs:
         id: ready
         shell: bash
         run: |
-          for f in .bootstrap/chunk-01 .bootstrap/chunk-02 .bootstrap/chunk-03 .bootstrap/chunk-04 .bootstrap/manifest.txt; do
-            if [ ! -f "$f" ]; then
-              echo "ready=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          done
+          if [ ! -f .bootstrap/manifest.txt ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          expected_count="$(sed -n 's/^chunks=//p' .bootstrap/manifest.txt)"
+          actual_count="$(find .bootstrap -maxdepth 1 -type f -name 'chunk-*' | wc -l | tr -d ' ')"
+          if [ -z "$expected_count" ] || [ "$actual_count" != "$expected_count" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           echo "ready=true" >> "$GITHUB_OUTPUT"
       - name: Materialize canonical v0.6.6 workspace
         if: steps.ready.outputs.ready == 'true'
@@ -36,10 +40,15 @@ jobs:
           import base64, hashlib, shutil, zipfile
 
           root = Path.cwd()
-          chunks = [root / '.bootstrap' / f'chunk-{i:02d}' for i in range(1, 5)]
+          chunks = sorted((root / '.bootstrap').glob('chunk-*'))
           payload = ''.join(p.read_text(encoding='utf-8') for p in chunks)
           data = base64.b64decode(payload)
-          expected = (root / '.bootstrap' / 'manifest.txt').read_text(encoding='utf-8').strip().split('=', 1)[1]
+          manifest = {}
+          for line in (root / '.bootstrap' / 'manifest.txt').read_text(encoding='utf-8').splitlines():
+              if '=' in line:
+                  k, v = line.split('=', 1)
+                  manifest[k.strip()] = v.strip()
+          expected = manifest['sha256']
           actual = hashlib.sha256(data).hexdigest()
           if actual != expected:
               raise SystemExit(f'archive sha256 mismatch: {actual} != {expected}')
