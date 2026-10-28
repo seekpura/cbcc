@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.26-scope-readiness
+version: 0.6.27-current-scope-completion
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -9,6 +9,18 @@ version: 0.6.26-scope-readiness
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
 
+
+## v0.6.27 Current-Scope Completion Authority — 当前主权威
+- **`final_ready` 不再是永远 False 的静态旗标。** 新增 `completion.py`，完成态由当前 scope 的真实闭环条件派生。
+- READY 条件：当前 scope 的 blocking Gate 没有 PENDING/HOLD/MISSING/INVALIDATED 等阻断；required 非 Gate 交付项已到可审状态并完成必要 review；blocking research/action 已解决；open local revision 已闭环；不存在当前 scope 的 hard Agent frontier。
+- Supporting / advisory Gate、ContentObject、Research Action 与 Agent frontier 可以继续存在，不再为了“还有可做的事”阻止当前交付完成。
+- `RESEARCH_OR_EVIDENCE_RESOLUTION` 只有在对应 unresolved action 对当前 blocking scope 真正 blocking 时才阻止完成；planning-only 的 advisory research 可以保留并继续显示。
+- `AUTHOR_DECISION_OR_ASSET_SCOPE / REPLAN_ASSET_ARCHITECTURE / AUTHOR_OR_SELECT_CREATIVE_DIRECTION / RESOLVE_COMPLIANCE_BOUNDARY / PRODUCE_RESUME_OR_REPAIR` 等 hard frontier 继续阻断对应当前 scope。
+- Review Manifest 的 `final_ready` 直接来自 completion authority；`ProjectState.final_ready` 与 `completion` 会在 build/review/provider/revision/learning 后统一刷新并持久化。
+- CLI `export` 删除旧的固定 Gate required 列表，不再要求一套静态流水线全部 LOCKED；Export 与 Review/State 共用同一 current-scope completion。
+- Revision 仍会按 dependency graph INVALIDATE 受影响层，并立即重新计算 readiness；支持层变化不应无故推翻无关已完成 scope。
+- v0.6.27 targeted + continuity：`40 passed`；全量相对 frozen v0.6.26 main：12 vs 12，`NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+- 详细变更见 `CHANGELOG_V0627.md`。
 
 ## v0.6.26 Task-Scoped Content + Gate Readiness — 当前主权威
 - **对象存在 ≠ 当前任务必须完成。** 新增 `content_requiredness.json`，把 active/preserved family 与 `required_for_current_scope` 明确拆开；Listing/Compliance 等可以继续作为支持权威存在，而不自动变成人类当前交付债务。

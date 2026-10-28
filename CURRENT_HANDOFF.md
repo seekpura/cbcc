@@ -1,7 +1,7 @@
-# CBCC v0.6.26 CURRENT HANDOFF
+# CBCC v0.6.27 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.26-scope-readiness`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.27-current-scope-completion`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -226,6 +226,17 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 9. targeted + continuity：`34 passed`。
 10. 全量回归：frozen v0.6.25 main `12 failures` / v0.6.26 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
 
+## v0.6.27 已完成 — Current-Scope Completion Authority
+1. 新增 `completion.py`，用 current scope blockers / required review / blocking actions / open revisions / hard Agent frontier 派生 READY。
+2. `final_ready` 从静态 flag 变为可重复计算结果；Target-only / Strategy-only scope 在没有真实阻断时可以完成。
+3. Asset/Content/Production 当前 required item 仍必须完成 item review；未审阅不会误报 READY。
+4. Supporting / advisory Gate、ContentObject、Research、Agent frontier 可以保留，不自动制造“永远做不完”的状态。
+5. Review Manifest、ProjectState、Review Workspace、CLI Export 统一消费同一 completion authority。
+6. `build / review-apply / provider-ingest / revision-compile / revision-ingest / learning-apply / revise / export` 均刷新并持久化 completion。
+7. Revision 继续通过 dependency graph 精确 INVALIDATE；若影响当前 required/blocking scope，READY 会重新打开。
+8. targeted + continuity：`40 passed`。
+9. 全量回归：frozen v0.6.26 main `12 failures` / v0.6.27 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+
 ## 下一步唯一主任务
-**继续 final completion / review lifecycle 深审。当前 `ProjectState.final_ready` 初始化为 False，Compiler 完成后仍无条件写回 False；需要确认 Review Accept / required scope closure / Agent stop 是否能形成真实、可解释的最终完成态。目标不是“所有 canonical gate 都 LOCKED”，而是：当前 scope required + blocking 项闭环、required review items 完成、无 unresolved blocking action 时，项目才可进入 READY；支持性 Gate/对象不阻断。必须保持局部 Revision / dependency invalidation 能把 readiness 精确打回受影响层，并继续与 Agent `STOP_CURRENT_SCOPE` / replan frontier 对齐。**
+**继续 Agent frontier / Research / Compliance 的 scope 对齐深审。重点核对 `compile_agent_next_action()` 仍会把所有 unresolved research 放进 frontier、Compliance/Creative/Production 的 blocker 是否完全按 v0.6.26 Gate Scope 与 v0.6.27 Completion Authority 路由，以及 Human Workspace 是否把 advisory frontier 与 blocking next action 清楚分开。目标是让 Agent 真正能 STOP / REPLAN，而不是因为任何可选研究或能力存在就持续循环。随后继续审 baseline 12 项里的真实断链，优先修业务能力，不为旧版本字符串回退。**
 
