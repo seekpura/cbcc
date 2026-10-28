@@ -8,9 +8,11 @@ from cbcc.culture import compile_culture_context
 
 
 def test_persuasion_frameworks_are_decision_aids_not_asset_templates():
-    out=compile_persuasion_frameworks(['What is it?','Why choose it?'],{'material':'steel'},{'status':'CALCULATED_FROM_INPUTS'})
+    default_out=compile_persuasion_frameworks(['What is it?','Why choose it?'],{'material':'steel'},{'status':'CALCULATED_FROM_INPUTS'})
+    assert default_out['status']=='NOT_REQUESTED' and default_out['frameworks']=={}
+    out=compile_persuasion_frameworks(['What is it?','Why choose it?'],{'material':'steel'},{'status':'CALCULATED_FROM_INPUTS'},requested=['AIDA','FABE','4P'])
     assert {'AIDA','FABE','4P'} <= set(out['frameworks'])
-    assert 'fixed asset' in out['principle'].lower()
+    assert 'optional reasoning tools' in out['principle'].lower()
 
 
 def test_research_gate_creates_host_action_and_can_be_resolved():

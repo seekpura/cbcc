@@ -15,21 +15,26 @@ def compile_research_gate(requirements:list[dict[str,Any]]|None, supplied_source
         rid=row.get('id') or 'REQ-'+stable_hash(row)[:10]
         needed=set(row.get('source_ids',[]))
         verified=bool(needed and needed.issubset(source_ids)) or bool(row.get('verified'))
-        rec={'requirement_id':rid,'topic':row.get('topic'),'domain':row.get('domain','GENERAL'),'required_for':row.get('required_for',[]),'verified':verified}
+        blocking=bool(row.get('blocking', True))
+        rec={'requirement_id':rid,'topic':row.get('topic'),'domain':row.get('domain','GENERAL'),'required_for':row.get('required_for',[]),'verified':verified,'blocking':blocking}
         if verified:
             resolved.append(rec); continue
         pending.append(rec)
         domain=str(row.get('domain','GENERAL')).upper()
-        actions.append(ResearchAction(
+        action=ResearchAction(
             'RA-'+stable_hash([rid,row.get('topic')])[:10],
             row.get('reason') or f"Current evidence is needed for {row.get('topic') or rid}",
             row.get('query') or f"Verify current authoritative evidence for {row.get('topic') or rid}",
             row.get('required_for',[]) or ['RESEARCH'],
             preferred_source=row.get('preferred_source') or ('OFFICIAL_CURRENT_SOURCE' if domain in HIGH_RISK_DOMAINS else 'AUTHORITATIVE_CURRENT_SOURCE')
-        ).to_dict())
+        ).to_dict()
+        action['blocking']=blocking
+        actions.append(action)
     return {
         'status':'READY' if not pending else 'RESEARCH_REQUIRED',
         'resolved':resolved,'pending':pending,'actions':actions,
+        'blocking_pending':[row for row in pending if row.get('blocking')],
+        'advisory_pending':[row for row in pending if not row.get('blocking')],
         'as_of':as_of or date.today().isoformat(),
         'principle':'Evidence-dependent strategy proceeds only to the scope supported by current sources; unresolved items become structured host actions.'
     }

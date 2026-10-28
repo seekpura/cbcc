@@ -1,7 +1,7 @@
-# CBCC v0.6.20 CURRENT HANDOFF
+# CBCC v0.6.21 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.20-mcp-stdio-host`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.21-commerce-agent-autonomy`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -9,7 +9,7 @@ GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版
 日常修改使用 Git Database 增量链：读取 `main HEAD + tree` → changed / added / deleted 构新 tree → 一个 commit → `update_ref(expected_sha=旧 HEAD)`。大文件小改动优先使用小型 Git patch 传输，不复制完整大文件。
 
 ## 当前主线
-Product Truth → Research → Action → Communication → Evaluation → Product Visual Intelligence → Creative Opportunity / Council → Dynamic Surface / Asset → Design Card → CN/EN Canonical Prompt → Production / Review / Learning → Chinese-first Semantic Workspace.
+Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discovery → Agent Strategy & Surface Decisions → Dynamic Content / Asset Architecture → Dynamic Creative / Photography / CMF → CN/EN Canonical Prompt / Production Contract → Production / Review / Learning → Agent Replan or Stop → Chinese-first Semantic Workspace.
 
 ## v0.6.7 / v0.6.8 已完成
 1. Strategy / Content / Visual / Listing / Prompt / Evidence 使用不同语义 IA；Content 成为一级路由。
@@ -33,7 +33,7 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 6. 全量回归：103 passed / 12 个剩余失败；v0.6.9 已通过项无回退，并有 1 个既有 Provider Quality Preflight 失败因执行追踪增强转为通过。
 
 ## 明确边界
-1. 当前 ChatGPT Plugin 仍是 Skills-only，七大 Python Runtime 未 MCP 化。
+1. MCP / Plugin / HTTP / Provider Host 已作为可选宿主与生产接入能力存在；它们不是电商研究、策略、内容或设计权威，后续主线不得为了 transport 完整度挤占 Commerce Agent 能力。
 2. 当前平台精确类目 / 规则 / 费率必须来自实时官方数据或用户资料；离线 Runtime 不猜。
 3. Product / Market / Risk 仍保留通用 `module-shell`，只有真实使用需求证明需要时再拆，不为页面差异机械制造模板。
 4. 13 个历史 pytest 失败属于既有兼容性债务，不能为了“全绿”倒退当前能力。
@@ -148,5 +148,21 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 11. v0.6.13–v0.6.20 provider/action/Plugin/MCP continuity 定向联测：62 passed。
 12. 全量回归与 v0.6.19 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`。
 
+
+## v0.6.21 已完成 — Commerce Agent Autonomy
+1. 新增 `agent_autonomy.py`，明确 Hard Constraints 与 Agent Decisions：事实/合规/平台硬边界/真实商品身份被冻结，研究、策略、内容、资产、创意、摄影/CMF、生产路线、迭代深度由 Agent 决定。
+2. 编译物化 `agent_autonomy_plan.json`；宿主可直接提供 `agent_plan / agent_decisions`，其决定优先于 Runtime fallback heuristic。
+3. Research 从“调用方先写固定研究清单”升级为 Agent 自主 gap discovery；fallback 也只产生能改变当前商业决策的缺口。研究没有固定来源数/竞品数/query 数，停止条件是信息增益不再改变重要决策。
+4. Content Graph 不再默认展开全部 `DEFAULT_FAMILIES`；只从目标 Surface、明确任务和真实项目能力信号派生，Agent 显式 scope 不被 Runtime 扩写。
+5. Creative Opportunity 支持任意 Agent-authored mechanisms/domain/count；原 12 机制仅是无 Agent 决策时的兼容 fallback，fallback 也取消固定 12 上限。
+6. Creative Direction 取消 6–12 mechanism、3–5 direction、固定差异数等配额；方向数量按当前相关度/不确定性动态决定。
+7. 删除固定 decision-intent → layout/view/context 模板和 5 种 spatial rhythm 轮换；资产表达优先消费自身 `visual_production_signature` / `agent_visual_expression`。
+8. AIDA / FABE / 4P / STP / JTBD / Funnel / RACE 改为可选工具；不再每个项目自动注入框架，也不再把所有资产强制标为 RACE=COMMUNICATION。
+9. 平台内容矩阵移除固定“钩子→价值/证据→异议→CTA”叙事权威；脚本/叙事由当前消费者问题、证据关系、Surface 和交互任务决定。
+10. 新增 `agent_next_action.json`：动态暴露 Research / Asset Replan / Creative / Compliance / Production 等 frontier；Agent 有最终路由权并可在当前目标满足时停止，不存在固定步骤序列。
+11. Photography Contract 改为 relevance-driven precision：COMPOSITE/CG/AI 不为过校验虚构真实摄影参数；语义 perspective 可代替死焦段；numeric occupancy 只在锁定时要求；LOCKED_PIXEL/精确商品色仍保留严格 color fidelity。
+12. 定向自主权测试：20 passed。发布仍需与最新 main 做全量失败 node-id 差分，`NEW_FAILURE_COUNT=0` 才能进入 main。
+13. v0.6.17–v0.6.20 的 Provider/Plugin/MCP 基础设施继续保留，但从 v0.6.21 起明确降为可选 integration layer，不再作为 Commerce 产品主路线。
+
 ## 下一步唯一主任务
-**在 v0.6.20 stdio host 的 MCP message semantics 之上实现当前 `2026-07-28` Streamable HTTP binding，但禁止复制一套 `server/discover / tools/list / tools/call`。先抽取/复用 transport-neutral MCP protocol processor，再实现单 `/mcp` HTTP POST binding：校验 Origin、`MCP-Protocol-Version`、`Mcp-Method`、`Mcp-Name` 与 body metadata 一致性，支持 JSON response 与必要的 request-scoped SSE 扩展边界；现代路径不得重新引入旧 HTTP+SSE GET endpoint、Mcp-Session-Id 或隐藏 session state。授权必须由 HTTP host 注入 `ActionAuthorization`，Provider runtime / completion authority 继续只在 Dispatcher 后方。**
+**继续 Commerce Agent 自主权深审与真实电商验证。重点检查 Workspace / Strategy / Listing / Prompt / Asset / Production 是否仍存在固定页面、固定模块、固定方向/资产/研究数量、固定叙事或‘为了字段完整而填参数’的隐藏静态权威；以真实商品任务验证 Agent 能自主发现缺口、选择研究与框架、设计动态资产体系、让相关摄影/构图/灯光/CMF参数真实进入下游 Prompt/Production，并根据结果自主 replan 或 stop。MCP/HTTP 仅在实际宿主接入需求出现时维护，不作为下一主任务。**

@@ -1,3 +1,11 @@
+## 0.6.21 — Commerce Agent Autonomy
+- Re-centered CBCC on autonomous ecommerce decision-making rather than transport/protocol expansion.
+- Added agent-owned research scope and stopping rules, dynamic content scope, arbitrary creative mechanisms/direction counts, and a replan/stop action frontier.
+- Removed default all-family content expansion, fixed creative quotas/layout rotations, mandatory marketing-framework bundles, and generic script/RACE sequencing.
+- Made photography precision relevance-driven: execution parameters are required only when they materially control the asset or preserve verified product truth.
+- Kept MCP/Plugin/HTTP as optional integration infrastructure, not product-strategy authority.
+- Targeted autonomy suite: 20 passed. See `CHANGELOG_V0621.md`.
+
 ## 0.6.20 — MCP stdio Host
 - Added a real dual-era MCP stdio host over canonical generated tool descriptors and ProviderActionDispatcher.
 - Aligned modern protocol behavior to MCP 2026-07-28: server/discover, per-request metadata, resultType and cache hints.

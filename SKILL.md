@@ -1,13 +1,27 @@
 ---
 name: cross-border-commerce-creative
-description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.20-mcp-stdio-host
+description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
+version: 0.6.21-commerce-agent-autonomy
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+
+## v0.6.21 Commerce Agent Autonomy — 当前主权威
+- **冻结事实与硬边界，Agent 自主决定完成路径。** Product Truth、用户明确锁定、平台/法规硬约束、Claim 证据、真实商品身份/LOCKED PIXEL、目标输出技术规格属于不可擅自改写的边界；研究范围、策略路径、内容范围、资产数量、创意机制、方向数量、构图/摄影/CMF、生产路线和迭代深度属于 Agent 决策。
+- 宿主 Agent 应优先自行形成 `agent_plan` / `agent_decisions`，而不是让 Runtime 的兼容 heuristics 代替智能判断。Plan 可以按当前任务只声明真正需要的 research/content/creative/framework/iteration 决策，不要求填写固定表单。
+- Research 以**信息增益是否仍会改变重要商业决策**作为继续/停止条件；禁止为了固定来源数、竞品数、关键词数、页面数或“研究完整度”机械扩写。
+- Content/Asset 由真实消费者问题、目标 Surface、商业任务、证据与生产需求派生；不存在默认 7 图/9 图、固定 Hero/Proof/How-to 套餐、固定内容家族配额。
+- Creative exploration 不规定 6–12 mechanisms、3–5 directions 或固定差异数量。Agent 可以只形成一个明显正确的方向，也可以在不确定性较高时扩展更多 materially distinct 方向；数量必须来自任务需要，而不是系统配额。
+- AIDA / FABE / 4P / STP / JTBD / Funnel / RACE 都是**可选思考工具**。只有它们能改善当前决策时才启用；不得因为框架存在就强制生成对应阶段、页面、资产或叙事。
+- Asset expression 必须从该资产自身的 buyer decision / evidence plane / Surface / production mode 推导；禁止固定 intent→layout 映射和轮换式空间节奏伪装“多样性”。
+- Photography / composition / lighting / CMF 参数是执行工具，不是必填专业字段。只有相关时才进入策划；一旦 Agent 决定某个参数会影响结果，该参数必须继续贯穿 Design Card → CN/EN Canonical Prompt → Parameter Trace → Machine Contract → Production，不得在执行链丢失。
+- `agent_next_action.json` 是当前轮的动态 action frontier：Agent 根据真实未解决问题决定继续研究、重规划、生产/修复、复核，或停止。**不存在固定下一步流水线。**
+- MCP / Plugin / HTTP / Provider Host 属于**可选宿主/生产接入基础设施**。它们服务电商能力，但不拥有研究、策略、设计或产品路线权威，也不应成为主迭代目标。
+- 详细变更见 `CHANGELOG_V0621.md`。
 
 ## v0.6.20 MCP stdio Host
 - 新增真正可启动的 MCP stdio transport：`runtime/cbcc/mcp_stdio.py` + `python -m cbcc.mcp_stdio_cli`；stdout 只输出 newline-delimited UTF-8 JSON-RPC MCP message。

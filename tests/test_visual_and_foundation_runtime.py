@@ -14,8 +14,11 @@ def good_contract(): return {
  'human':None}
 
 def test_photography_contract_has_machine_precision_gate():
-    o=validate_photography_contract(good_contract()); assert o['pass'] and o['precision_level']=='SHOOT_READY_MINIMUM'
-    bad=good_contract(); del bad['lighting']['key']['modifier']; assert not validate_photography_contract(bad)['pass']
+    o=validate_photography_contract(good_contract()); assert o['pass'] and o['precision_level']=='RELEVANCE_READY'
+    # Modifier is no longer a universal mandatory field; do not force fake shoot precision when it is not required.
+    flexible=good_contract(); del flexible['lighting']['key']['modifier']; assert validate_photography_contract(flexible)['pass']
+    # A dimension that is actually active for truth preservation remains a hard contract.
+    bad=good_contract(); del bad['color_management']['product_color_fidelity']; assert not validate_photography_contract(bad)['pass']
 
 def test_visual_semantics_positive_conditional_model():
     o=validate_visual_semantics([{'element':'tea tree leaf','decision':'CONDITIONAL','strategic_relevance':'Use only for a verified tea-tree ingredient story when this asset needs ingredient recognition.'}]); assert o['pass']

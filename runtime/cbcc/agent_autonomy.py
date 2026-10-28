@@ -25,13 +25,14 @@ def _agent_input(request: Mapping[str, Any]) -> dict[str, Any]:
     return deepcopy(dict(raw)) if isinstance(raw, Mapping) else {}
 
 
-def _research_requirement(topic: str, domain: str, reason: str, required_for: list[str], *, query: str | None = None, preferred_source: str | None = None) -> dict[str, Any]:
+def _research_requirement(topic: str, domain: str, reason: str, required_for: list[str], *, query: str | None = None, preferred_source: str | None = None, blocking: bool = False) -> dict[str, Any]:
     row = {
         'topic': topic,
         'domain': domain,
         'reason': reason,
         'required_for': required_for,
         'query': query or f'Find current evidence that can materially change the decision about {topic}',
+        'blocking': bool(blocking),
     }
     row['id'] = 'REQ-' + stable_hash(row)[:10].upper()
     if preferred_source:
