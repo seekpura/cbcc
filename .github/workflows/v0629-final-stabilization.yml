@@ -23,6 +23,7 @@ jobs:
       - name: Apply only the three real-defect fixes and release metadata
         run: |
           python .changes/v0629_final_fix.py
+          python .changes/v0629_compliance_route_fix.py
           python .changes/v0629_prepare_release.py
           python -m py_compile runtime/cbcc/tools/listing.py runtime/cbcc/compliance.py runtime/cbcc/prompt_compiler.py runtime/cbcc/compiler.py
 
@@ -84,7 +85,7 @@ jobs:
 
       - name: Create clean final release commit
         run: |
-          rm -f .changes/v0629_final_fix.py .changes/v0629_prepare_release.py
+          rm -f .changes/v0629_final_fix.py .changes/v0629_compliance_route_fix.py .changes/v0629_prepare_release.py
           rmdir .changes 2>/dev/null || true
           rm -f .github/workflows/v0629-final-stabilization.yml
           git config user.name github-actions[bot]
