@@ -1,7 +1,7 @@
-# CBCC v0.6.23 CURRENT HANDOFF
+# CBCC v0.6.24 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.23-task-scoped-delivery`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.24-task-scoped-strategy-asset`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -36,7 +36,7 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 1. MCP / Plugin / HTTP / Provider Host 已作为可选宿主与生产接入能力存在；它们不是电商研究、策略、内容或设计权威，后续主线不得为了 transport 完整度挤占 Commerce Agent 能力。
 2. 当前平台精确类目 / 规则 / 费率必须来自实时官方数据或用户资料；离线 Runtime 不猜。
 3. Product / Market / Risk 仍保留通用 `module-shell`，只有真实使用需求证明需要时再拆，不为页面差异机械制造模板。
-4. 12 个历史 pytest 失败属于既有兼容性债务，不能为了“全绿”倒退当前能力。
+4. baseline failing node-id 必须逐项审计：真实能力断链要修，旧字符串/旧版本/已被更强合同取代的断言要升级测试；不得用固定失败数量替代能力判断，也不得为了“全绿”倒退当前能力。
 5. Render Prompt 继续禁止 Asset / Project / Direction ID、RACE、KPI 等内部元数据；精确可见文案继续 deterministic composition。
 
 ## v0.6.11 已完成
@@ -188,5 +188,18 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 9. v0.6.23 targeted + compatibility：`23 passed`。
 10. 全量回归相对 frozen v0.6.22 main：main 12 failures / branch 12 failures / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
 
+## v0.6.24 已完成 — Task-Scoped Strategy + Asset Authority
+1. `strategy_authority.json` 继续保留九段 canonical machine schema；人类 `MASTER_STRATEGY_CN.md` 改为 task-scoped projection，只显示当前商业目标真正需要的决策域。
+2. 历史全框架注入退出权威：STP/JTBD/4P/Funnel/AIDA/FABE/Fogg/Means-End/Signaling/FIRST/Cognitive Budget/Belief Sequence/Commerce Response Ladder/RACE 只在 Agent/用户选择时进入当前策略。
+3. RACE 未启用时 section 07 保持兼容键但为空，Content Matrix 不再机械写 `COMMUNICATION`；显式 RACE 仍完整保留。
+4. `build_risk_priority_depth()` 不再强制填满 P0/P1/P2，也不默认制造 A/B；真实 Compliance HOLD、Research gap、Evaluation/Experiment 才生成动作。无实质缺口时 `CURRENT_SCOPE_CAN_STOP`。
+5. Asset Architecture 在无实际资产 Surface 时不再把 shopper question 变成 GALLERY/VISUAL；保留为 `unrouted_questions`，等待真实 Surface/任务激活。
+6. 取消资产 A→B→C 自动 handoff；关系模式为 `EXPLICIT_ONLY`，显式 handoff 原样保留。
+7. 机器九段、Product Truth、Claim/Evidence、Foundation、Photography/CMF、00–13 资产包、Provider/Review/Revision/Hash lineage 均保留。
+8. v0.5 Strategy 兼容测试同步升级：继续严查机器九段和 legacy asset package preservation，但不再要求未显式启用的 RACE 出现在人类 Markdown。
+9. targeted + continuity：`28 passed`。
+10. 全量回归：frozen v0.6.23 main `12 failures` / v0.6.24 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+11. 本轮额外审计 12 个 baseline node-id，确认其中多项是旧英文标题、旧版本前缀、旧状态字符串或被更强 Claim/Compliance 合同取代的断言；以后继续逐项分类，不能把“12”本身当发布标准。
+
 ## 下一步唯一主任务
-**继续 Commerce Agent 静态权威深审，下一主线转向 Strategy Authority 与 Asset Architecture / Compiler。重点区分“机器兼容与追溯所需的完整结构”和“人类当前任务必须看到/执行的内容”：九段 Strategy、框架清单、Foundation/资产角色、默认购买问题或 Production 合同都不得因为历史 schema 存在就成为当前任务配额。保留 Product Truth、证据、合规、真实商品身份与生产 lineage，同时让策略模块、资产角色、页面与生产深度由当前商业目标、真实证据、Surface 和 `agent_next_action` 派生。用真实跨境商品跑研究→策略→资产→Prompt→生产→replan/stop 闭环，检查是否还有“为了完整而生成”的内容。MCP/HTTP 继续只作为可选 integration layer。**
+**继续 Commerce Agent 静态权威深审，下一轮优先处理 Compiler / Decision Trace / default shopper questions：当前 `compiler.py` 仍存在无输入时自动生成四个 shopper questions、默认 decision framework 列表，以及部分兼容层可能把“系统会什么”误当成“本项目必须研究/回答什么”。目标是让问题发现、Decision Trace、Framework selection、Content/Asset scope 全部由当前 Commerce goal、Product Truth、证据缺口、Surface 与 Agent plan 派生，同时保留机器兼容、证据、合规与生产 lineage。继续用真实跨境商品验证 Research → Strategy → Content/Asset → Prompt → Production → Replan/Stop，检查是否仍有为完整度制造的问题、页面、字段、实验或资产。MCP/HTTP 继续只作为可选 integration layer。**

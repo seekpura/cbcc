@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.23-task-scoped-delivery
+version: 0.6.24-task-scoped-strategy-asset
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -9,6 +9,18 @@ version: 0.6.23-task-scoped-delivery
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
 
+
+## v0.6.24 Task-Scoped Strategy + Asset Authority — 当前主权威
+- **机器兼容结构与人类当前任务分层。** `strategy_authority.json` 继续保留九段 canonical section、证据、追溯和资产包绑定；`MASTER_STRATEGY_CN.md` 只投影当前 Commerce 目标真正相关的决策域，不再把九段目录当成人类配额。
+- STP / JTBD / 4P / Funnel / AIDA / FABE / Fogg / Means-End / Signaling / FIRST / Cognitive Budget / Belief Sequence / Commerce Response Ladder / RACE 均为可选决策镜头。只有 Agent / 用户显式选择时才进入当前 Strategy Authority；默认不再全量注入。
+- RACE 未显式启用时，机器 section 07 保持兼容键但内容为空；Content Matrix 不再机械写 `race_stage=COMMUNICATION`。显式选择 RACE 时完整保留。
+- P0/P1/P2 与 A/B 不再为了“策略完整”自动制造未来工作。只有真实 Compliance HOLD、未解决 Research、明确 Evaluation/Experiment 信号才形成当前动作；没有实质未解决项时允许 `CURRENT_SCOPE_CAN_STOP`。
+- Asset Architecture 不再在没有视觉/视频/Creator/Paid Surface 时把 shopper question 强制变成 GALLERY 图片。问题可继续留在 Strategy / Listing，直到真实资产 Surface 被激活。
+- Asset 列表顺序只用于展示；没有显式 `handoff` 时不再自动生成 A→B→C 链。资产关系为 `EXPLICIT_ONLY`，显式关系继续保留。
+- Foundation roles、Product Truth、Claim/Evidence、Photography/CMF、00–13 资产包、Provider / Review / Revision / Hash lineage 全部继续保留；动态化不是删能力。
+- v0.6.24 targeted + continuity：`28 passed`；全量相对 frozen v0.6.23 main：12 vs 12，`NEW_FAILURE_COUNT=0`。
+- baseline failing node-id 必须逐项判断真实断链还是旧语义断言；禁止用固定失败数量替代能力审计，也禁止为旧字符串测试倒退当前合同。
+- 详细变更见 `CHANGELOG_V0624.md`。
 
 ## v0.6.23 Task-Scoped Human Delivery + Listing Authority — 当前主权威
 - **人类工作区的主任务由当前 Commerce scope 决定，不再由系统拥有的全部能力反向规定。** Listing 数据可以长期保留，但视觉、内容、Prompt、生产等当前任务不因为价格、物流、退换货或卖家信息缺失而被整项目标记为 HOLD。
