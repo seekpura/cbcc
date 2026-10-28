@@ -54,7 +54,7 @@ def _plugin_path(action_id: str) -> str:
     return '/actions/provider/' + slug
 
 
-def plugin_openapi_descriptor(*, title: str = 'CBCC Provider Actions', server_url: str = 'https://host.invalid') -> dict[str, Any]:
+def plugin_openapi_descriptor(*, title: str = 'CBCC Provider Actions', server_url: str = '/') -> dict[str, Any]:
     """Generate an OpenAPI 3.1 descriptor suitable for a thin Plugin/Actions transport.
 
     `server_url` is a transport deployment placeholder. The document deliberately defines no
@@ -225,7 +225,7 @@ def descriptor_parity_report(
     }
 
 
-def transport_descriptor_bundle(*, server_url: str = 'https://host.invalid') -> dict[str, Any]:
+def transport_descriptor_bundle(*, server_url: str = '/') -> dict[str, Any]:
     mcp = mcp_tool_descriptors()
     plugin = plugin_openapi_descriptor(server_url=server_url)
     parity = descriptor_parity_report(mcp_tools=mcp, plugin_openapi=plugin)
@@ -240,7 +240,7 @@ def transport_descriptor_bundle(*, server_url: str = 'https://host.invalid') -> 
     }
 
 
-def materialize_transport_descriptors(output_dir: Path, *, server_url: str = 'https://host.invalid') -> dict[str, Any]:
+def materialize_transport_descriptors(output_dir: Path, *, server_url: str = '/') -> dict[str, Any]:
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
     bundle = transport_descriptor_bundle(server_url=server_url)
@@ -295,5 +295,5 @@ class PluginActionTransportAdapter:
             }
         return self.dispatcher.dispatch(action_id, body or {}, authorization)
 
-    def descriptor(self, *, server_url: str = 'https://host.invalid') -> dict[str, Any]:
+    def descriptor(self, *, server_url: str = '/') -> dict[str, Any]:
         return plugin_openapi_descriptor(server_url=server_url)

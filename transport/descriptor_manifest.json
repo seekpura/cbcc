@@ -1,0 +1,69 @@
+{
+  "version": "0.6.18-transport-descriptor-parity",
+  "canonical_action_version": "0.6.17-host-action-mapping",
+  "runtime_authority": "ProviderActionDispatcher",
+  "mcp_server_included": false,
+  "plugin_http_server_included": false,
+  "parity": {
+    "version": "0.6.18-transport-descriptor-parity",
+    "status": "PASS",
+    "canonical_action_count": 6,
+    "mcp_tool_count": 6,
+    "plugin_operation_count": 6,
+    "rows": [
+      {
+        "action_id": "cbcc.provider.adapters.list",
+        "canonical_schema_hash": "cde55f48fc81d868b117aa26f1b8e0e2dc8f5702a4ab8327450d5270ac660b6e",
+        "mcp_schema_hash": "cde55f48fc81d868b117aa26f1b8e0e2dc8f5702a4ab8327450d5270ac660b6e",
+        "plugin_schema_hash": "cde55f48fc81d868b117aa26f1b8e0e2dc8f5702a4ab8327450d5270ac660b6e",
+        "permission_scope": "PROVIDER_ADAPTER_READ"
+      },
+      {
+        "action_id": "cbcc.provider.cancel",
+        "canonical_schema_hash": "eec64763124ea260990beaf913f940734768e42aa10cf9923938c61a793740d5",
+        "mcp_schema_hash": "eec64763124ea260990beaf913f940734768e42aa10cf9923938c61a793740d5",
+        "plugin_schema_hash": "eec64763124ea260990beaf913f940734768e42aa10cf9923938c61a793740d5",
+        "permission_scope": "PROVIDER_CANCEL"
+      },
+      {
+        "action_id": "cbcc.provider.execute",
+        "canonical_schema_hash": "f0afad76c7276e4eeadbd13664becb252bdc7713aa392cd1f8bd393a6fc85f51",
+        "mcp_schema_hash": "f0afad76c7276e4eeadbd13664becb252bdc7713aa392cd1f8bd393a6fc85f51",
+        "plugin_schema_hash": "f0afad76c7276e4eeadbd13664becb252bdc7713aa392cd1f8bd393a6fc85f51",
+        "permission_scope": "PROVIDER_EXECUTE"
+      },
+      {
+        "action_id": "cbcc.provider.reconcile",
+        "canonical_schema_hash": "31adbca496909d9b668da8832f6909b775c9f018d1e994068718ba2cf0834f4f",
+        "mcp_schema_hash": "31adbca496909d9b668da8832f6909b775c9f018d1e994068718ba2cf0834f4f",
+        "plugin_schema_hash": "31adbca496909d9b668da8832f6909b775c9f018d1e994068718ba2cf0834f4f",
+        "permission_scope": "PROVIDER_RECONCILE"
+      },
+      {
+        "action_id": "cbcc.provider.resume",
+        "canonical_schema_hash": "102781509a3a61f29800e2fa4d81ce3b7af9570820f7380c4f57ec45e36fdbe7",
+        "mcp_schema_hash": "102781509a3a61f29800e2fa4d81ce3b7af9570820f7380c4f57ec45e36fdbe7",
+        "plugin_schema_hash": "102781509a3a61f29800e2fa4d81ce3b7af9570820f7380c4f57ec45e36fdbe7",
+        "permission_scope": "PROVIDER_EXECUTE"
+      },
+      {
+        "action_id": "cbcc.provider.status",
+        "canonical_schema_hash": "a6c43ef84c45c64e87afdbcc37e7c012ef6dc444a27bf90cdd26e16e04651fa8",
+        "mcp_schema_hash": "a6c43ef84c45c64e87afdbcc37e7c012ef6dc444a27bf90cdd26e16e04651fa8",
+        "plugin_schema_hash": "a6c43ef84c45c64e87afdbcc37e7c012ef6dc444a27bf90cdd26e16e04651fa8",
+        "permission_scope": "PROVIDER_STATUS_READ"
+      }
+    ],
+    "issues": [],
+    "rules": [
+      "MCP and Plugin input schemas are generated from and must equal the canonical action schema.",
+      "Permission scope must remain identical across transports.",
+      "Credential-like payload fields are forbidden in every generated transport schema.",
+      "Transport descriptors do not own provider execution runtime."
+    ]
+  },
+  "files": {
+    "mcp_tools": "mcp_tools.json",
+    "plugin_openapi": "plugin_openapi.json"
+  }
+}

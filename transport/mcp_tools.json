@@ -1,0 +1,220 @@
+[
+  {
+    "name": "cbcc_provider_adapters_list",
+    "description": "List compatible provider adapters",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "description": "Provider registry identifier."
+        },
+        "production_mode": {
+          "type": "string",
+          "description": "Production mode filter."
+        },
+        "required_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required adapter capabilities."
+        }
+      },
+      "required": []
+    },
+    "x-cbcc-action-id": "cbcc.provider.adapters.list",
+    "x-cbcc-permission-scope": "PROVIDER_ADAPTER_READ",
+    "x-cbcc-long-running": false,
+    "x-cbcc-mutation": false
+  },
+  {
+    "name": "cbcc_provider_cancel",
+    "description": "Cancel an existing provider job",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project_dir": {
+          "type": "string",
+          "description": "CBCC project directory."
+        },
+        "asset_id": {
+          "type": "string",
+          "description": "Asset ID whose existing external job should be cancelled."
+        },
+        "adapter_id": {
+          "type": "string",
+          "description": "Optional explicit compatible adapter ID."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Operator-visible cancellation reason; never credential material."
+        }
+      },
+      "required": [
+        "project_dir",
+        "asset_id"
+      ]
+    },
+    "x-cbcc-action-id": "cbcc.provider.cancel",
+    "x-cbcc-permission-scope": "PROVIDER_CANCEL",
+    "x-cbcc-long-running": false,
+    "x-cbcc-mutation": true
+  },
+  {
+    "name": "cbcc_provider_execute",
+    "description": "Execute materialized provider jobs",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project_dir": {
+          "type": "string",
+          "description": "CBCC project directory already available to the host."
+        },
+        "asset_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Optional asset subset; empty means all materialized provider jobs."
+        },
+        "adapter_id": {
+          "type": "string",
+          "description": "Optional explicit compatible adapter ID."
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "max_polls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "project_dir"
+      ]
+    },
+    "x-cbcc-action-id": "cbcc.provider.execute",
+    "x-cbcc-permission-scope": "PROVIDER_EXECUTE",
+    "x-cbcc-long-running": true,
+    "x-cbcc-mutation": true
+  },
+  {
+    "name": "cbcc_provider_reconcile",
+    "description": "Reconcile persisted provider state with provider state",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project_dir": {
+          "type": "string",
+          "description": "CBCC project directory."
+        },
+        "asset_id": {
+          "type": "string",
+          "description": "Asset ID whose provider state should be reconciled."
+        },
+        "adapter_id": {
+          "type": "string",
+          "description": "Optional explicit compatible adapter ID."
+        }
+      },
+      "required": [
+        "project_dir",
+        "asset_id"
+      ]
+    },
+    "x-cbcc-action-id": "cbcc.provider.reconcile",
+    "x-cbcc-permission-scope": "PROVIDER_RECONCILE",
+    "x-cbcc-long-running": false,
+    "x-cbcc-mutation": true
+  },
+  {
+    "name": "cbcc_provider_resume",
+    "description": "Resume a pending provider operation",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project_dir": {
+          "type": "string",
+          "description": "CBCC project directory."
+        },
+        "operation_id": {
+          "type": "string",
+          "description": "Stable operation ID returned by execute."
+        },
+        "asset_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Original operation asset scope."
+        },
+        "adapter_id": {
+          "type": "string",
+          "description": "Optional explicit compatible adapter ID."
+        },
+        "max_attempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "max_polls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "project_dir",
+        "operation_id",
+        "asset_ids"
+      ]
+    },
+    "x-cbcc-action-id": "cbcc.provider.resume",
+    "x-cbcc-permission-scope": "PROVIDER_EXECUTE",
+    "x-cbcc-long-running": true,
+    "x-cbcc-mutation": true
+  },
+  {
+    "name": "cbcc_provider_status",
+    "description": "Read provider operation status",
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "project_dir": {
+          "type": "string",
+          "description": "CBCC project directory."
+        },
+        "operation_id": {
+          "type": "string",
+          "description": "Stable non-secret operation ID returned by execute/resume."
+        },
+        "asset_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Operation asset scope returned by execute/resume."
+        }
+      },
+      "required": [
+        "project_dir",
+        "operation_id",
+        "asset_ids"
+      ]
+    },
+    "x-cbcc-action-id": "cbcc.provider.status",
+    "x-cbcc-permission-scope": "PROVIDER_STATUS_READ",
+    "x-cbcc-long-running": false,
+    "x-cbcc-mutation": false
+  }
+]

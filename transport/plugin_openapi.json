@@ -1,0 +1,621 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CBCC Provider Actions",
+    "version": "0.6.18-transport-descriptor-parity",
+    "description": "Generated thin transport descriptor over the canonical CBCC provider action catalog."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/actions/provider/adapters-list": {
+      "post": {
+        "operationId": "cbccProviderAdaptersList",
+        "summary": "List compatible provider adapters",
+        "x-cbcc-action-id": "cbcc.provider.adapters.list",
+        "x-cbcc-permission-scope": "PROVIDER_ADAPTER_READ",
+        "x-cbcc-long-running": false,
+        "x-cbcc-mutation": false,
+        "x-cbcc-authorization-source": "HOST_OUT_OF_BAND_ACTION_AUTHORIZATION",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "Provider registry identifier."
+                  },
+                  "production_mode": {
+                    "type": "string",
+                    "description": "Production mode filter."
+                  },
+                  "required_capabilities": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Required adapter capabilities."
+                  }
+                },
+                "required": []
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical CBCC ProviderActionDispatcher envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "version",
+                    "action_id",
+                    "status",
+                    "errors",
+                    "authorization"
+                  ],
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "action_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "result": {},
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "authorization": {
+                      "type": "object",
+                      "properties": {
+                        "actor_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "decision": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "operation": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actions/provider/cancel": {
+      "post": {
+        "operationId": "cbccProviderCancel",
+        "summary": "Cancel an existing provider job",
+        "x-cbcc-action-id": "cbcc.provider.cancel",
+        "x-cbcc-permission-scope": "PROVIDER_CANCEL",
+        "x-cbcc-long-running": false,
+        "x-cbcc-mutation": true,
+        "x-cbcc-authorization-source": "HOST_OUT_OF_BAND_ACTION_AUTHORIZATION",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "project_dir": {
+                    "type": "string",
+                    "description": "CBCC project directory."
+                  },
+                  "asset_id": {
+                    "type": "string",
+                    "description": "Asset ID whose existing external job should be cancelled."
+                  },
+                  "adapter_id": {
+                    "type": "string",
+                    "description": "Optional explicit compatible adapter ID."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Operator-visible cancellation reason; never credential material."
+                  }
+                },
+                "required": [
+                  "project_dir",
+                  "asset_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical CBCC ProviderActionDispatcher envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "version",
+                    "action_id",
+                    "status",
+                    "errors",
+                    "authorization"
+                  ],
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "action_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "result": {},
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "authorization": {
+                      "type": "object",
+                      "properties": {
+                        "actor_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "decision": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "operation": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actions/provider/execute": {
+      "post": {
+        "operationId": "cbccProviderExecute",
+        "summary": "Execute materialized provider jobs",
+        "x-cbcc-action-id": "cbcc.provider.execute",
+        "x-cbcc-permission-scope": "PROVIDER_EXECUTE",
+        "x-cbcc-long-running": true,
+        "x-cbcc-mutation": true,
+        "x-cbcc-authorization-source": "HOST_OUT_OF_BAND_ACTION_AUTHORIZATION",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "project_dir": {
+                    "type": "string",
+                    "description": "CBCC project directory already available to the host."
+                  },
+                  "asset_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Optional asset subset; empty means all materialized provider jobs."
+                  },
+                  "adapter_id": {
+                    "type": "string",
+                    "description": "Optional explicit compatible adapter ID."
+                  },
+                  "max_attempts": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
+                  },
+                  "max_polls": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "project_dir"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical CBCC ProviderActionDispatcher envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "version",
+                    "action_id",
+                    "status",
+                    "errors",
+                    "authorization"
+                  ],
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "action_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "result": {},
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "authorization": {
+                      "type": "object",
+                      "properties": {
+                        "actor_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "decision": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "operation": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actions/provider/reconcile": {
+      "post": {
+        "operationId": "cbccProviderReconcile",
+        "summary": "Reconcile persisted provider state with provider state",
+        "x-cbcc-action-id": "cbcc.provider.reconcile",
+        "x-cbcc-permission-scope": "PROVIDER_RECONCILE",
+        "x-cbcc-long-running": false,
+        "x-cbcc-mutation": true,
+        "x-cbcc-authorization-source": "HOST_OUT_OF_BAND_ACTION_AUTHORIZATION",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "project_dir": {
+                    "type": "string",
+                    "description": "CBCC project directory."
+                  },
+                  "asset_id": {
+                    "type": "string",
+                    "description": "Asset ID whose provider state should be reconciled."
+                  },
+                  "adapter_id": {
+                    "type": "string",
+                    "description": "Optional explicit compatible adapter ID."
+                  }
+                },
+                "required": [
+                  "project_dir",
+                  "asset_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical CBCC ProviderActionDispatcher envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "version",
+                    "action_id",
+                    "status",
+                    "errors",
+                    "authorization"
+                  ],
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "action_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "result": {},
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "authorization": {
+                      "type": "object",
+                      "properties": {
+                        "actor_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "decision": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "operation": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actions/provider/resume": {
+      "post": {
+        "operationId": "cbccProviderResume",
+        "summary": "Resume a pending provider operation",
+        "x-cbcc-action-id": "cbcc.provider.resume",
+        "x-cbcc-permission-scope": "PROVIDER_EXECUTE",
+        "x-cbcc-long-running": true,
+        "x-cbcc-mutation": true,
+        "x-cbcc-authorization-source": "HOST_OUT_OF_BAND_ACTION_AUTHORIZATION",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "project_dir": {
+                    "type": "string",
+                    "description": "CBCC project directory."
+                  },
+                  "operation_id": {
+                    "type": "string",
+                    "description": "Stable operation ID returned by execute."
+                  },
+                  "asset_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Original operation asset scope."
+                  },
+                  "adapter_id": {
+                    "type": "string",
+                    "description": "Optional explicit compatible adapter ID."
+                  },
+                  "max_attempts": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 20
+                  },
+                  "max_polls": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "project_dir",
+                  "operation_id",
+                  "asset_ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical CBCC ProviderActionDispatcher envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "version",
+                    "action_id",
+                    "status",
+                    "errors",
+                    "authorization"
+                  ],
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "action_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "result": {},
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "authorization": {
+                      "type": "object",
+                      "properties": {
+                        "actor_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "decision": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "operation": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actions/provider/status": {
+      "post": {
+        "operationId": "cbccProviderStatus",
+        "summary": "Read provider operation status",
+        "x-cbcc-action-id": "cbcc.provider.status",
+        "x-cbcc-permission-scope": "PROVIDER_STATUS_READ",
+        "x-cbcc-long-running": false,
+        "x-cbcc-mutation": false,
+        "x-cbcc-authorization-source": "HOST_OUT_OF_BAND_ACTION_AUTHORIZATION",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "project_dir": {
+                    "type": "string",
+                    "description": "CBCC project directory."
+                  },
+                  "operation_id": {
+                    "type": "string",
+                    "description": "Stable non-secret operation ID returned by execute/resume."
+                  },
+                  "asset_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Operation asset scope returned by execute/resume."
+                  }
+                },
+                "required": [
+                  "project_dir",
+                  "operation_id",
+                  "asset_ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Canonical CBCC ProviderActionDispatcher envelope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "version",
+                    "action_id",
+                    "status",
+                    "errors",
+                    "authorization"
+                  ],
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "action_id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "result": {},
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "authorization": {
+                      "type": "object",
+                      "properties": {
+                        "actor_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "decision": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "operation": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-cbcc-canonical-action-version": "0.6.17-host-action-mapping",
+  "x-cbcc-runtime": "ProviderActionDispatcher",
+  "x-cbcc-credential-payload-fields": "FORBIDDEN",
+  "x-cbcc-transport-owns-provider-runtime": false
+}
