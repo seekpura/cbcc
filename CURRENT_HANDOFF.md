@@ -1,7 +1,7 @@
-# CBCC v0.6.15 CURRENT HANDOFF
+# CBCC v0.6.16 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.15-provider-executor-bridge`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.16-provider-host-execution-surface`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -85,5 +85,17 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 9. v0.6.13–v0.6.15 provider continuity 定向联测：16 passed。
 10. 全量回归与 v0.6.14 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；历史失败继续作为独立兼容性债务。
 
+## v0.6.16 已完成
+1. 新增 `ProviderExecutionSurface`：宿主通过稳定程序化入口操作 adapter discovery / execute / cancel / reconcile，而不是直接碰内部 executor。
+2. CLI 新增 `adapter-list / provider-execute / provider-cancel / provider-reconcile`；没有 API key / token / secret 参数。
+3. 新增 `CBCC_PROVIDER_HOST_MODULE`，其值仅为 host module 名称；宿主 module 可 `register_adapters(registry)` 并用 `create_runtime_context(...)` 返回瞬时 callbacks / SDK client / auth objects。
+4. runtime context 不写入 adapter declaration、bridge state、executor state、result、production run 或 ProjectState。
+5. `provider-execute` 继续复用 Registry → Bridge → Executor → Receipt → existing ingest；全部 materialized jobs 结果齐全后才自动 ingest。
+6. 自动 ingest 成功继续更新 ProjectState `PRODUCTION=READY_REVIEW` 并物化 Review Workspace，没有第二套 completion authority。
+7. 局部/分批执行结果不齐时 ingest 明确 DEFER，不会误把全项目 COMPLETE。
+8. CLI cancel / reconcile 使用现有 external job ID / executor state / bridge state lineage。
+9. v0.6.13–v0.6.16 provider continuity + host-surface 定向联测：23 passed。
+10. 全量回归与 v0.6.15 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；发布判断继续以新增失败集合为准。
+
 ## 下一步唯一主任务
-**把 v0.6.15 Bridge 暴露成宿主可操作的 Execution Surface：增加 `adapter-list / provider-execute / provider-cancel / provider-reconcile` 等程序化/CLI 入口，以及不把密钥写进参数、项目文件或命令历史的 runtime-context 注入接口；这些入口必须复用 Adapter Registry → Executor Bridge → ProviderExecutor → Production Receipt → Ingest 单一链。随后再据宿主能力决定 MCP / Plugin action 映射，不先造第二套执行 runtime。**
+**把 v0.6.16 Host Execution Surface 映射到真实宿主 Action / MCP / Plugin 调用层：先审计当前 ChatGPT Plugin / 宿主可暴露的 action schema，再让 `adapter-list / provider-execute / provider-cancel / provider-reconcile` 直接调用现有 ProviderExecutionSurface；补 action authorization、长任务 resume/status 与 secret/runtime-context 边界。禁止复制 Provider runtime、禁止在 action schema 中出现 credential 值字段。**

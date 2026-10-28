@@ -1,13 +1,22 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.15-provider-executor-bridge
+version: 0.6.16-provider-host-execution-surface
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.16 Provider Host Execution Surface
+- 新增 `ProviderExecutionSurface`，把 v0.6.15 Adapter Registry / Executor Bridge 暴露成宿主可操作入口；仍然复用唯一链路 `Provider Job → Adapter Registry → Executor Bridge → ProviderExecutor → Production Receipt → Ingest`。
+- CLI 新增 `adapter-list / provider-execute / provider-cancel / provider-reconcile`；不提供 `--api-key` / token / secret 等参数，避免凭证进入 shell history、项目文件或日志。
+- `CBCC_PROVIDER_HOST_MODULE` 只保存宿主 Python module 名称。真实 SDK/client/auth/callback 由 module 的 `create_runtime_context(...)` 在运行时注入，runtime context 不持久化。
+- `provider-execute` 只有在 `PROVIDER_JOB_INDEX` 中所有 materialized job 都有真实 result 时才自动调用既有 ingest；局部/分批执行不能把全项目误标为 COMPLETE。
+- 自动 ingest 成功后继续更新既有 ProjectState `PRODUCTION` gate 与 Review Workspace；Host Surface 不创建第二套完成权威。
+- cancel / reconcile 继续复用同一 external job ID、`executor_state.json` 与 `bridge_state.json` lineage。
+- 安全回归明确扫描 `bridge_state / executor_state / result / production_run / ProjectState`，宿主 secret 值不得落盘。
 
 ## v0.6.15 Provider Adapter Registry / Executor Bridge
 - 新增 credential-free `ProviderAdapterRegistry`：按 provider / production mode / capabilities / operations 发现适配器，优先级选择确定性；显式指定 adapter 也必须通过 capability 匹配。

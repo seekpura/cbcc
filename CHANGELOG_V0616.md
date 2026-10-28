@@ -25,3 +25,5 @@ v0.6.15 made provider adapters discoverable and executable through a shared Brid
 - Registry declarations remain credential-free.
 - Environment configuration points only to a host module; credential acquisition remains inside the host/SDK/keyring/credential-chain implementation.
 - CBCC records execution lineage and integrity evidence, not credential material.
+
+- Release regression rule: compare full-suite failure node IDs with current main and ship only when `NEW_FAILURE_COUNT=0`.

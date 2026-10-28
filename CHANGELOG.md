@@ -1,3 +1,11 @@
+## 0.6.16 — Provider Host Execution Surface
+- Added programmatic ProviderExecutionSurface over the existing adapter registry/executor bridge.
+- Added `adapter-list`, `provider-execute`, `provider-cancel`, and `provider-reconcile` CLI operations with no secret-bearing CLI arguments.
+- Added host-module runtime-context injection via module name only; credentials/SDK clients remain host-owned and non-persistent.
+- Automatic ingest requires a complete materialized result set and continues to use existing ingest + ProjectState production authority.
+- Added host execution, state update, cancel/reconcile and secret non-persistence regression coverage.
+- See `CHANGELOG_V0616.md`.
+
 ## 0.6.15 — Provider Adapter Registry / Executor Bridge
 - Added credential-free provider adapter discovery and deterministic capability-based selection.
 - Added host executor bridge with bounded retry/backoff, provider retry-after, cancel and reconcile semantics.
