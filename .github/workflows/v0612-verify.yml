@@ -102,7 +102,9 @@ jobs:
         if: steps.focused.outcome == 'failure'
         run: exit 1
       - name: Full regression with frozen historical-failure ceiling
+        id: full
         if: steps.focused.outcome == 'success'
+        continue-on-error: true
         shell: bash
         run: |
           set +e
@@ -123,8 +125,18 @@ jobs:
               raise SystemExit(f'pass count regressed: {passed} < 107')
           print(f'accepted baseline: {passed} passed / {failed} historical failures')
           PY
+      - name: Upload full regression log
+        if: steps.full.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: v0612-full-failure
+          path: /tmp/pytest-full.txt
+          if-no-files-found: error
+      - name: Stop on full regression failure
+        if: steps.full.outcome == 'failure'
+        run: exit 1
       - name: Finalize source commit
-        if: steps.focused.outcome == 'success'
+        if: steps.focused.outcome == 'success' && steps.full.outcome == 'success'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
