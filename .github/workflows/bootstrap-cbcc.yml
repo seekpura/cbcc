@@ -43,6 +43,7 @@ jobs:
               raise SystemExit('no bootstrap chunks found')
 
           payload = ''.join(p.read_text(encoding='utf-8') for p in chunks)
+          payload = ''.join(payload.split())
           try:
               data = base64.b64decode(payload, validate=True)
           except Exception as exc:
@@ -98,6 +99,7 @@ jobs:
           if missing:
               raise SystemExit(f'bootstrap workspace missing required paths: {missing}')
 
+          print(f'canonical workspace root={source.name}')
           for child in list(root.iterdir()):
               if child.name == '.git':
                   continue
