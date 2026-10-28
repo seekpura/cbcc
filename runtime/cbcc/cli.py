@@ -4,7 +4,8 @@ import argparse,json,sys
 from .state import ProjectState
 from .compiler import build_project
 from .audit import machine_audit
-from .review import materialize_review_workspace, refresh_review_workspace, build_delivery_manifest
+from .review import refresh_review_workspace
+from .delivery_export import export_delivery_package
 from .production import ingest_provider_job_results
 from .provider_bridge import ExecutionPolicy
 from .provider_surface import provider_execution_surface_from_environment
@@ -29,7 +30,7 @@ def main(argv=None):
     p=sp.add_parser('learning-apply'); p.add_argument('--project-dir',required=True); p.add_argument('--learning-file',required=True)
     p=sp.add_parser('state'); p.add_argument('--project-dir',required=True)
     p=sp.add_parser('audit'); p.add_argument('--root',default=str(Path(__file__).resolve().parents[2])); p.add_argument('--no-pytest',action='store_true')
-    p=sp.add_parser('export'); p.add_argument('--project-dir',required=True); p.add_argument('--output',required=True)
+    p=sp.add_parser('export'); p.add_argument('--project-dir',required=True); p.add_argument('--output',required=True,help='Delivery directory or .zip path. Export always materializes both directory and ZIP, including index.html.')
     a=ap.parse_args(argv)
     root=Path(__file__).resolve().parents[2]
     if a.cmd=='init': out=ProjectState.init(Path(a.project_dir),a.project_id).data
@@ -73,16 +74,13 @@ def main(argv=None):
     elif a.cmd=='state': out=ProjectState.load(Path(a.project_dir)).data
     elif a.cmd=='audit': out=machine_audit(Path(a.root),not a.no_pytest)
     elif a.cmd=='export':
-        project=Path(a.project_dir); st=ProjectState.load(project); refresh_review_workspace(project,st)
-        delivery=build_delivery_manifest(project,st.data)
-        locked=[g for g,v in st.data['gates'].items() if v['status']=='LOCKED']
-        manifest={
-            'project_id':st.data['project_id'],'final_ready':delivery.get('final_ready',False),
-            'completion':delivery.get('completion') or st.data.get('completion') or {},
-            'locked_gates':locked,'pending_actions':st.data['pending_actions'],
-            'required_missing':delivery.get('required_missing',[]),'review_pending':delivery.get('review_pending',[]),
-            'artifacts':{g:v['artifact_paths'] for g,v in st.data['gates'].items() if v['artifact_paths']}
-        }
-        Path(a.output).write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8'); out=manifest
+        project=Path(a.project_dir)
+        st=ProjectState.load(project)
+        refresh_review_workspace(project,st)
+        delivery=export_delivery_package(project,Path(a.output))
+        delivery['final_ready']=st.data.get('final_ready',False)
+        delivery['completion']=st.data.get('completion') or {}
+        delivery['pending_actions']=st.data.get('pending_actions') or []
+        out=delivery
     print(json.dumps(out,ensure_ascii=False,indent=2)); return 0 if not isinstance(out,dict) or out.get('pass',True) else 1
 if __name__=='__main__': raise SystemExit(main())
