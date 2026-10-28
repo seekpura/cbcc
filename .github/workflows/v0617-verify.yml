@@ -1,0 +1,49 @@
+name: CBCC v0.6.17 host action mapping verification
+
+on:
+  push:
+    branches:
+      - work/v0617-host-action-mapping
+
+permissions:
+  contents: write
+
+jobs:
+  verify-host-actions:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install test dependencies
+        run: python -m pip install -q pytest pyyaml
+      - name: Run provider continuity and host action tests
+        shell: bash
+        run: |
+          mkdir -p .changes
+          set +e
+          pytest -q -ra \
+            tests/test_v0613_provider_transport_integrity.py \
+            tests/test_v0614_provider_executor_lifecycle.py \
+            tests/test_v0615_provider_executor_bridge.py \
+            tests/test_v0615_provider_contract_bridge.py \
+            tests/test_v0616_provider_host_surface.py \
+            tests/test_v0617_host_action_mapping.py \
+            > .changes/v0617-test-output.txt 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > .changes/v0617-test-output.rc
+          cat .changes/v0617-test-output.txt
+      - name: Commit diagnostics
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .changes/v0617-test-output.txt .changes/v0617-test-output.rc
+          if ! git diff --cached --quiet; then
+            git commit -m "test: capture v0.6.17 host action diagnostics"
+            git push origin HEAD:work/v0617-host-action-mapping
+          fi
+      - name: Enforce targeted test result
+        if: always()
+        shell: bash
+        run: test "$(cat .changes/v0617-test-output.rc)" = "0"
