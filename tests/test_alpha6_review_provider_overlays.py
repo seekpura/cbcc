@@ -29,6 +29,17 @@ def _quality_observations(job):
     return out
 
 
+def _portable_receipt(job):
+    bindings=job.get('source_product_bindings') or []
+    return {
+        'job_id':job['job_id'],'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],
+        'portable_manifest_hash':job['portable_package']['portable_manifest_hash'],'source_binding_hash':job.get('source_binding_hash'),
+        'output_artifacts':[{'uri':'fixture://provider-output/'+job['asset_id'],'sha256':'b'*64,'role':'FINAL'}],
+        'layer_manifest':[{'layer_id':'product-'+str(i),'role':'PRODUCT_MASTER','source_asset_id':x['asset_id'],'source_sha256':x['sha256'],'operation':'COMPOSITE_LOCKED','frozen':True} for i,x in enumerate(bindings)],
+        'capture_metadata':{},
+    }
+
+
 def _asset():
     return {'asset_id':'AST-ALPHA6','asset_name':'Alpha6','asset_type':'IMAGE','status':'ACTIVATE','surface':'GALLERY','family':'VISUAL','consumer_question':'What is it?','strategic_job':'Identify','production_mode':'REAL_PRODUCT_COMPOSITE','product_fidelity':'LOCKED_PIXEL','priority':'P0','dependencies':[],'source_ids':['SRC-1'],'claim_ids':[],'listing_reference':[],'success_metric':'clarity'}
 
@@ -63,7 +74,7 @@ def test_provider_filesystem_job_envelope_and_ingest(tmp_path):
     assert job_index['job_count']==1
     row=run['assets'][0]; job=json.loads((jobs/row['asset_id']/'job.json').read_text(encoding='utf-8'))
     assert job['execution_policy']['replanning_allowed'] is False and job['package_hash']==row['package_hash']
-    result={'asset_id':row['asset_id'],'provider':row['provider'],'package_hash':row['package_hash'],'output_path':'final.png','changed_fields':[],'changed_layers':[],'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
+    result={'asset_id':row['asset_id'],'provider':row['provider'],'package_hash':row['package_hash'],'output_path':'final.png','changed_fields':[],'changed_layers':[],'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job),'production_receipt':_portable_receipt(job)}
     (jobs/row['asset_id']/'result.json').write_text(json.dumps(result),encoding='utf-8')
     ingested=ingest_provider_job_results(run,jobs)
     assert ingested['status']=='COMPLETE' and ingested['provider_results_ingested']==1
@@ -124,7 +135,7 @@ def test_provider_ingest_cli_lifecycle(tmp_path, capsys):
     assert idx['job_count']>0
     for row in idx['jobs']:
         job=json.loads(Path(row['job_path']).read_text(encoding='utf-8'))
-        result={'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(proj/f"outputs/{job['asset_id']}.png"),'changed_fields':[],'changed_layers':[],'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
+        result={'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(proj/f"outputs/{job['asset_id']}.png"),'changed_fields':[],'changed_layers':[],'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job),'production_receipt':_portable_receipt(job)}
         Path(row['result_path']).write_text(json.dumps(result),encoding='utf-8')
     assert cli_main(['provider-ingest','--project-dir',str(proj)])==0
     out=json.loads((proj/'artifacts/production_run.json').read_text(encoding='utf-8'))

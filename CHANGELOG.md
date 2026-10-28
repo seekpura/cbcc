@@ -1,3 +1,9 @@
+## 0.6.12 — Portable Provider Package + Production Receipt Lineage
+- Materialized provider jobs are self-contained: local product masters are copied into each job and rebound to `PACKAGE_RELATIVE_PATH`; frozen asset packages travel under `inputs/asset_package`.
+- Added `PORTABLE_JOB_MANIFEST.json` with file hashes, upstream/portable source-binding lineage and a portable manifest hash.
+- External provider results now require a production receipt binding job/package/source/output lineage; local output artifacts are hash-verified on ingestion.
+- LOCKED_PIXEL receipts require source-bound frozen layer manifests; REAL_PHOTO / VIDEO receipts require capture metadata.
+
 # Changelog
 
 ## 0.6.11 — Source Master Binding + Frozen Revision Enforcement

@@ -37,6 +37,17 @@ def _quality_observations(job):
     return out
 
 
+def _portable_receipt(job):
+    bindings=job.get('source_product_bindings') or []
+    return {
+        'job_id':job['job_id'],'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],
+        'portable_manifest_hash':job['portable_package']['portable_manifest_hash'],'source_binding_hash':job.get('source_binding_hash'),
+        'output_artifacts':[{'uri':'fixture://provider-output/'+job['asset_id'],'sha256':'b'*64,'role':'FINAL'}],
+        'layer_manifest':[{'layer_id':'product-'+str(i),'role':'PRODUCT_MASTER','source_asset_id':x['asset_id'],'source_sha256':x['sha256'],'operation':'COMPOSITE_LOCKED','frozen':True} for i,x in enumerate(bindings)],
+        'capture_metadata':{},
+    }
+
+
 def test_v0512_host_final_copy_can_reach_approved_only_with_exact_review():
     req=_base_req(); li=req['listing_input']; fields=li['fields']
     fields['_localized_copy_reviews']=[
@@ -69,7 +80,7 @@ def test_v0512_provider_review_local_revision_and_learning_are_one_bounded_loop(
     # Initial provider result is explicit; runtime does not fabricate completion.
     job=json.loads((project/'artifacts/provider_jobs'/aid/'job.json').read_text())
     output=project/'outputs'/f'{aid}.png'; output.parent.mkdir(exist_ok=True); output.write_bytes(b'initial-provider-output')
-    result={'asset_id':aid,'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(output),'changed_fields':[],'changed_layers':[],'qa':_all_true_qa(),'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'layout_contract_hash':job['production_contract_binding']['layout_contract_hash'],'photography_contract_hash':job['production_contract_binding']['photography_contract_hash'],'quality_observations':_quality_observations(job)}
+    result={'asset_id':aid,'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(output),'changed_fields':[],'changed_layers':[],'qa':_all_true_qa(),'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'layout_contract_hash':job['production_contract_binding']['layout_contract_hash'],'photography_contract_hash':job['production_contract_binding']['photography_contract_hash'],'quality_observations':_quality_observations(job),'production_receipt':_portable_receipt(job)}
     (project/'artifacts/provider_jobs'/aid/'result.json').write_text(json.dumps(result),encoding='utf-8')
     assert cli_main(['provider-ingest','--project-dir',str(project)])==0
     manifest=json.loads((project/'.cbcc/review/delivery_manifest.json').read_text())
@@ -90,7 +101,7 @@ def test_v0512_provider_review_local_revision_and_learning_are_one_bounded_loop(
     assert rjob['package_hash']==job['package_hash']
     # Revised provider result changes only the approved field.
     rout=project/'outputs'/f'{aid}-rev1.png'; rout.write_bytes(b'revised-provider-output-headline-only')
-    rres={'asset_id':aid,'provider':rjob['provider'],'package_hash':rjob['package_hash'],'output_path':str(rout),'changed_fields':['headline_copy'],'changed_layers':['typography_copy'],'qa':_all_true_qa(),'production_contract_ack':True,'source_binding_hash':rjob['source_binding_hash'],'layout_contract_hash':rjob['production_contract_binding']['layout_contract_hash'],'photography_contract_hash':rjob['production_contract_binding']['photography_contract_hash'],'quality_observations':_quality_observations(rjob)}
+    rres={'asset_id':aid,'provider':rjob['provider'],'package_hash':rjob['package_hash'],'output_path':str(rout),'changed_fields':['headline_copy'],'changed_layers':['typography_copy'],'qa':_all_true_qa(),'production_contract_ack':True,'source_binding_hash':rjob['source_binding_hash'],'layout_contract_hash':rjob['production_contract_binding']['layout_contract_hash'],'photography_contract_hash':rjob['production_contract_binding']['photography_contract_hash'],'quality_observations':_quality_observations(rjob),'production_receipt':_portable_receipt(rjob)}
     (project/'artifacts/local_revisions'/rid/'provider_jobs'/aid/'result.json').write_text(json.dumps(rres),encoding='utf-8')
     ing=ingest_local_revision_results(project,st.data,[rid]); st.save(); materialize_review_workspace(project,st.data)
     assert ing['revisions'][0]['status']=='READY_REVIEW'
@@ -121,7 +132,7 @@ def test_v0512_cli_revision_and_learning_lifecycle(tmp_path):
     project=tmp_path/'cli-project'; build_project(project,req,FX)
     idx=json.loads((project/'artifacts/provider_jobs/PROVIDER_JOB_INDEX.json').read_text()); row=idx['jobs'][0]; aid=row['asset_id']
     job=json.loads(Path(row['job_path']).read_text()); out=project/'outputs'/f'{aid}.png'; out.parent.mkdir(exist_ok=True); out.write_bytes(b'initial')
-    Path(row['result_path']).write_text(json.dumps({'asset_id':aid,'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(out),'changed_fields':[],'changed_layers':[],'qa':_all_true_qa(),'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'quality_observations':_quality_observations(job)}),encoding='utf-8')
+    Path(row['result_path']).write_text(json.dumps({'asset_id':aid,'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(out),'changed_fields':[],'changed_layers':[],'qa':_all_true_qa(),'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'quality_observations':_quality_observations(job),'production_receipt':_portable_receipt(job)}),encoding='utf-8')
     assert cli_main(['provider-ingest','--project-dir',str(project)])==0
     manifest=json.loads((project/'.cbcc/review/delivery_manifest.json').read_text()); oi=next(x for x in manifest['items'] if x['kind']=='PRODUCTION_OUTPUT' and x['asset_id']==aid)
     st=ProjectState.load(project); decision=tmp_path/'decision.json'; decision.write_text(json.dumps({'project_id':st.data['project_id'],'revision':st.data['revision'],'revise_items':[{'item_id':oi['item_id'],'requested_change':'Local CTA copy only','allowed_fields':['cta_copy']}]}),encoding='utf-8')
@@ -129,7 +140,7 @@ def test_v0512_cli_revision_and_learning_lifecycle(tmp_path):
     assert cli_main(['revision-compile','--project-dir',str(project)])==0
     ridx=json.loads((project/'artifacts/local_revisions/LOCAL_REVISION_INDEX.json').read_text()); rev=ridx['revisions'][0]; rid=rev['revision_id']
     rji=json.loads((project/'artifacts/local_revisions'/rid/'provider_jobs/PROVIDER_JOB_INDEX.json').read_text()); rr=rji['jobs'][0]; rjob=json.loads(Path(rr['job_path']).read_text()); rout=project/'outputs'/f'{aid}-cta.png'; rout.write_bytes(b'cta-revision')
-    Path(rr['result_path']).write_text(json.dumps({'asset_id':aid,'provider':rjob['provider'],'package_hash':rjob['package_hash'],'output_path':str(rout),'changed_fields':['cta_copy'],'changed_layers':['typography_copy'],'qa':_all_true_qa(),'production_contract_ack':True,'source_binding_hash':rjob['source_binding_hash'],'quality_observations':_quality_observations(rjob)}),encoding='utf-8')
+    Path(rr['result_path']).write_text(json.dumps({'asset_id':aid,'provider':rjob['provider'],'package_hash':rjob['package_hash'],'output_path':str(rout),'changed_fields':['cta_copy'],'changed_layers':['typography_copy'],'qa':_all_true_qa(),'production_contract_ack':True,'source_binding_hash':rjob['source_binding_hash'],'quality_observations':_quality_observations(rjob),'production_receipt':_portable_receipt(rjob)}),encoding='utf-8')
     assert cli_main(['revision-ingest','--project-dir',str(project),'--revision-id',rid])==0
     manifest=json.loads((project/'.cbcc/review/delivery_manifest.json').read_text()); ri=next(x for x in manifest['items'] if x['kind']=='LOCAL_REVISION_OUTPUT' and x['revision_id']==rid)
     st=ProjectState.load(project); accept=tmp_path/'accept.json'; accept.write_text(json.dumps({'project_id':st.data['project_id'],'revision':st.data['revision'],'accept_items':[ri['item_id']]}),encoding='utf-8')

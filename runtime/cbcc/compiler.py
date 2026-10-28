@@ -122,8 +122,8 @@ def _product_truth_source_ids(request:dict)->list[str]:
 def build_project(project_dir:Path,request:dict,packs_dir:Path):
     p=Path(project_dir)
     try: st=ProjectState.load(p)
-    except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.11-source-master-binding-frozen-revision')
-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.11-source-master-binding-frozen-revision'; st.save(); _write(st.meta/'request.json',request)
+    except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.12-portable-provider-package-production-receipt')
+    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.12-portable-provider-package-production-receipt'; st.save(); _write(st.meta/'request.json',request)
 
     evidence={'sources':request.get('sources',[]),'assumptions':request.get('assumptions',[])}
     ep=_write(p/'artifacts/evidence.json',evidence); st.set_gate('EVIDENCE','READY_REVIEW',[ep],evidence); st.checkpoint('EVIDENCE','READY_REVIEW')

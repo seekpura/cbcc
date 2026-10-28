@@ -55,6 +55,14 @@ def _result(job:dict, **overrides):
         'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},
         'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],
         'quality_observations':_quality(job),
+        'production_receipt':{
+            'job_id':job['job_id'],'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],
+            'portable_manifest_hash':job['portable_package']['portable_manifest_hash'],'source_binding_hash':job['source_binding_hash'],
+            'output_artifacts':[{'uri':'fixture://provider-output/'+job['asset_id'],'sha256':'b'*64,'role':'FINAL'}],
+            'layer_manifest':[{'layer_id':'product-'+str(i),'role':'PRODUCT_MASTER','source_asset_id':x['asset_id'],'source_sha256':x['sha256'],'operation':'COMPOSITE_LOCKED','frozen':True} for i,x in enumerate(job.get('source_product_bindings') or [])],
+            'capture_metadata':{},
+        },
+        '_provider_job_ingest':True,
     }
     result.update(overrides)
     return result
@@ -74,7 +82,9 @@ def test_locked_pixel_provider_job_carries_resolvable_source_binding_and_hash_li
     jobs=tmp_path/'jobs'; materialize_provider_jobs(root,run,jobs)
     job=json.loads((jobs/row['asset_id']/'job.json').read_text(encoding='utf-8'))
     binding=job['source_product_bindings'][0]
-    assert binding['handoff_status']=='READY_LOCAL_VERIFIED'
+    assert binding['handoff_status']=='READY_PACKAGE_VERIFIED'
+    assert binding['locator']['kind']=='PACKAGE_RELATIVE_PATH'
+    assert (jobs/row['asset_id']/binding['locator']['value']).exists()
     assert binding['handoff_sha256']==binding['sha256']
     assert job['execution_brief']['source_product_bindings']==job['source_product_bindings']
     assert job['execution_brief']['source_binding_hash']==job['source_binding_hash']
@@ -154,7 +164,7 @@ def test_real_kiyuu_three_asset_provider_jobs_bind_same_verified_product_master(
     for row in index['jobs']:
         job=json.loads(Path(row['job_path']).read_text(encoding='utf-8'))
         assert job['source_product_bindings'][0]['asset_id']=='KIYUU-K01-MASTER-FRONT'
-        assert job['source_product_bindings'][0]['handoff_status']=='READY_LOCAL_VERIFIED'
+        assert job['source_product_bindings'][0]['handoff_status']=='READY_PACKAGE_VERIFIED'
         assert job['source_product_bindings'][0]['sha256']==hashlib.sha256(data).hexdigest()
         assert job['execution_brief']['source_product_bindings']==job['source_product_bindings']
         assert job['provider_contract']['source_binding_contract']['required'] is True

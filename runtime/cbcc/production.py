@@ -4,6 +4,7 @@ from typing import Any
 import json, yaml, hashlib
 from .models import stable_hash
 from .providers import route_production, validate_provider_result
+from .provider_portability import materialize_portable_job_inputs, build_production_receipt_contract, production_receipt_template, validate_production_receipt, rebind_portable_execution_metadata
 
 
 def _read_manifest(d:Path)->dict[str,Any]:
@@ -96,7 +97,7 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
     if fidelity=='LOCKED_PIXEL':
         required_observations += ['product_identity_preserved','source_product_asset_ids_used','source_product_hashes_used','product_layer_operation']
     return {
-        'version':'0.6.11-source-master-binding-frozen-revision',
+        'version':'0.6.12-portable-provider-package-production-receipt',
         'preflight_status':'READY' if not preflight_errors else 'HOLD',
         'preflight_errors':preflight_errors,
         'product_fidelity':fidelity,
@@ -228,14 +229,20 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]])->dic
         r=by.get(row['asset_id'])
         if not r:
             out.append({**row,'result_status':'MISSING'}); issues.append({'asset_id':row['asset_id'],'code':'MISSING_RESULT'}); continue
+        contract_row=row
+        if r.get('_provider_job_ingest'):
+            contract_row={**row}
+            if isinstance(row.get('provider_job_quality_contract'),dict): contract_row['production_quality_contract']=row['provider_job_quality_contract']
+            if isinstance(row.get('provider_job_contract_binding'),dict): contract_row['production_contract_binding']=row['provider_job_contract_binding']
         local=[]
         if row.get('status')!='READY_TO_HANDOFF': local.append('PRODUCTION_PREFLIGHT_NOT_READY')
         local.extend(validate_provider_result({'provider':row.get('provider'),'provider_contract':row.get('provider_contract')},r))
-        local.extend(_quality_result_issues(row,r))
+        local.extend(_quality_result_issues(contract_row,r))
+        local.extend(validate_production_receipt(contract_row,r))
         if r.get('package_hash') != row.get('package_hash'):
             local.append('PACKAGE_HASH_MISMATCH')
-        binding=row.get('production_contract_binding') or {}
-        fidelity=str((row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()
+        binding=contract_row.get('production_contract_binding') or {}
+        fidelity=str((contract_row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()
         if (fidelity=='LOCKED_PIXEL' and r.get('production_contract_ack') is not True) or ('production_contract_ack' in r and not r.get('production_contract_ack')):
             local.append('PRODUCTION_CONTRACT_NOT_ACKNOWLEDGED')
         if r.get('layout_contract_hash') and r.get('layout_contract_hash') != binding.get('layout_contract_hash'):
@@ -244,7 +251,7 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]])->dic
             local.append('PHOTOGRAPHY_CONTRACT_HASH_MISMATCH')
         if r.get('prompt_contract_hash') and r.get('prompt_contract_hash') != binding.get('prompt_contract_hash'):
             local.append('PROMPT_CONTRACT_HASH_MISMATCH')
-        qc=row.get('production_quality_contract') or {}
+        qc=contract_row.get('production_quality_contract') or {}
         expected_source_binding_hash=qc.get('source_binding_hash')
         if str(qc.get('product_fidelity') or '').upper()=='LOCKED_PIXEL':
             if not r.get('source_binding_hash') or r.get('source_binding_hash')!=expected_source_binding_hash:
@@ -264,79 +271,156 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]])->dic
         qa=r.get('qa') or {}; pass_required=all(bool(qa.get(k)) for k in ['product','fact','claim','visual','culture','platform'])
         if not pass_required: local.append('QA_INCOMPLETE')
         result_status='PASS' if not local else 'REVIEW_REQUIRED'
-        out.append({**row,'result_status':result_status,'output_path':r.get('output_path'),'qa':qa,'changed_fields':r.get('changed_fields',[]),'quality_observations':r.get('quality_observations') or {},'provider_metadata':r.get('provider_metadata') or {}})
+        receipt=r.get('production_receipt') if isinstance(r.get('production_receipt'),dict) else None
+        out.append({**row,'result_status':result_status,'output_path':r.get('output_path'),'qa':qa,'changed_fields':r.get('changed_fields',[]),'changed_layers':r.get('changed_layers',[]),'quality_observations':r.get('quality_observations') or {},'provider_metadata':r.get('provider_metadata') or {},'production_receipt':receipt,'production_receipt_hash':stable_hash(receipt) if receipt else None})
         for code in local: issues.append({'asset_id':row['asset_id'],'code':code})
     return {'status':'COMPLETE' if not issues else 'REVIEW_REQUIRED','assets':out,'issues':issues}
 
 
 def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_root:Path)->dict[str,Any]:
-    """Create provider-neutral filesystem job envelopes from frozen production rows.
+    """Create self-contained provider job envelopes from frozen production rows.
 
-    This is an execution adapter boundary: external/human providers can consume job.json and
-    return result.json without receiving authority-state internals or permission to re-plan.
+    Local product masters are copied into each job and rebound to PACKAGE_RELATIVE_PATH. The exact
+    frozen asset package is copied under inputs/asset_package for package lineage. Provider handles
+    remain explicit external handles. job.json itself never needs the CBCC host's absolute path.
     """
     root=Path(asset_packages_root); jobs=Path(jobs_root); jobs.mkdir(parents=True,exist_ok=True)
-    index=[]
+    index=[]; holds=[]
     for row in run.get('assets',[]):
         if row.get('status')!='READY_TO_HANDOFF': continue
         aid=row['asset_id']; d=jobs/aid; d.mkdir(parents=True,exist_ok=True)
         package_dir=root/aid
+        upstream_qc=row.get('production_quality_contract') or {}
+        portable=materialize_portable_job_inputs(package_dir,d,upstream_qc.get('source_product_bindings') or [])
+        if portable.get('status')!='READY':
+            row['status']='HOLD_PORTABLE_PROVIDER_PACKAGE'
+            row['portable_package_errors']=portable.get('errors') or []
+            holds.append({'asset_id':aid,'errors':row['portable_package_errors']})
+            continue
+        portable_bindings=portable.get('source_product_bindings') or []
+        portable_hash=portable.get('portable_source_binding_hash')
+
+        quality=json.loads(json.dumps(upstream_qc))
+        quality['source_binding_hash_upstream']=quality.get('source_binding_hash')
+        quality['source_product_bindings']=portable_bindings
+        quality['source_binding_hash']=portable_hash
+        quality['provider_job_portability']={'status':'PORTABLE','portable_manifest_hash':portable.get('portable_manifest_hash'),'package_ref':'inputs/asset_package'}
+        if isinstance(quality.get('renderer_recipe'),dict):
+            quality['renderer_recipe']['source_product_bindings']=portable_bindings
+        canonical=quality.get('canonical_prompt_contract') or {}
+        if isinstance(canonical,dict) and isinstance(canonical.get('renderer_recipe'),dict):
+            canonical['renderer_recipe']['source_product_bindings']=portable_bindings
+        quality['canonical_prompt_contract']=canonical
+        quality=rebind_portable_execution_metadata(quality,upstream_qc.get('source_product_bindings') or [],portable_bindings)
+        quality.setdefault('provider_job_portability',{})['host_source_paths_rebound']=True
+
+        binding=json.loads(json.dumps(row.get('production_contract_binding') or {}))
+        if isinstance(binding.get('renderer_recipe'),dict):
+            binding['renderer_recipe']['source_product_bindings']=portable_bindings
+        bound_canonical=binding.get('canonical_prompt_contract') or {}
+        if isinstance(bound_canonical,dict) and isinstance(bound_canonical.get('renderer_recipe'),dict):
+            bound_canonical['renderer_recipe']['source_product_bindings']=portable_bindings
+        binding['canonical_prompt_contract']=bound_canonical
+        binding=rebind_portable_execution_metadata(binding,upstream_qc.get('source_product_bindings') or [],portable_bindings)
+
+        job_id='JOB-'+stable_hash([aid,row.get('package_hash'),row.get('provider'),portable.get('portable_manifest_hash')])[:14]
+        row['provider_job_quality_contract']=quality
+        row['provider_job_contract_binding']=binding
+        row['provider_job_source_binding_hash']=portable_hash
+        row['provider_job_source_product_bindings']=portable_bindings
+        row['provider_job_id']=job_id
+        row['portable_job_manifest_hash']=portable.get('portable_manifest_hash')
+        receipt_contract=build_production_receipt_contract(
+            job_id,aid,row.get('provider'),row.get('package_hash'),portable_hash,row.get('production_mode'),quality.get('product_fidelity'),portable.get('portable_manifest_hash')
+        )
+        row['production_receipt_contract']=receipt_contract
         job={
-            'job_id':'JOB-'+stable_hash([aid,row.get('package_hash'),row.get('provider')])[:14],
+            'job_id':job_id,
             'asset_id':aid,
             'provider':row.get('provider'),
             'adapter':(row.get('provider_contract') or {}).get('adapter','FILE_HANDOFF'),
             'production_mode':row.get('production_mode'),
             'package_hash':row.get('package_hash'),
-            'package_dir':str(package_dir),
+            'package_ref':{'kind':'PACKAGE_RELATIVE_PATH','value':'inputs/asset_package'},
+            'portable_package':{
+                'manifest':'PORTABLE_JOB_MANIFEST.json',
+                'portable_manifest_hash':portable.get('portable_manifest_hash'),
+                'upstream_source_binding_hash':portable.get('upstream_source_binding_hash'),
+                'source_binding_hash':portable_hash,
+            },
             'provider_contract':row.get('provider_contract'),
-            'production_contract_binding':row.get('production_contract_binding'),
-            'production_quality_contract':row.get('production_quality_contract'),
-            'source_product_bindings':(row.get('production_quality_contract') or {}).get('source_product_bindings') or [],
-            'source_binding_hash':(row.get('production_quality_contract') or {}).get('source_binding_hash'),
+            'production_contract_binding':binding,
+            'production_quality_contract':quality,
+            'source_product_bindings':portable_bindings,
+            'source_binding_hash':portable_hash,
             'execution_brief':{
-                'primary_decision_job':((row.get('production_quality_contract') or {}).get('visual_production_signature') or {}).get('visual_job'),
-                'visual_information_grammar':((row.get('production_quality_contract') or {}).get('visual_production_signature') or {}).get('composition_grammar'),
-                'decision_critical_evidence_plane':((row.get('production_quality_contract') or {}).get('visual_production_signature') or {}).get('evidence_plane'),
-                'differentiation_axis':((row.get('production_quality_contract') or {}).get('visual_production_signature') or {}).get('differentiation_axis'),
-                'locked_pixel_rule':(row.get('production_quality_contract') or {}).get('locked_pixel_rule'),
-                'source_product_bindings':(row.get('production_quality_contract') or {}).get('source_product_bindings') or [],
-                'source_binding_hash':(row.get('production_quality_contract') or {}).get('source_binding_hash'),
-                'copy_visual_alignment':(row.get('production_quality_contract') or {}).get('copy_visual_alignment'),
-                'photography_cmf_contract':(row.get('production_quality_contract') or {}).get('photography_cmf_contract'),
-                'editable_layer_contract':(row.get('production_quality_contract') or {}).get('editable_layer_contract'),
-                'canonical_prompt_contract':(row.get('production_quality_contract') or {}).get('canonical_prompt_contract'),
-                'renderer_recipe':(row.get('production_quality_contract') or {}).get('renderer_recipe'),
-                'qa_target_contract':(row.get('production_quality_contract') or {}).get('qa_target_contract'),
+                'primary_decision_job':(quality.get('visual_production_signature') or {}).get('visual_job'),
+                'visual_information_grammar':(quality.get('visual_production_signature') or {}).get('composition_grammar'),
+                'decision_critical_evidence_plane':(quality.get('visual_production_signature') or {}).get('evidence_plane'),
+                'differentiation_axis':(quality.get('visual_production_signature') or {}).get('differentiation_axis'),
+                'locked_pixel_rule':quality.get('locked_pixel_rule'),
+                'source_product_bindings':portable_bindings,
+                'source_binding_hash':portable_hash,
+                'copy_visual_alignment':quality.get('copy_visual_alignment'),
+                'photography_cmf_contract':quality.get('photography_cmf_contract'),
+                'editable_layer_contract':quality.get('editable_layer_contract'),
+                'canonical_prompt_contract':quality.get('canonical_prompt_contract'),
+                'renderer_recipe':quality.get('renderer_recipe'),
+                'qa_target_contract':quality.get('qa_target_contract'),
             },
             'revision_scope':row.get('revision_scope'),
-            'execution_policy':{'replanning_allowed':False,'one_asset_one_output':True,'return_same_package_hash':True,'contract_binding_must_not_change':True,'real_product_master_substitution_allowed':False},
+            'execution_policy':{
+                'replanning_allowed':False,'one_asset_one_output':True,'return_same_package_hash':True,
+                'contract_binding_must_not_change':True,'real_product_master_substitution_allowed':False,
+                'portable_job_required':True,'host_absolute_paths_are_not_execution_locators':True,
+            },
+            'production_receipt_contract':receipt_contract,
             'result_contract':{
-                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations'] + (['source_binding_hash','production_contract_ack'] if str((row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()=='LOCKED_PIXEL' else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
+                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations','production_receipt'] + (['source_binding_hash','production_contract_ack'] if str(quality.get('product_fidelity') or '').upper()=='LOCKED_PIXEL' else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
                 'qa_required':['product','fact','claim','visual','culture','platform'],
-                'quality_observations_required':(row.get('production_quality_contract') or {}).get('required_result_observations',[]),
-                'optional':['changed_fields','changed_layers','provider_metadata','layer_manifest','capture_metadata','production_contract_ack','source_binding_hash','layout_contract_hash','photography_contract_hash','prompt_contract_hash']
+                'quality_observations_required':quality.get('required_result_observations',[]),
+                'optional':['changed_fields','changed_layers','provider_metadata','production_contract_ack','source_binding_hash','layout_contract_hash','photography_contract_hash','prompt_contract_hash']
             }
         }
         (d/'job.json').write_text(json.dumps(job,ensure_ascii=False,indent=2),encoding='utf-8')
-        qkeys=(row.get('production_quality_contract') or {}).get('required_result_observations',[])
+        qkeys=quality.get('required_result_observations',[])
         qobs={k:([] if k=='source_product_asset_ids_used' else ({} if k=='source_product_hashes_used' else ('' if k=='product_layer_operation' else {'status':'UNVERIFIED','evidence':None}))) for k in qkeys}
-        (d/'result.template.json').write_text(json.dumps({'asset_id':aid,'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':'','changed_fields':[],'changed_layers':[],'qa':{'product':False,'fact':False,'claim':False,'visual':False,'culture':False,'platform':False},'quality_observations':qobs,'provider_metadata':{},'production_contract_ack':False,'source_binding_hash':(row.get('production_quality_contract') or {}).get('source_binding_hash'),'layout_contract_hash':(row.get('production_contract_binding') or {}).get('layout_contract_hash'),'photography_contract_hash':(row.get('production_contract_binding') or {}).get('photography_contract_hash'),'prompt_contract_hash':(row.get('production_contract_binding') or {}).get('prompt_contract_hash')},ensure_ascii=False,indent=2),encoding='utf-8')
-        index.append({'asset_id':aid,'job_id':job['job_id'],'provider':job['provider'],'adapter':job['adapter'],'job_path':str(d/'job.json'),'result_path':str(d/'result.json')})
-    manifest={'status':'JOBS_MATERIALIZED','job_count':len(index),'jobs':index,'authority_note':'Jobs are frozen execution envelopes carrying asset-specific real-product, visual, surface, copy and photography/CMF production contracts. Provider completion is not inferred until a result is explicitly ingested; provider completion is still not independent review acceptance.'}
+        template={
+            'asset_id':aid,'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':'',
+            'changed_fields':[],'changed_layers':[],
+            'qa':{'product':False,'fact':False,'claim':False,'visual':False,'culture':False,'platform':False},
+            'quality_observations':qobs,'provider_metadata':{},'production_contract_ack':False,'source_binding_hash':portable_hash,
+            'layout_contract_hash':binding.get('layout_contract_hash'),'photography_contract_hash':binding.get('photography_contract_hash'),'prompt_contract_hash':binding.get('prompt_contract_hash'),
+            'production_receipt':production_receipt_template(receipt_contract),
+        }
+        (d/'result.template.json').write_text(json.dumps(template,ensure_ascii=False,indent=2),encoding='utf-8')
+        index.append({
+            'asset_id':aid,'job_id':job_id,'provider':job['provider'],'adapter':job['adapter'],
+            'job_path':str(d/'job.json'),'result_path':str(d/'result.json'),
+            'portable_manifest_path':str(d/'PORTABLE_JOB_MANIFEST.json'),'portable_manifest_hash':portable.get('portable_manifest_hash'),
+        })
+    manifest={
+        'status':'JOBS_MATERIALIZED' if not holds else 'JOBS_MATERIALIZED_WITH_HOLDS',
+        'job_count':len(index),'jobs':index,'holds':holds,
+        'authority_note':'Each provider job is a self-contained execution envelope. Local masters are copied and rebound to package-relative locators; returned external results require a production receipt that binds job/package/source/output lineage.'
+    }
     (jobs/'PROVIDER_JOB_INDEX.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')
     return manifest
 
-
 def ingest_provider_job_results(run:dict[str,Any], jobs_root:Path)->dict[str,Any]:
-    """Read explicit provider result.json files and apply the same production validation contract."""
+    """Read external provider result.json files and require portable production receipts."""
     jobs=Path(jobs_root); results=[]; missing=[]
     for row in run.get('assets',[]):
         if row.get('status')!='READY_TO_HANDOFF': continue
         rp=jobs/row['asset_id']/'result.json'
         if not rp.exists(): missing.append(row['asset_id']); continue
-        try: results.append(json.loads(rp.read_text(encoding='utf-8')))
-        except Exception as e: results.append({'asset_id':row['asset_id'],'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':None,'qa':{},'_parse_error':f'{type(e).__name__}: {e}'})
+        try:
+            result=json.loads(rp.read_text(encoding='utf-8'))
+            result['_provider_job_ingest']=True
+            result['_provider_job_dir']=str(rp.parent)
+            results.append(result)
+        except Exception as e:
+            results.append({'asset_id':row['asset_id'],'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':None,'qa':{},'_provider_job_ingest':True,'_provider_job_dir':str(rp.parent),'_parse_error':f'{type(e).__name__}: {e}'})
     applied=apply_production_result(run,results)
     if missing:
         existing={x['asset_id'] for x in applied.get('issues',[])}

@@ -1,13 +1,19 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.11-source-master-binding-frozen-revision
+version: 0.6.12-portable-provider-package-production-receipt
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.12 可携带 Provider Package + Production Receipt
+- 外部 Provider Job 必须自包含执行资源：LOCAL_FILE_PATH 商品母版在 handoff 时复制到 job `inputs/product_masters/` 并重绑为 `PACKAGE_RELATIVE_PATH`；Provider handle 保持显式 handle。
+- 冻结资产包复制到 `inputs/asset_package/`，原 package hash 继续作为策略/设计合同 lineage；job.json 不再依赖 CBCC 主机绝对路径执行。
+- 外部 `result.json` 必须带 `production_receipt`，绑定 job_id、asset_id、provider、package_hash、portable_manifest_hash、source_binding_hash 与输出文件 SHA256。
+- LOCKED_PIXEL receipt 必须带 `layer_manifest` 证明真实商品层来自正确 source asset/hash 且保持 frozen；REAL_PHOTO / VIDEO receipt 必须带真实 `capture_metadata`，不得虚构 EXIF。
 
 ## v0.6.11 商品母版绑定 + 冻结层修订执行
 - LOCKED_PIXEL 的真实商品母版必须以机器可执行 `source_product_bindings` 进入 Renderer Recipe 与 Provider Job；每个 binding 至少包含 asset_id、resolver/locator、SHA256、pixel_lock、allowed_transforms 与 identity_features。

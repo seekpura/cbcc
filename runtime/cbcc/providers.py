@@ -41,11 +41,11 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
     if real_product_mode: required_inputs.extend(['photography_contract','shot_lighting_reasoning'])
     return {
         'status':'READY' if not errors else 'HOLD','provider':provider,'production_mode':mode,'product_fidelity':fidelity,
-        'required_inputs':required_inputs,'expected_outputs':spec['outputs'],'human_review_required':spec['human_review'],
+        'required_inputs':required_inputs,'expected_outputs':list(dict.fromkeys(list(spec['outputs'])+['production_receipt'])),'human_review_required':spec['human_review'],
         'adapter':spec.get('adapter','FILE_HANDOFF'),'locked_pixel_support':spec['locked_pixel'],
         'source_binding_contract':{
             'required': source_binding_required,
-            'resolver_precedence':['PROVIDER_ASSET_HANDLE','LOCAL_FILE_PATH'],
+            'resolver_precedence':['PROVIDER_ASSET_HANDLE','PACKAGE_RELATIVE_PATH','LOCAL_FILE_PATH'],
             'integrity_key':'sha256',
             'required_binding_fields':['asset_id','locator','sha256','pixel_lock','allowed_transforms','identity_features'],
             'locked_pixel_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_layer_operation','product_identity_preserved'] if fidelity=='LOCKED_PIXEL' else [],
