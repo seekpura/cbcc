@@ -1,0 +1,334 @@
+FULL_REGRESSION_RC=1
+
+== PYTEST TERMINAL SUMMARY ==
+
+== FAILED / ERROR NODE IDS ==
+FAILED tests/test_alpha3_platform_listing_assets.py::test_kiyuu_alpha3_compiles_asset_packages - AssertionError: assert ('真实产品' in '【生成目标】\n视觉任务：产品身份 + 第一购买理由，不重复后续深层证据。\n创意母命题：采用“真实使用关键瞬间 + 信息层级视觉化”来解决本资产的购买问题。承担产品识别与第一价值建立；没有这一层，后续证据缺少清晰上下文。\n图像语言...。\n\n【禁止生成】\n不得生成未被产品真源 / 证据支持的成分、质地、认证、检测、疗效、人体结果、before/after、比较数字或包装文字；不得为了“高级感”添加与购买判断无关的水花、粒子、实验室符号、抽象光环或模板化卡片。\n' and '消费者问题' in '【生成目标】\n视觉任务：产品身份 + 第一购买理由，不重复后续深层证据。\n创意母命题：采用“真实使用关键瞬间 + 信息层级视觉化”来解决本资产的购买问题。承担产品识别与第一价值建立；没有这一层，后续证据缺少清晰上下文。\n图像语言...。\n\n【禁止生成】\n不得生成未被产品真源 / 证据支持的成分、质地、认证、检测、疗效、人体结果、before/after、比较数字或包装文字；不得为了“高级感”添加与购买判断无关的水花、粒子、实验室符号、抽象光环或模板化卡片。\n')
+FAILED tests/test_alpha4_creative_research.py::test_cmf_and_inclusive_photo_compile_from_execution_inputs - AssertionError: assert ('APPLICABLE_P0' == 'APPLICABLE'
+FAILED tests/test_alpha4_production_video_compliance.py::test_compliance_binds_assets_to_approved_claim_ids_and_research - KeyError: 'claim_ids'
+FAILED tests/test_alpha6_review_provider_overlays.py::test_provider_filesystem_job_envelope_and_ingest - AssertionError: assert ('REVIEW_REQUIRED' == 'COMPLETE'
+FAILED tests/test_alpha6_review_provider_overlays.py::test_provider_ingest_cli_lifecycle - AssertionError: assert ('REVIEW_REQUIRED' == 'COMPLETE'
+FAILED tests/test_v0512_production_learning_loop.py::test_v0512_provider_review_local_revision_and_learning_are_one_bounded_loop - AssertionError: assert 'RESULT_REVIEW_REQUIRED' == 'READY_REVIEW'
+FAILED tests/test_v0513_real_product_strategy_quality.py::test_v0513_final_copy_allows_extra_number_only_when_field_claim_ref_authorizes_it - AssertionError: assert [{'locale': '...rs': [], ...}] == []
+FAILED tests/test_v052_strategy_integration.py::test_v052_strategy_tools_flow_back_into_authority_and_assets - AssertionError: assert ('Shared Growth Budget' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n')
+FAILED tests/test_v053_portfolio_localization.py::test_v053_competitor_portfolio_transcreation_and_native_authoring - AssertionError: assert 'SKU Cannibalization / Overlap Hypotheses' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+FAILED tests/test_v054_research_behavior_finalcopy.py::test_v054_research_behavior_finalcopy_and_platform_native_systems - AssertionError: assert 'Local-language Final Copy Workflow' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+FAILED tests/test_v055_evidence_incrementality_authoring_surface.py::test_v055_evidence_incrementality_copy_versions_surface_and_asset_why - AssertionError: assert 'Asset-level Photography Causal WHY' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+FAILED tests/test_v056_adapter_causal_copy_production_cmf.py::test_v056_incremental_adapter_experiment_host_copy_surface_and_cmf - AssertionError: assert False
+FAILED tests/test_v057_adapter_cursor_causal_terminology_provider_prelight.py::test_v057_cursor_advanced_causal_terminology_provider_binding_and_prelight - AssertionError: assert False
+FAILED tests/test_v058_multicategory_strategy_validation.py::test_v058_multicategory_runtime_is_category_specific_and_asset_count_is_question_driven - AssertionError: assert 'EXECUTION_RE..._CONFIRMATION' == 'STRATEGY_REC...IRES_PRELIGHT'
+FAILED tests/test_v059_category_commerce_depth.py::test_v059_category_commerce_changes_objection_proof_offer_message_and_cadence - AssertionError: assert False
+
+== SHORT TEST SUMMARY ==
+=========================== short test summary info ============================
+FAILED tests/test_alpha3_platform_listing_assets.py::test_kiyuu_alpha3_compiles_asset_packages - AssertionError: assert ('真实产品' in '【生成目标】\n视觉任务：产品身份 + 第一购买理由，不重复后续深层证据。\n创意母命题：采用“真实使用关键瞬间 + 信息层级视觉化”来解决本资产的购买问题。承担产品识别与第一价值建立；没有这一层，后续证据缺少清晰上下文。\n图像语言...。\n\n【禁止生成】\n不得生成未被产品真源 / 证据支持的成分、质地、认证、检测、疗效、人体结果、before/after、比较数字或包装文字；不得为了“高级感”添加与购买判断无关的水花、粒子、实验室符号、抽象光环或模板化卡片。\n' and '消费者问题' in '【生成目标】\n视觉任务：产品身份 + 第一购买理由，不重复后续深层证据。\n创意母命题：采用“真实使用关键瞬间 + 信息层级视觉化”来解决本资产的购买问题。承担产品识别与第一价值建立；没有这一层，后续证据缺少清晰上下文。\n图像语言...。\n\n【禁止生成】\n不得生成未被产品真源 / 证据支持的成分、质地、认证、检测、疗效、人体结果、before/after、比较数字或包装文字；不得为了“高级感”添加与购买判断无关的水花、粒子、实验室符号、抽象光环或模板化卡片。\n')
+FAILED tests/test_alpha4_creative_research.py::test_cmf_and_inclusive_photo_compile_from_execution_inputs - AssertionError: assert ('APPLICABLE_P0' == 'APPLICABLE'
+  
+  - APPLICABLE
+  + APPLICABLE_P0
+  ?           +++)
+FAILED tests/test_alpha4_production_video_compliance.py::test_compliance_binds_assets_to_approved_claim_ids_and_research - KeyError: 'claim_ids'
+FAILED tests/test_alpha6_review_provider_overlays.py::test_provider_filesystem_job_envelope_and_ingest - AssertionError: assert ('REVIEW_REQUIRED' == 'COMPLETE'
+  
+  - COMPLETE
+  + REVIEW_REQUIRED)
+FAILED tests/test_alpha6_review_provider_overlays.py::test_provider_ingest_cli_lifecycle - AssertionError: assert ('REVIEW_REQUIRED' == 'COMPLETE'
+  
+  - COMPLETE
+  + REVIEW_REQUIRED)
+FAILED tests/test_v0512_production_learning_loop.py::test_v0512_provider_review_local_revision_and_learning_are_one_bounded_loop - AssertionError: assert 'RESULT_REVIEW_REQUIRED' == 'READY_REVIEW'
+  
+  - READY_REVIEW
+  + RESULT_REVIEW_REQUIRED
+FAILED tests/test_v0513_real_product_strategy_quality.py::test_v0513_final_copy_allows_extra_number_only_when_field_claim_ref_authorizes_it - AssertionError: assert [{'locale': '...rs': [], ...}] == []
+  
+  Left contains one more item: {'locale': 'en-US', 'field': 'highlights', 'issue': 'NUMERIC_EQUIVALENCE_REVIEW', 'missing_source_numbers': [], ...}
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  - []
+  + [
+  +     {
+  +         'locale': 'en-US',
+  +         'field': 'highlights',
+  +         'issue': 'NUMERIC_EQUIVALENCE_REVIEW',
+  +         'missing_source_numbers': [],
+  +         'extra_target_numbers': [
+  +             '100W',
+  +         ],
+  +         'authorized_extra_numbers': [],
+  +         'why': 'Numbers often encode size, concentration, duration or quantity. Extra '
+  +         'numbers are allowed only when this exact field already carries an '
+  +         'explicit approved Claim reference containing that number; all other '
+  +         'drift remains blocked.',
+  +     },
+  + ]
+FAILED tests/test_v052_strategy_integration.py::test_v052_strategy_tools_flow_back_into_authority_and_assets - AssertionError: assert ('Shared Growth Budget' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n')
+FAILED tests/test_v053_portfolio_localization.py::test_v053_competitor_portfolio_transcreation_and_native_authoring - AssertionError: assert 'SKU Cannibalization / Overlap Hypotheses' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+FAILED tests/test_v054_research_behavior_finalcopy.py::test_v054_research_behavior_finalcopy_and_platform_native_systems - AssertionError: assert 'Local-language Final Copy Workflow' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+FAILED tests/test_v055_evidence_incrementality_authoring_surface.py::test_v055_evidence_incrementality_copy_versions_surface_and_asset_why - AssertionError: assert 'Asset-level Photography Causal WHY' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+FAILED tests/test_v056_adapter_causal_copy_production_cmf.py::test_v056_incremental_adapter_experiment_host_copy_surface_and_cmf - AssertionError: assert False
+ +  where False = <built-in method startswith of str object at 0x743768a66010>(('0.5.6-', '0.5.7-', '0.5.8-', '0.5.9-', '0.5.10-', '0.5.11-', ...))
+ +    where <built-in method startswith of str object at 0x743768a66010> = '0.6.11-source-master-binding-frozen-revision'.startswith
+FAILED tests/test_v057_adapter_cursor_causal_terminology_provider_prelight.py::test_v057_cursor_advanced_causal_terminology_provider_binding_and_prelight - AssertionError: assert False
+ +  where False = <built-in method startswith of str object at 0x743768c9af70>(('0.5.7-', '0.5.8-', '0.5.9-', '0.5.10-', '0.5.11-', '0.5.12-', ...))
+ +    where <built-in method startswith of str object at 0x743768c9af70> = '0.6.11-source-master-binding-frozen-revision'.startswith
+FAILED tests/test_v058_multicategory_strategy_validation.py::test_v058_multicategory_runtime_is_category_specific_and_asset_count_is_question_driven - AssertionError: assert 'EXECUTION_RE..._CONFIRMATION' == 'STRATEGY_REC...IRES_PRELIGHT'
+  
+  - STRATEGY_RECOMMENDATION_REQUIRES_PRELIGHT
+  + EXECUTION_RECOMMENDATION_REQUIRES_PRELIGHT_CONFIRMATION
+FAILED tests/test_v059_category_commerce_depth.py::test_v059_category_commerce_changes_objection_proof_offer_message_and_cadence - AssertionError: assert False
+ +  where False = <built-in method startswith of str object at 0x743768c7bc90>(('0.5.9-', '0.5.10-', '0.5.11-', '0.5.12-', '0.5.13-', '0.5.14-'))
+ +    where <built-in method startswith of str object at 0x743768c7bc90> = '0.6.11-source-master-binding-frozen-revision'.startswith
+15 failed, 114 passed in 16.77s
+
+== LAST 250 LINES ==
+    
+        md=(tmp_path/'proj/artifacts/strategy/MASTER_STRATEGY_CN.md').read_text()
+        assert 'Directional Switch Matrix' in md
+        assert 'Holdout / Marginal Contribution' in md
+>       assert 'Asset-level Photography Causal WHY' in md
+E       AssertionError: assert 'Asset-level Photography Causal WHY' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+
+tests/test_v055_evidence_incrementality_authoring_surface.py:149: AssertionError
+______ test_v056_incremental_adapter_experiment_host_copy_surface_and_cmf ______
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_v056_incremental_adapter_0')
+
+    def test_v056_incremental_adapter_experiment_host_copy_surface_and_cmf(tmp_path):
+        first=compile_source_adapters([{
+            'adapter_id':'COMPETITOR-SNAPSHOT','dataset':'market_rows','refresh_mode':'FULL_SNAPSHOT','primary_key':'listing_id','updated_at_field':'observed_at','source_id':'M1',
+            'rows':[{'listing_id':'A','seller':'Seller A','price':49,'units':100,'revenue':4900,'configuration':'30ml','observed_at':'2026-10-20'}]
+        }])
+        prev=first['refresh_state']
+        req={
+          'project_id':'V056','planning_only':True,'sku':'S1',
+          'product':{'name':'Glass Serum','category':'serum','net_content':'30ml','primary_conversion_proposition':'Light daily hydration'},
+          'sources':[{'source_id':'SRC-PROD','kind':'PRODUCT_TRUTH'}],
+          'claims':[{'claim_id':'CLM-1','claim':'Contains glycerin','status':'ACTIVE','evidence_level':'B','source_ids':['SRC-PROD']}],
+          'target':{'market':'MY','jurisdiction':'MY','platform_family':'tiktok_shop','site':'TEST','primary_locale':'en-MY','visible_copy_locales':['en-MY','ms-MY'],'surfaces':['SEARCH_RESULTS','PDP','GALLERY','PDP_VIDEO'],'currency':'MYR','category':'beauty'},
+          'platform_content_targets':[{'market':'MY','site':'TEST','platform_family':'tiktok_shop','primary_locale':'ms-MY','visible_copy_locales':['ms-MY','en-MY'],'surface_production_overrides':{'TikTok Shop Gallery / PDP':{'working_canvas':'project-defined mobile master'}}}],
+          'research_adapter_previous_state':prev,
+          'research_source_adapters':[
+            {'adapter_id':'COMPETITOR-SNAPSHOT','dataset':'market_rows','refresh_mode':'INCREMENTAL_BATCH','primary_key':'listing_id','updated_at_field':'observed_at','source_id':'M1','source_record':{'source_id':'M1','kind':'MARKET_SNAPSHOT','observed_at':'2026-10-27','market':'MY','site':'TEST','platform_family':'tiktok_shop','category':'beauty','max_age_days':14,'sample_frame':'named competitor set','sampling_method':'host export','population_scope':'supplied competitors','inclusion_criteria':'active supplied rows'},'rows':[{'listing_id':'A','seller':'Seller A','price':50,'units':110,'revenue':5500,'configuration':'30ml','observed_at':'2026-10-27'},{'listing_id':'B','seller':'Seller B','price':59,'units':60,'revenue':3540,'configuration':'30ml','observed_at':'2026-10-27'}]},
+            {'adapter_id':'REVIEWS','dataset':'market_review_rows','refresh_mode':'FULL_SNAPSHOT','primary_key':'review_id','source_id':'R1','semantic_duplicate_fields':['text'],'semantic_duplicate_threshold':0.8,'source_record':{'source_id':'R1','kind':'REVIEW_EXPORT','observed_at':'2026-10-26','market':'MY','site':'TEST','platform_family':'tiktok_shop','category':'beauty','max_age_days':30,'sample_frame':'supplied reviews','sampling_method':'host export','population_scope':'supplied reviews','inclusion_criteria':'reviews in export'},'rows':[{'review_id':'r1','theme':'sticky','sentiment':'negative','text':'Feels sticky on humid days'},{'review_id':'r2','theme':'sticky','sentiment':'negative','text':'Feels sticky on humid days!'}]},
+          ],
+          'market_field_map':{'seller':'seller','price':'price','units':'units','revenue':'revenue','configuration':'configuration'},
+          'market_research_as_of':'2026-10-27','market_research_scope':{'market':'MY','site':'TEST','platform_family':'tiktok_shop','category':'beauty'},
+          'offer_economics':{'currency':'MYR','scenarios':[{'scenario_id':'CORE','sku':'S1','price':50,'costs':{'landed_cost':18,'platform_fee':{'type':'rate','value':0.1},'fulfillment':4,'affiliate_commission':{'type':'rate','value':0.08},'ad_cost':4,'tax':0,'refund_allowance':2},'minimum_contribution':6}]},
+          'listing_input':{'fields':{
+            'title':'Glass Serum 30ml','attributes':{'size':'30ml'},'highlights':['Light daily hydration'],
+            '_localized_copy':{'en-MY':{'title':'Glass Serum 30ml','attributes':{'size':'30ml'},'highlights':['Light daily hydration']},'ms-MY':{'title':'Serum Kaca 30ml','attributes':{'size':'30ml'},'highlights':['Hidrasi ringan harian']}},
+            '_localized_copy_history':[{'locale':'ms-MY','field':'title','version_id':'MS-T-V1','copy':'Serum Kaca 30ml','created_at':'2026-10-20'}],
+            '_localized_copy_reviews':[{'locale':'ms-MY','field':'title','version_id':'MS-T-V1','decision':'APPROVED','native_fluency':'PASS','claim_equivalence':'PASS','platform_fit':'PASS','culture_fit':'PASS'}],
+            '_source_refs':{'title':['SRC-PROD'],'attributes':['SRC-PROD']},'_claim_refs':{'highlights':['CLM-1']},
+          },'host_authoring_responses':[{'locale':'ms-MY','field':'title','task_type':'REVISE','task_id':'REV-1','version_id':'MS-T-V2','parent_version_id':'MS-T-V1','copy':'Serum Ringan 30ml','author':'HOST-MODEL'}]},
+          'experiment':{'assignment_unit':'user','randomized':True,'baseline_rate':0.10,'absolute_mde':0.02,'target_power':0.8,'alpha':0.05,'contamination_rate':0.02,'spillover_rate':0.01,'interference_risk':'LOW','pre_period_metrics':[{'metric':'pre_conversion','treatment_mean':0.101,'control_mean':0.10,'treatment_sd':0.30,'control_sd':0.30}], 'control_success':100,'control_total':1000,'test_success':125,'test_total':1000,'segments':[{'segment':'new','control_success':60,'control_total':600,'test_success':80,'test_total':600}]},
+          'shopper_questions':['What is it?','Why is it relevant?','Why believe it?'],
+          'cmf':{'color':'clear bottle / neutral label','material':'clear glass bottle','finish':'gloss glass + matte paper label','surface_behavior':{'bottle':'specular transparent','label':'diffuse matte'}},
+          'photography_contract':{'capture_mode':'REAL_PHOTO','camera':{'focal_length_mm':85,'camera_height':'product center','working_distance':'1m','focus_plane':'front label','yaw':0,'pitch':0,'roll':0,'aperture':'f/8','dof':'full front label legible'},'composition':{'product_occupancy':{'height_pct':68},'shot_size':'product hero'},'lighting':{'key':{'direction':'camera-left 45deg','modifier':'large diffusion'},'fill':'low soft fill','negative_fill':'camera-right flag','rim':'subtle edge separation','cct':5200,'white_balance':'neutral reference','shadow_policy':'soft grounding shadow','highlight_policy':'protect label','reflection_control':'flags + angle + conditional polarization'},'color_management':{'white_balance':'neutral reference','output_space':'sRGB','product_color_fidelity':'truth-first'}},
+          'compile_assets':True,
+        }
+        build_project(tmp_path/'proj',req,_pack(tmp_path))
+        adapter=json.loads((tmp_path/'proj/artifacts/research_source_adapter_refresh.json').read_text())
+        comp=next(x for x in adapter['adapters'] if x['adapter_id']=='COMPETITOR-SNAPSHOT')
+        assert 'A' in comp['change_set']['changed'] and 'B' in comp['change_set']['added']
+        rev=next(x for x in adapter['adapters'] if x['adapter_id']=='REVIEWS')
+        assert rev['semantic_near_duplicate_review'] and rev['semantic_near_duplicate_review'][0]['decision']=='REPORT_ONLY_NEVER_AUTO_DELETE'
+        market=json.loads((tmp_path/'proj/artifacts/market_analysis.json').read_text())
+        assert market['normalization']['row_count']==2
+        exp=json.loads((tmp_path/'proj/artifacts/experiment_analysis.json').read_text())
+        assert exp['design_review']['power_plan']['approx_required_n_per_arm']>0
+        assert exp['design_review']['design_readiness']=='DESIGN_REVIEW_READY'
+        assert exp['segments'][0]['segment']=='new'
+        listing=json.loads((tmp_path/'proj/artifacts/listing_analysis.json').read_text())['compiled']
+        title=next(x for pkg in listing['final_copy_workflow']['packages'] if pkg['locale']=='ms-MY' for x in pkg['fields'] if x['field']=='title')
+        assert title['current_version_id']=='MS-T-V2' and title['review_version_id']=='MS-T-V1'
+        assert title['release_status']=='REVIEW_STALE_AFTER_REVISION'
+        assert listing['host_authoring_apply']['applied'][0]['version_id']=='MS-T-V2'
+        strategy=json.loads((tmp_path/'proj/artifacts/strategy/strategy_authority.json').read_text())
+        assert len(strategy['sections'])==9
+>       assert strategy['runtime_strategy_depth'].startswith(('0.5.6-','0.5.7-','0.5.8-','0.5.9-','0.5.10-','0.5.11-','0.5.12-','0.5.13-','0.5.14-'))
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x743768a66010>(('0.5.6-', '0.5.7-', '0.5.8-', '0.5.9-', '0.5.10-', '0.5.11-', ...))
+E        +    where <built-in method startswith of str object at 0x743768a66010> = '0.6.11-source-master-binding-frozen-revision'.startswith
+
+tests/test_v056_adapter_causal_copy_production_cmf.py:69: AssertionError
+__ test_v057_cursor_advanced_causal_terminology_provider_binding_and_prelight __
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_v057_cursor_advanced_caus0')
+
+    def test_v057_cursor_advanced_causal_terminology_provider_binding_and_prelight(tmp_path):
+        first=compile_source_adapters([{
+            'adapter_id':'MARKET-SNAP','adapter_family':'MARKET_SNAPSHOT','refresh_mode':'FULL_SNAPSHOT','primary_key':'listing_id','cursor_field':'observed_at','updated_at_field':'observed_at','source_id':'M1',
+            'rows':[{'listing_id':'A','seller':'Seller A','price':49,'units':100,'revenue':4900,'configuration':'30ml','observed_at':'2026-10-20'}]
+        }])
+        prev=first['refresh_state']
+        req={
+          'project_id':'V057','planning_only':True,'sku':'S1',
+          'product':{'name':'Glass Serum','category':'serum','net_content':'30ml','primary_conversion_proposition':'Light daily hydration'},
+          'sources':[{'source_id':'SRC-PROD','kind':'PRODUCT_TRUTH'}],
+          'claims':[{'claim_id':'CLM-1','claim':'Contains glycerin','status':'ACTIVE','evidence_level':'B','source_ids':['SRC-PROD']}],
+          'target':{'market':'MY','jurisdiction':'MY','platform_family':'tiktok_shop','site':'TEST','primary_locale':'en-MY','visible_copy_locales':['en-MY','ms-MY'],'surfaces':['SEARCH_RESULTS','PDP','GALLERY','PDP_VIDEO'],'currency':'MYR','category':'beauty'},
+          'platform_content_targets':[{'market':'MY','site':'TEST','platform_family':'tiktok_shop','primary_locale':'ms-MY','visible_copy_locales':['ms-MY','en-MY']}],
+          'research_adapter_previous_state':prev,
+          'research_source_adapters':[
+            {'adapter_id':'MARKET-SNAP','adapter_family':'MARKET_SNAPSHOT','refresh_mode':'INCREMENTAL_BATCH','primary_key':'listing_id','cursor_field':'observed_at','updated_at_field':'observed_at','source_id':'M1','batch_id':'B2','has_more':False,'source_record':{'source_id':'M1','kind':'MARKET_SNAPSHOT','observed_at':'2026-10-27','market':'MY','site':'TEST','platform_family':'tiktok_shop','category':'beauty','max_age_days':14,'sample_frame':'named competitor set','sampling_method':'host export','population_scope':'supplied competitors','inclusion_criteria':'active supplied rows'},'rows':[{'listing_id':'A','seller':'Seller A','price':50,'units':110,'revenue':5500,'configuration':'30ml','observed_at':'2026-10-27'},{'listing_id':'B','seller':'Seller B','price':59,'units':60,'revenue':3540,'configuration':'30ml','observed_at':'2026-10-27'}]},
+            {'adapter_id':'SEARCH','adapter_family':'SEARCH_DEMAND','refresh_mode':'FULL_SNAPSHOT','primary_key':'term','source_id':'K1','rows':[{'term':'serum ringan','volume':1000,'competition':20,'cluster':'CORE'}]},
+            {'adapter_id':'REVIEWS','adapter_family':'REVIEW_VOICE','refresh_mode':'FULL_SNAPSHOT','primary_key':'review_id','source_id':'R1','semantic_duplicate_fields':['text'],'rows':[{'review_id':'r1','theme':'sticky','sentiment':'negative','text':'Feels sticky on humid days'}]},
+          ],
+          'market_field_map':{'seller':'seller','price':'price','units':'units','revenue':'revenue','configuration':'configuration'},
+          'market_research_as_of':'2026-10-27','market_research_scope':{'market':'MY','site':'TEST','platform_family':'tiktok_shop','category':'beauty'},
+          'offer_economics':{'currency':'MYR','scenarios':[{'scenario_id':'CORE','sku':'S1','price':50,'costs':{'landed_cost':18,'platform_fee':{'type':'rate','value':0.1},'fulfillment':4,'affiliate_commission':{'type':'rate','value':0.08},'ad_cost':4,'tax':0,'refund_allowance':2},'minimum_contribution':6}]},
+          'listing_input':{
+            'terminology_memory':[{'locale':'ms-MY','term_id':'TERM-PRODUCT','concept':'product_name','canonical':'Serum Kaca','allowed_variants':['Serum Glass'],'consistency_mode':'CANONICAL_ONLY','required_in_fields':['title']}],
+            'fields':{
+              'title':'Glass Serum 30ml','highlights':['Light daily hydration'],
+              '_localized_copy':{'en-MY':{'title':'Glass Serum 30ml','highlights':['Light daily hydration']},'ms-MY':{'title':'Serum Kaca 30ml','highlights':['Serum Glass untuk hidrasi ringan']}},
+              '_localized_copy_reviews':[{'locale':'ms-MY','field':'title','decision':'APPROVED','native_fluency':'PASS','claim_equivalence':'PASS','platform_fit':'PASS','culture_fit':'PASS'},{'locale':'ms-MY','field':'highlights','decision':'APPROVED','native_fluency':'PASS','claim_equivalence':'PASS','platform_fit':'PASS','culture_fit':'PASS'}],
+              '_source_refs':{'title':['SRC-PROD']},'_claim_refs':{'highlights':['CLM-1']},
+            }
+          },
+          'experiment':{
+            'assignment_unit':'store','randomized':True,'baseline_rate':0.10,'absolute_mde':0.02,'target_power':0.8,'alpha':0.05,
+            'control_success':100,'control_total':1000,'test_success':130,'test_total':1000,
+            'cluster_design':{'cluster_id_field':'store_id','avg_cluster_size':20,'icc':0.05,'clusters_per_arm':25},
+            'geo_design':{'pairs':[{'treatment_geo':'KL','control_geo':'PJ','treatment_pre':100,'control_pre':96}]},
+            'cuped':{'pre_metric':'pre_orders','outcome_metric':'orders','pre_outcome_correlation':0.6,'pre_period_frozen_before_outcome':True},
+            'sequential':{'planned_looks':4,'current_look':2,'method':'BONFERRONI_CONSERVATIVE'},
+          },
+          'shopper_questions':['What is it?','Why is it relevant?','Why believe it?'],
+          'cmf':{'color':'clear bottle / neutral label','material':'clear glass bottle','finish':'gloss glass + matte paper label','surface_behavior':{'bottle':'specular transparent','label':'diffuse matte'}},
+          'photography_contract':{'capture_mode':'REAL_PHOTO','camera':{'focal_length_mm':85,'camera_height':'product center','working_distance':'1m','focus_plane':'front label','yaw':0,'pitch':0,'roll':0,'aperture':'f/8','dof':'full front label legible'},'composition':{'product_occupancy':{'height_pct':68},'shot_size':'product hero'},'lighting':{'key':{'direction':'camera-left 45deg','modifier':'large diffusion'},'fill':'low soft fill','negative_fill':'camera-right flag','rim':'subtle edge separation','cct':5200,'white_balance':'neutral reference','shadow_policy':'soft grounding shadow','highlight_policy':'protect label','reflection_control':'flags + angle + conditional polarization'},'color_management':{'white_balance':'neutral reference','output_space':'sRGB','product_color_fidelity':'truth-first'}},
+          'compile_assets':True,
+          'production_run':{'asset_ids':[]},
+        }
+        build_project(tmp_path/'proj',req,_pack(tmp_path))
+        adapter=json.loads((tmp_path/'proj/artifacts/research_source_adapter_refresh.json').read_text())
+        snap=next(x for x in adapter['adapters'] if x['adapter_id']=='MARKET-SNAP')
+        assert snap['adapter_family']=='MARKET_SNAPSHOT'
+        assert snap['checkpoint']['previous_cursor']=='2026-10-20'
+        assert snap['checkpoint']['next_cursor']=='2026-10-27'
+        assert 'A' in snap['change_set']['changed'] and 'B' in snap['change_set']['added']
+        search=next(x for x in adapter['adapters'] if x['adapter_id']=='SEARCH')
+        assert search['dataset']=='market_keyword_rows'
+    
+        exp=json.loads((tmp_path/'proj/artifacts/experiment_analysis.json').read_text())
+        adv=exp['advanced_design_review']
+        assert adv['cluster']['design_effect']>1
+        assert adv['geo']['comparable_pair_count']==1
+        assert adv['cuped']['approx_variance_reduction']==0.36
+        assert adv['sequential']['conservative_alpha_per_look']==0.0125
+    
+        listing=json.loads((tmp_path/'proj/artifacts/listing_analysis.json').read_text())['compiled']
+        ta=listing['terminology_memory_audit']
+        assert ta['blocking_issue_count']==1
+        ms=next(x for x in listing['final_copy_workflow']['packages'] if x['locale']=='ms-MY')
+        assert any(x['release_status']=='BLOCKED_HARD_CONSTRAINT' for x in ms['fields'])
+        host_req=json.loads((tmp_path/'proj/artifacts/listing_copy_host_authoring_requests.json').read_text())
+        assert host_req['terminology_memory'][0]['canonical']=='Serum Kaca'
+    
+        strategy=json.loads((tmp_path/'proj/artifacts/strategy/strategy_authority.json').read_text())
+        assert len(strategy['sections'])==9
+>       assert strategy['runtime_strategy_depth'].startswith(('0.5.7-','0.5.8-','0.5.9-','0.5.10-','0.5.11-','0.5.12-','0.5.13-','0.5.14-'))
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x743768c9af70>(('0.5.7-', '0.5.8-', '0.5.9-', '0.5.10-', '0.5.11-', '0.5.12-', ...))
+E        +    where <built-in method startswith of str object at 0x743768c9af70> = '0.6.11-source-master-binding-frozen-revision'.startswith
+
+tests/test_v057_adapter_cursor_causal_terminology_provider_prelight.py:88: AssertionError
+_ test_v058_multicategory_runtime_is_category_specific_and_asset_count_is_question_driven _
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_v058_multicategory_runtim0')
+
+    def test_v058_multicategory_runtime_is_category_specific_and_asset_count_is_question_driven(tmp_path):
+        results={}
+        for name in ['beauty_kiyuu.json','fashion_uniqlo_bag.json','home_ikea365_container.json']:
+            p,req=_build(tmp_path,name)
+            strategy=json.loads((p/'artifacts/strategy/strategy_authority.json').read_text(encoding='utf-8'))
+            arch=json.loads((p/'artifacts/asset_architecture.json').read_text(encoding='utf-8'))
+            assert len(strategy['sections'])==9
+            visual=strategy['sections']['05_visual_photography_strategy']
+            cat=visual['category_execution_profile']['category_family']
+            assert cat==arch['category_family']
+            assert visual['category_photography_plan']['status']=='STRATEGY_RECOMMENDATION_REQUIRES_PRELIGHT'
+>           assert visual['camera']['status']=='STRATEGY_RECOMMENDATION_REQUIRES_PRELIGHT'
+E           AssertionError: assert 'EXECUTION_RE..._CONFIRMATION' == 'STRATEGY_REC...IRES_PRELIGHT'
+E             
+E             - STRATEGY_RECOMMENDATION_REQUIRES_PRELIGHT
+E             + EXECUTION_RECOMMENDATION_REQUIRES_PRELIGHT_CONFIRMATION
+
+tests/test_v058_multicategory_strategy_validation.py:30: AssertionError
+_ test_v059_category_commerce_changes_objection_proof_offer_message_and_cadence _
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_v059_category_commerce_ch0')
+
+    def test_v059_category_commerce_changes_objection_proof_offer_message_and_cadence(tmp_path):
+        seen_sequences=set(); seen_cadence=set(); seen_top_proof=set(); seen_families=set()
+        for name,(family,expected_objections,expected_intent) in EXPECTED.items():
+            p,req=_build(tmp_path,name)
+            strategy=json.loads((p/'artifacts/strategy/strategy_authority.json').read_text(encoding='utf-8'))
+>           assert strategy['runtime_strategy_depth'].startswith(('0.5.9-','0.5.10-','0.5.11-','0.5.12-','0.5.13-','0.5.14-'))
+E           AssertionError: assert False
+E            +  where False = <built-in method startswith of str object at 0x743768c7bc90>(('0.5.9-', '0.5.10-', '0.5.11-', '0.5.12-', '0.5.13-', '0.5.14-'))
+E            +    where <built-in method startswith of str object at 0x743768c7bc90> = '0.6.11-source-master-binding-frozen-revision'.startswith
+
+tests/test_v059_category_commerce_depth.py:28: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_alpha3_platform_listing_assets.py::test_kiyuu_alpha3_compiles_asset_packages - AssertionError: assert ('真实产品' in '【生成目标】\n视觉任务：产品身份 + 第一购买理由，不重复后续深层证据。\n创意母命题：采用“真实使用关键瞬间 + 信息层级视觉化”来解决本资产的购买问题。承担产品识别与第一价值建立；没有这一层，后续证据缺少清晰上下文。\n图像语言...。\n\n【禁止生成】\n不得生成未被产品真源 / 证据支持的成分、质地、认证、检测、疗效、人体结果、before/after、比较数字或包装文字；不得为了“高级感”添加与购买判断无关的水花、粒子、实验室符号、抽象光环或模板化卡片。\n' and '消费者问题' in '【生成目标】\n视觉任务：产品身份 + 第一购买理由，不重复后续深层证据。\n创意母命题：采用“真实使用关键瞬间 + 信息层级视觉化”来解决本资产的购买问题。承担产品识别与第一价值建立；没有这一层，后续证据缺少清晰上下文。\n图像语言...。\n\n【禁止生成】\n不得生成未被产品真源 / 证据支持的成分、质地、认证、检测、疗效、人体结果、before/after、比较数字或包装文字；不得为了“高级感”添加与购买判断无关的水花、粒子、实验室符号、抽象光环或模板化卡片。\n')
+FAILED tests/test_alpha4_creative_research.py::test_cmf_and_inclusive_photo_compile_from_execution_inputs - AssertionError: assert ('APPLICABLE_P0' == 'APPLICABLE'
+  
+  - APPLICABLE
+  + APPLICABLE_P0
+  ?           +++)
+FAILED tests/test_alpha4_production_video_compliance.py::test_compliance_binds_assets_to_approved_claim_ids_and_research - KeyError: 'claim_ids'
+FAILED tests/test_alpha6_review_provider_overlays.py::test_provider_filesystem_job_envelope_and_ingest - AssertionError: assert ('REVIEW_REQUIRED' == 'COMPLETE'
+  
+  - COMPLETE
+  + REVIEW_REQUIRED)
+FAILED tests/test_alpha6_review_provider_overlays.py::test_provider_ingest_cli_lifecycle - AssertionError: assert ('REVIEW_REQUIRED' == 'COMPLETE'
+  
+  - COMPLETE
+  + REVIEW_REQUIRED)
+FAILED tests/test_v0512_production_learning_loop.py::test_v0512_provider_review_local_revision_and_learning_are_one_bounded_loop - AssertionError: assert 'RESULT_REVIEW_REQUIRED' == 'READY_REVIEW'
+  
+  - READY_REVIEW
+  + RESULT_REVIEW_REQUIRED
+FAILED tests/test_v0513_real_product_strategy_quality.py::test_v0513_final_copy_allows_extra_number_only_when_field_claim_ref_authorizes_it - AssertionError: assert [{'locale': '...rs': [], ...}] == []
+  
+  Left contains one more item: {'locale': 'en-US', 'field': 'highlights', 'issue': 'NUMERIC_EQUIVALENCE_REVIEW', 'missing_source_numbers': [], ...}
+  
+  Full diff: (-: missing in left side, +: extra in left side)
+  - []
+  + [
+  +     {
+  +         'locale': 'en-US',
+  +         'field': 'highlights',
+  +         'issue': 'NUMERIC_EQUIVALENCE_REVIEW',
+  +         'missing_source_numbers': [],
+  +         'extra_target_numbers': [
+  +             '100W',
+  +         ],
+  +         'authorized_extra_numbers': [],
+  +         'why': 'Numbers often encode size, concentration, duration or quantity. Extra '
+  +         'numbers are allowed only when this exact field already carries an '
+  +         'explicit approved Claim reference containing that number; all other '
+  +         'drift remains blocked.',
+  +     },
+  + ]
+FAILED tests/test_v052_strategy_integration.py::test_v052_strategy_tools_flow_back_into_authority_and_assets - AssertionError: assert ('Shared Growth Budget' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n')
+FAILED tests/test_v053_portfolio_localization.py::test_v053_competitor_portfolio_transcreation_and_native_authoring - AssertionError: assert 'SKU Cannibalization / Overlap Hypotheses' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+FAILED tests/test_v054_research_behavior_finalcopy.py::test_v054_research_behavior_finalcopy_and_platform_native_systems - AssertionError: assert 'Local-language Final Copy Workflow' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+FAILED tests/test_v055_evidence_incrementality_authoring_surface.py::test_v055_evidence_incrementality_copy_versions_surface_and_asset_why - AssertionError: assert 'Asset-level Photography Causal WHY' in '# 跨境电商完整策略总案\n\n> 主线是正向商业设计：产品真源 → 市场 / 用户 → SKU / Offer → 定位 / 价值主张 → 信息架构 → RACE / 4P / 漏斗 → 平台内容 → 创意 / 视觉 → 摄影 / ...on`；Provider Job → Provider Result → Review Item → Local Revision → Package Hash 链路继续保留。新增策略深度只做加法，不以压缩文件或删能力换取“简洁”。\n'
+FAILED tests/test_v056_adapter_causal_copy_production_cmf.py::test_v056_incremental_adapter_experiment_host_copy_surface_and_cmf - AssertionError: assert False
+ +  where False = <built-in method startswith of str object at 0x743768a66010>(('0.5.6-', '0.5.7-', '0.5.8-', '0.5.9-', '0.5.10-', '0.5.11-', ...))
+ +    where <built-in method startswith of str object at 0x743768a66010> = '0.6.11-source-master-binding-frozen-revision'.startswith
+FAILED tests/test_v057_adapter_cursor_causal_terminology_provider_prelight.py::test_v057_cursor_advanced_causal_terminology_provider_binding_and_prelight - AssertionError: assert False
+ +  where False = <built-in method startswith of str object at 0x743768c9af70>(('0.5.7-', '0.5.8-', '0.5.9-', '0.5.10-', '0.5.11-', '0.5.12-', ...))
+ +    where <built-in method startswith of str object at 0x743768c9af70> = '0.6.11-source-master-binding-frozen-revision'.startswith
+FAILED tests/test_v058_multicategory_strategy_validation.py::test_v058_multicategory_runtime_is_category_specific_and_asset_count_is_question_driven - AssertionError: assert 'EXECUTION_RE..._CONFIRMATION' == 'STRATEGY_REC...IRES_PRELIGHT'
+  
+  - STRATEGY_RECOMMENDATION_REQUIRES_PRELIGHT
+  + EXECUTION_RECOMMENDATION_REQUIRES_PRELIGHT_CONFIRMATION
+FAILED tests/test_v059_category_commerce_depth.py::test_v059_category_commerce_changes_objection_proof_offer_message_and_cadence - AssertionError: assert False
+ +  where False = <built-in method startswith of str object at 0x743768c7bc90>(('0.5.9-', '0.5.10-', '0.5.11-', '0.5.12-', '0.5.13-', '0.5.14-'))
+ +    where <built-in method startswith of str object at 0x743768c7bc90> = '0.6.11-source-master-binding-frozen-revision'.startswith
+15 failed, 114 passed in 16.77s
