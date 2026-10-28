@@ -1,0 +1,44 @@
+name: CBCC v0.6.21 Commerce Agent Autonomy verification
+
+on:
+  push:
+    branches:
+      - work/v0621-commerce-agent-autonomy
+
+permissions:
+  contents: write
+
+jobs:
+  verify-commerce-autonomy:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply autonomy integration patch
+        run: python .changes/v0621_commerce_autonomy_patch.py
+      - name: Install test dependencies
+        run: python -m pip install -q pytest pyyaml
+      - name: Run autonomy and core commerce tests
+        shell: bash
+        run: |
+          mkdir -p .changes
+          set +e
+          pytest -q -ra tests/test_v0621_commerce_agent_autonomy.py > .changes/v0621-commerce-autonomy-output.txt 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > .changes/v0621-commerce-autonomy-output.rc
+          cat .changes/v0621-commerce-autonomy-output.txt
+      - name: Commit materialized implementation and diagnostics
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runtime/cbcc/agent_autonomy.py runtime/cbcc/compiler.py runtime/cbcc/creative.py runtime/cbcc/creative_opportunity.py tests/test_v0621_commerce_agent_autonomy.py .changes/v0621-commerce-autonomy-output.txt .changes/v0621-commerce-autonomy-output.rc
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: materialize v0.6.21 commerce agent autonomy"
+            git push origin HEAD:work/v0621-commerce-agent-autonomy
+          fi
+      - name: Enforce targeted result
+        if: always()
+        shell: bash
+        run: test "$(cat .changes/v0621-commerce-autonomy-output.rc)" = "0"
