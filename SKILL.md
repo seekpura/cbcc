@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.27-current-scope-completion
+version: 0.6.28-agent-frontier-scope
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -9,6 +9,17 @@ version: 0.6.27-current-scope-completion
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
 
+
+## v0.6.28 Blocking vs Advisory Agent Frontier — 当前主权威
+- **还有可研究 ≠ 当前任务必须继续循环。** Agent frontier 现在显式拆成 `blocking_frontier` 与 `advisory_frontier`；只有前者阻止 `STOP_CURRENT_SCOPE_SATISFIED`。
+- 未解决 Research 保留原 action identity `RESEARCH_OR_EVIDENCE_RESOLUTION`，通过 `blocking=false + advisory_frontier` 表达“可选后续研究”；不通过重命名破坏旧宿主/调用方兼容。
+- Research 是否 blocking 由当前 `gate_scope` 路由决定；只影响非阻断/非当前 scope Gate 的研究不会强迫 Agent 再跑一轮。
+- Compliance / Creative / Asset Architecture / Production frontier 同样按 current-scope Gate requiredness / blockingness 分类，不再因为能力或对象存在就自动变成硬下一步。
+- 显式 Agent Stop 可以在仅剩 advisory frontier 时成立；不能越过真正的 current-scope hard blocker。
+- 修复生产意图语义：`production_run: {}` 表示“明确请求生产、使用默认配置”，不再因空映射 `bool({}) == False` 被误判成未请求；Compiler / Gate Scope / Decision Scope / Agent Frontier 共用 presence-based intent。
+- Human Project Hub 分开显示“当前范围必须先解决”与“可选后续优化 / 研究（不阻断当前完成）”。
+- v0.6.28 targeted + continuity：`45 passed`；全量相对 frozen v0.6.27 main：12 vs 12，`NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+- 详细变更见 `CHANGELOG_V0628.md`。
 
 ## v0.6.27 Current-Scope Completion Authority — 当前主权威
 - **`final_ready` 不再是永远 False 的静态旗标。** 新增 `completion.py`，完成态由当前 scope 的真实闭环条件派生。

@@ -1,7 +1,7 @@
-# CBCC v0.6.27 CURRENT HANDOFF
+# CBCC v0.6.28 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.27-current-scope-completion`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.28-agent-frontier-scope`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -237,6 +237,17 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 8. targeted + continuity：`40 passed`。
 9. 全量回归：frozen v0.6.26 main `12 failures` / v0.6.27 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
 
+## v0.6.28 已完成 — Blocking vs Advisory Agent Frontier
+1. `compile_agent_next_action()` 消费 v0.6.26 `gate_scope` / `content_requiredness`，Frontier 拆成 blocking 与 advisory 两层。
+2. Advisory Research 保留可见与可执行，但不再把 Agent 状态强制保持 `ACTION_FRONTIER_OPEN`；无 hard blocker 时真正返回 `STOP_CURRENT_SCOPE_SATISFIED`。
+3. Research action identity 保持 `RESEARCH_OR_EVIDENCE_RESOLUTION`；兼容由 `blocking=false` 与 frontier 分类表达，不破坏旧宿主 action routing。
+4. Compliance / Asset coverage / Creative direction / Production blocker 都按当前 required/blocking scope 路由；支持性对象或未来优化不制造硬循环。
+5. 显式 Agent Stop 不能覆盖 current-scope hard blocker；若仅剩 advisory frontier，则 Stop 可成立。
+6. 修复 `production_run:{}` 的真实生产意图断链：presence-based `request_intent_present()` 贯穿 Scope / Decision / Agent / Compiler，空配置表示使用默认值而不是未请求。
+7. Human Project Hub 将 blocking next actions 与 optional research 分区展示。
+8. targeted + continuity：`45 passed`。
+9. 全量回归：frozen v0.6.27 main `12 failures` / v0.6.28 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+
 ## 下一步唯一主任务
-**继续 Agent frontier / Research / Compliance 的 scope 对齐深审。重点核对 `compile_agent_next_action()` 仍会把所有 unresolved research 放进 frontier、Compliance/Creative/Production 的 blocker 是否完全按 v0.6.26 Gate Scope 与 v0.6.27 Completion Authority 路由，以及 Human Workspace 是否把 advisory frontier 与 blocking next action 清楚分开。目标是让 Agent 真正能 STOP / REPLAN，而不是因为任何可选研究或能力存在就持续循环。随后继续审 baseline 12 项里的真实断链，优先修业务能力，不为旧版本字符串回退。**
+**进入 baseline real-defect remediation，不再把剩余 12 项统一叫“历史失败”。优先审并修真实业务断链：① Final Copy 数值型 Claim 的字段授权是否能正确允许已批准数字，同时继续阻断无授权数字；② Compliance issue shape / unapproved-claim asset routing 是否稳定且可被调用方可靠消费；③ Canonical Prompt 是否仍显式保留 Product Truth 与 Consumer Decision Question 的执行绑定，而不是只剩隐式语义。对于仅断言旧 0.5.x version/status/英文标题的测试，只在确认当前语义更强时升级测试，不倒退当前中文优先、prelight、runtime version 与更强合同。目标是让 `FIXED_FAILURE_COUNT>0`，同时继续保证 `NEW_FAILURE_COUNT=0`。**
 
