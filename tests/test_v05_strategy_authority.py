@@ -16,11 +16,21 @@ def test_strategy_authority_and_asset_package_preservation(tmp_path):
     state=build_project(tmp_path/'p',req,ROOT/'platform_packs')
     assert state['gates']['STRATEGY_AUTHORITY']['status']=='READY_REVIEW'
     strategy=json.loads((tmp_path/'p/artifacts/strategy/strategy_authority.json').read_text(encoding='utf-8'))
+    # Machine compatibility remains complete even when the human strategy is task-scoped.
     assert REQ_SECTIONS.issubset(strategy['sections'])
     assert strategy['positive_design_first'] is True
     assert 'WHY' in strategy['strategy_decision_contract']
+    hp=strategy.get('human_projection') or {}
+    assert hp.get('fixed_human_section_quota') is False
+    assert '06_platform_content_matrix' in hp.get('active_sections',[])
+    assert '08_culture_adaptation_checklist' in hp.get('active_sections',[])
+    # RACE is optional from v0.6.21 onward; this fixture never explicitly selects it.
+    assert '07_race_execution_table' not in hp.get('active_sections',[])
+    assert strategy['sections']['07_race_execution_table']==[]
     md=(tmp_path/'p/artifacts/strategy/MASTER_STRATEGY_CN.md').read_text(encoding='utf-8')
-    assert '## 6. 分平台内容矩阵表' in md and '## 7. RACE传播框架执行表' in md and '## 8. 族裔文化适配检查表' in md
+    assert '平台内容与 Surface 执行' in md
+    assert '文化适配（当前任务相关）' in md
+    assert 'RACE 执行（当前项目显式启用）' not in md
     idx=json.loads((tmp_path/'p/artifacts/asset_packages/ASSET_PACKAGE_INDEX.json').read_text(encoding='utf-8'))
     assert idx['legacy_alpha6_package_preserved'] is True
     for row in idx['assets']:
