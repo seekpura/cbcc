@@ -1,7 +1,7 @@
-# CBCC v0.6.28 CURRENT HANDOFF
+# CBCC v0.6.29 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.28-agent-frontier-scope`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.29-final-stabilization`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -248,6 +248,13 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 8. targeted + continuity：`45 passed`。
 9. 全量回归：frozen v0.6.27 main `12 failures` / v0.6.28 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
 
-## 下一步唯一主任务
-**进入 baseline real-defect remediation，不再把剩余 12 项统一叫“历史失败”。优先审并修真实业务断链：① Final Copy 数值型 Claim 的字段授权是否能正确允许已批准数字，同时继续阻断无授权数字；② Compliance issue shape / unapproved-claim asset routing 是否稳定且可被调用方可靠消费；③ Canonical Prompt 是否仍显式保留 Product Truth 与 Consumer Decision Question 的执行绑定，而不是只剩隐式语义。对于仅断言旧 0.5.x version/status/英文标题的测试，只在确认当前语义更强时升级测试，不倒退当前中文优先、prelight、runtime version 与更强合同。目标是让 `FIXED_FAILURE_COUNT>0`，同时继续保证 `NEW_FAILURE_COUNT=0`。**
+## v0.6.29 已完成 — Baseline Real-Defect Remediation / Final Stabilization
+1. Final Copy 数字审计区分 Claim 证据权威与字段级数字授权：只有显式绑定到当前字段的已批准/已验证/有效 Claim 数字才能作为额外 numeric token 通过；未绑定数字仍保持 BLOCK/REVIEW。
+2. Compliance issue 统一为稳定可消费 shape，并拆分 `asset_issues / claim_issues`；资产引用未批准 Claim 时，asset-routing issue 优先返回，且 `claim_ids` / `asset_id` 始终可读。
+3. Canonical Prompt 在生成目标层显式写入 Consumer Decision Question 与 Product Truth source-bound 执行合同；不再只依赖 Design Card 的隐式上下文。
+4. Prompt 继续保持内部元数据隔离：不把产品名、Asset ID、Source Asset ID、RACE/KPI 等泄漏给图像/视频模型。
+5. 本版不新增研究框架、固定资产数、固定创意方向或摄影配额；v0.6.21–v0.6.28 建立的 Agent 自主权与 current-scope completion 继续是主线。
+6. 发布判断要求 `FIXED_FAILURE_COUNT > 0` 且 `NEW_FAILURE_COUNT = 0`；不再用固定“12 个失败”作为合理化基线。
 
+## 后续开发原则
+**停止版本号驱动的连续施工。** `main` 现在作为稳定 Commerce Agent 基线。后续只在真实商品/平台/市场/生产案例暴露可复现业务缺口时修改；先修业务能力，再考虑宿主集成。MCP / HTTP / Plugin / Provider Host 继续保持可选基础设施，不再成为主动开发主线。

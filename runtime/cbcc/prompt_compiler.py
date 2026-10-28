@@ -522,6 +522,8 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
         lines = [
             '【生成目标】',
             f"视觉任务：{_txt(_cn_phrase(card.get('visual_objective')))}",
+            f"消费者问题：{_txt(_cn_phrase((card.get('commerce_task') or {}).get('consumer_question')))}",
+            '真实产品 / Product Truth 绑定：商品身份、包装、材质、颜色、结构与可见事实只允许来自已验证商品真源及随任务提供的真实商品母版 / 参考图。',
             f"创意母命题：{_cn_creative_thesis(card)}",
             '图像语言：保持真实商品身份、CMF、色彩与字体系统的一致性；但每张资产必须按自己的购买问题重新建立空间层级和构图，不套上一张版式。',
             f"本张表达机制：{_cn_expression(cs)}", f"创意锚点：{_cn_anchor(cs)}",
@@ -573,6 +575,8 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
         lines = [
             '[RENDER OBJECTIVE]',
             f"Visual task: {_txt(card.get('visual_objective'))}",
+            f"Consumer decision question: {_txt((card.get('commerce_task') or {}).get('consumer_question'))}",
+            'Product Truth binding: product identity, packaging, material, color, geometry and visible facts must remain source-bound to verified Product Truth and the real-product references supplied with the task.',
             f"Creative thesis: {_render_safe_text(cs.get('creative_thesis'))}", f"Image language: {_render_safe_text(cs.get('image_language'))}",
             f"Asset expression mechanism: {_txt(_render_expression(cs))}", f"Creative anchor: {_render_anchor(cs)}",
             '', '[SUBJECT / ACTION / ENVIRONMENT]',
@@ -626,6 +630,7 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
 def _parameter_trace(card: dict[str, Any]) -> list[dict[str, Any]]:
     rows=[
         {'strategy_parameter':'creative thesis / image language / creative anchor','render_location':'RENDER OBJECTIVE','value':card.get('creative_system')},
+        {'strategy_parameter':'consumer decision question / Product Truth execution binding','render_location':'RENDER OBJECTIVE / REAL PRODUCT IDENTITY','value':{'consumer_question':(card.get('commerce_task') or {}).get('consumer_question'),'product_truth_binding':'SOURCE_BOUND'}},
         {'strategy_parameter':'composition / camera / lens / focus / exposure settings','render_location':'COMPOSITION / CAMERA','value':card.get('composition_camera')},
         {'strategy_parameter':'capture mode / product occupancy / negative space / output color management','render_location':'PHOTOGRAPHY EXECUTION CONTRACT','value':card.get('photography_execution')},
         {'strategy_parameter':'lighting / CCT / ratio / prelight / polarization / CMF / material response / color management','render_location':'LIGHTING / MATERIAL / CMF','value':{k:v for k,v in (card.get('lighting_material_cmf') or {}).items() if k!='material_truth_rule'}},

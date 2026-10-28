@@ -173,18 +173,26 @@ def localized_copy_audit(fields:dict[str,Any], language_contract:dict[str,Any]|N
     localized_copy=localized_copy or {}; primary=(language_contract or {}).get('primary_locale')
     src_numbers={k:set(_collect_numbers(str(v))) for k,v in fields.items() if not str(k).startswith('_')}
     claim_refs=claim_refs or {}; claims=claims or []
-    approved_by_id={}
+    numeric_authority_by_id={}
     for c in claims:
         cid=str(c.get('claim_id') or c.get('id') or '')
-        status=str(c.get('evidence_grade') or c.get('evidence_level') or '').upper()
-        if cid and status in {'A','B'} and str(c.get('publication_status') or '').upper()!='BLOCKED':
-            approved_by_id[cid]=c
+        grade=str(c.get('evidence_grade') or c.get('evidence_level') or '').upper()
+        declared_status=str(c.get('status') or '').upper()
+        publication=str(c.get('publication_status') or '').upper()
+        blocked=(publication in {'BLOCKED','SOFT_ONLY_NO_HARD_CLAIM'} or declared_status in {'BLOCKED','PROHIBITED','REJECTED','INVALID'})
+        numeric_authorized=(
+            grade in {'A','B'}
+            or declared_status in {'APPROVED','VERIFIED','ACTIVE'}
+            or publication in {'HARD_CLAIM_ALLOWED_WITH_SCOPE','BOUNDED_SUPPORTED_CLAIM'}
+        )
+        if cid and numeric_authorized and not blocked:
+            numeric_authority_by_id[cid]=c
     authorized_numbers={}
     for field,ids in claim_refs.items():
         ids=ids if isinstance(ids,list) else [ids]
         nums=set()
         for cid in ids:
-            c=approved_by_id.get(str(cid))
+            c=numeric_authority_by_id.get(str(cid))
             if c: nums.update(_collect_numbers(str(c.get('text') or c.get('claim') or '')))
         authorized_numbers[str(field)]=nums
     issues=[]; reviewed=[]

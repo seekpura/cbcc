@@ -139,7 +139,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     p=Path(project_dir)
     try: st=ProjectState.load(p)
     except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.12-portable-provider-package-production-receipt')
-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.28-agent-frontier-scope'; st.save(); _write(st.meta/'request.json',request)
+    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.29-final-stabilization'; st.save(); _write(st.meta/'request.json',request)
 
     agent_plan=compile_agent_autonomy_plan(request)
     _write(p/'artifacts/agent_autonomy_plan.json',agent_plan)

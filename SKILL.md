@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.28-agent-frontier-scope
+version: 0.6.29-final-stabilization
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -9,6 +9,15 @@ version: 0.6.28-agent-frontier-scope
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
 
+
+## v0.6.29 Final Stabilization — 当前主权威
+- 本版不新增架构，专门清理 baseline 中确认存在的真实业务断链；Commerce Agent 自主权、动态 Scope、Completion 与 blocking/advisory frontier 保持不变。
+- Final Copy 数字等价审计现在把“字段显式绑定的已批准 Claim 数字”视为字段级 numeric authority；未绑定数字继续阻断。Claim 的真实证据等级与发布资格仍由 Claim Authority 单独决定，不能用 `APPROVED` 标签绕过证据边界。
+- Compliance issue 统一稳定 shape：`scope / asset_id / code / claim_ids / severity`；asset-routing issue 与 claim-ledger issue 分流，调用方可以可靠定位哪个资产引用了未批准 Claim。
+- Canonical Prompt 在 Render Objective 显式保留 `Consumer Decision Question + Product Truth binding`，同时继续禁止 Product Name、Asset ID、RACE/KPI 等内部元数据泄漏到生成模型 Prompt。
+- v0.6.29 的发布门槛不是“再加能力”，而是 baseline 实际修复：`FIXED_FAILURE_COUNT > 0` 且 `NEW_FAILURE_COUNT = 0`。
+- 这一版之后停止版本号驱动的连续扩张；只有真实电商任务/案例暴露新的业务缺口时，才从当前 `main` 派生下一次修改。
+- 详细变更见 `CHANGELOG_V0629.md`。
 
 ## v0.6.28 Blocking vs Advisory Agent Frontier — 当前主权威
 - **还有可研究 ≠ 当前任务必须继续循环。** Agent frontier 现在显式拆成 `blocking_frontier` 与 `advisory_frontier`；只有前者阻止 `STOP_CURRENT_SCOPE_SATISFIED`。
