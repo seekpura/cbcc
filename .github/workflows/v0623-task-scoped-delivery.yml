@@ -1,0 +1,72 @@
+name: CBCC v0.6.23 task-scoped delivery
+
+on:
+  push:
+    branches:
+      - work/v0623-task-scoped-delivery
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify frozen main
+        run: |
+          test "$(git rev-parse origin/main)" = "aceefb6e87615d126e4e883024c798942bb3ff7f"
+      - name: Apply v0.6.23 patch
+        run: python .changes/v0623_patch.py
+      - name: Install test dependencies
+        run: python -m pip install -q pytest pyyaml
+      - name: Targeted autonomy and compatibility tests
+        env:
+          PYTHONPATH: runtime
+        run: |
+          python -m py_compile runtime/cbcc/human_delivery.py runtime/cbcc/tools/listing.py runtime/cbcc/compiler.py
+          pytest -q \
+            tests/test_v0623_task_scoped_delivery.py \
+            tests/test_v0622_dynamic_workspace.py \
+            tests/test_v0622_relevance_driven_prompt_projection.py \
+            tests/test_v068_asset_production_workspace.py
+      - name: Full regression diff against v0.6.22 main
+        env:
+          PYTHONPATH: runtime
+        run: |
+          set +e
+          pytest -q > /tmp/branch-pytest.txt 2>&1
+          BRANCH_RC=$?
+          git worktree add /tmp/cbcc-main aceefb6e87615d126e4e883024c798942bb3ff7f
+          (cd /tmp/cbcc-main && PYTHONPATH=runtime pytest -q > /tmp/main-pytest.txt 2>&1)
+          MAIN_RC=$?
+          set -e
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          def failed(path):
+              text=Path(path).read_text(encoding='utf-8',errors='replace')
+              return sorted(set(re.findall(r'^FAILED\s+([^\s]+)',text,re.M)))
+          b=failed('/tmp/branch-pytest.txt'); m=failed('/tmp/main-pytest.txt')
+          new=sorted(set(b)-set(m)); fixed=sorted(set(m)-set(b))
+          print('MAIN_FAILURE_COUNT=',len(m))
+          print('BRANCH_FAILURE_COUNT=',len(b))
+          print('NEW_FAILURE_COUNT=',len(new))
+          print('FIXED_FAILURE_COUNT=',len(fixed))
+          if new:
+              print('NEW_FAILURES:')
+              print('\n'.join(new))
+              raise SystemExit(1)
+          PY
+      - name: Commit materialized v0.6.23 source
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add runtime/cbcc/human_delivery.py runtime/cbcc/tools/listing.py runtime/cbcc/compiler.py tests/test_v0623_task_scoped_delivery.py
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: scope human delivery and listing readiness to current commerce task"
+            git push origin HEAD:work/v0623-task-scoped-delivery
+          fi
