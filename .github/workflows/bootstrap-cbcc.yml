@@ -1,143 +1,74 @@
-name: Bootstrap CBCC source
+name: Recover CBCC canonical source
 
 on:
   push:
     branches: [main]
     paths:
-      - '.bootstrap/trigger'
+      - '.bootstrap/plugin-release-trigger'
 
 permissions:
   contents: write
 
 jobs:
-  bootstrap:
+  recover:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Validate payload and materialize canonical workspace
+      - name: Download CBCC v0.6.7 plugin release and reconstruct canonical source
         shell: bash
+        env:
+          PLUGIN_ARCHIVE_URL: 'https://sdmntprwestus3.oaiusercontent.com/files/00000000-98f0-81fd-bba4-c723f58db414/raw?se=2026-10-28T10%3A24%3A25Z&sp=r&sv=2026-02-06&sr=b&scid=814d00cc-500d-5611-b1a0-c22251f5e028&skoid=b9a47e8b-72a2-4ed3-8028-a2a98c1a6142&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-27T11%3A52%3A42Z&ske=2026-10-28T11%3A52%3A42Z&sks=b&skv=2026-02-06&sig=6cWYnf%2B5ELkKaJeBX0FUmvJnIRzHIQ%2BtGz2x7rpZwBw%3D'
         run: |
+          set -euo pipefail
+          rm -rf /tmp/cbcc-plugin /tmp/cbcc-source
+          mkdir -p /tmp/cbcc-plugin /tmp/cbcc-source
+          curl --fail --location --retry 3 --retry-delay 1 "$PLUGIN_ARCHIVE_URL" -o /tmp/cbcc-plugin.tar.gz
+          tar -xzf /tmp/cbcc-plugin.tar.gz -C /tmp/cbcc-plugin
+
+          RESOURCES="$(find /tmp/cbcc-plugin -type d -path '*/skills/cross-border-commerce-creative/resources' -print -quit)"
+          if [ -z "$RESOURCES" ] || [ ! -d "$RESOURCES" ]; then
+            echo 'CBCC resources directory not found in plugin release' >&2
+            find /tmp/cbcc-plugin -maxdepth 5 -type d -print
+            exit 1
+          fi
+
+          cp -a "$RESOURCES"/. /tmp/cbcc-source/
+          AUTHORITY=/tmp/cbcc-source/SKILL_AUTHORITY_v0.6.7.md
+          if [ ! -f "$AUTHORITY" ]; then
+            echo 'missing SKILL_AUTHORITY_v0.6.7.md' >&2
+            exit 1
+          fi
+          cp "$AUTHORITY" /tmp/cbcc-source/SKILL.md
+          rm -f "$AUTHORITY"
+
+          test "$(tr -d '\r\n ' < /tmp/cbcc-source/VERSION)" = '0.6.7'
+          test -f /tmp/cbcc-source/SKILL.md
+          test -f /tmp/cbcc-source/CURRENT_HANDOFF.md
+          test -f /tmp/cbcc-source/runtime/cbcc/delivery_html.py
+          test -d /tmp/cbcc-source/references
+          test -d /tmp/cbcc-source/tests
+
           python - <<'PY'
           from pathlib import Path
-          import base64, hashlib, shutil, tarfile
-
-          repo = Path.cwd()
-          manifest_path = repo / '.bootstrap' / 'manifest-hex.txt'
-          if not manifest_path.is_file():
-              raise SystemExit('missing .bootstrap/manifest-hex.txt')
-
-          manifest = {}
-          for raw in manifest_path.read_text(encoding='utf-8').splitlines():
-              line = raw.strip()
-              if not line or line.startswith('#'):
-                  continue
-              if '=' not in line:
-                  raise SystemExit(f'invalid manifest line: {raw!r}')
-              key, value = line.split('=', 1)
-              manifest[key.strip()] = value.strip()
-
-          required_manifest = {'version', 'format', 'encoding', 'prefix', 'chunks', 'sha256', 'root'}
-          missing_manifest = sorted(required_manifest - manifest.keys())
-          if missing_manifest:
-              raise SystemExit(f'manifest missing keys: {missing_manifest}')
-          if manifest['format'] != 'tar.xz':
-              raise SystemExit(f"unexpected bootstrap format: {manifest['format']}")
-          if manifest['encoding'] not in {'hex', 'base64'}:
-              raise SystemExit(f"unexpected bootstrap encoding: {manifest['encoding']}")
-
-          try:
-              expected_count = int(manifest['chunks'])
-          except ValueError:
-              raise SystemExit('manifest chunks must be an integer')
-          if expected_count < 1:
-              raise SystemExit('manifest chunks must be >= 1')
-
-          prefix = manifest['prefix']
-          chunks = [repo / '.bootstrap' / f'{prefix}{i:02d}' for i in range(1, expected_count + 1)]
-          missing_chunks = [p.name for p in chunks if not p.is_file()]
-          if missing_chunks:
-              raise SystemExit(f'missing bootstrap chunks: {missing_chunks}')
-
-          unexpected = sorted(
-              p.name for p in (repo / '.bootstrap').glob(f'{prefix}*')
-              if p.is_file() and p not in chunks
-          )
-          if unexpected:
-              raise SystemExit(f'unexpected bootstrap chunks: {unexpected}')
-
-          payload = ''.join(p.read_text(encoding='utf-8') for p in chunks)
-          payload = ''.join(payload.split())
-          try:
-              if manifest['encoding'] == 'hex':
-                  archive_bytes = bytes.fromhex(payload)
-              else:
-                  if len(payload) % 4:
-                      raise ValueError(f'base64 payload length is not divisible by 4: {len(payload)}')
-                  archive_bytes = base64.b64decode(payload, validate=True)
-          except Exception as exc:
-              raise SystemExit(f"invalid {manifest['encoding']} bootstrap payload: {exc}")
-
-          digest = hashlib.sha256(archive_bytes).hexdigest()
-          if digest != manifest['sha256']:
-              raise SystemExit(f"archive sha256 mismatch: {digest} != {manifest['sha256']}")
-          print(
-              f"validated bootstrap version={manifest['version']} "
-              f"encoding={manifest['encoding']} chunks={expected_count} "
-              f"bytes={len(archive_bytes)} sha256={digest}"
-          )
-
-          archive = Path('/tmp/cbcc-bootstrap.tar.xz')
-          archive.write_bytes(archive_bytes)
-          extract = Path('/tmp/cbcc-bootstrap-extract')
-          if extract.exists():
-              shutil.rmtree(extract)
-          extract.mkdir(parents=True)
-
-          with tarfile.open(archive, mode='r:xz') as tf:
-              try:
-                  tf.extractall(extract, filter='data')
-              except TypeError:
-                  tf.extractall(extract)
-
-          source = extract / manifest['root']
-          if not source.is_dir():
-              raise SystemExit(f"canonical workspace root not found: {manifest['root']}")
-
-          required_source = ['VERSION', 'SKILL.md', 'runtime', 'references', 'tests']
-          missing_source = [name for name in required_source if not (source / name).exists()]
-          if missing_source:
-              raise SystemExit(f'bootstrap workspace missing required paths: {missing_source}')
-
-          version = (source / 'VERSION').read_text(encoding='utf-8').strip()
-          if version != manifest['version']:
-              raise SystemExit(f"VERSION mismatch: {version} != {manifest['version']}")
-
-          for child in list(repo.iterdir()):
-              if child.name == '.git':
-                  continue
-              if child.is_dir():
-                  shutil.rmtree(child)
-              else:
-                  child.unlink()
-
-          for child in source.iterdir():
-              dest = repo / child.name
-              if child.is_dir():
-                  shutil.copytree(child, dest)
-              else:
-                  shutil.copy2(child, dest)
-          print(f"materialized canonical workspace: {manifest['root']}")
+          root = Path('/tmp/cbcc-source')
+          files = [p for p in root.rglob('*') if p.is_file()]
+          print(f'validated canonical source: files={len(files)} version={(root / "VERSION").read_text().strip()}')
+          if len(files) < 490:
+              raise SystemExit(f'unexpectedly small canonical source: {len(files)} files')
           PY
 
-      - name: Commit canonical source tree
+      - name: Replace bootstrap repository with canonical source
         shell: bash
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          set -euo pipefail
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/cbcc-source/. .
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --quiet && exit 0
-          git commit -m "chore: materialize canonical CBCC v0.6.7 source"
+          git commit -m 'chore: recover canonical CBCC v0.6.7 source tree'
           git push origin HEAD:main
