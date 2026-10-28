@@ -30,7 +30,7 @@ def main(argv=None):
     p=sp.add_parser('learning-apply'); p.add_argument('--project-dir',required=True); p.add_argument('--learning-file',required=True)
     p=sp.add_parser('state'); p.add_argument('--project-dir',required=True)
     p=sp.add_parser('audit'); p.add_argument('--root',default=str(Path(__file__).resolve().parents[2])); p.add_argument('--no-pytest',action='store_true')
-    p=sp.add_parser('export'); p.add_argument('--project-dir',required=True); p.add_argument('--output',required=True,help='Delivery directory or .zip path. Export always materializes both directory and ZIP, including index.html.')
+    p=sp.add_parser('export'); p.add_argument('--project-dir',required=True); p.add_argument('--output',required=True,help='Delivery directory/.zip or legacy .json manifest. A complete HTML+ZIP delivery is always materialized.')
     a=ap.parse_args(argv)
     root=Path(__file__).resolve().parents[2]
     if a.cmd=='init': out=ProjectState.init(Path(a.project_dir),a.project_id).data
@@ -74,13 +74,25 @@ def main(argv=None):
     elif a.cmd=='state': out=ProjectState.load(Path(a.project_dir)).data
     elif a.cmd=='audit': out=machine_audit(Path(a.root),not a.no_pytest)
     elif a.cmd=='export':
-        project=Path(a.project_dir)
-        st=ProjectState.load(project)
-        refresh_review_workspace(project,st)
-        delivery=export_delivery_package(project,Path(a.output))
-        delivery['final_ready']=st.data.get('final_ready',False)
-        delivery['completion']=st.data.get('completion') or {}
-        delivery['pending_actions']=st.data.get('pending_actions') or []
-        out=delivery
+        project=Path(a.project_dir); st=ProjectState.load(project); review=refresh_review_workspace(project,st)
+        requested=Path(a.output)
+        if requested.suffix.lower()=='.json':
+            delivery_target=requested.parent/(requested.stem+'_DELIVERY')
+            delivery=export_delivery_package(project,delivery_target)
+            out={
+                'project_id':st.data.get('project_id'),'final_ready':st.data.get('final_ready',False),
+                'completion':st.data.get('completion') or {},'pending_actions':st.data.get('pending_actions') or [],
+                'required_missing':(review or {}).get('required_missing',[]),'review_pending':(review or {}).get('review_pending',[]),
+                'delivery':delivery,
+            }
+            requested.write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding='utf-8')
+        else:
+            delivery=export_delivery_package(project,requested)
+            delivery['final_ready']=st.data.get('final_ready',False)
+            delivery['completion']=st.data.get('completion') or {}
+            delivery['pending_actions']=st.data.get('pending_actions') or []
+            delivery['required_missing']=(review or {}).get('required_missing',[])
+            delivery['review_pending']=(review or {}).get('review_pending',[])
+            out=delivery
     print(json.dumps(out,ensure_ascii=False,indent=2)); return 0 if not isinstance(out,dict) or out.get('pass',True) else 1
 if __name__=='__main__': raise SystemExit(main())
