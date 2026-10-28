@@ -259,6 +259,7 @@ class MCPStdioServer:
             'capabilities': {'tools': {}},
             '_meta': _modern_result_meta(),
             'instructions': 'CBCC provider tools use host authorization and canonical action schemas.',
+            'ttlMs': 0,
             'cacheScope': 'private',
         }
         return _jsonrpc_result(request_id, result)
@@ -325,7 +326,7 @@ class MCPStdioServer:
                 visible.append(dict(tool))
         result: dict[str, Any] = {'tools': visible}
         if protocol_version == MODERN_PROTOCOL_VERSION:
-            result = _with_modern_meta({'resultType': 'complete', **result, 'cacheScope': 'private'})
+            result = _with_modern_meta({'resultType': 'complete', **result, 'ttlMs': 0, 'cacheScope': 'private'})
         return _jsonrpc_result(request_id, result)
 
     def _call_tool(

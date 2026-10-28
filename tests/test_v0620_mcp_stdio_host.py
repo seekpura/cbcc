@@ -83,6 +83,8 @@ def test_modern_server_discover_matches_2026_lifecycle():
     assert result['resultType'] == 'complete'
     assert result['supportedVersions'] == [MODERN_PROTOCOL_VERSION]
     assert result['capabilities'] == {'tools': {}}
+    assert result['ttlMs'] == 0
+    assert result['cacheScope'] == 'private'
     assert result['_meta']['io.modelcontextprotocol/serverInfo']['name'] == 'cbcc'
 
 
@@ -91,6 +93,8 @@ def test_modern_tools_list_is_exact_generated_descriptor_order_and_schema():
     response = server.handle_message(modern_request(1, 'tools/list'))
     assert response['result']['resultType'] == 'complete'
     assert response['result']['tools'] == mcp_tool_descriptors()
+    assert response['result']['ttlMs'] == 0
+    assert response['result']['cacheScope'] == 'private'
     assert response['result']['_meta']['io.modelcontextprotocol/serverInfo']['name'] == 'cbcc'
 
 
