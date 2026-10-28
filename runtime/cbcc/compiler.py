@@ -26,6 +26,7 @@ from .decision_authority import (
     compile_decision_trace_rows,
     augment_agent_next_action,
 )
+from .scope_readiness import compile_required_content_families, compile_gate_scope
 from .research import compile_research_gate, apply_host_research_response
 from .agent_autonomy import (
     compile_agent_autonomy_plan, research_requirements_from_plan, derive_content_families,
@@ -138,7 +139,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     p=Path(project_dir)
     try: st=ProjectState.load(p)
     except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.12-portable-provider-package-production-receipt')
-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.25-decision-question-authority'; st.save(); _write(st.meta/'request.json',request)
+    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.26-scope-readiness'; st.save(); _write(st.meta/'request.json',request)
 
     agent_plan=compile_agent_autonomy_plan(request)
     _write(p/'artifacts/agent_autonomy_plan.json',agent_plan)
@@ -317,6 +318,20 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     }
     dp=_write(p/'artifacts/decision_trace.json',dd)
     st.set_gate('DECISION','READY_REVIEW',[dp,dqa],dd); st.checkpoint('DECISION','READY_REVIEW')
+
+    content_requiredness=compile_required_content_families(request,agent_plan,families,question_authority)
+    gate_scope=compile_gate_scope(request,families,content_requiredness,question_authority)
+    _write(p/'artifacts/content_requiredness.json',content_requiredness)
+    _write(p/'artifacts/gate_scope.json',gate_scope)
+    for gate,meta in gate_scope.get('gates',{}).items():
+        st.set_gate_scope(
+            gate,
+            required_for_current_scope=meta.get('required_for_current_scope',False),
+            blocking_for_current_scope=meta.get('blocking_for_current_scope',False),
+            scope_reason=meta.get('scope_reason',''),
+            scope_status=meta.get('scope_status'),
+        )
+    required_by_family={row.get('family'):bool(row.get('required_for_current_scope')) for row in content_requiredness.get('rows',[])}
     capabilities=set(pc.get('capabilities',[])); objects=[]
     requested_surfaces=set(t.get('surfaces') or [])
     supported_surfaces=set(pc.get('surfaces') or [])
@@ -329,10 +344,12 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
         oid='CO-'+stable_hash([request.get('project_id'),target.target_id,fam,len(objects)])[:12]
         payload={'shopper_questions':questions,'platform_status':pc['status'],'business_capabilities':pc.get('business_capabilities',{}),'culture_status':culture.get('status'),'platform_capability_status':'VERIFIED_OR_DECLARED' if capability_verified and surface_verified else 'STRATEGY_PLANNING_RESEARCH_REQUIRED','platform_capability_verified':capability_verified,'platform_surface_verified':surface_verified,'target_surface_requested':(not fam_surface) or (not requested_surfaces) or (fam_surface in requested_surfaces)}
         if fam=='LISTING' and domain.get('listing'): payload['listing_contract']=domain['listing']
-        obj=ContentObject(oid,FAMILY_KIND.get(fam,fam.lower()),fam,'Resolve shopper decision job',target.target_id,FAMILY_SURFACE.get(fam),True,
+        obj=ContentObject(oid,FAMILY_KIND.get(fam,fam.lower()),fam,'Resolve shopper decision job',target.target_id,FAMILY_SURFACE.get(fam),required_by_family.get(fam,False),
             payload=payload,source_ids=truth['source_ids'],upstream_hashes={'PRODUCT_TRUTH':st.data['gates']['PRODUCT_TRUTH']['authority_hash'],'TARGET_CONTEXT':st.data['gates']['TARGET_CONTEXT']['authority_hash'],'CULTURE_CONTEXT':st.data['gates']['CULTURE_CONTEXT']['authority_hash']},language=lang)
         objects.append(obj.to_dict()); _write(p/f'artifacts/objects/{oid}.json',obj.to_dict())
-    cg={'objects':objects,'dynamic_count':len(objects),'fixed_count_authority':False,'scope_authority':'AGENT_OR_TASK_DERIVED','agent_plan_status':agent_plan.get('status')}
+    cg={'objects':objects,'dynamic_count':len(objects),'fixed_count_authority':False,'scope_authority':'AGENT_OR_TASK_DERIVED','agent_plan_status':agent_plan.get('status'),
+        'requiredness':content_requiredness,'required_object_count':sum(1 for o in objects if o.get('required')),
+        'supporting_object_count':sum(1 for o in objects if not o.get('required'))}
     cgp=_write(p/'artifacts/content_graph.json',cg); st.set_gate('CONTENT_GRAPH','READY_REVIEW',[cgp],cg); st.checkpoint('CONTENT_GRAPH','READY_REVIEW')
 
     market_fit_contract=compile_market_evidence_fit_contract(request,domain.get('market'))

@@ -16,7 +16,9 @@ class ProjectState:
     def init(cls, project_dir:Path, project_id:str, version='0.6.11-source-master-binding-frozen-revision'):
         p=Path(project_dir); (p/'.cbcc/checkpoints').mkdir(parents=True,exist_ok=True); (p/'artifacts/objects').mkdir(parents=True,exist_ok=True)
         data={'project_id':project_id,'runtime_version':version,'revision':0,'current_stage':'INIT','created_at':now(),'updated_at':now(),
-              'gates':{g:{'status':'PENDING','artifact_paths':[],'authority_hash':None,'updated_at':None} for g in CANONICAL_GATES},
+              'gates':{g:{'status':'PENDING','artifact_paths':[],'authority_hash':None,'updated_at':None,
+                            'required_for_current_scope':False,'blocking_for_current_scope':False,
+                            'scope_status':'UNSCOPED','scope_reason':'Current task scope has not been compiled yet.'} for g in CANONICAL_GATES},
               'pending_actions':[],'history':[],'item_reviews':{},'local_revision_requests':[],'request_hash':None,'final_ready':False}
         obj=cls(p,data); obj.save(); obj.checkpoint('INIT','PROJECT_INITIALIZED'); return obj
     @classmethod
@@ -34,6 +36,13 @@ class ProjectState:
     def set_gate(self,gate,status,artifact_paths=None,payload=None):
         rec=self.data['gates'][gate]; rec['status']=status; rec['artifact_paths']=artifact_paths or rec['artifact_paths']; rec['updated_at']=now()
         if payload is not None: rec['authority_hash']=stable_hash(payload)
+        self.save()
+    def set_gate_scope(self,gate,*,required_for_current_scope:bool,blocking_for_current_scope:bool|None=None,scope_reason:str='',scope_status:str|None=None):
+        rec=self.data['gates'][gate]
+        rec['required_for_current_scope']=bool(required_for_current_scope)
+        rec['blocking_for_current_scope']=bool(required_for_current_scope if blocking_for_current_scope is None else blocking_for_current_scope)
+        rec['scope_status']=scope_status or ('REQUIRED' if rec['required_for_current_scope'] else 'NOT_IN_CURRENT_SCOPE')
+        rec['scope_reason']=scope_reason or ('Current task requires this gate.' if rec['required_for_current_scope'] else 'Canonical gate preserved for lineage; current task does not require it.')
         self.save()
     def add_action(self,action):
         if action not in self.data['pending_actions']: self.data['pending_actions'].append(action); self.save()
