@@ -5,8 +5,11 @@ on:
     branches: [main]
     paths:
       - 'scripts/repair_prompt_execution_continuity.py'
+      - 'scripts/repair_plugin_full_depth_contract.py'
+      - 'scripts/repair_full_delivery_last_mile.py'
       - 'runtime/cbcc/delivery_contract.py'
       - 'tests/test_prompt_execution_decision_preservation.py'
+      - 'tests/test_full_delivery_last_mile.py'
       - '.github/workflows/repair-prompt-and-full-depth.yml'
   workflow_dispatch:
 
@@ -24,27 +27,54 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Apply deterministic prompt continuity repair
-        run: python scripts/repair_prompt_execution_continuity.py
+
+      - name: Apply deterministic continuity and FULL last-mile repairs
+        run: |
+          python scripts/repair_prompt_execution_continuity.py
+          python scripts/repair_plugin_full_depth_contract.py
+          python scripts/repair_full_delivery_last_mile.py
+
       - name: Install test dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
-      - name: Verify prompt execution continuity and FULL strategy contract
+
+      - name: Verify prompt execution continuity and FULL strategy depth
         env:
           PYTHONPATH: runtime
         run: |
           pytest -q \
             tests/test_prompt_execution_decision_preservation.py \
             tests/test_full_strategy_hard_contract.py \
+            tests/test_full_delivery_last_mile.py \
             tests/test_v0624_strategy_asset_scope.py \
             tests/test_v0625_decision_question_authority.py
-      - name: Commit prompt compiler repair if changed
+
+      - name: Verify human delivery continuity
+        env:
+          PYTHONPATH: runtime
         run: |
-          if git diff --quiet -- runtime/cbcc/prompt_compiler.py; then
-            echo 'prompt_compiler.py already repaired'
+          pytest -q \
+            tests/test_v066_human_workspace_zh_first.py \
+            tests/test_v067_workspace_information_architecture.py \
+            tests/test_delivery_release_acceptance.py
+
+      - name: Commit repaired authorities if changed
+        run: |
+          if git diff --quiet -- \
+            runtime/cbcc/prompt_compiler.py \
+            runtime/cbcc/asset_compiler.py \
+            runtime/cbcc/delivery_export.py \
+            scripts/build_plugin_dist.py \
+            SKILL.md; then
+            echo 'all last-mile authorities already repaired'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add runtime/cbcc/prompt_compiler.py
-          git commit -m 'fix: preserve selected execution decisions through prompt relevance filtering'
+          git add \
+            runtime/cbcc/prompt_compiler.py \
+            runtime/cbcc/asset_compiler.py \
+            runtime/cbcc/delivery_export.py \
+            scripts/build_plugin_dist.py \
+            SKILL.md
+          git commit -m 'fix: enforce FULL decision depth and prompt execution continuity end to end'
           git push origin HEAD:main
