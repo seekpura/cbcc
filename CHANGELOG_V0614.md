@@ -18,3 +18,5 @@ v0.6.13 defined transport integrity, but CBCC still stopped before an adapter ac
 - v0.6.13 transport tests remain green.
 - v0.6.14 targeted lifecycle tests cover upload, refresh lineage, idempotent resume, output-byte resolution, receipt generation, batch execution and existing ingest compatibility.
 - Full regression is compared against current `main`; only newly introduced failures block release.
+
+- Release regression rule: full-suite failure node IDs are compared with current main; v0.6.14 ships only when `NEW_FAILURE_COUNT=0`.

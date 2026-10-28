@@ -1,7 +1,7 @@
-# CBCC v0.6.13 CURRENT HANDOFF
+# CBCC v0.6.14 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.13-provider-transport-integrity`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.14-provider-executor-lifecycle`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -62,5 +62,16 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 4. 真实 provider-job ingestion 遇到远程 URI 必须由 adapter/resolver 提供实际字节并重新计算 SHA256；无 resolver / 下载失败 / hash 不匹配进入 Review。
 5. 新增远程输出 recovery，只有 hash 匹配的实际字节才能落入恢复副本。
 
+## v0.6.14 已完成
+1. 新增可插拔 `ProviderExecutor` protocol；credentials / network client / vendor SDK 由 adapter 外置，CBCC 只拥有执行状态与完整性合同。
+2. materialized Provider Job 进入真实生命周期：prepare / upload-or-refresh → idempotent submit → poll/resume → collect → resolve/download → `result.json + production_receipt`。
+3. `executor_state.json` 持久化外部 job ID、resume token、poll count 与 transmission，宿主恢复后不重复 submit。
+4. 本地商品母版上传前再次 SHA256；过期 Provider Handle refresh 必须 rotate handle，并保留 supersedes + generation + content SHA256 lineage。
+5. portable `source_binding_hash` 保持不可变；Provider 侧 locator/handle 重绑定使用 `provider_execution_source_binding_hash`。
+6. executor transmission 成为 v0.6.13 portable transmission 的 child；ingest 同时校验 parent binding、execution request hash、external acknowledgement。
+7. `ReferenceMemoryExecutor` 已跑通 upload / refresh / submit / resume / output bytes / receipt / existing ingest 闭环。
+8. v0.6.13 + v0.6.14 定向联测：9 passed。
+9. 全量回归与 v0.6.13 main 基线逐 node-id 对比：`NEW_FAILURE_COUNT=0`；不以固定失败数量阈值替代回归判断。
+
 ## 下一步唯一主任务
-**把 transport contract 接到真实 Provider Adapter Executor 生命周期：upload/create-or-refresh asset → submit idempotent job → poll/resume → download/resolve outputs → production receipt。凭证与网络客户端保持 adapter 外置；优先实现可插拔 executor protocol + 一个可验证的 mock/reference adapter，再根据实际接入的 Provider 增加具体 API profile。**
+**把 ProviderExecutor 从 reference protocol 推进到宿主可调用的 Adapter Registry / Executor Bridge：定义 provider adapter discovery、capability declaration、retry/backoff/rate-limit/cancel/reconcile 语义，并接一个真实 Provider profile 时保持凭证外置。与此同时继续以现有 `Provider Job → Executor → Production Receipt → Ingest` 为唯一执行链，不建立旁路。**

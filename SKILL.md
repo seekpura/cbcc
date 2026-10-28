@@ -1,13 +1,21 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.13-provider-transport-integrity
+version: 0.6.14-provider-executor-lifecycle
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.14 Provider Executor Lifecycle
+- `ProviderExecutor` 是真实 Provider 执行的可插拔边界：adapter 自己负责 credentials / network client / vendor SDK，CBCC 负责 portable job、source lineage、idempotency、resume state、output hash 与 production receipt。
+- materialized `EXTERNAL_ADAPTER` job 可执行完整生命周期：校验并 upload / refresh 商品资产 → 构建 executor transmission → 幂等 submit → poll / resume → collect → resolve 实际输出字节 → 写 `result.json + production_receipt` → 交回既有 ingest。
+- `executor_state.json` 在每个外部边界持久化，因此宿主中断后可继续 poll，不会因为重试再次创建同一 Provider job。
+- portable `source_binding_hash` 是不可变 lineage；provider handle 重绑定使用独立 `provider_execution_source_binding_hash`，不能覆盖上游真源绑定。
+- executor transmission 必须声明 v0.6.13 portable transmission 为 parent；ingest 校验 parent transmission linkage、executor request hash 与 external acknowledgement 三层绑定。
+- `ReferenceMemoryExecutor` 是可执行 reference adapter，只用于证明协议闭环；真实 provider 的凭证、上传、提交、轮询、下载实现继续外置。
 
 ## v0.6.13 Provider Transport Integrity
 - `PROVIDER_ASSET_HANDLE` 支持结构化 lifecycle：provider / state / expires_at / supersedes_handle / generation / content SHA256；过期、撤销、内容 hash 不一致会在 handoff HOLD。旧字符串 handle 继续兼容，但只具有 `DECLARED_ONLY` 语义。

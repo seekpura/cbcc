@@ -1,3 +1,11 @@
+## 0.6.14 — Provider Executor Lifecycle
+- Added pluggable `ProviderExecutor` execution boundary with credential/network ownership kept in provider adapters.
+- Added persisted executor state for upload/refresh → idempotent submit → poll/resume → collect → byte resolution → production receipt.
+- Preserved immutable portable source-binding lineage while tracking provider-side handle rebinding separately.
+- Added child execution-transmission lineage bound to the v0.6.13 portable parent transmission and validated by existing ingest.
+- Added `ReferenceMemoryExecutor` plus end-to-end tests proving resume without duplicate submit and existing-ingest compatibility.
+- See `CHANGELOG_V0614.md`.
+
 ## 0.6.13 — Provider Transport Integrity
 - Added structured provider-asset-handle lifecycle validation with expiry, terminal states and refresh lineage while preserving legacy declared-only string handles.
 - Added normalized adapter transmission profiles with deterministic field mapping, request hash, idempotency key and external-job acknowledgement binding.
