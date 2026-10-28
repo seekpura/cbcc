@@ -7,6 +7,7 @@ on:
       - 'scripts/repair_prompt_execution_continuity.py'
       - 'scripts/repair_plugin_full_depth_contract.py'
       - 'scripts/repair_full_delivery_last_mile.py'
+      - 'scripts/repair_full_strategy_decision_depth.py'
       - 'runtime/cbcc/delivery_contract.py'
       - 'tests/test_prompt_execution_decision_preservation.py'
       - 'tests/test_full_delivery_last_mile.py'
@@ -28,11 +29,12 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Apply deterministic continuity and FULL last-mile repairs
+      - name: Apply deterministic continuity and FULL depth repairs
         run: |
           python scripts/repair_prompt_execution_continuity.py
           python scripts/repair_plugin_full_depth_contract.py
           python scripts/repair_full_delivery_last_mile.py
+          python scripts/repair_full_strategy_decision_depth.py
 
       - name: Install test dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
@@ -63,6 +65,7 @@ jobs:
             runtime/cbcc/prompt_compiler.py \
             runtime/cbcc/asset_compiler.py \
             runtime/cbcc/delivery_export.py \
+            runtime/cbcc/strategy_depth.py \
             scripts/build_plugin_dist.py \
             SKILL.md; then
             echo 'all last-mile authorities already repaired'
@@ -74,7 +77,8 @@ jobs:
             runtime/cbcc/prompt_compiler.py \
             runtime/cbcc/asset_compiler.py \
             runtime/cbcc/delivery_export.py \
+            runtime/cbcc/strategy_depth.py \
             scripts/build_plugin_dist.py \
             SKILL.md
-          git commit -m 'fix: enforce FULL decision depth and prompt execution continuity end to end'
+          git commit -m 'fix: restore FULL strategy decision depth and execution continuity end to end'
           git push origin HEAD:main
