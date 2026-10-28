@@ -53,6 +53,13 @@ def main() -> int:
 
     text = replace_once(
         text,
+        """    else:\n        for row in s.get('06_platform_content_matrix') or []:\n            if isinstance(row,dict): row['framework_context']=['RACE']\n    strategy['sections']=s\n""",
+        """    else:\n        for row in s.get('06_platform_content_matrix') or []:\n            if isinstance(row,dict): row['framework_context']=['RACE']\n    if _v0624_full_mode(request):\n        third=s.get('03_platform_region_audience_culture_insight') or {}\n        culture_depth=third.get('culture') if isinstance(third,dict) else {}\n        culture_depth=culture_depth if isinstance(culture_depth,dict) else {}\n        third['race_ethnicity']=culture_depth.get('race_ethnicity')\n        third['intersectionality_table']=culture_depth.get('intersectionality_table') or []\n        third['language_profiles']=culture_depth.get('language_profiles') or {}\n        third['culture_adaptation_rows']=culture_depth.get('adaptation_rows') or []\n        third['casting_constraints']=culture_depth.get('casting_constraints') or []\n        third['platform_audience_culture_rows']=culture_depth.get('platform_audience_culture_rows') or []\n        s['03_platform_region_audience_culture_insight']=third\n        if not s.get('08_culture_adaptation_checklist'):\n            s['08_culture_adaptation_checklist']=culture_depth.get('adaptation_rows') or []\n    strategy['sections']=s\n""",
+        'full culture projection',
+    )
+
+    text = replace_once(
+        text,
         """    insert=f\"\\n> 人类策略投影：{hp.get('mode') or 'TASK_SCOPED'}；当前显示 {len(active)} 个相关决策域；固定九段人类配额：无。\\n\"\n""",
         """    if str(hp.get('mode') or '').upper()=='FULL':\n        insert=\"\\n> 人类策略投影：FULL；完整商品项目按 9 个硬交付域全部物化；RACE=Research → Action → Communication → Evaluation。页面/交互仍按业务对象设计，不等于固定页面模板。\\n\"\n    else:\n        insert=f\"\\n> 人类策略投影：{hp.get('mode') or 'TASK_SCOPED'}；当前显示 {len(active)} 个相关决策域；固定九段人类配额：无。\\n\"\n""",
         'full render note',
