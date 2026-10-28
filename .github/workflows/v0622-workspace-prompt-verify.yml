@@ -20,7 +20,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Apply v0.6.22 regression fixes
-        run: python .changes/v0622_regression_fix.py
+        run: |
+          python .changes/v0622_fix_regression_patch_syntax.py
+          python .changes/v0622_regression_fix.py
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
       - name: Verify main has not moved
@@ -35,8 +37,6 @@ jobs:
         shell: bash
         run: |
           mkdir -p /tmp/v0622
-          BRANCH_SHA="$(git rev-parse HEAD)"
-          echo "$BRANCH_SHA" > /tmp/v0622/branch.sha
           set +e
           pytest -q -ra \
             tests/test_v0622_dynamic_workspace.py \
@@ -61,7 +61,7 @@ jobs:
           echo "$?" > /tmp/v0622/main.rc
           set -e
           grep -E '^(FAILED|ERROR) ' /tmp/v0622/main.txt | sed -E 's/^(FAILED|ERROR) ([^ ]+).*/\2/' | sort -u > /tmp/v0622/main.nodes || true
-          git checkout "$(git branch --show-current 2>/dev/null || true)" 2>/dev/null || git checkout work/v0622-dynamic-workspace-prompt
+          git checkout work/v0622-dynamic-workspace-prompt
           git stash pop
       - name: Compare failed node IDs
         shell: bash
