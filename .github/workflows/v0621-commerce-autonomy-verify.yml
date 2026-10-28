@@ -29,10 +29,11 @@ jobs:
         run: |
           python .changes/v0621_commerce_autonomy_patch.py
           python .changes/v0621_commerce_autonomy_round2.py
+          python .changes/v0621_regression_fix.py
           python .changes/v0621_release_docs.py
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
-      - name: Verify v0.6.21 autonomy contracts
+      - name: Verify v0.6.21 autonomy contracts and upgraded legacy contracts
         shell: bash
         run: |
           set +e
@@ -40,6 +41,10 @@ jobs:
             tests/test_v0621_commerce_agent_autonomy.py \
             tests/test_v0621_agent_replan_and_frameworks.py \
             tests/test_v0621_relevance_driven_photography.py \
+            tests/test_v0621_research_blocking_semantics.py \
+            tests/test_alpha4_creative_research.py::test_persuasion_frameworks_are_decision_aids_not_asset_templates \
+            tests/test_alpha4_exact_platform_and_e2e.py::test_alpha4_full_creative_to_production_contract \
+            tests/test_visual_and_foundation_runtime.py::test_photography_contract_has_machine_precision_gate \
             > .changes/v0621-targeted.txt 2>&1
           rc=$?
           set -e
@@ -87,28 +92,20 @@ jobs:
           main_rc=int(Path('.changes/v0621-main-full.rc').read_text().strip())
           new=sorted(branch-main)
           infrastructure=[]
-          if branch_rc not in (0,1):
-              infrastructure.append(f'BRANCH_PYTEST_EXIT_{branch_rc}')
-          if main_rc not in (0,1):
-              infrastructure.append(f'MAIN_PYTEST_EXIT_{main_rc}')
-          if branch_rc == 1 and not branch:
-              infrastructure.append('BRANCH_FAILURE_WITHOUT_PARSEABLE_NODE_ID')
+          if branch_rc not in (0,1): infrastructure.append(f'BRANCH_PYTEST_EXIT_{branch_rc}')
+          if main_rc not in (0,1): infrastructure.append(f'MAIN_PYTEST_EXIT_{main_rc}')
+          if branch_rc == 1 and not branch: infrastructure.append('BRANCH_FAILURE_WITHOUT_PARSEABLE_NODE_ID')
           report={
               'main_base_sha':Path('.changes/v0621-main-base.sha').read_text().strip(),
-              'branch_pytest_rc':branch_rc,
-              'main_pytest_rc':main_rc,
-              'branch_failure_count':len(branch),
-              'main_failure_count':len(main),
-              'new_failure_count':len(new),
-              'new_failures':new,
-              'branch_failures':sorted(branch),
-              'main_failures':sorted(main),
+              'branch_pytest_rc':branch_rc,'main_pytest_rc':main_rc,
+              'branch_failure_count':len(branch),'main_failure_count':len(main),
+              'new_failure_count':len(new),'new_failures':new,
+              'branch_failures':sorted(branch),'main_failures':sorted(main),
               'infrastructure_errors':infrastructure,
           }
           Path('.changes/v0621-regression-delta.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
           print(json.dumps(report,ensure_ascii=False,indent=2))
-          if new or infrastructure:
-              raise SystemExit(1)
+          if new or infrastructure: raise SystemExit(1)
           PY
       - name: Reject stale main baseline
         shell: bash
