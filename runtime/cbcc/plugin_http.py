@@ -230,8 +230,8 @@ class PluginHTTPApplication:
         )
         try:
             authorization = _coerce_authorization(self.authorization_resolver(context))
-        except Exception as exc:
-            return self._transport_error(start_response, 500, 'AUTHORIZATION_RESOLVER_FAILED', str(exc))
+        except Exception:
+            return self._transport_error(start_response, 403, 'AUTHORIZATION_RESOLVER_FAILED')
 
         envelope = self.adapter.invoke(operation_id, body or {}, authorization)
         code = _http_code_for_envelope(envelope)
