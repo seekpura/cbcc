@@ -1,0 +1,50 @@
+name: Publish CBCC v0.6.11 patch
+
+on:
+  push:
+    paths:
+      - '.changes/v0611-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-test-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -q pytest pyyaml
+      - name: Apply v0.6.11 patch set
+        shell: bash
+        run: |
+          set -euo pipefail
+          for p in .changes/v0611-*.patch; do
+            echo "Checking $p"
+            git apply --check "$p"
+            git apply "$p"
+          done
+      - name: Run provider binding and continuity regressions
+        run: >-
+          python -m pytest -q
+          tests/test_v0611_provider_source_binding.py
+          tests/test_v0610_visual_execution_copy_continuity.py
+          tests/test_v069_photography_execution_continuity.py
+          tests/test_v068_asset_production_workspace.py
+          tests/test_v067_workspace_information_architecture.py
+      - name: Publish clean source commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .changes/v0611-*.patch .changes/v0611-trigger .github/workflows/publish-v0611.yml
+          rmdir .changes 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: bind source masters through provider handoff"
+          git push origin HEAD:main

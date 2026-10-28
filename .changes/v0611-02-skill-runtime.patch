@@ -1,0 +1,102 @@
+diff --git a/SKILL.md b/SKILL.md
+index 3ffa1aa..0cf039b 100644
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -3,3 +3,3 @@ name: cross-border-commerce-creative
+ description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
+-version: 0.6.10-visual-execution-copy-continuity
++version: 0.6.11-source-master-binding-frozen-revision
+ ---
+@@ -11,2 +11,9 @@ Create a professional cross-border ecommerce plan **before** governance machiner
+ 
++## v0.6.11 商品母版绑定 + 冻结层修订执行
++- LOCKED_PIXEL 的真实商品母版必须以机器可执行 `source_product_bindings` 进入 Renderer Recipe 与 Provider Job；每个 binding 至少包含 asset_id、resolver/locator、SHA256、pixel_lock、allowed_transforms 与 identity_features。
++- Provider handoff 不得只信 compile-time ingest 状态：LOCAL_FILE_PATH 在发单时重新检查文件存在与 SHA256；PROVIDER_ASSET_HANDLE 必须带已声明 SHA256。不可解析的真实商品母版使真实商品生产进入 HOLD。
++- LOCKED_PIXEL Provider Result 必须回报 `source_product_asset_ids_used`、`source_product_hashes_used`、`product_layer_operation`、`product_identity_preserved`，并回显 `source_binding_hash`；ID/hash lineage 不一致进入 Review。
++- Local Revision 除 `changed_fields` 外还必须回报 `changed_layers`；任何 frozen product-identity layer 被报告修改都触发 `FROZEN_LAYER_MUTATION_REPORTED`。
++- Provider contract 对所有 LOCKED_PIXEL 模式（包括 GRAPHIC_DESIGN）要求 source-product binding，不再只对摄影/合成模式声明输入。
++
+ ## v0.6.10 视觉执行边界 + 锁定文案隔离
+diff --git a/VERSION b/VERSION
+index 04e84f8..45a346d 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-0.6.10
++0.6.11
+diff --git a/runtime/cbcc/compiler.py b/runtime/cbcc/compiler.py
+index 97953b8..66769d6 100644
+--- a/runtime/cbcc/compiler.py
++++ b/runtime/cbcc/compiler.py
+@@ -124,4 +124,4 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
+     try: st=ProjectState.load(p)
+-    except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.10-visual-execution-copy-continuity')
+-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.10-visual-execution-copy-continuity'; st.save(); _write(st.meta/'request.json',request)
++    except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.11-source-master-binding-frozen-revision')
++    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.11-source-master-binding-frozen-revision'; st.save(); _write(st.meta/'request.json',request)
+ 
+diff --git a/runtime/cbcc/learning_loop.py b/runtime/cbcc/learning_loop.py
+index 13e5161..fd9dfa1 100644
+--- a/runtime/cbcc/learning_loop.py
++++ b/runtime/cbcc/learning_loop.py
+@@ -314,3 +314,3 @@ def apply_learning_to_strategy(project_dir:Path, learning:dict[str,Any])->dict[s
+     strategy.setdefault('learning_history',[]).append({'cycle_id':learning.get('cycle_id'),'recommendation':learning.get('recommendation'),'applied_at':_now()})
+-    strategy['runtime_strategy_depth']='0.6.10-visual-execution-copy-continuity'
++    strategy['runtime_strategy_depth']='0.6.11-source-master-binding-frozen-revision'
+     # Add an explicit decision-index record even if deterministic index builders do not know the new overlay shape.
+diff --git a/runtime/cbcc/prompt_compiler.py b/runtime/cbcc/prompt_compiler.py
+index 7b00a81..406203c 100644
+--- a/runtime/cbcc/prompt_compiler.py
++++ b/runtime/cbcc/prompt_compiler.py
+@@ -576,2 +576,21 @@ def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target:
+     }
++    source_bindings = []
++    for row in source_assets:
++        if not isinstance(row, dict):
++            continue
++        handle = row.get('provider_asset_handle')
++        path = row.get('path')
++        source_bindings.append({
++            'asset_id': row.get('asset_id'),
++            'role': row.get('role'),
++            'locator': {
++                'kind': 'PROVIDER_ASSET_HANDLE' if handle else ('LOCAL_FILE_PATH' if path else 'UNRESOLVED'),
++                'value': handle or path,
++            },
++            'sha256': row.get('sha256'),
++            'ingest_status': row.get('ingest_status'),
++            'pixel_lock': bool(row.get('pixel_lock')),
++            'allowed_transforms': list(row.get('allowed_transforms') or []),
++            'identity_features': list(row.get('identity_features') or []),
++        })
+     renderer = {
+@@ -579,2 +598,3 @@ def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target:
+         'real_product_master_required': asset.get('product_fidelity') == 'LOCKED_PIXEL',
++        'source_product_bindings': source_bindings,
+         'deterministic_text_composition': bool(locked_copy),
+diff --git a/runtime/cbcc/providers.py b/runtime/cbcc/providers.py
+index 79b4c0e..0fae544 100644
+--- a/runtime/cbcc/providers.py
++++ b/runtime/cbcc/providers.py
+@@ -37,4 +37,19 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
+     required_inputs=['asset_manifest','strategy','visual_spec','source_trace','layout_contract','surface_production_contract','design_card','canonical_prompt_contract','renderer_recipe']
+-    if mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'}: required_inputs.extend(['source_product_assets','photography_contract','shot_lighting_reasoning'])
+-    return {'status':'READY' if not errors else 'HOLD','provider':provider,'production_mode':mode,'product_fidelity':fidelity,'required_inputs':required_inputs,'expected_outputs':spec['outputs'],'human_review_required':spec['human_review'],'adapter':spec.get('adapter','FILE_HANDOFF'),'locked_pixel_support':spec['locked_pixel'],'errors':errors}
++    real_product_mode=mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','VIDEO'}
++    source_binding_required=bool(real_product_mode or fidelity=='LOCKED_PIXEL')
++    if source_binding_required: required_inputs.extend(['source_product_assets','source_product_bindings'])
++    if real_product_mode: required_inputs.extend(['photography_contract','shot_lighting_reasoning'])
++    return {
++        'status':'READY' if not errors else 'HOLD','provider':provider,'production_mode':mode,'product_fidelity':fidelity,
++        'required_inputs':required_inputs,'expected_outputs':spec['outputs'],'human_review_required':spec['human_review'],
++        'adapter':spec.get('adapter','FILE_HANDOFF'),'locked_pixel_support':spec['locked_pixel'],
++        'source_binding_contract':{
++            'required': source_binding_required,
++            'resolver_precedence':['PROVIDER_ASSET_HANDLE','LOCAL_FILE_PATH'],
++            'integrity_key':'sha256',
++            'required_binding_fields':['asset_id','locator','sha256','pixel_lock','allowed_transforms','identity_features'],
++            'locked_pixel_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_layer_operation','product_identity_preserved'] if fidelity=='LOCKED_PIXEL' else [],
++        },
++        'errors':errors
++    }
+ 

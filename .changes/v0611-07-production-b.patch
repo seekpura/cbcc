@@ -1,0 +1,49 @@
+diff --git a/runtime/cbcc/production.py b/runtime/cbcc/production.py
+index 7d7909d..4f4ccb9 100644
+--- a/runtime/cbcc/production.py
++++ b/runtime/cbcc/production.py
+@@ -190,2 +246,12 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]])->dic
+             local.append('PROMPT_CONTRACT_HASH_MISMATCH')
++        qc=row.get('production_quality_contract') or {}
++        expected_source_binding_hash=qc.get('source_binding_hash')
++        if str(qc.get('product_fidelity') or '').upper()=='LOCKED_PIXEL':
++            if not r.get('source_binding_hash') or r.get('source_binding_hash')!=expected_source_binding_hash:
++                local.append('SOURCE_BINDING_HASH_MISMATCH')
++        edit=qc.get('editable_layer_contract') or {}
++        frozen_layers=set(edit.get('frozen_layers') or [])
++        changed_layers=set(r.get('changed_layers') or [])
++        if changed_layers & frozen_layers:
++            local.append('FROZEN_LAYER_MUTATION_REPORTED')
+         scope=row.get('revision_scope') or {}
+@@ -194,2 +260,5 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]])->dic
+             if changed-allowed: local.append('REVISION_SCOPE_VIOLATION')
++            allowed_layers=set(scope.get('allowed_layers') or [])
++            if not isinstance(r.get('changed_layers'),list): local.append('REVISION_CHANGED_LAYERS_MISSING')
++            elif allowed_layers and changed_layers-allowed_layers: local.append('REVISION_LAYER_SCOPE_VIOLATION')
+         qa=r.get('qa') or {}; pass_required=all(bool(qa.get(k)) for k in ['product','fact','claim','visual','culture','platform'])
+@@ -225,2 +294,4 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
+             'production_quality_contract':row.get('production_quality_contract'),
++            'source_product_bindings':(row.get('production_quality_contract') or {}).get('source_product_bindings') or [],
++            'source_binding_hash':(row.get('production_quality_contract') or {}).get('source_binding_hash'),
+             'execution_brief':{
+@@ -231,2 +302,4 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
+                 'locked_pixel_rule':(row.get('production_quality_contract') or {}).get('locked_pixel_rule'),
++                'source_product_bindings':(row.get('production_quality_contract') or {}).get('source_product_bindings') or [],
++                'source_binding_hash':(row.get('production_quality_contract') or {}).get('source_binding_hash'),
+                 'copy_visual_alignment':(row.get('production_quality_contract') or {}).get('copy_visual_alignment'),
+@@ -241,6 +314,6 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
+             'result_contract':{
+-                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations'],
++                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations'] + (['source_binding_hash','production_contract_ack'] if str((row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()=='LOCKED_PIXEL' else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
+                 'qa_required':['product','fact','claim','visual','culture','platform'],
+                 'quality_observations_required':(row.get('production_quality_contract') or {}).get('required_result_observations',[]),
+-                'optional':['changed_fields','provider_metadata','layer_manifest','capture_metadata','production_contract_ack','layout_contract_hash','photography_contract_hash','prompt_contract_hash']
++                'optional':['changed_fields','changed_layers','provider_metadata','layer_manifest','capture_metadata','production_contract_ack','source_binding_hash','layout_contract_hash','photography_contract_hash','prompt_contract_hash']
+             }
+@@ -249,4 +322,4 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
+         qkeys=(row.get('production_quality_contract') or {}).get('required_result_observations',[])
+-        qobs={k:([] if k=='source_product_asset_ids_used' else ('' if k=='product_layer_operation' else {'status':'UNVERIFIED','evidence':None})) for k in qkeys}
+-        (d/'result.template.json').write_text(json.dumps({'asset_id':aid,'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':'','changed_fields':[],'qa':{'product':False,'fact':False,'claim':False,'visual':False,'culture':False,'platform':False},'quality_observations':qobs,'provider_metadata':{},'production_contract_ack':False,'layout_contract_hash':(row.get('production_contract_binding') or {}).get('layout_contract_hash'),'photography_contract_hash':(row.get('production_contract_binding') or {}).get('photography_contract_hash'),'prompt_contract_hash':(row.get('production_contract_binding') or {}).get('prompt_contract_hash')},ensure_ascii=False,indent=2),encoding='utf-8')
++        qobs={k:([] if k=='source_product_asset_ids_used' else ({} if k=='source_product_hashes_used' else ('' if k=='product_layer_operation' else {'status':'UNVERIFIED','evidence':None}))) for k in qkeys}
++        (d/'result.template.json').write_text(json.dumps({'asset_id':aid,'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':'','changed_fields':[],'changed_layers':[],'qa':{'product':False,'fact':False,'claim':False,'visual':False,'culture':False,'platform':False},'quality_observations':qobs,'provider_metadata':{},'production_contract_ack':False,'source_binding_hash':(row.get('production_quality_contract') or {}).get('source_binding_hash'),'layout_contract_hash':(row.get('production_contract_binding') or {}).get('layout_contract_hash'),'photography_contract_hash':(row.get('production_contract_binding') or {}).get('photography_contract_hash'),'prompt_contract_hash':(row.get('production_contract_binding') or {}).get('prompt_contract_hash')},ensure_ascii=False,indent=2),encoding='utf-8')
+         index.append({'asset_id':aid,'job_id':job['job_id'],'provider':job['provider'],'adapter':job['adapter'],'job_path':str(d/'job.json'),'result_path':str(d/'result.json')})

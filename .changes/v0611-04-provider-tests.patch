@@ -1,0 +1,46 @@
+diff --git a/tests/test_alpha5_review_provider_platforms.py b/tests/test_alpha5_review_provider_platforms.py
+index cf9c96a..38a7af8 100644
+--- a/tests/test_alpha5_review_provider_platforms.py
++++ b/tests/test_alpha5_review_provider_platforms.py
+@@ -13,3 +13,3 @@ from cbcc.production import build_production_run, apply_production_result
+ def _test_master():
+-    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','sha256':'a'*64,'ingest_status':'HASH_VERIFIED_LOCAL','pixel_lock':True}]
++    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','provider_asset_handle':'fixture://TEST-MASTER','sha256':'a'*64,'ingest_status':'EXTERNAL_HANDLE_HASH_DECLARED','pixel_lock':True}]
+ 
+@@ -19,2 +19,3 @@ def _quality_observations(row):
+         if k=='source_product_asset_ids_used': out[k]=['TEST-MASTER']
++        elif k=='source_product_hashes_used': out[k]={'TEST-MASTER':'a'*64}
+         elif k=='product_layer_operation': out[k]='COMPOSITE_LOCKED'
+@@ -61,5 +62,5 @@ def test_provider_adapter_contract_and_result_validation(tmp_path):
+     row=run['assets'][0]
+-    passed=apply_production_result(run,[{'asset_id':row['asset_id'],'package_hash':row['package_hash'],'provider':row['provider'],'output_path':'out.png','qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(row)}])
++    passed=apply_production_result(run,[{'asset_id':row['asset_id'],'package_hash':row['package_hash'],'provider':row['provider'],'output_path':'out.png','production_contract_ack':True,'source_binding_hash':row['production_quality_contract']['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(row)}])
+     assert passed['status']=='COMPLETE'
+-    mismatch=apply_production_result(run,[{'asset_id':row['asset_id'],'package_hash':row['package_hash'],'provider':'CG_3D_PROVIDER','output_path':'out.png','qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(row)}])
++    mismatch=apply_production_result(run,[{'asset_id':row['asset_id'],'package_hash':row['package_hash'],'provider':'CG_3D_PROVIDER','output_path':'out.png','production_contract_ack':True,'source_binding_hash':row['production_quality_contract']['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(row)}])
+     assert any(x['code']=='PROVIDER_ID_MISMATCH' for x in mismatch['issues'])
+diff --git a/tests/test_alpha6_review_provider_overlays.py b/tests/test_alpha6_review_provider_overlays.py
+index adb19e7..61e04f9 100644
+--- a/tests/test_alpha6_review_provider_overlays.py
++++ b/tests/test_alpha6_review_provider_overlays.py
+@@ -12,3 +12,3 @@ from cbcc.production import build_production_run, materialize_provider_jobs, ing
+ def _test_master_record():
+-    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','sha256':'a'*64,'ingest_status':'HASH_VERIFIED_LOCAL','pixel_lock':True}]
++    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','provider_asset_handle':'fixture://TEST-MASTER','sha256':'a'*64,'ingest_status':'EXTERNAL_HANDLE_HASH_DECLARED','pixel_lock':True}]
+ 
+@@ -23,2 +23,5 @@ def _quality_observations(job):
+         if k=='source_product_asset_ids_used': out[k]=['TEST-MASTER']
++        elif k=='source_product_hashes_used':
++            bindings=job.get('source_product_bindings') or (job.get('production_quality_contract') or {}).get('source_product_bindings') or []
++            out[k]={x['asset_id']:x['sha256'] for x in bindings}
+         elif k=='product_layer_operation': out[k]='COMPOSITE_LOCKED'
+@@ -62,3 +65,3 @@ def test_provider_filesystem_job_envelope_and_ingest(tmp_path):
+     assert job['execution_policy']['replanning_allowed'] is False and job['package_hash']==row['package_hash']
+-    result={'asset_id':row['asset_id'],'provider':row['provider'],'package_hash':row['package_hash'],'output_path':'final.png','changed_fields':[],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
++    result={'asset_id':row['asset_id'],'provider':row['provider'],'package_hash':row['package_hash'],'output_path':'final.png','changed_fields':[],'changed_layers':[],'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
+     (jobs/row['asset_id']/'result.json').write_text(json.dumps(result),encoding='utf-8')
+@@ -123,3 +126,3 @@ def test_provider_ingest_cli_lifecycle(tmp_path, capsys):
+         job=json.loads(Path(row['job_path']).read_text(encoding='utf-8'))
+-        result={'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(proj/f"outputs/{job['asset_id']}.png"),'changed_fields':[],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
++        result={'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(proj/f"outputs/{job['asset_id']}.png"),'changed_fields':[],'changed_layers':[],'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
+         Path(row['result_path']).write_text(json.dumps(result),encoding='utf-8')

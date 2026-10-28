@@ -1,0 +1,82 @@
+diff --git a/CHANGELOG_V0611.md b/CHANGELOG_V0611.md
+new file mode 100644
+index 0000000..0339387
+--- /dev/null
++++ b/CHANGELOG_V0611.md
+@@ -0,0 +1,21 @@
++# CBCC v0.6.11 — Source Master Binding + Frozen Revision Enforcement
++
++## 本轮真实断链
++真实 KIYUU + 真实临时商品母版的生产运行证明：商品母版虽然在 QA Contract 中有 `asset_id/path/hash/pixel_lock/allowed_transforms`，但 Provider 执行层没有独立、机器可读的 source binding；Renderer Recipe 也不携带母版 binding。结果侧要求 `source_product_asset_ids_used`，却没有对称的 SHA256 lineage。Local Revision 结果也没有强制声明 changed layers，因此 frozen product layer 仍可能只靠文字提醒保护。
++
++## 修复
++- Renderer Recipe 新增 `source_product_bindings`。
++- Provider Job 顶层与 execution brief 都携带 handoff-verified binding，并使用 `source_binding_hash` 锁定本次母版合同。
++- LOCAL_FILE_PATH 在 handoff 时重新检查文件存在与 SHA256；外部 Provider Handle 以声明 SHA256 绑定。
++- Provider Contract 对所有 LOCKED_PIXEL 模式要求 `source_product_assets` + `source_product_bindings`。
++- LOCKED_PIXEL result observations 新增 `source_product_hashes_used`；ID/hash lineage 不一致进入 Review。
++- LOCKED_PIXEL result 必须确认 production contract 并回显 source binding hash。
++- Local Revision result 必须声明 `changed_layers`；任何 frozen layer 修改报告直接进入 Review。
++
++## 真实验证
++- KIYUU fixture 注入真实本地商品母版并执行 production run。
++- 3/3 Provider Jobs 均获得同一个 `READY_LOCAL_VERIFIED` 商品母版 binding。
++- 删除编译后的母版文件后，handoff 转为 HOLD。
++- 错误 source SHA、错误 binding hash、frozen-layer mutation 均被结果校验拒绝。
++- v0.6.7–v0.6.11 定向回归：18 passed。
++- 全量：107 passed / 12 个既有历史失败；无新增失败。
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 80243b7..709afab 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -2,2 +2,12 @@
+ 
++## 0.6.11 — Source Master Binding + Frozen Revision Enforcement
++- Added machine-readable source-product bindings to Renderer Recipe and Provider Job, including resolver/locator, SHA256, pixel lock, allowed transforms and identity features.
++- Re-verified local product-master existence and SHA256 at provider handoff instead of trusting compile-time ingest state.
++- Required LOCKED_PIXEL result lineage for source asset IDs + SHA256 and bound results to a `source_binding_hash`.
++- Enforced frozen-layer mutation reporting and revision changed-layer scope.
++- Extended source-binding requirements to every LOCKED_PIXEL provider mode, including graphic-design placement workflows.
++- Real KIYUU three-asset provider run verified 3/3 jobs bind the same verified source master.
++- Focused v0.6.7–v0.6.11 regression: 18 passed. Full suite: 107 passed / 12 existing failures.
++- See `CHANGELOG_V0611.md`.
++
+ ## 0.6.10 — Visual Execution + Locked Copy Continuity
+diff --git a/CURRENT_HANDOFF.md b/CURRENT_HANDOFF.md
+index 28bbca2..ef8cc73 100644
+--- a/CURRENT_HANDOFF.md
++++ b/CURRENT_HANDOFF.md
+@@ -1,5 +1,5 @@
+-# CBCC v0.6.10 CURRENT HANDOFF
++# CBCC v0.6.11 CURRENT HANDOFF
+ 
+ ## 唯一当前基线
+-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.10-visual-execution-copy-continuity`。
++GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.11-source-master-binding-frozen-revision`。
+ 
+@@ -41,3 +41,12 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
+ 
++## v0.6.11 已完成
++1. `source_product_assets` 不再只留在 QA 合同：Renderer Recipe 与 Provider Job 都有机器可读 `source_product_bindings`。
++2. LOCAL_FILE_PATH 在 handoff 时重新检查存在性和 SHA256；编译后母版移动/被替换会 HOLD，不会继续发单。
++3. LOCKED_PIXEL 结果必须回报母版 ID + SHA256 lineage，并回显 `source_binding_hash`；错误 hash / 错 binding 进入 Review。
++4. Local Revision 结果增加 `changed_layers`；报告修改 frozen 商品身份层会触发 `FROZEN_LAYER_MUTATION_REPORTED`。
++5. GRAPHIC_DESIGN 等 LOCKED_PIXEL Provider 也必须声明 source binding 输入，不再仅摄影/合成模式携带。
++6. 真实 KIYUU 三资产 production run：3/3 Provider Job 绑定同一经过 handoff 校验的商品母版。
++7. v0.6.7–v0.6.11 定向联测：18 passed；全量：107 passed / 12 个既有历史失败。
++
+ ## 下一步唯一主任务
+-**继续用真实 KIYUU SKU 审计 Product Fidelity / Source Product Master → Provider Job → Renderer Recipe → QA / Local Revision 的生产交付链，重点确认 LOCKED_PIXEL 冻结合同在实际 Provider handoff 与局部修订时不会被降级成文字提醒。只修真实断链。**
++**继续审计 Provider Adapter Bridge 的“可携带执行”能力：LOCAL_FILE_PATH、PROVIDER_ASSET_HANDLE、package/job 导出与外部 Provider 实际可解析资源之间是否存在断链；重点确认 job 离开当前文件系统后不会出现“合同完整但母版拿不到”的伪可执行状态，并检查 layer_manifest / capture_metadata 能否形成真实生产回执。只修实际断链。**
+diff --git a/README.md b/README.md
+index 89e346e..935fd6e 100644
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,2 @@
+-# Cross-Border Commerce Creative — v0.6.10
++# Cross-Border Commerce Creative — v0.6.11
+ 
+@@ -17,2 +17,3 @@ CBCC 是跨境电商 Product Truth、市场/竞品/人群、产品/SKU/Offer、L
+ - v0.6.10 将 Approved Visual Elements、Precision Boundaries、Editable/Frozen Layers 与 Product Fidelity 贯穿到 Render Prompt 和人类 Visual 工作台；锁定可见文案只保留在 deterministic overlay / Copy 工作台，不再通过 Surface / Copy Budget JSON 泄漏给图像模型。
++- v0.6.11 将真实商品母版从 compile-time 记录升级为 Provider handoff 的机器可执行 Source Binding：绑定 resolver、SHA256、pixel lock、允许变换与身份字段；handoff 时重新校验本地文件/hash，LOCKED_PIXEL 结果必须回报母版 ID/hash lineage，局部修订报告触碰 frozen layer 时直接进入 Review。
+ 
