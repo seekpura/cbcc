@@ -1,13 +1,26 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.19-plugin-http-host
+version: 0.6.20-mcp-stdio-host
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.20 MCP stdio Host
+- 新增真正可启动的 MCP stdio transport：`runtime/cbcc/mcp_stdio.py` + `python -m cbcc.mcp_stdio_cli`；stdout 只输出 newline-delimited UTF-8 JSON-RPC MCP message。
+- 开发前按当前 MCP 官方规范重核协议：现代主版本为 `2026-07-28`，采用每请求 `_meta` + `server/discover`；`initialize / notifications/initialized` 只保留给 `2025-11-25` legacy 兼容路径。
+- `server/discover`、`tools/list`、`tools/call` 直接消费 v0.6.18 `mcp_tool_descriptors()` / canonical Action Catalog；不维护第二套 MCP tool schema。
+- 现代 `tools/list` deterministic 且按 `ActionAuthorization` scope 过滤；现代 cacheable results 带保守 `ttlMs: 0 / cacheScope: private`。
+- `tools/call` 只映射 `MCP tool → canonical action → ProviderActionDispatcher`；返回 `structuredContent` 并同步 text JSON 兼容内容，PENDING 继续暴露既有 operation/status/resume 状态，不创建 MCP 侧任务库。
+- unsupported modern protocol 使用 `-32022 UnsupportedProtocolVersion`；缺失现代 clientCapabilities、未知 tool、非法 arguments 使用稳定 JSON-RPC/MCP error。
+- `CBCC_MCP_AUTH_MODULE` 只保存 host module 名；默认 DENY，authorization resolver 异常 fail closed 且不回显宿主异常详情。
+- transport runtime 不 import/call `ProviderExecutionSurface / ProviderExecutorBridge / ProviderExecutor`；composition root 才组装既有 Surface → Dispatcher。
+- legacy initialize/list/call 与 modern discover/list/call 共用同一 tool descriptor、authorization 和 dispatcher authority。
+- v0.6.13–v0.6.20 provider/action/Plugin/MCP continuity 定向联测：62 passed。
+- 全量回归与 v0.6.19 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`。
 
 ## v0.6.19 Plugin/OpenAPI HTTP Host
 - 新增真正可启动的 `PluginHTTPApplication` / WSGI host；HTTP action route 全部来自 v0.6.18 generated OpenAPI descriptor，不手写第二套路由表。

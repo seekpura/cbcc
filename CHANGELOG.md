@@ -1,3 +1,11 @@
+## 0.6.20 — MCP stdio Host
+- Added a real dual-era MCP stdio host over canonical generated tool descriptors and ProviderActionDispatcher.
+- Aligned modern protocol behavior to MCP 2026-07-28: server/discover, per-request metadata, resultType and cache hints.
+- Retained explicit 2025-11-25 initialize/initialized compatibility without treating modern MCP as a session protocol.
+- Added authorization-scoped deterministic tools/list, structured tools/call results, unsupported-version errors and fail-closed host authorization.
+- Preserved one provider execution/completion authority and no direct provider-runtime imports in the MCP transport.
+- See `CHANGELOG_V0620.md`.
+
 ## 0.6.19 — Plugin/OpenAPI HTTP Host
 - Added a real startable WSGI Plugin/OpenAPI host over generated action routes.
 - Kept the only runtime chain through PluginActionTransportAdapter → ProviderActionDispatcher.

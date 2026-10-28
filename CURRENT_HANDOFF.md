@@ -1,7 +1,7 @@
-# CBCC v0.6.19 CURRENT HANDOFF
+# CBCC v0.6.20 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.19-plugin-http-host`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.20-mcp-stdio-host`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -134,5 +134,19 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 9. v0.6.13–v0.6.19 provider continuity + transport HTTP 定向联测：48 passed。
 10. 全量回归与 v0.6.18 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；HTTP transport 发布保持 canonical descriptor/dispatcher authority。
 
+## v0.6.20 已完成
+1. 开发前重核 MCP 当前官方 GA：现代协议 `2026-07-28` 已从 initialize/session 模式转为每请求 metadata；`server/discover` 是服务器必须实现的 discovery RPC，legacy `2025-11-25` 才使用 initialize/initialized。
+2. 新增 dual-era stdio host：现代 `server/discover / tools/list / tools/call` + legacy `initialize / notifications/initialized / tools/list / tools/call`。
+3. stdio wire 为 UTF-8 newline-delimited JSON-RPC；stdout 仅输出 MCP message，notification 不制造无效 response。
+4. MCP tools 直接来自 v0.6.18 generated `mcp_tool_descriptors()`，modern tools/list 与 checked-in canonical descriptor exact parity 且 deterministic。
+5. modern request 强制 `_meta.io.modelcontextprotocol/protocolVersion=2026-07-28` 与 clientCapabilities；unsupported version 返回 `-32022` + supported versions。
+6. modern `server/discover` / `tools/list` 带 `resultType=complete`、serverInfo 与保守 cache hints `ttlMs=0 / cacheScope=private`。
+7. tools/list 按 canonical permission scope 过滤；默认 DENY 的调用者看不到未授权工具。
+8. tools/call 只进入 `ProviderActionDispatcher`；structuredContent 保留 canonical envelope，PENDING operation/status/resume 继续使用既有 provider state，无第二套 MCP async DB。
+9. `CBCC_MCP_AUTH_MODULE` 只指定宿主授权 module；resolver 异常 fail closed 且不回显异常文本；canonical secret-field 拒绝继续生效。
+10. MCP transport module 不直接 import/call ProviderExecutionSurface / Bridge / Executor；`mcp_stdio_cli` 仅作为 composition root。
+11. v0.6.13–v0.6.20 provider/action/Plugin/MCP continuity 定向联测：62 passed。
+12. 全量回归与 v0.6.19 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`。
+
 ## 下一步唯一主任务
-**在 v0.6.19 HTTP host 完成后，为 v0.6.18 已生成的 MCP tool descriptors 实现同样薄的真实 MCP transport host。实施前先核对当前 MCP 官方 transport/SDK 规范，再选择宿主最合适的 stdio / Streamable HTTP 入口；无论 transport 形式如何，都必须复用 canonical `mcp_tools.json` / Action Catalog / `ProviderActionDispatcher` / `ActionAuthorization`，不得复制 ProviderExecutionSurface、Bridge、Executor 或另建 completion/state authority。补 MCP initialize/list-tools/call-tool、authorization 注入、pending/status/resume 语义、schema parity 与 transport-level error mapping。**
+**在 v0.6.20 stdio host 的 MCP message semantics 之上实现当前 `2026-07-28` Streamable HTTP binding，但禁止复制一套 `server/discover / tools/list / tools/call`。先抽取/复用 transport-neutral MCP protocol processor，再实现单 `/mcp` HTTP POST binding：校验 Origin、`MCP-Protocol-Version`、`Mcp-Method`、`Mcp-Name` 与 body metadata 一致性，支持 JSON response 与必要的 request-scoped SSE 扩展边界；现代路径不得重新引入旧 HTTP+SSE GET endpoint、Mcp-Session-Id 或隐藏 session state。授权必须由 HTTP host 注入 `ActionAuthorization`，Provider runtime / completion authority 继续只在 Dispatcher 后方。**
