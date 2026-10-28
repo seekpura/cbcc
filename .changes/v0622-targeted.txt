@@ -1,0 +1,192 @@
+......FFFFFFF                                                            [100%]
+=================================== FAILURES ===================================
+_ test_non_photographic_asset_does_not_emit_empty_camera_lighting_or_human_sections _
+
+    def test_non_photographic_asset_does_not_emit_empty_camera_lighting_or_human_sections():
+>       out=_compile(_asset())
+            ^^^^^^^^^^^^^^^^^^
+
+tests/test_v0622_relevance_driven_prompt_projection.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_v0622_relevance_driven_prompt_projection.py:20: in _compile
+    return compile_asset_prompt(
+runtime/cbcc/prompt_compiler.py:718: in compile_asset_prompt
+    'prompt_cn': '\n'.join(_render_lines(card, 'CN')).strip() + '\n',
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+card = {'asset_id': 'AST-V0622', 'asset_name': 'Decision asset', 'asset_type': 'IMAGE', 'surface': 'GALLERY', ...}
+language = 'CN'
+
+    def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+>       cs = card['creative_system']; sae = card['subject_action_environment_props']; cam = card['composition_camera']
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'creative_system'
+
+runtime/cbcc/prompt_compiler.py:494: KeyError
+_ test_composite_mode_can_exist_without_inventing_real_photo_lens_or_prelight __
+
+    def test_composite_mode_can_exist_without_inventing_real_photo_lens_or_prelight():
+>       out=_compile(_asset(), photography={'capture_mode':'COMPOSITE'})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_v0622_relevance_driven_prompt_projection.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_v0622_relevance_driven_prompt_projection.py:20: in _compile
+    return compile_asset_prompt(
+runtime/cbcc/prompt_compiler.py:718: in compile_asset_prompt
+    'prompt_cn': '\n'.join(_render_lines(card, 'CN')).strip() + '\n',
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+card = {'asset_id': 'AST-V0622', 'asset_name': 'Decision asset', 'asset_type': 'IMAGE', 'surface': 'GALLERY', ...}
+language = 'CN'
+
+    def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+>       cs = card['creative_system']; sae = card['subject_action_environment_props']; cam = card['composition_camera']
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'creative_system'
+
+runtime/cbcc/prompt_compiler.py:494: KeyError
+__________ test_actual_real_photo_decisions_are_preserved_end_to_end ___________
+
+    def test_actual_real_photo_decisions_are_preserved_end_to_end():
+        photo={
+            'capture_mode':'REAL_PHOTO','repeatable_capture':True,
+            'camera':{'perspective_contract':'front three-quarter label-readable view','camera_distance':'80cm','focus_plane':'front label plane'},
+            'lighting':{'key':{'direction':'camera-left broad source','modifier':'large diffusion'},'cct':'5000K','prelight_plan':'neutral product reference frame'},
+            'color_management':{'output_space':'sRGB','product_color_fidelity':'preserve verified product color'},
+        }
+>       out=_compile(_asset(production_mode='REAL_PHOTO'),photography=photo)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_v0622_relevance_driven_prompt_projection.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_v0622_relevance_driven_prompt_projection.py:20: in _compile
+    return compile_asset_prompt(
+runtime/cbcc/prompt_compiler.py:718: in compile_asset_prompt
+    'prompt_cn': '\n'.join(_render_lines(card, 'CN')).strip() + '\n',
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+card = {'asset_id': 'AST-V0622', 'asset_name': 'Decision asset', 'asset_type': 'IMAGE', 'surface': 'GALLERY', ...}
+language = 'CN'
+
+    def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+>       cs = card['creative_system']; sae = card['subject_action_environment_props']; cam = card['composition_camera']
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'creative_system'
+
+runtime/cbcc/prompt_compiler.py:494: KeyError
+_ test_global_strategy_photography_toolbox_does_not_leak_into_non_photo_asset_without_asset_reasoning _
+
+    def test_global_strategy_photography_toolbox_does_not_leak_into_non_photo_asset_without_asset_reasoning():
+        strategy={'sections':{'05_visual_photography_strategy':{
+            'camera':{'focal_length_mm':85},
+            'lighting_framework':{'cct':'4300K','prelight_plan':'global studio prelight'},
+            'cmf':{'finish':'glossy'},
+            'color_management':{'output_space':'Display-P3'},
+        }}}
+>       out=_compile(_asset(),strategy=strategy)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_v0622_relevance_driven_prompt_projection.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_v0622_relevance_driven_prompt_projection.py:20: in _compile
+    return compile_asset_prompt(
+runtime/cbcc/prompt_compiler.py:718: in compile_asset_prompt
+    'prompt_cn': '\n'.join(_render_lines(card, 'CN')).strip() + '\n',
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+card = {'asset_id': 'AST-V0622', 'asset_name': 'Decision asset', 'asset_type': 'IMAGE', 'surface': 'GALLERY', ...}
+language = 'CN'
+
+    def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+>       cs = card['creative_system']; sae = card['subject_action_environment_props']; cam = card['composition_camera']
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'creative_system'
+
+runtime/cbcc/prompt_compiler.py:494: KeyError
+__________ test_parameter_trace_and_qa_only_cover_relevant_dimensions __________
+
+    def test_parameter_trace_and_qa_only_cover_relevant_dimensions():
+>       out=_compile(_asset())
+            ^^^^^^^^^^^^^^^^^^
+
+tests/test_v0622_relevance_driven_prompt_projection.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_v0622_relevance_driven_prompt_projection.py:20: in _compile
+    return compile_asset_prompt(
+runtime/cbcc/prompt_compiler.py:718: in compile_asset_prompt
+    'prompt_cn': '\n'.join(_render_lines(card, 'CN')).strip() + '\n',
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+card = {'asset_id': 'AST-V0622', 'asset_name': 'Decision asset', 'asset_type': 'IMAGE', 'surface': 'GALLERY', ...}
+language = 'CN'
+
+    def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+>       cs = card['creative_system']; sae = card['subject_action_environment_props']; cam = card['composition_camera']
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'creative_system'
+
+runtime/cbcc/prompt_compiler.py:494: KeyError
+__ test_renderer_layer_plan_is_task_derived_not_universal_six_layer_template ___
+
+    def test_renderer_layer_plan_is_task_derived_not_universal_six_layer_template():
+>       out=_compile(_asset())
+            ^^^^^^^^^^^^^^^^^^
+
+tests/test_v0622_relevance_driven_prompt_projection.py:100: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_v0622_relevance_driven_prompt_projection.py:20: in _compile
+    return compile_asset_prompt(
+runtime/cbcc/prompt_compiler.py:718: in compile_asset_prompt
+    'prompt_cn': '\n'.join(_render_lines(card, 'CN')).strip() + '\n',
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+card = {'asset_id': 'AST-V0622', 'asset_name': 'Decision asset', 'asset_type': 'IMAGE', 'surface': 'GALLERY', ...}
+language = 'CN'
+
+    def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+>       cs = card['creative_system']; sae = card['subject_action_environment_props']; cam = card['composition_camera']
+             ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'creative_system'
+
+runtime/cbcc/prompt_compiler.py:494: KeyError
+_ test_prompt_projection_still_strips_runtime_identity_metadata_from_renderer_prose _
+
+    def test_prompt_projection_still_strips_runtime_identity_metadata_from_renderer_prose():
+        asset=_asset(creative_direction={'creative_thesis':'For KIYUU K01, synthesize AST-XYZ-123 from evidence','direction_id':'DIR-001'})
+>       out=_compile(asset)
+            ^^^^^^^^^^^^^^^
+
+tests/test_v0622_relevance_driven_prompt_projection.py:111: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_v0622_relevance_driven_prompt_projection.py:20: in _compile
+    return compile_asset_prompt(
+runtime/cbcc/prompt_compiler.py:718: in compile_asset_prompt
+    'prompt_cn': '\n'.join(_render_lines(card, 'CN')).strip() + '\n',
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+card = {'asset_id': 'AST-V0622', 'asset_name': 'Decision asset', 'asset_type': 'IMAGE', 'surface': 'GALLERY', ...}
+language = 'CN'
+
+    def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+>       cs = card['creative_system']; sae = card['subject_action_environment_props']; cam = card['composition_camera']
+                                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'composition_camera'
+
+runtime/cbcc/prompt_compiler.py:494: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_v0622_relevance_driven_prompt_projection.py::test_non_photographic_asset_does_not_emit_empty_camera_lighting_or_human_sections - KeyError: 'creative_system'
+FAILED tests/test_v0622_relevance_driven_prompt_projection.py::test_composite_mode_can_exist_without_inventing_real_photo_lens_or_prelight - KeyError: 'creative_system'
+FAILED tests/test_v0622_relevance_driven_prompt_projection.py::test_actual_real_photo_decisions_are_preserved_end_to_end - KeyError: 'creative_system'
+FAILED tests/test_v0622_relevance_driven_prompt_projection.py::test_global_strategy_photography_toolbox_does_not_leak_into_non_photo_asset_without_asset_reasoning - KeyError: 'creative_system'
+FAILED tests/test_v0622_relevance_driven_prompt_projection.py::test_parameter_trace_and_qa_only_cover_relevant_dimensions - KeyError: 'creative_system'
+FAILED tests/test_v0622_relevance_driven_prompt_projection.py::test_renderer_layer_plan_is_task_derived_not_universal_six_layer_template - KeyError: 'creative_system'
+FAILED tests/test_v0622_relevance_driven_prompt_projection.py::test_prompt_projection_still_strips_runtime_identity_metadata_from_renderer_prose - KeyError: 'composition_camera'
+7 failed, 6 passed in 0.14s

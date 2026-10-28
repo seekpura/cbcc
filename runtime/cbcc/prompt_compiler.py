@@ -22,6 +22,28 @@ def _merge(base: dict[str, Any] | None, override: dict[str, Any] | None) -> dict
     return out
 
 
+def _meaningful(value: Any) -> bool:
+    if value in (None, ''):
+        return False
+    if isinstance(value, dict):
+        return any(_meaningful(v) for v in value.values())
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return any(_meaningful(v) for v in value)
+    return True
+
+
+def _compact(value: Any) -> Any:
+    if isinstance(value, dict):
+        out={}
+        for k,v in value.items():
+            cv=_compact(v)
+            if _meaningful(cv): out[k]=cv
+        return out
+    if isinstance(value, list):
+        return [cv for item in value if _meaningful(cv:=_compact(item))]
+    return value
+
+
 def _asset_reasoning(strategy_authority: dict[str, Any] | None, asset_id: str | None) -> dict[str, Any]:
     sections = (strategy_authority or {}).get('sections') or {}
     visual = sections.get('05_visual_photography_strategy') or {}
@@ -29,60 +51,77 @@ def _asset_reasoning(strategy_authority: dict[str, Any] | None, asset_id: str | 
 
 
 def _derived_photo_contract(asset: dict[str, Any], strategy_authority: dict[str, Any] | None, explicit: dict[str, Any] | None) -> dict[str, Any]:
-    sections = (strategy_authority or {}).get('sections') or {}
-    visual = sections.get('05_visual_photography_strategy') or {}
-    reasoning = _asset_reasoning(strategy_authority, asset.get('asset_id'))
-    material = reasoning.get('material_lighting_profile') or visual.get('material_lighting_profile') or {}
-    shot = reasoning.get('shot_lighting_reasoning') or {}
+    """Project only photography/CMF decisions that are actually relevant to this asset.
 
-    camera = {}
-    camera.update(visual.get('camera') if isinstance(visual.get('camera'), dict) else {})
-    camera.update(reasoning.get('camera_choice') if isinstance(reasoning.get('camera_choice'), dict) else {})
-    lens = visual.get('lens') if isinstance(visual.get('lens'), dict) else {}
-    for k, v in lens.items():
-        camera.setdefault(k, v)
+    Global strategy can contain a photography toolbox, but that does not make every camera/light field mandatory
+    for every asset. Asset reasoning and explicit execution contracts are authoritative; global defaults are
+    inherited only for real repeatable photography or when the asset explicitly opts in.
+    """
+    explicit=dict(explicit or {})
+    sections=(strategy_authority or {}).get('sections') or {}
+    visual=sections.get('05_visual_photography_strategy') or {}
+    reasoning=_asset_reasoning(strategy_authority,asset.get('asset_id'))
+    capture_mode=str(explicit.get('capture_mode') or reasoning.get('capture_mode') or asset.get('capture_mode') or '').upper() or None
+    inherit_global=bool(explicit.get('inherit_strategy_photography') or reasoning.get('inherit_strategy_photography') or capture_mode=='REAL_PHOTO')
 
-    lighting = {}
-    lighting.update(visual.get('lighting_framework') if isinstance(visual.get('lighting_framework'), dict) else {})
-    lighting.update(reasoning.get('lighting_choice') if isinstance(reasoning.get('lighting_choice'), dict) else {})
-    if material:
-        lighting.setdefault('prelight_plan', material.get('prelight_plan'))
-        lighting.setdefault('lighting_diagram', material.get('lighting_diagram'))
-        lighting.setdefault('exposure_ratio_plan', material.get('exposure_ratio_plan'))
-        lighting.setdefault('polarization_plan', material.get('polarization_plan'))
-        lighting.setdefault('color_consistency_plan', material.get('color_consistency_plan'))
+    camera={}
+    if inherit_global and isinstance(visual.get('camera'),dict): camera.update(visual.get('camera') or {})
+    if inherit_global and isinstance(visual.get('lens'),dict):
+        for k,v in (visual.get('lens') or {}).items(): camera.setdefault(k,v)
+    if isinstance(reasoning.get('camera_choice'),dict): camera.update(reasoning.get('camera_choice') or {})
+    if isinstance(explicit.get('camera'),dict): camera.update(explicit.get('camera') or {})
+
+    material=reasoning.get('material_lighting_profile') or {}
+    lighting={}
+    if inherit_global and isinstance(visual.get('lighting_framework'),dict): lighting.update(visual.get('lighting_framework') or {})
+    if isinstance(reasoning.get('lighting_choice'),dict): lighting.update(reasoning.get('lighting_choice') or {})
+    if isinstance(explicit.get('lighting'),dict): lighting.update(explicit.get('lighting') or {})
+    shot=reasoning.get('shot_lighting_reasoning') or {}
+    if material and (inherit_global or reasoning):
+        for k in ['prelight_plan','lighting_diagram','exposure_ratio_plan','polarization_plan','color_consistency_plan']:
+            if material.get(k) not in (None,'',[],{}): lighting.setdefault(k,material.get(k))
     if shot:
-        lighting.setdefault('material_response_to_show', shot.get('material_response_to_show'))
-        lighting.setdefault('reflection_reasoning', shot.get('highlight_reflection_why'))
-        lighting.setdefault('color_management_reasoning', shot.get('color_management_why'))
+        if shot.get('material_response_to_show') not in (None,'',[],{}): lighting.setdefault('material_response_to_show',shot.get('material_response_to_show'))
+        if shot.get('highlight_reflection_why') not in (None,'',[],{}): lighting.setdefault('reflection_reasoning',shot.get('highlight_reflection_why'))
+        if shot.get('color_management_why') not in (None,'',[],{}): lighting.setdefault('color_management_reasoning',shot.get('color_management_why'))
 
-    cmf = reasoning.get('cmf_choice') or visual.get('cmf') or visual.get('palette_hex') or {}
-    if isinstance(cmf, list):
-        cmf = {'palette_hex': cmf}
-    if not isinstance(cmf, dict):
-        cmf = {'description': cmf}
-    cmf = _merge({
-        'material': material.get('material'),
-        'finish': material.get('finish'),
-        'surface_behavior': material.get('surface_behavior'),
-        'optical_risks': material.get('optical_risks'),
-        'capture_implications': (visual.get('cmf') or {}).get('capture_implications') if isinstance(visual.get('cmf'), dict) else None,
-        'post_implications': (visual.get('cmf') or {}).get('post_implications') if isinstance(visual.get('cmf'), dict) else None,
-    }, cmf)
+    cmf=reasoning.get('cmf_choice') or explicit.get('cmf') or {}
+    if inherit_global and not cmf:
+        cmf=visual.get('cmf') or visual.get('palette_hex') or {}
+    if isinstance(cmf,list): cmf={'palette_hex':cmf}
+    if cmf and not isinstance(cmf,dict): cmf={'description':cmf}
+    if isinstance(cmf,dict) and cmf:
+        cmf=_merge({
+            'material':material.get('material'),'finish':material.get('finish'),'surface_behavior':material.get('surface_behavior'),
+            'optical_risks':material.get('optical_risks'),
+        },cmf)
 
-    inclusive = visual.get('inclusive_photography') or {}
-    base = {
-        'status': 'STRATEGY_DERIVED_EXECUTION_CONTRACT',
-        'camera': camera,
-        'lighting': lighting,
-        'cmf': cmf,
-        'color_management': visual.get('color_management') or material.get('color_consistency_plan'),
-        'inclusive_photography': inclusive,
-        'asset_reasoning': reasoning,
-        'prelight_required': True,
+    color_management=explicit.get('color_management')
+    if not color_management and reasoning.get('color_management'):
+        color_management=reasoning.get('color_management')
+    if not color_management and inherit_global:
+        color_management=visual.get('color_management') or material.get('color_consistency_plan')
+
+    inclusive=explicit.get('inclusive_photography') or reasoning.get('inclusive_photography') or {}
+    if inherit_global and not inclusive: inclusive=visual.get('inclusive_photography') or {}
+    repeatable=bool(explicit.get('repeatable_capture') or reasoning.get('repeatable_capture'))
+    prelight_required=bool(explicit.get('prelight_required')) if 'prelight_required' in explicit else bool(capture_mode=='REAL_PHOTO' and (repeatable or lighting.get('prelight_plan')))
+
+    base={
+        'status':'ASSET_RELEVANCE_DERIVED_EXECUTION_CONTRACT',
+        'capture_mode':capture_mode,
+        'camera':camera,
+        'composition':explicit.get('composition') or reasoning.get('composition_execution') or {},
+        'lighting':lighting,
+        'cmf':cmf,
+        'color_management':color_management,
+        'inclusive_photography':inclusive,
+        'asset_reasoning':reasoning,
+        'prelight_required':prelight_required,
+        'repeatable_capture':repeatable,
     }
-    return _merge(base, explicit or {})
-
+    # Remaining explicit keys are allowed to extend the asset contract; absent global toolbox fields are not invented.
+    return _compact(_merge(base,explicit))
 
 def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[str, Any], culture: dict[str, Any], language_contract: dict[str, Any], photography: dict[str, Any] | None, strategy_authority: dict[str, Any] | None, source_product_assets: list[dict[str, Any]] | None) -> dict[str, Any]:
     sig = asset.get('visual_production_signature') or {}
@@ -107,7 +146,7 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
     product_masters = list(source_product_assets or [])
     locked_masters = [m for m in product_masters if m.get('pixel_lock')]
 
-    return {
+    return _compact({
         'asset_id': asset.get('asset_id'), 'asset_name': asset.get('asset_name'), 'asset_type': asset.get('asset_type'),
         'surface': asset.get('surface'), 'family': asset.get('family'),
         'commerce_task': {
@@ -206,7 +245,7 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
         'precision_boundaries': asset.get('precision_boundaries') or [],
         'approved_visual_elements': asset.get('approved_visual_elements') or [],
         'editable_layer_contract': asset.get('editable_layer_contract') or {},
-    }
+    })
 
 
 def _render_safe_text(value:Any)->str:
@@ -286,6 +325,42 @@ def _clean_render_lines(lines:list[str])->list[str]:
         compact.append(x)
     return compact
 
+
+
+def _prompt_section_relevance(card:dict[str,Any])->dict[str,bool]:
+    cam=card.get('composition_camera') or {}; photo=card.get('photography_execution') or {}
+    lm=dict(card.get('lighting_material_cmf') or {}); lm.pop('material_truth_rule',None)
+    inc=card.get('inclusive_photography') or {}; surface=card.get('surface_contract') or {}; info=card.get('information_design') or {}
+    boundaries=bool(card.get('approved_visual_elements') or card.get('precision_boundaries') or card.get('editable_layer_contract'))
+    return {
+        'composition':_meaningful(cam) or _meaningful(photo.get('composition')) or _meaningful(photo.get('capture_mode')),
+        'lighting':_meaningful(lm) or _meaningful(photo.get('color_management')),
+        'inclusive':_meaningful(inc),
+        'surface':_meaningful(surface) or _meaningful(info.get('copy_budget')) or _meaningful(info.get('typography')),
+        'boundaries':boundaries,
+    }
+
+
+def _filter_relevant_prompt_sections(lines:list[str],card:dict[str,Any],cn:bool)->list[str]:
+    relevance=_prompt_section_relevance(card)
+    active_titles={
+        ('【构图与摄影机】' if cn else '[COMPOSITION / CAMERA]'):relevance['composition'],
+        ('【灯光 / 材质 / CMF】' if cn else '[LIGHTING / MATERIAL / CMF]'):relevance['lighting'],
+        ('【包容性人物摄影】' if cn else '[INCLUSIVE HUMAN PHOTOGRAPHY]'):relevance['inclusive'],
+        ('【Surface / 信息设计】' if cn else '[SURFACE / INFORMATION DESIGN]'):relevance['surface'],
+        ('【视觉执行边界 / 可编辑性】' if cn else '[VISUAL EXECUTION BOUNDARIES / EDITABILITY]'):relevance['boundaries'],
+    }
+    out=[]; keep=True
+    for row in lines:
+        s=str(row or '').strip()
+        if s in active_titles:
+            keep=active_titles[s]
+            if keep: out.append(row)
+            continue
+        if (cn and s.startswith('【') and s.endswith('】')) or ((not cn) and s.startswith('[') and s.endswith(']')):
+            keep=True
+        if keep: out.append(row)
+    return out
 
 def _cn_phrase(value:Any)->Any:
     """Human/renderer-facing Chinese companion for CBCC-owned strategy phrases.
@@ -448,7 +523,7 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
             '', '【主体 / 动作 / 环境】',
             f"主体：{_txt(_cn_phrase(sae.get('subject')))}", f"动作：{_txt(_cn_phrase(sae.get('action')))}",
             f"环境：{_txt(_cn_phrase(sae.get('environment')))}", f"道具：{_txt(_cn_phrase(sae.get('props')))}",
-            f"人物与选角：{_txt(_cn_phrase(sae.get('human_context')),'仅在画面任务需要时出现人物；人物服务真实使用/决策任务，不把族裔、性别、年龄等身份直接推断为行为。')}",
+            f"人物与选角：{_txt(_cn_phrase(sae.get('human_context')))}",
             '', '【构图与摄影机】',
             f"构图语法：{_txt(_cn_phrase(cam.get('composition_grammar')))}", f"空间节奏：{_txt(_cn_phrase(cam.get('spatial_rhythm')))}",
             f"机位 / 视角：{_txt(_cn_phrase(cam.get('camera_or_view')))}", f"焦段 / 镜头族：{_txt(_cn_phrase(cam.get('focal_length_mm')))} / {_txt(_cn_phrase(cam.get('lens_family')))}",
@@ -462,12 +537,12 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
             '', '【灯光 / 材质 / CMF】',
             f"主光 / 补光 / 负补光 / 轮廓光：{_txt(key_cn)} / {_txt(fill_cn)} / {_txt(neg_cn)} / {_txt(rim_cn)}",
             f"色温 / 阴影 / 高光：{_txt(_cn_phrase(lm.get('cct')))} / {_txt(_cn_phrase(lm.get('shadow')))} / {_txt(_cn_phrase(lm.get('highlight_policy')))}",
-            f"光比：{_txt(_cn_phrase(lm.get('exposure_ratio_plan')))}", f"反射与偏振：{polarization}",
-            f"Prelight：{prelight}",
+            f"光比：{_txt(_cn_phrase(lm.get('exposure_ratio_plan')))}", f"反射与偏振：{_txt(_cn_phrase(lm.get('reflection')))} / {_txt(_cn_phrase(lm.get('polarization_plan')))}",
+            f"Prelight：{_txt(_cn_phrase(lm.get('prelight_plan')))}",
             f"CMF：{_txt(_cn_phrase(lm.get('cmf')))}", f"需要表现的材质响应：{_txt(_cn_phrase(lm.get('material_response_to_show')))}",
             f"拍摄影响：{_txt(_cn_phrase(lm.get('capture_implications')))}", f"后期影响：{_txt(_cn_phrase(lm.get('post_implications')))}",
             f"色彩管理合同：{_txt(_cn_phrase(photo_exec.get('color_management')))}",
-            f"颜色一致性：{color_consistency}", '材质真实性边界：只表现商品真源/CMF 支持的材质、表面处理、透明度与光泽；不得凭空增加液体、膏体、金属、玻璃或其他物理效果。',
+            f"颜色一致性：{_txt(_cn_phrase(lm.get('color_consistency_plan')))}", '材质真实性边界：只表现商品真源/CMF 支持的材质、表面处理、透明度与光泽；不得凭空增加液体、膏体、金属、玻璃或其他物理效果。',
             '', '【包容性人物摄影】',
             f"肤色曝光：{_txt(inc_skin)}", f"发质 / 服化道：{_txt(inc_hair)}",
             f"交叉性语境：{_txt(_cn_phrase(inc.get('intersectionality_context') or loc.get('intersectionality')))}",
@@ -497,7 +572,7 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
             '', '[SUBJECT / ACTION / ENVIRONMENT]',
             f"Subject: {_txt(sae.get('subject'))}", f"Action: {_txt(sae.get('action'))}",
             f"Environment: {_txt(sae.get('environment'))}", f"Props: {_txt(sae.get('props'))}",
-            f"Human / casting: {_txt(sae.get('human_context'),'Include people only when the visual task requires them.')}",
+            f"Human / casting: {_txt(sae.get('human_context'))}",
             '', '[COMPOSITION / CAMERA]',
             f"Composition grammar: {_txt(cam.get('composition_grammar'))}", f"Spatial rhythm: {_txt(cam.get('spatial_rhythm'))}",
             f"Camera / view: {_txt(cam.get('camera_or_view'))}", f"Focal length / lens family: {_txt(cam.get('focal_length_mm'))} / {_txt(cam.get('lens_family'))}",
@@ -537,28 +612,51 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
             '', '[DO NOT GENERATE]',
             'Do not invent unsupported ingredients, textures, tests, certifications, efficacy, body outcomes, before/after, comparison numbers or package copy. Do not add arbitrary premium splashes, particles, laboratory symbolism, abstract halos or repetitive card layouts.'
         ]
+    lines=_filter_relevant_prompt_sections(lines,card,cn)
     return _clean_render_lines([x for x in lines if x is not None and str(x).strip() != 'None'])
 
 
 def _parameter_trace(card: dict[str, Any]) -> list[dict[str, Any]]:
-    return [
-        {'strategy_parameter': 'creative thesis / image language / creative anchor', 'render_location': 'RENDER OBJECTIVE', 'value': card.get('creative_system')},
-        {'strategy_parameter': 'composition / camera / lens / focus / exposure settings', 'render_location': 'COMPOSITION / CAMERA', 'value': card.get('composition_camera')},
-        {'strategy_parameter': 'capture mode / product occupancy / negative space / output color management', 'render_location': 'PHOTOGRAPHY EXECUTION CONTRACT', 'value': card.get('photography_execution')},
-        {'strategy_parameter': 'lighting / CCT / ratio / prelight / polarization / CMF / material response / color management', 'render_location': 'LIGHTING / MATERIAL / CMF', 'value': card.get('lighting_material_cmf')},
-        {'strategy_parameter': 'skin-tone exposure / hair / wardrobe / intersectionality', 'render_location': 'INCLUSIVE HUMAN PHOTOGRAPHY', 'value': card.get('inclusive_photography')},
-        {'strategy_parameter': 'surface / safe zone / copy budget / typography', 'render_location': 'SURFACE / INFORMATION DESIGN', 'value': {'surface': card.get('surface_contract'), 'information_design': card.get('information_design')}},
-        {'strategy_parameter': 'approved visual elements / precision boundaries / editable & frozen layers', 'render_location': 'VISUAL EXECUTION BOUNDARIES / EDITABILITY', 'value': {'approved_visual_elements': card.get('approved_visual_elements'), 'precision_boundaries': card.get('precision_boundaries'), 'editable_layer_contract': card.get('editable_layer_contract')}},
-        {'strategy_parameter': 'product fidelity / real masters', 'render_location': 'REAL PRODUCT IDENTITY', 'value': card.get('product_identity')},
+    rows=[
+        {'strategy_parameter':'creative thesis / image language / creative anchor','render_location':'RENDER OBJECTIVE','value':card.get('creative_system')},
+        {'strategy_parameter':'composition / camera / lens / focus / exposure settings','render_location':'COMPOSITION / CAMERA','value':card.get('composition_camera')},
+        {'strategy_parameter':'capture mode / product occupancy / negative space / output color management','render_location':'PHOTOGRAPHY EXECUTION CONTRACT','value':card.get('photography_execution')},
+        {'strategy_parameter':'lighting / CCT / ratio / prelight / polarization / CMF / material response / color management','render_location':'LIGHTING / MATERIAL / CMF','value':{k:v for k,v in (card.get('lighting_material_cmf') or {}).items() if k!='material_truth_rule'}},
+        {'strategy_parameter':'skin-tone exposure / hair / wardrobe / intersectionality','render_location':'INCLUSIVE HUMAN PHOTOGRAPHY','value':card.get('inclusive_photography')},
+        {'strategy_parameter':'surface / safe zone / copy budget / typography','render_location':'SURFACE / INFORMATION DESIGN','value':{'surface':card.get('surface_contract'),'information_design':card.get('information_design')}},
+        {'strategy_parameter':'approved visual elements / precision boundaries / editable & frozen layers','render_location':'VISUAL EXECUTION BOUNDARIES / EDITABILITY','value':{'approved_visual_elements':card.get('approved_visual_elements'),'precision_boundaries':card.get('precision_boundaries'),'editable_layer_contract':card.get('editable_layer_contract')}},
+        {'strategy_parameter':'product fidelity / real masters','render_location':'REAL PRODUCT IDENTITY','value':card.get('product_identity')},
     ]
+    return [_compact(row) for row in rows if _meaningful(row.get('value'))]
 
+
+def _renderer_layer_plan(card:dict[str,Any],locked_copy:dict[str,Any])->list[str]:
+    layers=[]
+    subject=card.get('subject_action_environment_props') or {}
+    presence=card.get('product_presence') or {}
+    if _meaningful(subject.get('environment')): layers.append('background_environment')
+    if _meaningful(subject.get('human_context')): layers.append('human_or_context_if_required')
+    if str(presence.get('planning_state') or '').upper()!='FORBIDDEN' or _meaningful(card.get('product_identity')): layers.append('product_master_or_verified_product')
+    if _meaningful((card.get('information_design') or {}).get('proof_plane')): layers.append('evidence_graphics')
+    if locked_copy: layers.append('locked_typography')
+    if _meaningful((card.get('photography_execution') or {}).get('color_management')) or _meaningful((card.get('lighting_material_cmf') or {}).get('post_implications')): layers.append('final_color_grade')
+    return list(dict.fromkeys(layers))
+
+
+def _dynamic_photography_checks(card:dict[str,Any])->list[str]:
+    relevance=_prompt_section_relevance(card); checks=[]
+    if relevance['composition']: checks.append('selected composition/perspective contract is visible')
+    if relevance['lighting']: checks.append('selected lighting/material/CMF and color-management decisions match the asset contract')
+    if relevance['inclusive']: checks.append('human exposure/representation constraints are applied when people appear')
+    if _meaningful((card.get('lighting_material_cmf') or {}).get('material_truth_rule')): checks.append('no unsupported physical/material effects')
+    return checks
 
 def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target: dict[str, Any], culture: dict[str, Any], language_contract: dict[str, Any], locale_profiles: dict[str, Any] | None = None, photography: dict[str, Any] | None = None, strategy_authority: dict[str, Any] | None = None, source_product_assets: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     card = _design_card(asset, product, target, culture, language_contract, photography, strategy_authority, source_product_assets)
     source_assets = card.get('product_identity', {}).get('source_product_assets') or []
     locked_copy = card.get('information_design', {}).get('locked_visible_copy') or {}
-    machine = {
-        'asset_id': card['asset_id'], 'surface': card['surface'], 'production_mode': asset.get('production_mode'),
+    machine = _compact({
+        'asset_id': card.get('asset_id'), 'surface': card.get('surface'), 'production_mode': asset.get('production_mode'),
         'product_fidelity': asset.get('product_fidelity'),
         'fidelity': {
             'mode': asset.get('product_fidelity'),
@@ -573,7 +671,7 @@ def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target:
         'surface_contract': card.get('surface_contract'), 'creative_system': card.get('creative_system'),
         'editable_layer_contract': card.get('editable_layer_contract'), 'precision_boundaries': card.get('precision_boundaries'),
         'approved_visual_elements': card.get('approved_visual_elements')
-    }
+    })
     source_bindings = []
     for row in source_assets:
         if not isinstance(row, dict):
@@ -603,20 +701,20 @@ def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target:
             'image_model_may_rewrite_locked_copy': False, 'image_model_may_retype_packaging': False,
             'visible_copy_present': bool(locked_copy), 'locked_copy': locked_copy,
         },
-        'layer_plan': ['background_environment', 'human_or_context_if_required', 'product_master_or_verified_product', 'evidence_graphics', 'locked_typography', 'final_color_grade'],
+        'layer_plan': _renderer_layer_plan(card,locked_copy),
         'local_revision_contract': asset.get('editable_layer_contract') or {}
     }
     qa = {
         'decision_answer_visible': asset.get('incremental_information') or asset.get('belief_target'),
         'product_identity': card['product_identity']['rule'],
-        'parameter_trace_complete': True,
+        'relevant_parameter_trace_complete': True,
         'same_layout_guard': 'The result must visibly differ from adjacent assets when decision intent/evidence plane differs.',
         'copy_visual_alignment': card['information_design']['copy_visual_rule'], 'surface_native': card.get('surface_contract'),
         'culture_locale': card.get('market_locale'), 'material_truth': card['lighting_material_cmf']['material_truth_rule'],
-        'photography_checks': ['camera/lens intent visible', 'lighting/material response matches contract', 'CCT/color consistency preserved', 'skin-tone exposure applied when people appear', 'no unsupported physical effects']
+        'photography_checks': _dynamic_photography_checks(card)
     }
     return {
-        'status': 'CANONICAL_PROMPT_COMPILED_V066', 'design_card': card,
+        'status': 'CANONICAL_PROMPT_COMPILED_V0622_RELEVANCE_DRIVEN', 'design_card': card,
         'prompt_cn': '\n'.join(_render_lines(card, 'CN')).strip() + '\n',
         'prompt_en': '\n'.join(_render_lines(card, 'EN')).strip() + '\n',
         'deterministic_copy_overlay': locked_copy,

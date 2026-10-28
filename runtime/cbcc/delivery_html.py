@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import Any
 import base64, html, json, mimetypes, re
 
+from .workspace_autonomy import build_workspace_route_plan, relevant_asset_view_keys
+
 
 def _read(path: Path) -> str:
     try:
@@ -500,10 +502,11 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
         ])
         views.append({'key':'visual','title':'画面与版式','html':visual})
         photo_exec=design.get('photography_execution') or {}
-        photo=_human_kv([
+        photo_rows=[
           ('拍摄 / 合成模式',photo_exec.get('capture_mode')),('构图执行合同',photo_exec.get('composition')),('输出色彩管理',photo_exec.get('color_management')),('焦段',comp.get('focal_length_mm')),('镜头家族',comp.get('lens_family')),('方位角',comp.get('azimuth')),('俯仰 / 高度',comp.get('elevation') or comp.get('camera_height')),('对焦平面',comp.get('focus_plane')),('景深 / 光圈意图',comp.get('aperture_dof_intent')),('快门起点',comp.get('shutter_speed')),('ISO 起点',comp.get('iso')),('主光',light.get('key')),('补光',light.get('fill')),('负补光',light.get('negative_fill')),('轮廓光',light.get('rim')),('色温',light.get('cct')),('阴影策略',light.get('shadow')),('高光策略',light.get('highlight_policy')),('Prelight',light.get('prelight_plan')),('偏振',light.get('polarization_plan')),('色彩一致性',light.get('color_consistency_plan'))
-        ])
-        views.append({'key':'photo','title':'摄影 / CMF','html':photo})
+        ]
+        if any(v not in (None,'',[],{}) for _,v in photo_rows):
+            views.append({'key':'photo','title':'摄影 / CMF','html':_human_kv(photo_rows)})
         if copyc:
             views.append({'key':'copy','title':'文案','html':_human_kv([('锁定的目标市场可见文案',copyc),('确定性排版规则',info.get('copy_visual_rule')),('文案预算',info.get('copy_budget')),('字体方向',info.get('typography'))])})
     # Human-facing Markdown files remain useful, but machine YAML/JSON is never the default asset view.
@@ -535,7 +538,7 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
         else:
             views.append({'key':k,'title':labels[k],'html':''.join(group_files[k])})
     summary=' · '.join(str(x) for x in [surface,_intent_zh(intent),qzh if design else manifest.get('consumer_question')] if x)
-    return {'id':aid,'title':display_title,'original_title':original_title,'summary':summary,'prompt_cn':prompt_cn,'prompt_en':prompt_en,'views':views,'source_files':src,'surface':surface,'intent':intent,'asset_type':asset_type}
+    return {'id':aid,'title':display_title,'original_title':original_title,'summary':summary,'prompt_cn':prompt_cn,'prompt_en':prompt_en,'views':views,'source_files':src,'surface':surface,'intent':intent,'asset_type':asset_type,'agent_view_order':design.get('workspace_view_order') or design.get('agent_view_order') or []}
 
 
 def _legacy_asset(path:Path,package_dir:Path)->dict[str,Any]:
@@ -650,82 +653,57 @@ def _prompt_workspace(assets:list[dict[str,Any]])->str:
 
 def _asset_page(a:dict[str,Any])->str:
     raw_views=list(a.get('views') or [])
-    by_key={str(v.get('key') or ''):v for v in raw_views}
-    consumed=set()
-    stages=[]
-    group=f'asset-production-{_slug(a["id"])}'
+    by_key={str(v.get('key') or ''):v for v in raw_views if isinstance(v,dict)}
+    ordered_keys=relevant_asset_view_keys(a)
+    group=f'asset-workspace-{_slug(a["id"])}'
+    panels=[]
 
-    def add_stage(key:str,title:str,eyebrow:str,body:str,description:str,kind:str):
-        if not body.strip(): return
-        stages.append({'key':key,'title':title,'eyebrow':eyebrow,'body':body,'description':description,'kind':kind})
-
-    decision_parts=[]
-    for key,label in [('overview','Design Card'),('strategy','购买决策')]:
-        view=by_key.get(key)
-        if view:
-            consumed.add(key)
-            decision_parts.append(f'<section class="asset-decision-block"><div class="asset-section-label">{label}</div>{view["html"]}</section>')
-    if decision_parts:
-        add_stage('decision','决策 / Design Card','WHY', ''.join(decision_parts), '先确认这张资产为什么存在、要改变什么购买判断，再进入画面生产。','decision')
-
-    visual=by_key.get('visual')
-    if visual:
-        consumed.add('visual')
-        add_stage('visual','画面执行','VISUAL EXECUTION',f'<div class="asset-visual-command"><div class="asset-command-note"><b>画面任务</b><span>把购买判断转换为主体、动作、环境、构图与 Surface 的可见关系。</span></div>{visual["html"]}</div>','只处理消费者真正能看到的关系，不把摄影参数和机器合同混进这里。','visual')
-
-    photo=by_key.get('photo')
-    if photo:
-        consumed.add('photo')
-        add_stage('photo','摄影 / CMF','PHOTOGRAPHY · CMF',f'<div class="asset-photo-console"><div class="photo-console-head"><b>现场执行控制</b><span>镜头、机位、曝光、灯光、材质与颜色从策划层落到拍摄 / 生成控制。</span></div>{photo["html"]}</div>','用于拍摄、预光与生成模型的视觉执行参数；不是装饰性摄影说明。','photo')
-
-    copy_view=by_key.get('copy')
-    if copy_view:
-        consumed.add('copy')
-        add_stage('copy','文案','COPY',f'<div class="asset-copy-console"><div class="asset-command-note"><b>资产可见文案</b><span>目标市场文案保持目标语言；人类交付同步保留中文释义与用途。</span></div>{copy_view["html"]}</div>','只保留这张资产需要承担的可见文字与语言约束。','copy')
-
-    production=by_key.get('production')
-    if production: consumed.add('production')
-    if a.get('prompt_cn') or a.get('prompt_en') or production:
-        prompt_parts=[]
-        aid=_slug(a['id'])
+    def prompt_body()->str:
+        parts=[];aid=_slug(a['id'])
         if a.get('prompt_cn'):
             cid=f'asset-{aid}-prompt-cn'
-            prompt_parts.append(f'''<section class="prompt-primary"><div class="prompt-head"><div><span>人类生产说明</span><h3>中文规范生产提示词</h3></div><button class="copy-btn mini" data-copy="{cid}">复制中文</button></div><pre id="{cid}"><code>{html.escape(a['prompt_cn'])}</code></pre></section>''')
+            parts.append(f'''<section class="prompt-primary"><div class="prompt-head"><div><span>人类生产说明</span><h3>中文规范生产提示词</h3></div><button class="copy-btn mini" data-copy="{cid}">复制中文</button></div><pre id="{cid}"><code>{html.escape(a['prompt_cn'])}</code></pre></section>''')
         if a.get('prompt_en'):
             eid=f'asset-{aid}-prompt-en'
-            prompt_parts.append(f'''<section class="prompt-secondary"><div class="prompt-head"><div><span>发送生成模型</span><h3>英文 / 目标模型提示词</h3></div><button class="copy-btn mini" data-copy="{eid}">复制生成提示词</button></div><pre id="{eid}"><code>{html.escape(a['prompt_en'])}</code></pre></section>''')
-        prompt_html='<div class="asset-prompt-console">'
-        if prompt_parts: prompt_html+='<div class="prompt-workbench">'+''.join(prompt_parts)+'</div>'
-        if production: prompt_html+='<details class="asset-production-notes"><summary>生产说明 / 生成备注</summary>'+production['html']+'</details>'
-        prompt_html+='<div class="language-note">生产顺序：先核对 Design Card、画面、摄影 / CMF 与文案约束，再执行 Prompt。Prompt 是执行合同，不是独立创意来源。</div></div>'
-        add_stage('prompt','Prompt 执行','EXECUTION',prompt_html,'把前面的资产决策压缩成可执行提示词；中英提示词在同一个执行台完成核对与复制。','prompt')
+            parts.append(f'''<section class="prompt-secondary"><div class="prompt-head"><div><span>发送生成模型</span><h3>英文 / 目标模型提示词</h3></div><button class="copy-btn mini" data-copy="{eid}">复制生成提示词</button></div><pre id="{eid}"><code>{html.escape(a['prompt_en'])}</code></pre></section>''')
+        return '<div class="asset-prompt-console"><div class="prompt-workbench">'+''.join(parts)+'</div><div class="language-note">只核对当前资产实际相关的决策、画面、摄影 / CMF、文案和保真约束。缺失或不相关的维度不应为了“字段完整”被补造；Prompt 是执行合同，不是独立创意来源。</div></div>'
 
-    qa_parts=[]
-    trace=by_key.get('trace')
-    if trace:
-        consumed.add('trace')
-        qa_parts.append(f'<section class="asset-qa-source"><div class="asset-section-label">合同 / 参数追踪</div>{trace["html"]}</section>')
-    for v in raw_views:
-        key=str(v.get('key') or '')
-        if key in consumed: continue
-        consumed.add(key)
-        qa_parts.append(f'<section class="asset-qa-source"><div class="asset-section-label">{html.escape(str(v.get("title") or "补充资料"))}</div>{v.get("html") or ""}</section>')
+    title_map={'overview':'资产概览','strategy':'策划与决策','visual':'画面与版式','photo':'摄影 / CMF','copy':'文案','production':'生产说明','trace':'合同 / 参数追踪','prompt':'Prompt 执行','qa':'来源 / QA'}
+    eyebrow_map={'overview':'WHY','strategy':'DECISION','visual':'VISUAL','photo':'PHOTO / CMF','copy':'COPY','production':'PRODUCTION','trace':'TRACE','prompt':'EXECUTION','qa':'SOURCE / QA'}
+    description_map={
+        'overview':'快速理解这张资产存在的理由与消费者问题。',
+        'strategy':'查看当前资产自己的购买决策、证据和商业假设。',
+        'visual':'查看当前资产实际采用的主体、关系、构图和信息层级。',
+        'photo':'仅显示本资产真正需要的摄影、灯光、材质、CMF或色彩执行参数。',
+        'copy':'查看本资产实际承担的目标市场可见文案与中文说明。',
+        'production':'查看与本资产执行方式直接相关的生产备注。',
+        'trace':'核对事实、参数与机器合同的来源追踪。',
+        'prompt':'执行当前已编译的生产 Prompt；不补造无关参数。',
+        'qa':'查看源文件与必要的质量追踪。',
+    }
     source_files=a.get('source_files') or []
-    if source_files:
-        source_list=''.join(f'<li>{html.escape(str(x))}</li>' for x in source_files)
-        qa_parts.append(f'<section class="asset-source-ledger"><div class="asset-section-label">源文件账本</div><ul>{source_list}</ul></section>')
-    if qa_parts:
-        add_stage('qa','QA / 来源','TRACE · QA',''.join(qa_parts),'用于检查事实、参数、合同和源文件；不把机器追踪信息混进最终生成 Prompt。','qa')
+    for key in ordered_keys:
+        if key=='prompt':
+            body=prompt_body()
+        elif key=='qa':
+            if not source_files: continue
+            body='<section class="asset-source-ledger"><div class="asset-section-label">源文件账本</div><ul>'+''.join(f'<li>{html.escape(str(x))}</li>' for x in source_files)+'</ul></section>'
+        else:
+            view=by_key.get(key)
+            if not view: continue
+            body=view.get('html') or ''
+            if not body.strip() or '暂无已确认内容' in body: continue
+        panels.append({'key':key,'title':title_map.get(key,by_key.get(key,{}).get('title') or '工作视图'),'eyebrow':eyebrow_map.get(key,'VIEW'),'description':description_map.get(key,'这是由当前资产内容动态生成的工作视图。'),'body':body})
 
-    if not stages:
-        add_stage('empty','资产概览','ASSET','<div class="empty">暂无资产内容。</div>','当前资产还没有可生产内容。','empty')
+    if not panels:
+        panels=[{'key':'empty','title':'资产概览','eyebrow':'ASSET','description':'当前资产还没有可执行的人类工作视图。','body':'<div class="empty">暂无资产内容。</div>'}]
 
-    rail=[];panels=[]
-    for i,s in enumerate(stages):
-        view=f'asset-stage-{_slug(a["id"])}-{s["key"]}'
+    rail=[];stage=[]
+    for i,s in enumerate(panels):
+        view=f'asset-view-{_slug(a["id"])}-{s["key"]}'
         active='active' if i==0 else ''
-        rail.append(f'''<button class="asset-phase workspace-switch {active}" data-switch-group="{group}" data-view="{view}"><span class="asset-phase-index">{i+1:02d}</span><span class="asset-phase-copy"><small>{html.escape(s['eyebrow'])}</small><b>{html.escape(s['title'])}</b></span></button>''')
-        panels.append(f'''<section class="asset-stage asset-stage-{s['kind']} workspace-panel searchable {active}" data-switch-group="{group}" data-view="{view}"><header class="asset-stage-head"><div><span>{html.escape(s['eyebrow'])}</span><h2>{html.escape(s['title'])}</h2><p>{html.escape(s['description'])}</p></div><strong>{i+1:02d}</strong></header><div class="asset-stage-body">{s['body']}</div></section>''')
+        rail.append(f'''<button class="asset-phase workspace-switch {active}" data-switch-group="{group}" data-view="{view}"><span class="asset-phase-copy"><small>{html.escape(s['eyebrow'])}</small><b>{html.escape(s['title'])}</b></span></button>''')
+        stage.append(f'''<section class="asset-stage asset-stage-{_slug(s['key'])} workspace-panel searchable {active}" data-switch-group="{group}" data-view="{view}"><header class="asset-stage-head"><div><span>{html.escape(s['eyebrow'])}</span><h2>{html.escape(s['title'])}</h2><p>{html.escape(s['description'])}</p></div></header><div class="asset-stage-body">{s['body']}</div></section>''')
 
     sec=f'<div class="asset-original">{html.escape(str(a.get("original_title") or ""))}</div>' if a.get('original_title') and a.get('original_title')!=a.get('title') else ''
     chips=''.join(f'<span>{html.escape(str(_humanize_asset_text(x)))}</span>' for x in [a.get('asset_type'),a.get('surface'),a.get('intent')] if x)
@@ -733,10 +711,9 @@ def _asset_page(a:dict[str,Any])->str:
     if a.get('prompt_cn'): readiness.append('中文 Prompt 已就绪')
     if a.get('prompt_en'): readiness.append('生成模型 Prompt 已就绪')
     if source_files: readiness.append(f'{len(source_files)} 个源文件可追溯')
-    ready_html=''.join(f'<span>{html.escape(x)}</span>' for x in readiness) or '<span>等待生产合同补齐</span>'
+    ready_html=''.join(f'<span>{html.escape(x)}</span>' for x in readiness) or '<span>等待当前资产所需合同补齐</span>'
     passport=f'''<div class="asset-passport"><div><span class="asset-passport-id">{html.escape(a['id'])}</span><div class="asset-passport-chips">{chips}</div></div><div class="asset-readiness">{ready_html}</div></div>'''
-    return f'''<section class="page asset-page" data-route="asset/{html.escape(a['id'])}"><div class="page-head"><div><a class="back route-link" href="#assets" data-route="assets">← 返回资产中心</a><div class="kicker">资产生产台 <span class="heading-en">{html.escape(a['id'])}</span></div><h1>{html.escape(a['title'])}</h1>{sec}<p>{html.escape(a.get('summary') or '')}</p></div></div>{passport}<div class="asset-production-workspace" data-workspace-kind="asset-production"><aside class="asset-production-rail"><div class="asset-rail-head"><b>生产决策</b><span>{len(stages)} 个动态阶段</span></div>{''.join(rail)}</aside><div class="asset-production-stage">{''.join(panels)}</div></div></section>'''
-
+    return f'''<section class="page asset-page" data-route="asset/{html.escape(a['id'])}"><div class="page-head"><div><a class="back route-link" href="#assets" data-route="assets">← 返回资产中心</a><div class="kicker">资产工作台 <span class="heading-en">{html.escape(a['id'])}</span></div><h1>{html.escape(a['title'])}</h1>{sec}<p>{html.escape(a.get('summary') or '')}</p></div></div>{passport}<div class="asset-production-workspace" data-workspace-kind="asset-production"><aside class="asset-production-rail"><div class="asset-rail-head"><b>当前工作视图</b><span>{len(panels)} 个相关视图 · 无固定先后顺序</span></div>{''.join(rail)}</aside><div class="asset-production-stage">{''.join(stage)}</div></div></section>'''
 
 def _json_panel(path:Path,package_dir:Path)->str:
     rel=str(path.relative_to(package_dir)).replace('\\','/');raw=_read(path)
@@ -862,29 +839,57 @@ def build_delivery_html(package_dir:Path,output:Path|None=None,title:str='CBCC D
 @media print{{.sidebar,.topbar,.module-nav,.asset-production-rail,.copy-btn{{display:none!important}}.app{{display:block}}.page{{display:block!important;padding:0}}.subview,.asset-stage{{display:block!important;box-shadow:none;break-inside:auto;margin-bottom:14px}}.asset-page{{break-before:page}}body{{background:#fff}}}}
 '''
 
-    nav=[('overview','⌂','工作台'),('product','▣','产品事实'),('market','◎','市场 / 人群'),('listing','≡','上架中心'),('strategy','◇','策略中心'),('content','▤','内容系统'),('visual','◐','视觉 / 摄影'),('assets','▦','资产中心'),('prompts','⌘','提示词工作台'),('risk','!','风险 / 合规'),('sources','◉','来源 / 真源'),('archive','⋯','归档')]
-    nav_html=''.join(f'<a href="#{r}" data-route="{r}" class="route-link"><span class="ico">{i}</span>{n}</a>' for r,i,n in nav)
-    commands=''.join(f'<a class="command-card route-link" href="#{r}" data-route="{r}"><b>{name}</b><span>{desc}</span></a>' for r,name,desc in [
-        ('listing','我要上架','直接复制标题、类目、描述、属性、搜索词、价格履约'),('assets','我要做图 / 视频','从资产卡进入单资产工作区，不翻长文'),('content','我要规划内容','按平台 / 主题查看内容矩阵与传播执行'),('prompts','我要执行提示词','中文生产说明与生成模型提示词同屏')])
+    agent_next_action=_read_json(package_dir/'artifacts/agent_next_action.json',{})
+    availability={
+        'product':bool(product_views),'market':bool(market_views),'listing':bool(copy_rows or center.get('localized_copy')),
+        'strategy':bool(strategy_views),'content':bool(content_views),'visual':bool(visual_views),
+        'assets':bool(assets),'prompts':any(a.get('prompt_cn') or a.get('prompt_en') for a in assets),
+        'risk':bool(risks or risk_views),'sources':bool(docs['sources']),'archive':bool(machine),
+    }
+    route_plan=build_workspace_route_plan(availability=availability,agent_next_action=agent_next_action)
+    nav_html=''.join(f'<a href="#{row["route"]}" data-route="{row["route"]}" class="route-link"><span class="ico">{row["icon"]}</span>{row["label"]}</a>' for row in route_plan['primary_routes'])
+    commands=''.join(f'<a class="command-card route-link" href="#{row["route"]}" data-route="{row["route"]}"><b>{html.escape(str(row["name"]))}</b><span>{html.escape(str(row["description"]))}</span></a>' for row in route_plan['commands']) or '<div class="empty">当前没有需要额外推进的工作对象；可在现有项目范围内复核或停止。</div>'
+    archive_link=''.join(f'<a class="route-link secondary-route" href="#{row["route"]}" data-route="{row["route"]}">{row["label"]}</a>' for row in route_plan['secondary_routes'])
 
     source_doc_views=_doc_views(docs['sources'],package_dir,'sources') if docs['sources'] else []
     sources_ws=_evidence_workspace(media,source_doc_views,source_files)
 
-    pages=f'''
-<section class="page" data-route="overview"><div class="page-head"><div><div class="kicker">电商工作区</div><h1>{html.escape(product_name)}</h1>{f'<div class="heading-en project-original">{html.escape(product_name_secondary)}</div>' if product_name_secondary else ''}<p>这是工作台，不是报告目录。先选择要做的事，再进入对应业务对象；所有内容仍完整内嵌在一个 HTML 中。</p></div></div><div class="stats"><div class="stat"><strong>{ready}</strong><span>上架字段就绪</span></div><div class="stat"><strong>{pending}</strong><span>待补 / 待查证</span></div><div class="stat"><strong>{companion_missing}</strong><span>待补中文释义</span></div><div class="stat"><strong>{len(assets)}</strong><span>生产资产</span></div><div class="stat"><strong>{len(risks)}</strong><span>结构化风险</span></div></div><div class="panel"><h2>你现在要做什么？</h2><div class="command-grid">{commands}</div></div><div class="panel"><h2>项目语言</h2><p><b>交付语言：</b>{html.escape(str(delivery_locale))}（默认中文，除非用户明确要求其他语言）</p><p><b>目标市场语言：</b>{html.escape(str(target_locale))}。目标语言的上架文案/资产文案保留原文，同时在界面中显示中文释义或用途说明。</p></div></section>
-<section class="page" data-route="product"><div class="page-head"><div><div class="kicker">商品真源 / 证据</div><h1>产品事实与证据</h1><p>一次只看一个事实主题；宣称、证据、缺口和产品真源不再堆在一条页面里。</p></div></div>{product_ws}</section>
-<section class="page" data-route="market"><div class="page-head"><div><div class="kicker">目标市场语境</div><h1>市场、平台、人群与文化</h1><p>按市场、平台、人群、交叉性、文化、竞品等主题切换，不要求连续阅读整份报告。</p></div></div>{market_ws}</section>
-<section class="page" data-route="listing"><div class="page-head"><div><div class="kicker">上架工作室</div><h1>上架资料中心</h1><p>按上架动作分组。目标市场文案保持目标语言；如果不是中文，同一字段旁边必须有中文释义 / 用途。</p></div></div>{listing_ws}</section>
-<section class="page" data-route="strategy"><div class="page-head"><div><div class="kicker">策略工作室</div><h1>营销与传播策略</h1><p>以决策为单位展开“为什么、依据、取舍、动作和指标”，不再按报告章节顺序强迫阅读。</p></div></div>{strategy_ws}</section>
-<section class="page" data-route="content"><div class="page-head"><div><div class="kicker">内容系统</div><h1>平台内容与传播执行</h1><p>内容矩阵、传播阶段、选题、Hook、脚本与 CTA 作为独立工作区；数量由当前商品、平台和策略动态决定。</p></div></div>{content_ws}</section>
-<section class="page" data-route="visual"><div class="page-head"><div><div class="kicker">视觉工作室</div><h1>视觉、摄影与 CMF</h1><p>把创意方向、构图、CMF、镜头、灯光、包容性摄影、Surface 执行拆成可操作视图。</p></div></div>{visual_ws}</section>
-<section class="page" data-route="assets"><div class="page-head"><div><div class="kicker">资产工作室</div><h1>资产中心</h1><p>先选资产，再进入资产自己的策划 / 画面 / 摄影 / 文案 / 提示词 / 质检子页。</p></div></div><div class="asset-grid">{asset_cards}</div></section>
-<section class="page" data-route="prompts"><div class="page-head"><div><div class="kicker">提示词工作室</div><h1>提示词工作台</h1><p>默认先看中文生产说明，再看发送生成模型的英文 / 目标模型提示词；两者不是互相替代。</p></div></div>{prompt_ws}</section>
-<section class="page" data-route="risk"><div class="page-head"><div><div class="kicker">风险中心</div><h1>风险、合规与待查证</h1><p>先处理 P0 与待查证，不在策略长文里找风险。</p></div></div><div class="panel">{risk_cards}</div>{risk_ws}</section>
-<section class="page" data-route="sources"><div class="page-head"><div><div class="kicker">证据中心</div><h1>来源与产品真源</h1><p>产品图片、文件和证据按来源对象查看。</p></div></div>{sources_ws}</section>
-<section class="page" data-route="archive"><div class="page-head"><div><div class="kicker">机器归档</div><h1>完整结构化归档</h1><p>仅用于追溯和机器合同，不是正常用户工作入口。</p></div></div><div class="panel">{machine_html}</div></section>
-{''.join(_asset_page(a) for a in assets)}
-'''
+    if media or source_doc_views or source_files:
+        availability['sources']=True
+    availability['archive']=bool(machine)
+    route_plan=build_workspace_route_plan(availability=availability,agent_next_action=agent_next_action)
+    nav_html=''.join(f'<a href="#{row["route"]}" data-route="{row["route"]}" class="route-link"><span class="ico">{row["icon"]}</span>{row["label"]}</a>' for row in route_plan['primary_routes'])
+    commands=''.join(f'<a class="command-card route-link" href="#{row["route"]}" data-route="{row["route"]}"><b>{html.escape(str(row["name"]))}</b><span>{html.escape(str(row["description"]))}</span></a>' for row in route_plan['commands']) or '<div class="empty">当前没有需要额外推进的工作对象；可在现有项目范围内复核或停止。</div>'
+    archive_link=''.join(f'<a class="route-link secondary-route" href="#{row["route"]}" data-route="{row["route"]}">{row["label"]}</a>' for row in route_plan['secondary_routes'])
+
+    stat_rows=[]
+    if availability.get('listing'):
+        stat_rows += [(ready,'上架字段就绪'),(pending,'待补 / 待查证')]
+        if companion_missing: stat_rows.append((companion_missing,'待补中文释义'))
+    if assets: stat_rows.append((len(assets),'当前资产'))
+    if risks: stat_rows.append((len(risks),'结构化风险'))
+    stats_html=''.join(f'<div class="stat"><strong>{value}</strong><span>{html.escape(label)}</span></div>' for value,label in stat_rows)
+    next_status=str(agent_next_action.get('recommended_next_action') or 'STOP_CURRENT_SCOPE_SATISFIED')
+    next_frontier=agent_next_action.get('frontier') or []
+    next_items=''.join(f'<li><b>{html.escape(str(x.get("action") or "下一步"))}</b><span>{html.escape(str(x.get("reason") or ""))}</span></li>' for x in next_frontier)
+    if not next_items: next_items='<li><b>当前范围可停止</b><span>没有检测到必须继续推进的固定步骤；由 Agent / 用户决定是否扩展目标。</span></li>'
+
+    page_parts=[]
+    page_parts.append(f'''<section class="page" data-route="overview"><div class="page-head"><div><div class="kicker">电商工作区</div><h1>{html.escape(product_name)}</h1>{f'<div class="heading-en project-original">{html.escape(product_name_secondary)}</div>' if product_name_secondary else ''}<p>工作台只显示当前项目真实存在的业务对象和 Agent 识别到的下一步，不按固定报告目录展开。</p></div></div>{f'<div class="stats">{stats_html}</div>' if stats_html else ''}<div class="panel"><h2>当前可以做什么？</h2><div class="command-grid">{commands}</div></div><div class="panel agent-frontier"><h2>Agent 决策前沿</h2><p><b>建议：</b>{html.escape(next_status)}</p><ul>{next_items}</ul></div><div class="panel"><h2>项目语言</h2><p><b>交付语言：</b>{html.escape(str(delivery_locale))}（默认中文，除非用户明确要求其他语言）</p><p><b>目标市场语言：</b>{html.escape(str(target_locale))}。目标语言上架文案 / 资产文案保留原文，同时显示中文释义或用途说明。</p></div></section>''')
+    if availability.get('product'): page_parts.append(f'''<section class="page" data-route="product"><div class="page-head"><div><div class="kicker">商品真源 / 证据</div><h1>产品事实与证据</h1><p>只呈现当前项目实际存在的事实、证据与缺口主题。</p></div></div>{product_ws}</section>''')
+    if availability.get('market'): page_parts.append(f'''<section class="page" data-route="market"><div class="page-head"><div><div class="kicker">目标市场语境</div><h1>市场、平台、人群与文化</h1><p>研究主题来自当前决策缺口；没有固定竞品数、报告章节数或研究配额。</p></div></div>{market_ws}</section>''')
+    if availability.get('listing'): page_parts.append(f'''<section class="page" data-route="listing"><div class="page-head"><div><div class="kicker">上架工作室</div><h1>上架资料中心</h1><p>只呈现当前上架任务涉及的字段；目标市场文案保留目标语言，并提供中文释义 / 用途。</p></div></div>{listing_ws}</section>''')
+    if availability.get('strategy'): page_parts.append(f'''<section class="page" data-route="strategy"><div class="page-head"><div><div class="kicker">策略工作室</div><h1>营销与商业决策</h1><p>以当前商品需要解决的决策为单位阅读；框架只在 Agent / 用户选择并确实有用时出现。</p></div></div>{strategy_ws}</section>''')
+    if availability.get('content'): page_parts.append(f'''<section class="page" data-route="content"><div class="page-head"><div><div class="kicker">内容系统</div><h1>平台内容与传播对象</h1><p>内容对象、叙事、Surface 与数量由当前消费者问题和商业任务动态产生；不预设 Hook / CTA / 固定传播阶段。</p></div></div>{content_ws}</section>''')
+    if availability.get('visual'): page_parts.append(f'''<section class="page" data-route="visual"><div class="page-head"><div><div class="kicker">视觉工作室</div><h1>视觉、摄影与 CMF</h1><p>只显示当前项目真正采用的创意、构图、摄影、材质和颜色决策；无关参数保持缺席。</p></div></div>{visual_ws}</section>''')
+    if availability.get('assets'): page_parts.append(f'''<section class="page" data-route="assets"><div class="page-head"><div><div class="kicker">资产工作室</div><h1>资产中心</h1><p>每个资产拥有自己的工作视图；视图按实际内容出现，不是一条必须依次完成的流水线。</p></div></div><div class="asset-grid">{asset_cards}</div></section>''')
+    if availability.get('prompts'): page_parts.append(f'''<section class="page" data-route="prompts"><div class="page-head"><div><div class="kicker">提示词工作室</div><h1>提示词工作台</h1><p>Prompt 只投影当前资产真正需要的执行参数；中文生产说明与目标模型提示词同屏核对。</p></div></div>{prompt_ws}</section>''')
+    if availability.get('risk'): page_parts.append(f'''<section class="page" data-route="risk"><div class="page-head"><div><div class="kicker">风险中心</div><h1>风险、合规与待查证</h1><p>区分真正阻断执行的硬边界与 Agent 可继续研究的 advisory gap。</p></div></div><div class="panel">{risk_cards}</div>{risk_ws}</section>''')
+    if availability.get('sources'): page_parts.append(f'''<section class="page" data-route="sources"><div class="page-head"><div><div class="kicker">证据中心</div><h1>来源与产品真源</h1><p>只在当前项目存在来源媒体、证据文档或源文件时出现。</p></div></div>{sources_ws}</section>''')
+    if availability.get('archive'): page_parts.append(f'''<section class="page" data-route="archive"><div class="page-head"><div><div class="kicker">机器归档</div><h1>完整结构化归档</h1><p>仅用于追溯和机器合同，不进入一级人类工作导航。</p></div></div><div class="panel">{machine_html}</div></section>''')
+    page_parts.extend(_asset_page(a) for a in assets)
+    pages=''.join(page_parts)
+
 
     js=r'''
 const allPages=[...document.querySelectorAll('.page')];
@@ -897,6 +902,6 @@ document.addEventListener('click',e=>{const b=e.target.closest('.workspace-switc
 document.addEventListener('click',async e=>{const b=e.target.closest('.copy-btn');if(!b)return;const el=document.getElementById(b.dataset.copy);if(!el)return;try{await navigator.clipboard.writeText(el.innerText);const old=b.textContent;b.textContent='已复制';setTimeout(()=>b.textContent=old,1000)}catch(err){const r=document.createRange();r.selectNodeContents(el);const s=window.getSelection();s.removeAllRanges();s.addRange(r)}});
 const search=document.getElementById('global-search');search?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();const p=document.querySelector('.page.active');if(!p)return;p.querySelectorAll('.searchable').forEach(el=>el.classList.toggle('is-hidden',q&&!el.innerText.toLowerCase().includes(q)))})
 '''
-    page=f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>{html.escape(product_name)} · CBCC 工作台</title><style>{css}</style></head><body><div class="app"><aside class="sidebar"><div class="brand"><b>CBCC 电商工作台</b><span>策略 · 上架 · 创意 · 生产</span></div><div class="nav"><div class="nav-label">工作区</div>{nav_html}</div><div class="sidebar-foot">默认中文交付<br>目标语言文案 + 中文释义<br>HTML = 完整人类交付</div></aside><div class="workspace"><header class="topbar"><div class="context"><b>{html.escape(product_name)}</b>{f'<small>{html.escape(product_name_secondary)}</small>' if product_name_secondary else ''}<span>{html.escape(str(platform))} · {html.escape(str(market))} · 目标语言 {html.escape(str(target_locale))} · 交付语言 {html.escape(str(delivery_locale))}</span></div><input id="global-search" class="search" placeholder="搜索当前工作页…"></header>{pages}</div></div><script>{js}</script></body></html>'''
+    page=f'''<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>{html.escape(product_name)} · CBCC 工作台</title><style>{css}</style></head><body><div class="app"><aside class="sidebar"><div class="brand"><b>CBCC 电商工作台</b><span>策略 · 上架 · 创意 · 生产</span></div><div class="nav"><div class="nav-label">工作区</div>{nav_html}</div><div class="sidebar-foot">默认中文交付<br>目标语言文案 + 中文释义<br>HTML = 完整人类交付<br>{archive_link}</div></aside><div class="workspace"><header class="topbar"><div class="context"><b>{html.escape(product_name)}</b>{f'<small>{html.escape(product_name_secondary)}</small>' if product_name_secondary else ''}<span>{html.escape(str(platform))} · {html.escape(str(market))} · 目标语言 {html.escape(str(target_locale))} · 交付语言 {html.escape(str(delivery_locale))}</span></div><input id="global-search" class="search" placeholder="搜索当前工作页…"></header>{pages}</div></div><script>{js}</script></body></html>'''
     output.write_text(page,encoding='utf-8')
     return output
