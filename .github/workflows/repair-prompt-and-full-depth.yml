@@ -1,0 +1,51 @@
+name: CBCC prompt continuity + FULL delivery depth repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/repair_prompt_execution_continuity.py'
+      - 'runtime/cbcc/delivery_contract.py'
+      - 'tests/test_prompt_execution_decision_preservation.py'
+      - '.github/workflows/repair-prompt-and-full-depth.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply deterministic prompt continuity repair
+        run: python scripts/repair_prompt_execution_continuity.py
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+      - name: Verify prompt execution continuity and FULL strategy contract
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_prompt_execution_decision_preservation.py \
+            tests/test_full_strategy_hard_contract.py \
+            tests/test_v0622_dynamic_workspace_prompt_relevance.py \
+            tests/test_v0624_strategy_asset_scope.py \
+            tests/test_v0625_decision_question_authority.py
+      - name: Commit prompt compiler repair if changed
+        run: |
+          if git diff --quiet -- runtime/cbcc/prompt_compiler.py; then
+            echo 'prompt_compiler.py already repaired'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add runtime/cbcc/prompt_compiler.py
+          git commit -m 'fix: preserve selected execution decisions through prompt relevance filtering'
+          git push origin HEAD:main
