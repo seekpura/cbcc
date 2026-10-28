@@ -1,7 +1,7 @@
-# CBCC v0.6.20 CURRENT HANDOFF
+# CBCC v0.6.21 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.20-mcp-stdio-host`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.21-mcp-streamable-http`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -148,5 +148,19 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 11. v0.6.13–v0.6.20 provider/action/Plugin/MCP continuity 定向联测：62 passed。
 12. 全量回归与 v0.6.19 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`。
 
+## v0.6.21 已完成
+1. MCP lifecycle/tool semantics 已抽为独立 `MCPProtocolProcessor`；stdio / Streamable HTTP 共用一套 protocol core。
+2. stdio binding 保留 v0.6.20 public API 并继续通过 legacy + modern 全套协议回归。
+3. 新增 current `2026-07-28` Streamable HTTP binding：单 MCP endpoint、POST-only、每 message 一个 HTTP request。
+4. 强制 `Accept: application/json, text/event-stream`，并验证 JSON content type / Content-Length / request-size / UTF-8 JSON object。
+5. `MCP-Protocol-Version / Mcp-Method / Mcp-Name / Mcp-Param-*` 与 body 不一致统一 HTTP 400 + `-32020 HeaderMismatch`；unsupported protocol 使用 `-32022`。
+6. `Mcp-Name` 与 custom param headers 支持 Base64 sentinel；`x-mcp-header` 做 deterministic schema/binding 校验。
+7. Origin 存在时必须通过 allowlist；HTTP authorization 由 host module 注入，默认 DENY，异常 fail closed 且 redacted。
+8. modern HTTP 完全 sessionless：不 mint/echo `Mcp-Session-Id`，GET/DELETE 405，`Last-Event-ID` 不参与 resume。
+9. normal response 支持 application/json；request-scoped SSE 可按宿主 selector 启用，SSE 只承载该 request 相关输出并在 final response 后结束。
+10. transport 不直接碰 Provider runtime；HTTP 与 stdio 都只进入 canonical Dispatcher 后方的既有执行/完成权威。
+11. v0.6.13–v0.6.21 provider/action/Plugin/MCP continuity 定向联测：81 passed。
+12. 全量回归与 v0.6.20 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`。
+
 ## 下一步唯一主任务
-**在 v0.6.20 stdio host 的 MCP message semantics 之上实现当前 `2026-07-28` Streamable HTTP binding，但禁止复制一套 `server/discover / tools/list / tools/call`。先抽取/复用 transport-neutral MCP protocol processor，再实现单 `/mcp` HTTP POST binding：校验 Origin、`MCP-Protocol-Version`、`Mcp-Method`、`Mcp-Name` 与 body metadata 一致性，支持 JSON response 与必要的 request-scoped SSE 扩展边界；现代路径不得重新引入旧 HTTP+SSE GET endpoint、Mcp-Session-Id 或隐藏 session state。授权必须由 HTTP host 注入 `ActionAuthorization`，Provider runtime / completion authority 继续只在 Dispatcher 后方。**
+**把 CBCC 从“仓库内可运行”升级为真正可安装的 Host Distribution。当前根 `pyproject.toml` 只有 pytest 配置，没有 `[project]`、package discovery 或 console scripts。v0.6.22 必须建立标准 Python packaging：把 `runtime/cbcc` 作为正式 package 纳入 wheel/sdist，提供稳定 console entrypoints（主 CBCC CLI、Plugin/OpenAPI HTTP、MCP stdio、MCP Streamable HTTP），明确 Python/dependency/包内静态资源边界，并在 clean venv 中完成 `pip install` → descriptor import → CLI help → stdio MCP discover → HTTP health/request E2E。禁止通过 repository-relative `PYTHONPATH` 假装安装成功，禁止把测试/临时 `.changes`/宿主凭证打进发行包。**

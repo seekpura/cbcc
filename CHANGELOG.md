@@ -1,3 +1,11 @@
+## 0.6.21 — MCP Protocol Core + Streamable HTTP
+- Extracted one transport-neutral MCPProtocolProcessor shared by stdio and HTTP.
+- Added current MCP 2026-07-28 single-endpoint POST Streamable HTTP binding with strict Origin, Accept and mirrored-header/body validation.
+- Added `HeaderMismatch`/unsupported-version HTTP mapping, Base64 mirrored headers and schema-driven `Mcp-Param-*` validation.
+- Kept modern HTTP sessionless and added request-scoped SSE response support without standalone GET streams or resumable session state.
+- Added live localhost HTTP regression coverage while preserving canonical dispatcher/provider authority.
+- See `CHANGELOG_V0621.md`.
+
 ## 0.6.20 — MCP stdio Host
 - Added a real dual-era MCP stdio host over canonical generated tool descriptors and ProviderActionDispatcher.
 - Aligned modern protocol behavior to MCP 2026-07-28: server/discover, per-request metadata, resultType and cache hints.

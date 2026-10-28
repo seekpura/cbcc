@@ -1,13 +1,27 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.20-mcp-stdio-host
+version: 0.6.21-mcp-streamable-http
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.21 MCP Protocol Core + Streamable HTTP
+- 抽出 `runtime/cbcc/mcp_protocol.py` 作为唯一 MCP message semantics 权威；stdio 与 HTTP 共用同一 `MCPProtocolProcessor`，不复制 `server/discover / tools/list / tools/call`。
+- `mcp_stdio.py` 退化为 newline framing + compatibility API；v0.6.20 行为回归保持通过。
+- 新增 `runtime/cbcc/mcp_streamable_http.py` + `python -m cbcc.mcp_streamable_http_cli`，默认单 `/mcp` endpoint、POST-only，符合当前 MCP `2026-07-28` Streamable HTTP 形态。
+- 每个 POST 强制 Accept 同时声明 `application/json` 与 `text/event-stream`，并校验 `MCP-Protocol-Version / Mcp-Method / Mcp-Name` 与 JSON-RPC body 一致；mismatch 返回 HTTP 400 + `-32020 HeaderMismatch`。
+- matching-but-unsupported protocol version 返回 HTTP 400 + `-32022 UnsupportedProtocolVersion`；`-32602 Invalid params` 等现代请求校验错误映射为 HTTP 400，未知 method 映射 404。
+- `Mcp-Name` / `Mcp-Param-*` 支持 MCP Base64 sentinel 编码；schema `x-mcp-header` 参数按 case-insensitive uniqueness / HTTP token / primitive type / body value 做边界校验。
+- Origin 存在时必须命中 `CBCC_MCP_ALLOWED_ORIGINS`；非法 Origin 403。HTTP auth 通过 `CBCC_MCP_HTTP_AUTH_MODULE` 注入 `ActionAuthorization`，默认 DENY，resolver 异常 fail closed 且不泄漏宿主异常文本。
+- modern transport 不创建或回显 `Mcp-Session-Id`，忽略 `Last-Event-ID`，GET/DELETE 返回 405；`notifications/cancelled` 不走 HTTP message，request-scoped SSE 连接关闭即取消。
+- 支持 application/json response，也支持注入 selector 后的 request-scoped SSE final response；SSE 带 `X-Accel-Buffering: no`，不建立 standalone GET stream 或隐藏 session。
+- MCP HTTP transport 不直接 import/call ProviderExecutionSurface / Bridge / Executor；composition root 才组装既有 Surface → Dispatcher。
+- v0.6.13–v0.6.21 provider/action/Plugin/MCP continuity 定向联测：81 passed。
+- 全量回归与 v0.6.20 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`。
 
 ## v0.6.20 MCP stdio Host
 - 新增真正可启动的 MCP stdio transport：`runtime/cbcc/mcp_stdio.py` + `python -m cbcc.mcp_stdio_cli`；stdout 只输出 newline-delimited UTF-8 JSON-RPC MCP message。
