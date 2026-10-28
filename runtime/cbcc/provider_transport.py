@@ -273,14 +273,30 @@ def adapter_result_template(transmission: dict[str, Any]) -> dict[str, Any]:
 def validate_adapter_result(row: dict[str, Any], result: dict[str, Any]) -> list[str]:
     contract = row.get('provider_contract') or {}
     adapter = str(contract.get('adapter') or '').upper()
-    transmission = row.get('provider_adapter_transmission') or {}
-    if adapter != 'EXTERNAL_ADAPTER' and str(transmission.get('adapter') or '').upper() != 'EXTERNAL_ADAPTER':
+    portable_transmission = row.get('provider_adapter_transmission') or {}
+    execution_transmission = result.get('provider_execution_transmission')
+    transmission = execution_transmission if isinstance(execution_transmission, dict) else portable_transmission
+    if adapter != 'EXTERNAL_ADAPTER' and str(portable_transmission.get('adapter') or '').upper() != 'EXTERNAL_ADAPTER':
         return []
     issues: list[str] = []
-    if not transmission:
+    if not portable_transmission:
         return ['ADAPTER_TRANSMISSION_CONTRACT_MISSING']
-    if transmission.get('status') != 'READY':
+    if portable_transmission.get('status') != 'READY':
         issues.append('ADAPTER_TRANSMISSION_NOT_READY')
+
+    if isinstance(execution_transmission, dict):
+        parent = execution_transmission.get('parent_transmission_binding') or {}
+        for key in ['transmission_id', 'request_hash', 'idempotency_key']:
+            if parent.get(key) != portable_transmission.get(key):
+                issues.append('ADAPTER_EXECUTION_PARENT_BINDING_MISMATCH:' + key)
+        vendor_request = execution_transmission.get('vendor_request') or {}
+        if stable_hash(vendor_request) != execution_transmission.get('request_hash'):
+            issues.append('ADAPTER_EXECUTION_REQUEST_HASH_MISMATCH')
+        if execution_transmission.get('portable_source_binding_hash') and row.get('provider_job_source_binding_hash') and execution_transmission.get('portable_source_binding_hash') != row.get('provider_job_source_binding_hash'):
+            issues.append('ADAPTER_EXECUTION_PORTABLE_SOURCE_BINDING_MISMATCH')
+        if execution_transmission.get('status') != 'READY':
+            issues.append('ADAPTER_EXECUTION_TRANSMISSION_NOT_READY')
+
     ack = result.get('adapter_result')
     if not isinstance(ack, dict):
         return list(dict.fromkeys(issues + ['ADAPTER_RESULT_MISSING']))

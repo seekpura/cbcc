@@ -348,6 +348,8 @@ def _materialize_result(
         },
         'production_contract_ack': True,
         'source_binding_hash': job.get('source_binding_hash'),
+        'provider_execution_source_binding_hash': job.get('provider_execution_source_binding_hash'),
+        'provider_execution_transmission': transmission,
         'adapter_result': adapter_result,
         'production_receipt': receipt,
     }
@@ -381,7 +383,7 @@ def execute_provider_job_directory(
 
     bindings = _prepare_provider_sources(job_dir, job, executor, state)
     executable_job = _job_with_provider_sources(job, bindings)
-    state['executable_source_binding_hash'] = executable_job.get('source_binding_hash')
+    state['executable_source_binding_hash'] = executable_job.get('provider_execution_source_binding_hash')
     _write_json(state_path, state)
 
     transmission = state.get('transmission')
@@ -390,6 +392,14 @@ def execute_provider_job_directory(
         transmission = build_adapter_transmission(executable_job, profile)
         if transmission.get('status') != 'READY':
             raise ValueError('adapter transmission not ready')
+        upstream_transmission = job.get('adapter_transmission') or {}
+        transmission['parent_transmission_binding'] = {
+            'transmission_id': upstream_transmission.get('transmission_id'),
+            'request_hash': upstream_transmission.get('request_hash'),
+            'idempotency_key': upstream_transmission.get('idempotency_key'),
+        }
+        transmission['portable_source_binding_hash'] = job.get('source_binding_hash')
+        transmission['provider_execution_source_binding_hash'] = executable_job.get('provider_execution_source_binding_hash')
         state['transmission'] = transmission
         state['phase'] = 'TRANSMISSION_READY'
         state['updated_at'] = _now()
