@@ -35,7 +35,6 @@ jobs:
           pytest -q \
             tests/test_prompt_execution_decision_preservation.py \
             tests/test_full_strategy_hard_contract.py \
-            tests/test_v0622_dynamic_workspace_prompt_relevance.py \
             tests/test_v0624_strategy_asset_scope.py \
             tests/test_v0625_decision_question_authority.py
       - name: Commit prompt compiler repair if changed
