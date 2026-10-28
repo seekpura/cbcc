@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - '.bootstrap/**'
+      - '.bootstrap/trigger'
 
 permissions:
   contents: write
@@ -17,90 +17,99 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check complete payload
-        id: ready
-        shell: bash
-        run: |
-          chunk_count="$(find .bootstrap -maxdepth 1 -type f -name 'chunk-*' | wc -l | tr -d ' ')"
-          if [ "$chunk_count" -lt 1 ]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "chunk_count=$chunk_count" >> "$GITHUB_OUTPUT"
-          echo "ready=true" >> "$GITHUB_OUTPUT"
-
-      - name: Materialize canonical v0.6.6 workspace
-        if: steps.ready.outputs.ready == 'true'
+      - name: Validate payload and materialize canonical workspace
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           import base64, hashlib, shutil, tarfile
 
-          root = Path.cwd()
-          chunks = sorted((root / '.bootstrap').glob('chunk-*'))
-          if not chunks:
-              raise SystemExit('no bootstrap chunks found')
+          repo = Path.cwd()
+          manifest_path = repo / '.bootstrap' / 'manifest.txt'
+          if not manifest_path.is_file():
+              raise SystemExit('missing .bootstrap/manifest.txt')
+
+          manifest = {}
+          for raw in manifest_path.read_text(encoding='utf-8').splitlines():
+              line = raw.strip()
+              if not line or line.startswith('#'):
+                  continue
+              if '=' not in line:
+                  raise SystemExit(f'invalid manifest line: {raw!r}')
+              key, value = line.split('=', 1)
+              manifest[key.strip()] = value.strip()
+
+          required_manifest = {'version', 'format', 'prefix', 'chunks', 'sha256', 'root'}
+          missing_manifest = sorted(required_manifest - manifest.keys())
+          if missing_manifest:
+              raise SystemExit(f'manifest missing keys: {missing_manifest}')
+          if manifest['format'] != 'tar.xz':
+              raise SystemExit(f"unexpected bootstrap format: {manifest['format']}")
+
+          try:
+              expected_count = int(manifest['chunks'])
+          except ValueError:
+              raise SystemExit('manifest chunks must be an integer')
+          if expected_count < 1:
+              raise SystemExit('manifest chunks must be >= 1')
+
+          prefix = manifest['prefix']
+          chunks = [repo / '.bootstrap' / f'{prefix}{i:02d}' for i in range(1, expected_count + 1)]
+          missing_chunks = [p.name for p in chunks if not p.is_file()]
+          if missing_chunks:
+              raise SystemExit(f'missing bootstrap chunks: {missing_chunks}')
+
+          unexpected = sorted(
+              p.name for p in (repo / '.bootstrap').glob(f'{prefix}*')
+              if p.is_file() and p not in chunks
+          )
+          if unexpected:
+              raise SystemExit(f'unexpected bootstrap chunks: {unexpected}')
 
           payload = ''.join(p.read_text(encoding='utf-8') for p in chunks)
           payload = ''.join(payload.split())
+          if len(payload) % 4:
+              raise SystemExit(f'base64 payload length is not divisible by 4: {len(payload)}')
           try:
-              data = base64.b64decode(payload, validate=True)
+              archive_bytes = base64.b64decode(payload, validate=True)
           except Exception as exc:
               raise SystemExit(f'invalid bootstrap base64 payload: {exc}')
 
-          digest = hashlib.sha256(data).hexdigest()
-          print(f'bootstrap archive sha256={digest} chunks={len(chunks)} bytes={len(data)}')
+          digest = hashlib.sha256(archive_bytes).hexdigest()
+          if digest != manifest['sha256']:
+              raise SystemExit(f"archive sha256 mismatch: {digest} != {manifest['sha256']}")
+          print(
+              f"validated bootstrap version={manifest['version']} "
+              f"chunks={expected_count} bytes={len(archive_bytes)} sha256={digest}"
+          )
 
-          manifest_path = root / '.bootstrap' / 'manifest.txt'
-          if manifest_path.exists():
-              manifest = {}
-              for line in manifest_path.read_text(encoding='utf-8').splitlines():
-                  if '=' in line:
-                      k, v = line.split('=', 1)
-                      manifest[k.strip()] = v.strip()
-              expected_count = manifest.get('chunks')
-              if expected_count and int(expected_count) != len(chunks):
-                  raise SystemExit(f'chunk count mismatch: {len(chunks)} != {expected_count}')
-              expected_sha = manifest.get('sha256')
-              if expected_sha and digest != expected_sha:
-                  raise SystemExit(f'archive sha256 mismatch: {digest} != {expected_sha}')
-              expected_format = manifest.get('format')
-              if expected_format and expected_format != 'tar.xz':
-                  raise SystemExit(f'unexpected bootstrap format: {expected_format}')
-
-          archive = Path('/tmp/cbcc-v0.6.6.tar.xz')
-          archive.write_bytes(data)
-          extract = Path('/tmp/cbcc-v0.6.6-extract')
+          archive = Path('/tmp/cbcc-bootstrap.tar.xz')
+          archive.write_bytes(archive_bytes)
+          extract = Path('/tmp/cbcc-bootstrap-extract')
           if extract.exists():
               shutil.rmtree(extract)
           extract.mkdir(parents=True)
 
-          try:
-              with tarfile.open(archive, mode='r:xz') as tf:
-                  try:
-                      tf.extractall(extract, filter='data')
-                  except TypeError:
-                      tf.extractall(extract)
-          except Exception as exc:
-              raise SystemExit(f'bootstrap archive is not a readable tar.xz: {exc}')
+          with tarfile.open(archive, mode='r:xz') as tf:
+              try:
+                  tf.extractall(extract, filter='data')
+              except TypeError:
+                  tf.extractall(extract)
 
-          preferred = extract / 'cross-border-commerce-creative-v0.6.6-human-workspace-zh-first'
-          if preferred.is_dir():
-              source = preferred
-          else:
-              dirs = [p for p in extract.iterdir() if p.is_dir()]
-              if len(dirs) != 1:
-                  raise SystemExit('canonical workspace root not found in archive')
-              source = dirs[0]
+          source = extract / manifest['root']
+          if not source.is_dir():
+              raise SystemExit(f"canonical workspace root not found: {manifest['root']}")
 
-          required = ['SKILL.md', 'runtime', 'references']
-          missing = [name for name in required if not (source / name).exists()]
-          if missing:
-              raise SystemExit(f'bootstrap workspace missing required paths: {missing}')
+          required_source = ['VERSION', 'SKILL.md', 'runtime', 'references', 'tests']
+          missing_source = [name for name in required_source if not (source / name).exists()]
+          if missing_source:
+              raise SystemExit(f'bootstrap workspace missing required paths: {missing_source}')
 
-          print(f'canonical workspace root={source.name}')
-          for child in list(root.iterdir()):
+          version = (source / 'VERSION').read_text(encoding='utf-8').strip()
+          if version != manifest['version']:
+              raise SystemExit(f"VERSION mismatch: {version} != {manifest['version']}")
+
+          for child in list(repo.iterdir()):
               if child.name == '.git':
                   continue
               if child.is_dir():
@@ -109,20 +118,20 @@ jobs:
                   child.unlink()
 
           for child in source.iterdir():
-              dest = root / child.name
+              dest = repo / child.name
               if child.is_dir():
                   shutil.copytree(child, dest)
               else:
                   shutil.copy2(child, dest)
+          print(f"materialized canonical workspace: {manifest['root']}")
           PY
 
       - name: Commit canonical source tree
-        if: steps.ready.outputs.ready == 'true'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --quiet && exit 0
-          git commit -m "chore: sync canonical CBCC v0.6.6 human workspace"
+          git commit -m "chore: materialize canonical CBCC v0.6.7 source"
           git push origin HEAD:main
