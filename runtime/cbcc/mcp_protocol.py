@@ -382,6 +382,11 @@ class MCPProtocolProcessor:
         if not isinstance(params, dict):
             return _jsonrpc_error(request_id, JSONRPC_INVALID_PARAMS, 'params must be an object')
 
+        # Request methods are not valid JSON-RPC notifications. tools/call may trigger external
+        # side effects and therefore must never execute without a correlatable request id.
+        if request_id is None and method in {'server/discover', 'initialize', 'tools/list', 'tools/call'}:
+            return _jsonrpc_error(None, JSONRPC_INVALID_REQUEST, f'{method} requires a JSON-RPC request id')
+
         if method == 'server/discover':
             return self._discover(request_id, params)
         if method == 'initialize':

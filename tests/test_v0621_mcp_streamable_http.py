@@ -287,13 +287,31 @@ def test_notification_post_can_be_accepted_as_202_empty_body():
         close_server(server, thread)
 
 
-def test_notifications_cancelled_is_rejected_on_modern_http():
-    server, thread, _ = run_server()
+def test_notifications_cancelled_is_dropped_with_202_on_modern_http():
+    server, thread, dispatcher = run_server()
     try:
         message = modern_message(None, 'notifications/cancelled', {'requestId': 1})
+        status, headers, raw = http_request(server, 'POST', message=message, headers=request_headers(message))
+        assert status == 202
+        assert raw == b''
+        assert headers.get('content-length') == '0'
+        assert dispatcher.calls == []
+    finally:
+        close_server(server, thread)
+
+
+def test_request_only_methods_without_id_never_execute_dispatcher():
+    server, thread, dispatcher = run_server()
+    try:
+        message = modern_message(None, 'tools/call', {
+            'name': 'cbcc_provider_execute',
+            'arguments': {'project_dir': '/tmp/side-effect-must-not-run'},
+        })
         status, _, raw = http_request(server, 'POST', message=message, headers=request_headers(message))
+        payload = decode_json(raw)
         assert status == 400
-        assert decode_json(raw)['error']['code'] == -32601
+        assert payload['error']['code'] == -32600
+        assert dispatcher.calls == []
     finally:
         close_server(server, thread)
 
@@ -395,3 +413,24 @@ def test_http_cli_has_no_credential_or_session_arguments():
     help_text = build_arg_parser().format_help().lower()
     for forbidden in ['api-key', 'api_key', '--token', '--secret', '--password', '--credential', 'session-id']:
         assert forbidden not in help_text
+
+def test_stdio_tools_call_without_id_is_invalid_request_and_side_effect_free():
+    dispatcher = FakeDispatcher()
+    server = MCPStdioServer(dispatcher, authorization_resolver=allow_all)
+    message = modern_message(None, 'tools/call', {
+        'name': 'cbcc_provider_execute',
+        'arguments': {'project_dir': '/tmp/stdio-side-effect-must-not-run'},
+    })
+    response = server.handle_message(message)
+    assert response['error']['code'] == -32600
+    assert dispatcher.calls == []
+
+
+def test_plain_mirrored_header_whitespace_requires_base64_sentinel():
+    from cbcc.mcp_streamable_http import _decode_mirrored_header
+    import pytest
+    with pytest.raises(ValueError):
+        _decode_mirrored_header(' padded ')
+    encoded = base64.b64encode(b' padded ').decode()
+    assert _decode_mirrored_header(f'=?base64?{encoded}?=') == ' padded '
+

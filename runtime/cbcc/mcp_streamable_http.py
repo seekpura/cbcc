@@ -185,6 +185,8 @@ def _decode_mirrored_header(value: str) -> str:
         text.encode('ascii')
     except UnicodeEncodeError as exc:
         raise ValueError('non-ASCII MCP header must use Base64 sentinel encoding') from exc
+    if text != text.strip(' \t'):
+        raise ValueError('MCP header values with leading/trailing whitespace must use Base64 sentinel encoding')
     if any(ord(char) < 0x20 and char not in {'\t'} for char in text) or '\x7f' in text:
         raise ValueError('invalid control character in MCP header')
     return text
@@ -441,9 +443,6 @@ class MCPStreamableHTTPApplication:
         _validated, header_error = self._validate_headers(message, headers)
         if header_error is not None:
             return self._respond(start_response, 400, header_error)
-        if str(message.get('method') or '') == 'notifications/cancelled':
-            return self._protocol_error(start_response, 400, message.get('id'), JSONRPC_METHOD_NOT_FOUND, 'notifications/cancelled is stdio-only in MCP 2026')
-
         processor = self._processor_for_request(headers=headers, environ=environ)
         response = processor.handle_message(message)
         if message.get('id') is None:
