@@ -1,4 +1,4 @@
-name: CBCC v0.6.20 MCP stdio host verification
+name: CBCC v0.6.20 release verification
 
 on:
   push:
@@ -9,20 +9,27 @@ permissions:
   contents: write
 
 jobs:
-  verify-mcp-stdio:
+  verify-and-finalize:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply MCP 2026 cacheable-result compliance
+        with:
+          fetch-depth: 0
+
+      - name: Apply MCP 2026 cacheable-result compliance when needed
         run: python .changes/v0620_spec_patch.py
+
+      - name: Apply release documentation
+        run: python .changes/v0620_release_patch.py
+
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
-      - name: Run provider continuity through MCP stdio
+
+      - name: Verify provider continuity through v0.6.20
         shell: bash
         run: |
           mkdir -p .changes
-          set +e
           pytest -q -ra \
             tests/test_v0613_provider_transport_integrity.py \
             tests/test_v0614_provider_executor_lifecycle.py \
@@ -35,23 +42,62 @@ jobs:
             tests/test_v0619_plugin_http_host.py \
             tests/test_v0619_http_auth_failclosed.py \
             tests/test_v0620_mcp_stdio_host.py \
-            > .changes/v0620-test-output.txt 2>&1
-          rc=$?
+            | tee .changes/v0620-targeted.txt
+
+      - name: Compare full regression against current main
+        shell: bash
+        run: |
+          git fetch origin main
+          rm -rf /tmp/cbcc-main
+          git worktree add --detach /tmp/cbcc-main origin/main
+          set +e
+          pytest -q -ra > .changes/v0620-branch-full.txt 2>&1
+          branch_rc=$?
+          (cd /tmp/cbcc-main && pytest -q -ra > "$GITHUB_WORKSPACE/.changes/v0620-main-full.txt" 2>&1)
+          main_rc=$?
           set -e
-          echo "$rc" > .changes/v0620-test-output.rc
-          cat .changes/v0620-test-output.txt
-      - name: Commit implementation and diagnostics
+          echo "$branch_rc" > .changes/v0620-branch-full.rc
+          echo "$main_rc" > .changes/v0620-main-full.rc
+          grep -E '^(FAILED|ERROR) ' .changes/v0620-branch-full.txt | awk '{print $2}' | sort -u > .changes/v0620-branch-failures.txt || true
+          grep -E '^(FAILED|ERROR) ' .changes/v0620-main-full.txt | awk '{print $2}' | sort -u > .changes/v0620-main-failures.txt || true
+          comm -13 .changes/v0620-main-failures.txt .changes/v0620-branch-failures.txt > .changes/v0620-new-failures.txt
+          echo "MAIN_FAILURE_COUNT=$(wc -l < .changes/v0620-main-failures.txt)"
+          echo "BRANCH_FAILURE_COUNT=$(wc -l < .changes/v0620-branch-failures.txt)"
+          echo "NEW_FAILURE_COUNT=$(wc -l < .changes/v0620-new-failures.txt)"
+          if [ -s .changes/v0620-new-failures.txt ]; then
+            echo 'New failing node IDs:'
+            cat .changes/v0620-new-failures.txt
+          fi
+          git worktree remove /tmp/cbcc-main --force
+
+      - name: Persist regression evidence before release decision
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add runtime/cbcc/mcp_stdio.py tests/test_v0620_mcp_stdio_host.py \
-            .changes/v0620-test-output.txt .changes/v0620-test-output.rc
+          git add .changes/v0620-targeted.txt \
+            .changes/v0620-branch-full.txt .changes/v0620-main-full.txt \
+            .changes/v0620-branch-full.rc .changes/v0620-main-full.rc \
+            .changes/v0620-branch-failures.txt .changes/v0620-main-failures.txt \
+            .changes/v0620-new-failures.txt
           if ! git diff --cached --quiet; then
-            git commit -m "fix: align v0.6.20 MCP cacheable results with 2026-07-28"
+            git commit -m "test: capture v0.6.20 release regression evidence"
             git push origin HEAD:work/v0620-mcp-stdio-host
           fi
-      - name: Enforce targeted test result
-        if: always()
+
+      - name: Reject newly introduced regressions
         shell: bash
-        run: test "$(cat .changes/v0620-test-output.rc)" = "0"
+        run: test ! -s .changes/v0620-new-failures.txt
+
+      - name: Remove temporary diagnostics and release workflow
+        run: |
+          rm -rf .changes
+          git rm .github/workflows/v0620-verify.yml
+
+      - name: Finalize clean v0.6.20 branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "release: finalize CBCC v0.6.20 MCP stdio host"
+          git push origin HEAD:work/v0620-mcp-stdio-host
