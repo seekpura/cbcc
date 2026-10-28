@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.21-commerce-agent-autonomy
+version: 0.6.22-dynamic-workspace-prompt
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -9,6 +9,17 @@ version: 0.6.21-commerce-agent-autonomy
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
 
+
+## v0.6.22 Dynamic Workspace + Relevant Prompt Projection — 当前主权威
+- **Workspace 也是 Agent 决策面的投影，不是固定功能目录。** 一级路由和首页动作只显示当前项目实际存在或当前 frontier 需要的业务对象；Archive 等机器追踪入口保持次级，不用固定菜单数制造“完整感”。
+- 单资产页使用动态工作视图，不存在强制的“决策→画面→摄影→文案→Prompt→QA”执行顺序。缺失/不相关视图不占位；Agent 显式顺序优先，默认顺序只有展示意义。
+- Design Card / Product Truth / source / trace 仍完整保留。动态化不得以删信息换简洁；未知 legacy 资产内容必须可在 QA / 来源中回收。
+- Prompt Projection 只携带**实际影响当前资产**的视觉、构图、摄影、灯光、CMF、人物、Surface、编辑性与商品保真参数。不得把空 schema、全局摄影 toolbox 或“专业字段”机械倾倒给生成模型。
+- 一旦 Agent/策略已经为当前资产选定摄影/构图/灯光/CMF参数，它们必须继续贯穿执行链，不能因 relevance filtering 被误删。相关性裁剪的对象是无关默认值，不是已经做出的生产决策。
+- Parameter Trace、QA checks 与 Renderer layer plan 也必须 relevance-driven；下游不得反向逼上游虚构快门、ISO、CCT、Prelight、人物摄影或其它不相关字段。
+- Content/Listing/Strategy 的人类界面继续中文优先；目标市场语言与中文释义并存。固定 Hook/CTA/RACE/页面数量/模块数量均不拥有默认权威。
+- v0.6.22 发布验证：targeted + compatibility 20 passed；相对 v0.6.21 frozen main 的全量失败 node-id `NEW_FAILURE_COUNT=0`。
+- 详细变更见 `CHANGELOG_V0622.md`。
 
 ## v0.6.21 Commerce Agent Autonomy — 当前主权威
 - **冻结事实与硬边界，Agent 自主决定完成路径。** Product Truth、用户明确锁定、平台/法规硬约束、Claim 证据、真实商品身份/LOCKED PIXEL、目标输出技术规格属于不可擅自改写的边界；研究范围、策略路径、内容范围、资产数量、创意机制、方向数量、构图/摄影/CMF、生产路线和迭代深度属于 Agent 决策。

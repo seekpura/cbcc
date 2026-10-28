@@ -1,7 +1,7 @@
-# CBCC v0.6.21 CURRENT HANDOFF
+# CBCC v0.6.22 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.21-commerce-agent-autonomy`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.22-dynamic-workspace-prompt`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -36,7 +36,7 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 1. MCP / Plugin / HTTP / Provider Host 已作为可选宿主与生产接入能力存在；它们不是电商研究、策略、内容或设计权威，后续主线不得为了 transport 完整度挤占 Commerce Agent 能力。
 2. 当前平台精确类目 / 规则 / 费率必须来自实时官方数据或用户资料；离线 Runtime 不猜。
 3. Product / Market / Risk 仍保留通用 `module-shell`，只有真实使用需求证明需要时再拆，不为页面差异机械制造模板。
-4. 13 个历史 pytest 失败属于既有兼容性债务，不能为了“全绿”倒退当前能力。
+4. 12 个历史 pytest 失败属于既有兼容性债务，不能为了“全绿”倒退当前能力。
 5. Render Prompt 继续禁止 Asset / Project / Direction ID、RACE、KPI 等内部元数据；精确可见文案继续 deterministic composition。
 
 ## v0.6.11 已完成
@@ -164,5 +164,17 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 12. 定向自主权测试：20 passed。发布仍需与最新 main 做全量失败 node-id 差分，`NEW_FAILURE_COUNT=0` 才能进入 main。
 13. v0.6.17–v0.6.20 的 Provider/Plugin/MCP 基础设施继续保留，但从 v0.6.21 起明确降为可选 integration layer，不再作为 Commerce 产品主路线。
 
+## v0.6.22 已完成 — Dynamic Workspace + Relevance-driven Prompt Projection
+1. 新增 `workspace_autonomy.py`：一级 Workspace 路由按当前项目真实业务对象动态出现，不再固定展示 12 个模块；首页动作同时消费 `agent_next_action.json`，不固定成上架 / 做图 / 内容 / Prompt 四按钮。
+2. 单资产工作台改为独立相关视图，而不是固定生产流水线。Design Card/购买判断聚合为“决策”，Visual / Photography-CMF / Copy / Production / Prompt 仅在相关时出现；Agent 显式 view order 优先，默认 UI 顺序仅用于阅读，不拥有规划/执行权威。
+3. `trace + source files + unknown legacy views` 聚合到 `QA / 来源`，因此取消固定阶段后仍保持参数、源文件和历史资产内容完整可追溯。
+4. Canonical Prompt 改为 relevance-driven projection：非真实摄影资产不再为了字段完整强塞焦段、快门、ISO、主辅光、CCT、偏振、Prelight 或人物摄影段落；空/不相关 section 不进入 renderer prompt。
+5. 已经被 Agent/策略选定且确实绑定到当前资产的摄影参数不会被“相关性裁剪”误删。存在 asset-specific photography reasoning 时，策略层已决定的镜头 / CCT / 光圈等可继续贯穿 Design Card → Prompt → Trace → Production。
+6. Parameter Trace、QA photography checks 与 Renderer layer plan 同步改为任务相关；不存在“上游取消必填、下游 QA 又逼着补字段”的反向静态化。
+7. Human Workspace 继续中文优先；目标市场可见文案保留目标语言并提供中文释义。Content 工作区移除固定 Hook / CTA / 传播阶段的默认权威表述。
+8. 新增 v0.6.22 动态 Workspace / Prompt relevance 回归，并升级 v0.6.8 资产工作区兼容测试的旧“动态阶段”措辞；能力保护项（决策聚合、QA/来源、legacy recoverability）继续保留。
+9. 发布验证：targeted + compatibility `20 passed`；branch 与冻结 main 全量各 `12` 个既有失败，失败 node-id 差分 `NEW_FAILURE_COUNT=0`。发布判断仍以新增失败集合为准，不为追求全绿倒退能力。
+10. MCP / Plugin / HTTP / Provider Host 继续保留为可选 integration layer；v0.6.22 没有把 transport 重新提升为 Commerce 主线。
+
 ## 下一步唯一主任务
-**继续 Commerce Agent 自主权深审与真实电商验证。重点检查 Workspace / Strategy / Listing / Prompt / Asset / Production 是否仍存在固定页面、固定模块、固定方向/资产/研究数量、固定叙事或‘为了字段完整而填参数’的隐藏静态权威；以真实商品任务验证 Agent 能自主发现缺口、选择研究与框架、设计动态资产体系、让相关摄影/构图/灯光/CMF参数真实进入下游 Prompt/Production，并根据结果自主 replan 或 stop。MCP/HTTP 仅在实际宿主接入需求出现时维护，不作为下一主任务。**
+**继续 Commerce Agent 静态权威深审，优先检查 `human_delivery.py` / Listing / Strategy / Asset 编译：上架中心目前仍有固定 canonical 字段与 readiness 语义，视觉/内容任务不应因为 price / shipping / returns / seller_info 未填而被整页“待补”主导；Listing 分组、Strategy 输出和 Asset/Production 继续改成由当前商业目标与 `agent_next_action` 派生。用真实跨境电商商品验证研究→策略→资产→Prompt→生产→replan/stop 的自主闭环。MCP/HTTP 仅在真实宿主接入需求出现时维护。**
