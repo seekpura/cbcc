@@ -1,0 +1,7 @@
+version=0.6.7
+format=tar.xz
+encoding=hex
+prefix=hex-
+chunks=15
+sha256=90f4421e6a2df07c7cdc63c07741714edfb136f9290b5277349c1046aca73abd
+root=cross-border-commerce-creative-v0.6.7-semantic-workspaces
