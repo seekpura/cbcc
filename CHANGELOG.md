@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.8 — Asset Production Workspace
+- Replaced the generic per-asset `module-shell` with a production-decision workspace.
+- Dynamically groups asset content into Design Card / decision, visual execution, photography / CMF, copy, Prompt execution, and QA / source trace.
+- CN and EN / target-model Canonical Prompts now share one execution console instead of becoming separate document tabs.
+- Legacy / unknown asset views fall back into QA for lossless compatibility.
+- Added real KIYUU HTML compile verification and dedicated asset-workspace regression coverage.
+- See `CHANGELOG_V068.md`.
+
 ## 0.6.0 — Capability-Complete Rebase
 - Rebased the active creative-production mainline around capability completion rather than additional validation wrappers.
 - Corrected Campaign RACE semantics to PLAN → Reach → Act → Convert → Engage and propagated stage assignment to decision-specific assets.

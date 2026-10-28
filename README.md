@@ -1,4 +1,4 @@
-# Cross-Border Commerce Creative — v0.6.7
+# Cross-Border Commerce Creative — v0.6.8
 
 CBCC 是跨境电商 Product Truth、市场/竞品/人群、产品/SKU/Offer、Listing/Search、文化本地化、视觉/摄影、动态图片/视频、广告、评论闭环、生产与学习系统。
 
@@ -12,6 +12,7 @@ CBCC 是跨境电商 Product Truth、市场/竞品/人群、产品/SKU/Offer、L
 - 七大本地 Runtime 工具：Market / Product Strategy / Listing / Image / Video / Ads / Review。
 - Human Delivery 的 `index.html` 是完整**离线 SaaS Workspace**，而不是 Markdown 索引或长篇流水报告；完整内容仍全部内嵌。
 - v0.6.7 开始，Strategy / Content / Visual / Listing / Prompt / Evidence 使用不同的信息架构与交互语法；Content 是一级工作区，主策略第 6/7 章不再塞回 Strategy。
+- v0.6.8 将单资产详情升级为独立生产台：Design Card / 购买决策、画面执行、摄影 / CMF、文案、Prompt、QA / 来源按真实内容动态出现，不再复用通用模块页。
 
 ## 主要入口
 - `SKILL.md`

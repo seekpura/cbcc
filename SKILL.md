@@ -1,13 +1,20 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.7-semantic-workspaces
+version: 0.6.8-asset-production-workspace
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.8 单资产生产工作区
+- 单资产详情页不再复用通用 `module-shell`。每张资产按当前真实内容动态形成 **决策 / Design Card → 画面执行 → 摄影 / CMF → 文案 → Prompt 执行 → QA / 来源** 的生产工作区；缺失阶段不占位，不预设固定阶段数。
+- Design Card 概览与购买决策合并为同一个决策对象；Visual Execution 只回答消费者可见关系；Photography / CMF 承接镜头、机位、曝光、灯光、材质与颜色执行。
+- 中文 Canonical Prompt 与英文 / 目标模型 Prompt 在同一个执行台核对与复制；Prompt 明确是前序策划参数的执行合同，不是独立创意来源。
+- 合同、Parameter Trace、源文件与未知旧版资产内容进入 QA / 来源区，确保追溯完整但不污染最终 Render Prompt。
+- 单资产生产阶段数量由真实资产内容动态决定；legacy 资产仍可回收进入 QA，不因新 UI 丢内容。
 
 ## v0.6.7 语义工作区 + 中文优先交付
 - **默认交付语言是中文（zh-CN）**，除非用户明确要求其他语言。不要因为目标市场是英语、马来语、阿拉伯语等，就把策略、解释、风险、摄影策划或 HTML UI 变成大段外语。

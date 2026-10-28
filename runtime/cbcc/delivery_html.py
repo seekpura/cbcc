@@ -648,15 +648,93 @@ def _prompt_workspace(assets:list[dict[str,Any]])->str:
 
 
 def _asset_page(a:dict[str,Any])->str:
-    tabs=[];views=[];all_views=list(a.get('views') or [])
-    if a.get('prompt_cn'):all_views.append({'key':'prompt-cn','title':'中文提示词','html':f'<pre><code>{html.escape(a["prompt_cn"])}</code></pre>'})
-    if a.get('prompt_en'):all_views.append({'key':'prompt-en','title':'英文生成提示词','html':f'<div class="language-note">以下为生成模型执行用英文提示词；中文生产意图请查看「中文提示词」。</div><pre><code>{html.escape(a["prompt_en"])}</code></pre>'})
-    if not all_views:all_views=[{'key':'empty','title':'资产概览','html':'<div class="empty">暂无资产内容。</div>'}]
-    for i,v in enumerate(all_views):
-        tabs.append(f'<button class="subnav-btn {"active" if i==0 else ""}" data-module="asset-{html.escape(a["id"])}" data-view="{html.escape(v["key"])}"><span>{html.escape(v["title"])}</span></button>')
-        views.append(f'<article class="subview {"active" if i==0 else ""}" data-module="asset-{html.escape(a["id"])}" data-view="{html.escape(v["key"])}">{v["html"]}</article>')
+    raw_views=list(a.get('views') or [])
+    by_key={str(v.get('key') or ''):v for v in raw_views}
+    consumed=set()
+    stages=[]
+    group=f'asset-production-{_slug(a["id"])}'
+
+    def add_stage(key:str,title:str,eyebrow:str,body:str,description:str,kind:str):
+        if not body.strip(): return
+        stages.append({'key':key,'title':title,'eyebrow':eyebrow,'body':body,'description':description,'kind':kind})
+
+    decision_parts=[]
+    for key,label in [('overview','Design Card'),('strategy','购买决策')]:
+        view=by_key.get(key)
+        if view:
+            consumed.add(key)
+            decision_parts.append(f'<section class="asset-decision-block"><div class="asset-section-label">{label}</div>{view["html"]}</section>')
+    if decision_parts:
+        add_stage('decision','决策 / Design Card','WHY', ''.join(decision_parts), '先确认这张资产为什么存在、要改变什么购买判断，再进入画面生产。','decision')
+
+    visual=by_key.get('visual')
+    if visual:
+        consumed.add('visual')
+        add_stage('visual','画面执行','VISUAL EXECUTION',f'<div class="asset-visual-command"><div class="asset-command-note"><b>画面任务</b><span>把购买判断转换为主体、动作、环境、构图与 Surface 的可见关系。</span></div>{visual["html"]}</div>','只处理消费者真正能看到的关系，不把摄影参数和机器合同混进这里。','visual')
+
+    photo=by_key.get('photo')
+    if photo:
+        consumed.add('photo')
+        add_stage('photo','摄影 / CMF','PHOTOGRAPHY · CMF',f'<div class="asset-photo-console"><div class="photo-console-head"><b>现场执行控制</b><span>镜头、机位、曝光、灯光、材质与颜色从策划层落到拍摄 / 生成控制。</span></div>{photo["html"]}</div>','用于拍摄、预光与生成模型的视觉执行参数；不是装饰性摄影说明。','photo')
+
+    copy_view=by_key.get('copy')
+    if copy_view:
+        consumed.add('copy')
+        add_stage('copy','文案','COPY',f'<div class="asset-copy-console"><div class="asset-command-note"><b>资产可见文案</b><span>目标市场文案保持目标语言；人类交付同步保留中文释义与用途。</span></div>{copy_view["html"]}</div>','只保留这张资产需要承担的可见文字与语言约束。','copy')
+
+    production=by_key.get('production')
+    if production: consumed.add('production')
+    if a.get('prompt_cn') or a.get('prompt_en') or production:
+        prompt_parts=[]
+        aid=_slug(a['id'])
+        if a.get('prompt_cn'):
+            cid=f'asset-{aid}-prompt-cn'
+            prompt_parts.append(f'''<section class="prompt-primary"><div class="prompt-head"><div><span>人类生产说明</span><h3>中文规范生产提示词</h3></div><button class="copy-btn mini" data-copy="{cid}">复制中文</button></div><pre id="{cid}"><code>{html.escape(a['prompt_cn'])}</code></pre></section>''')
+        if a.get('prompt_en'):
+            eid=f'asset-{aid}-prompt-en'
+            prompt_parts.append(f'''<section class="prompt-secondary"><div class="prompt-head"><div><span>发送生成模型</span><h3>英文 / 目标模型提示词</h3></div><button class="copy-btn mini" data-copy="{eid}">复制生成提示词</button></div><pre id="{eid}"><code>{html.escape(a['prompt_en'])}</code></pre></section>''')
+        prompt_html='<div class="asset-prompt-console">'
+        if prompt_parts: prompt_html+='<div class="prompt-workbench">'+''.join(prompt_parts)+'</div>'
+        if production: prompt_html+='<details class="asset-production-notes"><summary>生产说明 / 生成备注</summary>'+production['html']+'</details>'
+        prompt_html+='<div class="language-note">生产顺序：先核对 Design Card、画面、摄影 / CMF 与文案约束，再执行 Prompt。Prompt 是执行合同，不是独立创意来源。</div></div>'
+        add_stage('prompt','Prompt 执行','EXECUTION',prompt_html,'把前面的资产决策压缩成可执行提示词；中英提示词在同一个执行台完成核对与复制。','prompt')
+
+    qa_parts=[]
+    trace=by_key.get('trace')
+    if trace:
+        consumed.add('trace')
+        qa_parts.append(f'<section class="asset-qa-source"><div class="asset-section-label">合同 / 参数追踪</div>{trace["html"]}</section>')
+    for v in raw_views:
+        key=str(v.get('key') or '')
+        if key in consumed: continue
+        consumed.add(key)
+        qa_parts.append(f'<section class="asset-qa-source"><div class="asset-section-label">{html.escape(str(v.get("title") or "补充资料"))}</div>{v.get("html") or ""}</section>')
+    source_files=a.get('source_files') or []
+    if source_files:
+        source_list=''.join(f'<li>{html.escape(str(x))}</li>' for x in source_files)
+        qa_parts.append(f'<section class="asset-source-ledger"><div class="asset-section-label">源文件账本</div><ul>{source_list}</ul></section>')
+    if qa_parts:
+        add_stage('qa','QA / 来源','TRACE · QA',''.join(qa_parts),'用于检查事实、参数、合同和源文件；不把机器追踪信息混进最终生成 Prompt。','qa')
+
+    if not stages:
+        add_stage('empty','资产概览','ASSET','<div class="empty">暂无资产内容。</div>','当前资产还没有可生产内容。','empty')
+
+    rail=[];panels=[]
+    for i,s in enumerate(stages):
+        view=f'asset-stage-{_slug(a["id"])}-{s["key"]}'
+        active='active' if i==0 else ''
+        rail.append(f'''<button class="asset-phase workspace-switch {active}" data-switch-group="{group}" data-view="{view}"><span class="asset-phase-index">{i+1:02d}</span><span class="asset-phase-copy"><small>{html.escape(s['eyebrow'])}</small><b>{html.escape(s['title'])}</b></span></button>''')
+        panels.append(f'''<section class="asset-stage asset-stage-{s['kind']} workspace-panel searchable {active}" data-switch-group="{group}" data-view="{view}"><header class="asset-stage-head"><div><span>{html.escape(s['eyebrow'])}</span><h2>{html.escape(s['title'])}</h2><p>{html.escape(s['description'])}</p></div><strong>{i+1:02d}</strong></header><div class="asset-stage-body">{s['body']}</div></section>''')
+
     sec=f'<div class="asset-original">{html.escape(str(a.get("original_title") or ""))}</div>' if a.get('original_title') and a.get('original_title')!=a.get('title') else ''
-    return f'''<section class="page asset-page" data-route="asset/{html.escape(a['id'])}"><div class="page-head"><div><a class="back route-link" href="#assets" data-route="assets">← 返回资产中心</a><div class="kicker">资产工作区 <span class="heading-en">{html.escape(a['id'])}</span></div><h1>{html.escape(a['title'])}</h1>{sec}<p>{html.escape(a.get('summary') or '')}</p></div></div><div class="module-shell"><aside class="module-nav">{''.join(tabs)}</aside><div class="module-stage">{''.join(views)}</div></div></section>'''
+    chips=''.join(f'<span>{html.escape(str(_humanize_asset_text(x)))}</span>' for x in [a.get('asset_type'),a.get('surface'),a.get('intent')] if x)
+    readiness=[]
+    if a.get('prompt_cn'): readiness.append('中文 Prompt 已就绪')
+    if a.get('prompt_en'): readiness.append('生成模型 Prompt 已就绪')
+    if source_files: readiness.append(f'{len(source_files)} 个源文件可追溯')
+    ready_html=''.join(f'<span>{html.escape(x)}</span>' for x in readiness) or '<span>等待生产合同补齐</span>'
+    passport=f'''<div class="asset-passport"><div><span class="asset-passport-id">{html.escape(a['id'])}</span><div class="asset-passport-chips">{chips}</div></div><div class="asset-readiness">{ready_html}</div></div>'''
+    return f'''<section class="page asset-page" data-route="asset/{html.escape(a['id'])}"><div class="page-head"><div><a class="back route-link" href="#assets" data-route="assets">← 返回资产中心</a><div class="kicker">资产生产台 <span class="heading-en">{html.escape(a['id'])}</span></div><h1>{html.escape(a['title'])}</h1>{sec}<p>{html.escape(a.get('summary') or '')}</p></div></div>{passport}<div class="asset-production-workspace" data-workspace-kind="asset-production"><aside class="asset-production-rail"><div class="asset-rail-head"><b>生产决策</b><span>{len(stages)} 个动态阶段</span></div>{''.join(rail)}</aside><div class="asset-production-stage">{''.join(panels)}</div></div></section>'''
 
 
 def _json_panel(path:Path,package_dir:Path)->str:
@@ -760,7 +838,11 @@ def build_delivery_html(package_dir:Path,output:Path|None=None,title:str='CBCC D
 .page{{display:none;padding:24px 24px 60px;max-width:1560px;margin:auto}}.page.active{{display:block}}.page-head{{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}}.kicker{{font-size:10px;font-weight:850;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}}.page-head h1{{font-size:30px;line-height:1.15;margin:4px 0 6px}}.page-head p{{color:var(--muted);margin:0;max-width:900px}}.heading-en{{display:block;font-weight:500;font-size:10px;color:var(--muted);margin-top:2px}}.back{{font-weight:750;text-decoration:none;color:var(--accent);font-size:12px}}
 .command-grid{{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}}.command-card{{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;text-decoration:none;box-shadow:0 6px 20px rgba(20,35,28,.035);transition:.17s}}.command-card:hover{{transform:translateY(-2px);box-shadow:var(--shadow)}}.command-card b{{display:block;font-size:14px}}.command-card span{{color:var(--muted);font-size:11px}}.stats{{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0 18px}}.stat{{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}}.stat strong{{display:block;font-size:24px}}.stat span{{font-size:10px;color:var(--muted)}}.panel{{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:14px;box-shadow:0 5px 20px rgba(20,35,28,.03)}}.panel h2{{font-size:18px;margin:0 0 10px}}
 .module-shell{{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;align-items:start}}.module-nav{{position:sticky;top:82px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:7px;max-height:calc(100vh - 104px);overflow:auto}}.subnav-btn{{display:block;width:100%;text-align:left;border:0;background:transparent;padding:10px 10px;border-radius:9px;color:var(--ink);margin:1px 0}}.subnav-btn:hover{{background:var(--soft)}}.subnav-btn.active{{background:color-mix(in srgb,var(--accent) 10%,#fff);color:var(--accent);font-weight:750}}.subnav-btn span{{display:block}}.subnav-btn small{{display:block;color:var(--muted);font-size:9px;font-weight:500;margin-top:2px}}.module-stage{{min-width:0}}.subview{{display:none;background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 6px 22px rgba(20,35,28,.035);min-height:360px}}.subview.active{{display:block}}.source-note{{font-size:9px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:12px}}
-.workspace-panel{{display:none}}.workspace-panel.active{{display:block}}.ia-source{{margin-top:16px;padding-top:9px;border-top:1px solid var(--line);color:var(--muted);font-size:9px}}
+.workspace-panel{{display:none}}.workspace-panel.active{{display:block}}
+.asset-passport{{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#10231C;color:#EDF5F1;border-radius:16px;padding:13px 16px;margin-bottom:12px}}.asset-passport-id{{font:850 11px ui-monospace,monospace;color:#AFC1B8}}.asset-passport-chips{{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}}.asset-passport-chips span{{font-size:9px;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:3px 7px}}.asset-readiness{{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}}.asset-readiness span{{font-size:9px;background:rgba(255,255,255,.09);border-radius:999px;padding:4px 8px}}
+.asset-production-workspace{{display:grid;grid-template-columns:230px minmax(0,1fr);gap:12px;align-items:start}}.asset-production-rail{{position:sticky;top:82px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:8px;display:grid;gap:5px}}.asset-rail-head{{display:flex;justify-content:space-between;gap:8px;align-items:end;padding:7px 8px 10px;border-bottom:1px solid var(--line);margin-bottom:2px}}.asset-rail-head b{{font-size:12px}}.asset-rail-head span{{font-size:8px;color:var(--muted)}}.asset-phase{{border:0;background:transparent;text-align:left;border-radius:11px;padding:10px;display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start;color:var(--ink)}}.asset-phase:hover{{background:var(--soft)}}.asset-phase.active{{background:var(--accent);color:#fff}}.asset-phase-index{{font:800 10px ui-monospace,monospace;color:var(--accent)}}.asset-phase.active .asset-phase-index{{color:#CFE0D8}}.asset-phase-copy small{{display:block;font-size:7px;letter-spacing:.08em;color:var(--muted)}}.asset-phase.active .asset-phase-copy small{{color:#CFE0D8}}.asset-phase-copy b{{display:block;font-size:11px;margin-top:1px}}
+.asset-production-stage{{min-width:0}}.asset-stage{{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 28px rgba(20,35,28,.04)}}.asset-stage-head{{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;padding:18px 20px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,#fff,var(--soft))}}.asset-stage-head span{{font-size:8px;font-weight:850;letter-spacing:.12em;color:var(--accent)}}.asset-stage-head h2{{font-size:20px;line-height:1.2;margin:4px 0}}.asset-stage-head p{{margin:0;color:var(--muted);font-size:10px;max-width:760px}}.asset-stage-head>strong{{font:850 28px ui-monospace,monospace;color:#D7E0DB}}.asset-stage-body{{padding:18px 20px}}.asset-section-label{{font-size:9px;font-weight:850;letter-spacing:.08em;color:var(--accent);margin:0 0 8px}}.asset-decision-block+.asset-decision-block{{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}}.asset-command-note,.photo-console-head{{display:flex;justify-content:space-between;gap:18px;align-items:start;padding:12px 14px;border-radius:12px;background:#10231C;color:#EDF5F1;margin-bottom:12px}}.asset-command-note b,.photo-console-head b{{font-size:11px}}.asset-command-note span,.photo-console-head span{{font-size:9px;color:#AFC1B8;max-width:700px}}.asset-stage-visual .design-grid{{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}}.asset-stage-photo .design-grid{{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}}.asset-copy-console .human-kv{{border-left:3px solid var(--accent)}}.asset-prompt-console .prompt-workbench{{margin-bottom:12px}}.asset-production-notes{{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:10px 12px}}.asset-production-notes>summary{{cursor:pointer;font-weight:750}}.asset-stage-qa .asset-stage-body{{display:grid;gap:12px}}.asset-qa-source,.asset-source-ledger{{border:1px solid var(--line);border-radius:13px;padding:14px}}.asset-source-ledger ul{{margin:8px 0 0;padding-left:18px;color:var(--muted);font:10px/1.55 ui-monospace,monospace;overflow-wrap:anywhere}}
+.ia-source{{margin-top:16px;padding-top:9px;border-top:1px solid var(--line);color:var(--muted);font-size:9px}}
 .strategy-board{{max-width:1180px}}.strategy-map-head{{display:flex;justify-content:space-between;align-items:end;gap:16px;padding:2px 3px 12px;border-bottom:2px solid var(--ink);margin-bottom:8px}}.strategy-map-head b{{font-size:16px}}.strategy-map-head span{{color:var(--muted);font-size:10px}}.strategy-decision{{background:#fff;border-bottom:1px solid var(--line)}}.strategy-decision:first-of-type{{border-radius:14px 14px 0 0}}.strategy-decision:last-child{{border-radius:0 0 14px 14px}}.strategy-decision summary{{list-style:none;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:16px;cursor:pointer}}.strategy-decision summary::-webkit-details-marker{{display:none}}.strategy-index{{font:800 18px/1 ui-monospace,monospace;color:var(--accent)}}.strategy-decision summary b{{font-size:14px}}.strategy-decision summary small{{display:block;color:var(--muted);font-size:9px}}.strategy-open{{font-size:9px;color:var(--muted)}}.strategy-decision[open] .strategy-open{{color:var(--accent)}}.strategy-body{{padding:2px 22px 22px 80px;border-top:1px solid #EEF1EE}}
 .content-board{{display:grid;gap:14px}}.content-board-head{{display:flex;justify-content:space-between;align-items:center;background:#10231C;color:#EDF5F1;border-radius:16px;padding:18px 20px}}.content-board-head b{{display:block;font-size:17px}}.content-board-head span{{display:block;font-size:10px;color:#AFC1B8;margin-top:3px}}.content-board-head strong{{font-size:32px}}.content-lanes{{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;align-items:start}}.content-lane{{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}}.content-lane>header{{display:grid;grid-template-columns:34px 1fr;gap:9px;padding:13px 14px;background:var(--soft);border-bottom:1px solid var(--line)}}.content-lane>header>span{{font:800 12px ui-monospace,monospace;color:var(--accent)}}.content-lane h3{{font-size:13px;margin:0}}.content-lane header small{{font-size:9px;color:var(--muted)}}.content-lane-body{{padding:14px;max-height:620px;overflow:auto}}.content-lane footer{{padding:8px 14px;border-top:1px solid var(--line);font-size:9px;color:var(--muted)}}
 .visual-studio{{display:grid;gap:12px}}.visual-contact-sheet{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}}.visual-thumb{{border:1px solid var(--line);background:#fff;border-radius:13px;padding:12px;text-align:left;min-height:88px}}.visual-thumb:hover,.visual-thumb.active{{border-color:var(--accent);box-shadow:0 7px 20px rgba(20,35,28,.06)}}.visual-thumb>span{{display:block;font:800 10px ui-monospace,monospace;color:var(--accent)}}.visual-thumb b{{display:block;font-size:12px;margin:7px 0 2px}}.visual-thumb small{{display:block;font-size:8px;color:var(--muted)}}.visual-stage{{background:#fff;border:1px solid var(--line);border-radius:16px;min-height:420px}}.visual-inspector{{padding:20px}}.visual-inspector-bar{{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:12px;color:var(--muted);font-size:9px}}
@@ -774,9 +856,9 @@ def build_delivery_html(package_dir:Path,output:Path|None=None,title:str='CBCC D
 .risk{{display:grid;grid-template-columns:72px 1fr;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}}.risk>span{{font-size:9px;font-weight:850;color:var(--warn)}}.risk strong{{font-size:11px}}.risk p{{margin:2px 0;color:#3C4842}}.media-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}}.media-card{{margin:0;background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}}.media-card img,.media-card video{{width:100%;aspect-ratio:1/1;object-fit:contain;background:#F5F6F4;display:block}}.media-card audio{{width:100%;padding:12px}}.media-card figcaption{{font-size:9px;color:var(--muted);padding:7px;word-break:break-all}}
 .table-wrap{{overflow:auto;border:1px solid var(--line);border-radius:10px;margin:11px 0}}table{{border-collapse:collapse;width:100%;min-width:720px}}th,td{{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}}th{{font-size:10px;background:#F1F4F2;color:#29483D}}blockquote{{padding:9px 12px;margin:11px 0;border-left:3px solid var(--accent);background:var(--soft);border-radius:0 9px 9px 0}}code{{background:var(--soft);padding:2px 5px;border-radius:5px}}h1,h2,h3,h4{{line-height:1.28}}.subview h2{{font-size:19px;margin-top:22px}}.subview h3{{font-size:15px;margin-top:18px}}.machine{{background:#fff;border:1px solid var(--line);border-radius:10px;margin:7px 0}}.machine summary{{cursor:pointer;padding:10px 12px;font-size:10px;font-weight:750}}.machine pre{{margin:0;border-radius:0 0 10px 10px;max-height:460px}}.source-files{{list-style:none;padding:0}}.source-files li{{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}}.source-files span{{font-size:9px;color:var(--muted)}}.empty{{padding:14px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);background:#fff}}.design-card-hero{{display:grid;gap:14px}}.design-question{{padding:18px;border-radius:16px;background:linear-gradient(135deg,var(--soft),#fff);border:1px solid var(--line)}}.design-question span{{font-size:10px;color:var(--muted)}}.design-question h2{{margin:6px 0;font-size:22px}}.design-question small{{display:block;color:var(--muted)}}.design-grid{{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}}.human-kv{{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;min-width:0}}.human-kv>span{{display:block;font-size:10px;color:var(--muted);margin-bottom:5px}}.human-kv>div{{white-space:pre-wrap;word-break:break-word}}.source-detail{{margin-top:18px;border-top:1px solid var(--line);padding-top:10px}}.source-detail>summary{{cursor:pointer;color:var(--muted);font-size:11px}}.is-hidden{{display:none!important}}
 @media(max-width:1180px){{.command-grid{{grid-template-columns:repeat(2,1fr)}}.stats{{grid-template-columns:repeat(3,1fr)}}.asset-grid{{grid-template-columns:repeat(2,1fr)}}}}
-@media(max-width:900px){{.prompt-lab,.evidence-center{{grid-template-columns:1fr}}.prompt-selector{{position:static;display:flex;overflow:auto;max-height:none}}.prompt-asset-switch{{min-width:160px}}.content-lanes{{grid-template-columns:1fr}}.strategy-body{{padding-left:18px}}.app{{display:block}}.sidebar{{position:sticky;height:auto;padding:7px 8px;display:flex;gap:7px;align-items:center;overflow:auto}}.brand{{min-width:160px;padding:3px 7px}}.brand span,.nav-label,.sidebar-foot{{display:none}}.nav{{display:flex;gap:3px}}.nav a{{white-space:nowrap;background:rgba(255,255,255,.05)}}.topbar{{top:51px;height:56px;padding:7px 10px}}.page{{padding:16px 10px 44px}}.module-shell{{display:block}}.module-nav{{position:sticky;top:111px;z-index:12;display:flex;gap:5px;overflow:auto;max-height:none;padding:6px;margin-bottom:9px}}.subnav-btn{{min-width:max-content;width:auto;padding:8px 10px}}.subnav-btn small{{display:none}}.copy-grid,.prompt-workbench{{grid-template-columns:1fr}}}}
+@media(max-width:900px){{.asset-production-workspace{{grid-template-columns:1fr}}.asset-production-rail{{position:static;display:flex;overflow:auto;gap:6px}}.asset-rail-head{{display:none}}.asset-phase{{min-width:150px;grid-template-columns:24px 1fr}}.asset-passport{{align-items:flex-start;flex-direction:column}}.asset-readiness{{justify-content:flex-start}}.prompt-lab,.evidence-center{{grid-template-columns:1fr}}.prompt-selector{{position:static;display:flex;overflow:auto;max-height:none}}.prompt-asset-switch{{min-width:160px}}.content-lanes{{grid-template-columns:1fr}}.strategy-body{{padding-left:18px}}.app{{display:block}}.sidebar{{position:sticky;height:auto;padding:7px 8px;display:flex;gap:7px;align-items:center;overflow:auto}}.brand{{min-width:160px;padding:3px 7px}}.brand span,.nav-label,.sidebar-foot{{display:none}}.nav{{display:flex;gap:3px}}.nav a{{white-space:nowrap;background:rgba(255,255,255,.05)}}.topbar{{top:51px;height:56px;padding:7px 10px}}.page{{padding:16px 10px 44px}}.module-shell{{display:block}}.module-nav{{position:sticky;top:111px;z-index:12;display:flex;gap:5px;overflow:auto;max-height:none;padding:6px;margin-bottom:9px}}.subnav-btn{{min-width:max-content;width:auto;padding:8px 10px}}.subnav-btn small{{display:none}}.copy-grid,.prompt-workbench{{grid-template-columns:1fr}}}}
 @media(max-width:580px){{.strategy-decision summary{{grid-template-columns:38px minmax(0,1fr)}}.strategy-open{{display:none}}.visual-contact-sheet{{grid-template-columns:repeat(2,minmax(0,1fr))}}.design-grid{{grid-template-columns:1fr}}.context{{display:none}}.search{{width:100%}}.command-grid,.stats,.asset-grid{{grid-template-columns:1fr}}.page-head h1{{font-size:24px}}.subview{{padding:14px;min-height:260px}}.copy-card{{padding:12px}}table{{font-size:11px;min-width:650px}}}}
-@media print{{.sidebar,.topbar,.module-nav,.copy-btn{{display:none!important}}.app{{display:block}}.page{{display:block!important;padding:0}}.subview{{display:block!important;box-shadow:none;break-inside:auto}}.asset-page{{break-before:page}}body{{background:#fff}}}}
+@media print{{.sidebar,.topbar,.module-nav,.asset-production-rail,.copy-btn{{display:none!important}}.app{{display:block}}.page{{display:block!important;padding:0}}.subview,.asset-stage{{display:block!important;box-shadow:none;break-inside:auto;margin-bottom:14px}}.asset-page{{break-before:page}}body{{background:#fff}}}}
 '''
 
     nav=[('overview','⌂','工作台'),('product','▣','产品事实'),('market','◎','市场 / 人群'),('listing','≡','上架中心'),('strategy','◇','策略中心'),('content','▤','内容系统'),('visual','◐','视觉 / 摄影'),('assets','▦','资产中心'),('prompts','⌘','提示词工作台'),('risk','!','风险 / 合规'),('sources','◉','来源 / 真源'),('archive','⋯','归档')]
