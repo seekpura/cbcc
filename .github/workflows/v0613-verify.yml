@@ -1,4 +1,4 @@
-name: CBCC v0.6.13 provider transport diagnostics
+name: CBCC v0.6.13 regression delta verification
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  summarize-existing-regression:
+  compare-against-v0612-main:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -17,35 +17,84 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build concise failure summary from committed regression evidence
+      - name: Install test dependencies
+        run: python -m pip install -q pytest pyyaml
+
+      - name: Run branch and main with identical pytest settings
         shell: bash
         run: |
-          rc="unknown"
-          if [ -f .changes/v0613-full-regression.rc ]; then
-            rc="$(tr -d '\r\n' < .changes/v0613-full-regression.rc)"
-          fi
-          {
-            echo "FULL_REGRESSION_RC=$rc"
-            echo
-            echo "== PYTEST TERMINAL SUMMARY =="
-            grep -E '^[=]+ .* (failed|error|errors|passed|skipped|xfailed|xpassed|warning|warnings).* [=]+$' .changes/v0613-full-regression.txt | tail -30 || true
-            echo
-            echo "== FAILED / ERROR NODE IDS =="
-            grep -E '^(FAILED|ERROR) ' .changes/v0613-full-regression.txt | tail -400 || true
-            echo
-            echo "== SHORT TEST SUMMARY =="
-            awk '/short test summary info/{flag=1} flag' .changes/v0613-full-regression.txt | tail -500 || true
-            echo
-            echo "== LAST 250 LINES =="
-            tail -250 .changes/v0613-full-regression.txt || true
-          } > .changes/v0613-failures-summary.txt
+          git fetch origin main
+          git worktree add /tmp/cbcc-main origin/main
 
-      - name: Commit concise diagnostic summary
+          set +e
+          python -m pytest -q -ra --tb=no > /tmp/v0613-head.txt 2>&1
+          head_rc=$?
+          (cd /tmp/cbcc-main && python -m pytest -q -ra --tb=no > /tmp/v0612-main.txt 2>&1)
+          main_rc=$?
+          set -e
+
+          extract_failures() {
+            grep -E '^(FAILED|ERROR) ' "$1" \
+              | sed -E 's/^(FAILED|ERROR) //' \
+              | sed -E 's/ - .*//' \
+              | sort -u || true
+          }
+
+          extract_failures /tmp/v0613-head.txt > /tmp/head-failures.txt
+          extract_failures /tmp/v0612-main.txt > /tmp/main-failures.txt
+          comm -23 /tmp/head-failures.txt /tmp/main-failures.txt > /tmp/new-failures.txt
+          comm -13 /tmp/head-failures.txt /tmp/main-failures.txt > /tmp/fixed-failures.txt
+
+          head_count=$(wc -l < /tmp/head-failures.txt | tr -d ' ')
+          main_count=$(wc -l < /tmp/main-failures.txt | tr -d ' ')
+          new_count=$(wc -l < /tmp/new-failures.txt | tr -d ' ')
+          fixed_count=$(wc -l < /tmp/fixed-failures.txt | tr -d ' ')
+
+          {
+            echo "BASE_REF=origin/main"
+            echo "BASE_SHA=$(git -C /tmp/cbcc-main rev-parse HEAD)"
+            echo "HEAD_SHA=$(git rev-parse HEAD)"
+            echo "MAIN_PYTEST_RC=$main_rc"
+            echo "HEAD_PYTEST_RC=$head_rc"
+            echo "MAIN_FAILURE_COUNT=$main_count"
+            echo "HEAD_FAILURE_COUNT=$head_count"
+            echo "NEW_FAILURE_COUNT=$new_count"
+            echo "FIXED_FAILURE_COUNT=$fixed_count"
+            echo
+            echo "== NEW FAILURES IN v0.6.13 =="
+            cat /tmp/new-failures.txt
+            echo
+            echo "== FAILURES FIXED BY v0.6.13 =="
+            cat /tmp/fixed-failures.txt
+            echo
+            echo "== MAIN BASELINE FAILURES =="
+            cat /tmp/main-failures.txt
+            echo
+            echo "== v0.6.13 BRANCH FAILURES =="
+            cat /tmp/head-failures.txt
+            echo
+            echo "== MAIN TERMINAL TAIL =="
+            tail -40 /tmp/v0612-main.txt
+            echo
+            echo "== HEAD TERMINAL TAIL =="
+            tail -40 /tmp/v0613-head.txt
+          } > .changes/v0613-baseline-comparison.txt
+
+          echo "NEW_FAILURE_COUNT=$new_count" >> "$GITHUB_ENV"
+
+      - name: Commit regression delta evidence
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .changes/v0613-failures-summary.txt
+          git add .changes/v0613-baseline-comparison.txt
           if ! git diff --cached --quiet; then
-            git commit -m "chore: summarize v0.6.13 full regression failures"
+            git commit -m "test: compare v0.6.13 failures against v0.6.12 main"
             git push origin HEAD:work/v0613-provider-transport
           fi
+
+      - name: Reject only newly introduced regressions
+        if: always()
+        shell: bash
+        run: |
+          test "${NEW_FAILURE_COUNT:-unknown}" = "0"
