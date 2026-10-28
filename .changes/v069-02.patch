@@ -47,21 +47,6 @@ index 52a8e2e..d14ec07 100644
  
      evidence={'sources':request.get('sources',[]),'assumptions':request.get('assumptions',[])}
      ep=_write(p/'artifacts/evidence.json',evidence); st.set_gate('EVIDENCE','READY_REVIEW',[ep],evidence); st.checkpoint('EVIDENCE','READY_REVIEW')
-diff --git a/runtime/cbcc/delivery_html.py b/runtime/cbcc/delivery_html.py
-index 8615ce9..de6971a 100644
---- a/runtime/cbcc/delivery_html.py
-+++ b/runtime/cbcc/delivery_html.py
-@@ -499,8 +499,9 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
-           ('决策关键瞬间',design.get('decisive_moment') or narrative.get('decisive_moment')),('画面必须可见',narrative.get('what_must_be_visible')),('主体',subject.get('subject')),('动作',subject.get('action')),('环境',subject.get('environment')),('道具',subject.get('props')),('构图语法',comp.get('composition_grammar')),('空间节奏',comp.get('spatial_rhythm')),('视角 / 机位',comp.get('camera_or_view')),('产品出现方式',(product_role.get('production_resolution') or product_role.get('planning_state')) if isinstance(product_role,dict) else product_role),('展示位置（Surface）',surface),('信息表达方式',(surfacec.get('representation') if isinstance(surfacec,dict) else None)),('文案密度',(surfacec.get('copy_budget') or {}).get('density_class') if isinstance(surfacec,dict) else None),('移动端扫描原则','第一眼只承载一个主要购买答案；次级解释移到相邻原生内容位。' if isinstance(surfacec,dict) and surfacec else None)
-         ])
-         views.append({'key':'visual','title':'画面与版式','html':visual})
-+        photo_exec=design.get('photography_execution') or {}
-         photo=_human_kv([
--('焦段',comp.get('focal_length_mm')),('镜头家族',comp.get('lens_family')),('方位角',comp.get('azimuth')),('俯仰 / 高度',comp.get('elevation') or comp.get('camera_height')),('对焦平面',comp.get('focus_plane')),('景深 / 光圈意图',comp.get('aperture_dof_intent')),('快门起点',comp.get('shutter_speed')),('ISO 起点',comp.get('iso')),('主光',light.get('key')),('补光',light.get('fill')),('负补光',light.get('negative_fill')),('轮廓光',light.get('rim')),('色温',light.get('cct')),('阴影策略',light.get('shadow')),('高光策略',light.get('highlight_policy')),('Prelight',light.get('prelight_plan')),('偏振',light.get('polarization_plan')),('色彩一致性',light.get('color_consistency_plan'))
-+          ('拍摄 / 合成模式',photo_exec.get('capture_mode')),('构图执行合同',photo_exec.get('composition')),('输出色彩管理',photo_exec.get('color_management')),('焦段',comp.get('focal_length_mm')),('镜头家族',comp.get('lens_family')),('方位角',comp.get('azimuth')),('俯仰 / 高度',comp.get('elevation') or comp.get('camera_height')),('对焦平面',comp.get('focus_plane')),('景深 / 光圈意图',comp.get('aperture_dof_intent')),('快门起点',comp.get('shutter_speed')),('ISO 起点',comp.get('iso')),('主光',light.get('key')),('补光',light.get('fill')),('负补光',light.get('negative_fill')),('轮廓光',light.get('rim')),('色温',light.get('cct')),('阴影策略',light.get('shadow')),('高光策略',light.get('highlight_policy')),('Prelight',light.get('prelight_plan')),('偏振',light.get('polarization_plan')),('色彩一致性',light.get('color_consistency_plan'))
-         ])
-         views.append({'key':'photo','title':'摄影 / CMF','html':photo})
-         if copyc:
 diff --git a/runtime/cbcc/learning_loop.py b/runtime/cbcc/learning_loop.py
 index 7fe2a12..d90fe5d 100644
 --- a/runtime/cbcc/learning_loop.py
