@@ -29,7 +29,26 @@ jobs:
           if old not in text:
               raise SystemExit('malformed capture mode line not found')
           path.write_text(text.replace(old,new,1),encoding='utf-8')
+
+          test=Path('tests/test_v0611_provider_source_binding.py')
+          t=test.read_text(encoding='utf-8')
+          old="            assert job['source_product_bindings'][0]['handoff_status']=='READY_LOCAL_VERIFIED'"
+          new="            assert job['source_product_bindings'][0]['handoff_status']=='READY_PACKAGE_VERIFIED'\n            assert job['source_product_bindings'][0]['locator']['kind']=='PACKAGE_RELATIVE_PATH'"
+          if old not in t:
+              raise SystemExit('v0.6.11 continuity assertion not found')
+          test.write_text(t.replace(old,new,1),encoding='utf-8')
           PY
+      - name: Capture patched source snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: v0612-patched-sources
+          path: |
+            runtime/cbcc/production.py
+            runtime/cbcc/provider_portability.py
+            runtime/cbcc/providers.py
+            tests/test_v0611_provider_source_binding.py
+            tests/test_v0612_provider_portability_receipt.py
+          if-no-files-found: error
       - name: Install test dependency
         run: python -m pip install pytest pyyaml
       - name: Focused continuity regression
