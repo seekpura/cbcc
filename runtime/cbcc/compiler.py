@@ -44,7 +44,7 @@ from .campaign_architecture import compile_paid_campaign_architecture
 from .product_visual_intelligence import compile_product_visual_intelligence, compile_creative_anchor_plan
 from .compliance import compile_compliance
 from .production import build_production_run, apply_production_result, materialize_provider_jobs, ingest_provider_job_results
-from .review import materialize_review_workspace
+from .review import materialize_review_workspace, refresh_review_workspace
 from .strategy_authority import build_master_strategy, materialize_strategy, apply_strategy_annotations, build_strategy_host_authoring_request
 from .strategy_sources import compile_strategy_reasoning_context
 from .claim_authority import compile_claim_authority
@@ -139,7 +139,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     p=Path(project_dir)
     try: st=ProjectState.load(p)
     except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.12-portable-provider-package-production-receipt')
-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.26-scope-readiness'; st.save(); _write(st.meta/'request.json',request)
+    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.27-current-scope-completion'; st.save(); _write(st.meta/'request.json',request)
 
     agent_plan=compile_agent_autonomy_plan(request)
     _write(p/'artifacts/agent_autonomy_plan.json',agent_plan)
@@ -513,4 +513,6 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
                'strategy_authority':{'status':strategy.get('status'),'artifact':str(p/'artifacts/strategy/MASTER_STRATEGY_CN.md')},'asset_packages':asset_compile,'production_run':production_run,'video_creator_plan':video_plan,'compliance':compliance,'prompt_state_isolation':True,'research_gate':research_gate}
     exp=_write(p/'artifacts/execution_contract.json',execution); execution_ready=creative_ready and compliance.get('status')!='HOLD' and (not request.get('compile_assets') or asset_compile.get('status')=='COMPILED')
     st.set_gate('EXECUTION','READY_REVIEW' if execution_ready else 'PENDING',[exp],execution); st.checkpoint('EXECUTION','READY_REVIEW' if st.data['gates']['EXECUTION']['status']=='READY_REVIEW' else 'PENDING_CONTRACTS')
-    st.data['final_ready']=False; st.save(); materialize_review_workspace(p,st.data); return st.data
+    # final_ready is derived from current-scope closure; never reset it as a static pipeline flag.
+    refresh_review_workspace(p,st)
+    return st.data

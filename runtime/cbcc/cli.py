@@ -4,7 +4,7 @@ import argparse,json,sys
 from .state import ProjectState
 from .compiler import build_project
 from .audit import machine_audit
-from .review import materialize_review_workspace
+from .review import materialize_review_workspace, refresh_review_workspace, build_delivery_manifest
 from .production import ingest_provider_job_results
 from .provider_bridge import ExecutionPolicy
 from .provider_surface import provider_execution_surface_from_environment
@@ -36,12 +36,13 @@ def main(argv=None):
     elif a.cmd in {'build','resume'}:
         request_path=Path(a.request) if getattr(a,'request',None) else Path(a.project_dir)/'.cbcc/request.json'
         if not request_path.exists(): raise FileNotFoundError(f'No request available for {a.cmd}: {request_path}')
-        req=json.loads(request_path.read_text(encoding='utf-8')); out=build_project(Path(a.project_dir),req,Path(a.packs_dir) if a.packs_dir else root/'platform_packs'); materialize_review_workspace(Path(a.project_dir),out)
-    elif a.cmd=='revise': out={'invalidated':ProjectState.load(Path(a.project_dir)).revise(a.changed)}
+        req=json.loads(request_path.read_text(encoding='utf-8')); out=build_project(Path(a.project_dir),req,Path(a.packs_dir) if a.packs_dir else root/'platform_packs')
+    elif a.cmd=='revise':
+        project=Path(a.project_dir); st=ProjectState.load(project); invalidated=st.revise(a.changed); refresh_review_workspace(project,st); out={'invalidated':invalidated,'final_ready':st.data.get('final_ready'),'completion':st.data.get('completion')}
     elif a.cmd=='review-build':
-        st=ProjectState.load(Path(a.project_dir)); out=materialize_review_workspace(Path(a.project_dir),st.data)
+        project=Path(a.project_dir); st=ProjectState.load(project); out=refresh_review_workspace(project,st)
     elif a.cmd=='review-apply':
-        project=Path(a.project_dir); st=ProjectState.load(project); d=json.loads(Path(a.review_file).read_text(encoding='utf-8')); st.apply_review_decision(d); sync_local_revision_review_state(project,st.data); materialize_review_workspace(project,st.data); out=st.data
+        project=Path(a.project_dir); st=ProjectState.load(project); d=json.loads(Path(a.review_file).read_text(encoding='utf-8')); st.apply_review_decision(d); sync_local_revision_review_state(project,st.data); refresh_review_workspace(project,st); out=st.data
     elif a.cmd=='adapter-list':
         surface=provider_execution_surface_from_environment(); out=surface.list_adapters(provider=a.provider,production_mode=a.production_mode,required_capabilities=a.capability)
     elif a.cmd=='provider-execute':
@@ -59,26 +60,29 @@ def main(argv=None):
         st=ProjectState.load(project)
         st.set_gate('PRODUCTION','READY_REVIEW' if out.get('status')=='COMPLETE' else 'PENDING',[str(run_path),str(project/'artifacts/provider_jobs/PROVIDER_JOB_INDEX.json')],out)
         st.checkpoint('PROVIDER_INGEST',out.get('status'))
-        materialize_review_workspace(project,st.data)
+        refresh_review_workspace(project,st)
     elif a.cmd=='revision-compile':
         project=Path(a.project_dir); st=ProjectState.load(project); req_path=project/'.cbcc/request.json'; req=json.loads(req_path.read_text(encoding='utf-8')) if req_path.exists() else {}
         out=compile_local_revision_jobs(project,st.data,req.get('production_provider_preferences'),a.revision_request_id)
-        st.data['local_revision_requests']=st.data.get('local_revision_requests',[]); st.save(); st.checkpoint('LOCAL_REVISION_COMPILE',out.get('status')); materialize_review_workspace(project,st.data)
+        st.data['local_revision_requests']=st.data.get('local_revision_requests',[]); st.save(); st.checkpoint('LOCAL_REVISION_COMPILE',out.get('status')); refresh_review_workspace(project,st)
     elif a.cmd=='revision-ingest':
-        project=Path(a.project_dir); st=ProjectState.load(project); out=ingest_local_revision_results(project,st.data,a.revision_id); st.save(); st.checkpoint('LOCAL_REVISION_INGEST',out.get('status')); materialize_review_workspace(project,st.data)
+        project=Path(a.project_dir); st=ProjectState.load(project); out=ingest_local_revision_results(project,st.data,a.revision_id); st.save(); st.checkpoint('LOCAL_REVISION_INGEST',out.get('status')); refresh_review_workspace(project,st)
     elif a.cmd=='learning-apply':
         project=Path(a.project_dir); st=ProjectState.load(project); cycle=json.loads(Path(a.learning_file).read_text(encoding='utf-8')); learning=compile_learning_cycle(project,st.data,cycle); applied=apply_learning_to_strategy(project,learning)
-        lp=project/'artifacts/learning_cycles'/learning['cycle_id']/'learning_cycle.json'; st.set_gate('MEASUREMENT','READY_REVIEW',[str(lp)],learning); st.set_gate('LEARNING','READY_REVIEW',[str(project/'artifacts/learning_latest.json'),str(project/'artifacts/strategy_authority.json')],applied); st.checkpoint('LEARNING_APPLY',applied.get('status')); materialize_review_workspace(project,st.data); out={'learning':learning,'strategy_apply':applied}
+        lp=project/'artifacts/learning_cycles'/learning['cycle_id']/'learning_cycle.json'; st.set_gate('MEASUREMENT','READY_REVIEW',[str(lp)],learning); st.set_gate('LEARNING','READY_REVIEW',[str(project/'artifacts/learning_latest.json'),str(project/'artifacts/strategy_authority.json')],applied); st.checkpoint('LEARNING_APPLY',applied.get('status')); refresh_review_workspace(project,st); out={'learning':learning,'strategy_apply':applied,'final_ready':st.data.get('final_ready'),'completion':st.data.get('completion')}
     elif a.cmd=='state': out=ProjectState.load(Path(a.project_dir)).data
     elif a.cmd=='audit': out=machine_audit(Path(a.root),not a.no_pytest)
     elif a.cmd=='export':
-        st=ProjectState.load(Path(a.project_dir)); locked=[g for g,v in st.data['gates'].items() if v['status']=='LOCKED']
-        required=['EVIDENCE','PRODUCT_TRUTH','COMMERCE_ENTITY','TARGET_CONTEXT','CULTURE_CONTEXT','DECISION','CONTENT_GRAPH','PLATFORM_COMPILE','ASSET_ARCHITECTURE','CREATIVE','EXECUTION']
-        for optional in ['ASSET_COMPILE','PRODUCTION']:
-            if st.data['gates'][optional]['status']!='PENDING': required.append(optional)
-        unresolved=[x for x in st.data['pending_actions'] if x.get('status')=='PENDING']
-        final_ready=all(g in locked for g in required) and not unresolved
-        manifest={'project_id':st.data['project_id'],'final_ready':final_ready,'locked_gates':locked,'pending_actions':st.data['pending_actions'],'artifacts':{g:v['artifact_paths'] for g,v in st.data['gates'].items() if v['artifact_paths']}}
+        project=Path(a.project_dir); st=ProjectState.load(project); refresh_review_workspace(project,st)
+        delivery=build_delivery_manifest(project,st.data)
+        locked=[g for g,v in st.data['gates'].items() if v['status']=='LOCKED']
+        manifest={
+            'project_id':st.data['project_id'],'final_ready':delivery.get('final_ready',False),
+            'completion':delivery.get('completion') or st.data.get('completion') or {},
+            'locked_gates':locked,'pending_actions':st.data['pending_actions'],
+            'required_missing':delivery.get('required_missing',[]),'review_pending':delivery.get('review_pending',[]),
+            'artifacts':{g:v['artifact_paths'] for g,v in st.data['gates'].items() if v['artifact_paths']}
+        }
         Path(a.output).write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8'); out=manifest
     print(json.dumps(out,ensure_ascii=False,indent=2)); return 0 if not isinstance(out,dict) or out.get('pass',True) else 1
 if __name__=='__main__': raise SystemExit(main())

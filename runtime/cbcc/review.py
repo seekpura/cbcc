@@ -2,6 +2,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 import json, html, re
+from .completion import evaluate_scope_completion
 
 
 def _load_json(path: Path, default):
@@ -52,19 +53,37 @@ def build_delivery_manifest(project_dir: Path, state: dict[str, Any]) -> dict[st
     required_missing=[]
     for x in items:
         if not x.get('required'): continue
-        runtime_blocked=x.get('status') in {'MISSING','HOLD','INVALIDATED'}
+        runtime_blocked=x.get('status') in {'MISSING','HOLD','INVALIDATED','BLOCKED','FAIL'}
         if x.get('kind')=='AUTHORITY_GATE' and not x.get('blocking_for_current_scope',True):
             runtime_blocked=False
         if runtime_blocked or x.get('review_status') in blocking_review:
             required_missing.append(x['item_id'])
-    review_pending=[x['item_id'] for x in items if x.get('required') and x.get('kind')!='AUTHORITY_GATE' and x.get('review_status')=='PENDING_REVIEW']
-    return {'project_id':state.get('project_id'),'revision':state.get('revision'),'items':items,'required_missing':required_missing,'review_pending':review_pending,'final_ready':bool(state.get('final_ready')) and not required_missing and not review_pending}
+    agent_next=_load_json(p/'artifacts/agent_next_action.json',{})
+    completion=evaluate_scope_completion(state,items,agent_next_action=agent_next)
+    review_pending=[x.get('item_id') for x in completion.get('review_pending',[]) if x.get('item_id')]
+    return {
+        'project_id':state.get('project_id'),'revision':state.get('revision'),'items':items,
+        'required_missing':required_missing,'review_pending':review_pending,
+        'blocking_actions':[x.get('action_id') for x in completion.get('blocking_actions',[]) if x.get('action_id')],
+        'open_revision_requests':[x.get('revision_request_id') for x in completion.get('open_revision_requests',[]) if x.get('revision_request_id')],
+        'completion':completion,'final_ready':completion.get('final_ready',False)
+    }
+
+
+def refresh_review_workspace(project_dir: Path, project_state) -> dict[str, str]:
+    """Recompute current-scope completion, persist it, then materialize the review workspace."""
+    paths=materialize_review_workspace(project_dir,project_state.data)
+    project_state.save()
+    return paths
 
 
 def materialize_review_workspace(project_dir: Path, state: dict[str, Any]) -> dict[str, str]:
     p=Path(project_dir); out=p/'.cbcc/review'; items_dir=out/'items'; items_dir.mkdir(parents=True,exist_ok=True)
     delivery=build_delivery_manifest(p,state)
-    workspace={'project_id':state.get('project_id'),'runtime_version':state.get('runtime_version'),'revision':state.get('revision'),'current_stage':state.get('current_stage'),'gates':state.get('gates',{}),'pending_actions':state.get('pending_actions',[]),'local_revision_requests':state.get('local_revision_requests',[]),'delivery_summary':{'items':len(delivery['items']),'required_missing':delivery['required_missing'],'review_pending':delivery['review_pending']}}
+    # Keep the in-memory state synchronized for callers that will persist it after workspace materialization.
+    state['final_ready']=bool(delivery.get('final_ready'))
+    state['completion']=delivery.get('completion') or {}
+    workspace={'project_id':state.get('project_id'),'runtime_version':state.get('runtime_version'),'revision':state.get('revision'),'current_stage':state.get('current_stage'),'gates':state.get('gates',{}),'pending_actions':state.get('pending_actions',[]),'local_revision_requests':state.get('local_revision_requests',[]),'completion':delivery.get('completion') or {},'delivery_summary':{'items':len(delivery['items']),'required_missing':delivery['required_missing'],'review_pending':delivery['review_pending'],'blocking_actions':delivery.get('blocking_actions',[]),'open_revision_requests':delivery.get('open_revision_requests',[]),'final_ready':delivery.get('final_ready',False)}}
     decision={'project_id':state.get('project_id'),'revision':state.get('revision'),'accept':[],'revise':[],'hold':[],'accept_items':[],'hold_items':[],'revise_items':[],'item_revision_requests':{},'notes':{},'item_notes':{}}
     paths={
         'operator_workspace':out/'operator_workspace.json',
