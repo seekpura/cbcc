@@ -146,7 +146,7 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
     product_masters = list(source_product_assets or [])
     locked_masters = [m for m in product_masters if m.get('pixel_lock')]
 
-    return _compact({
+    return {
         'asset_id': asset.get('asset_id'), 'asset_name': asset.get('asset_name'), 'asset_type': asset.get('asset_type'),
         'surface': asset.get('surface'), 'family': asset.get('family'),
         'commerce_task': {
@@ -245,7 +245,7 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
         'precision_boundaries': asset.get('precision_boundaries') or [],
         'approved_visual_elements': asset.get('approved_visual_elements') or [],
         'editable_layer_contract': asset.get('editable_layer_contract') or {},
-    })
+    }
 
 
 def _render_safe_text(value:Any)->str:
