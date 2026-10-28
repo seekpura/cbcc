@@ -153,15 +153,15 @@ def build_product_strategy(request: dict[str, Any], market: dict[str, Any] | Non
                 'why': s.get('role_rationale')
                 or ('单SKU项目默认由该SKU承担核心转化主张；若后续有多SKU，再按需求、利润、生命周期和渠道动态分工。' if role == 'HERO' else '在利润、需求与SKU组合关系比较完成前，该角色仅作为暂定策略。'),
                 'price': s.get('price'),
-                'market_signal': price_signals[:2],
-                'configuration_signal': config[:3],
+                'market_signal': price_signals,
+                'configuration_signal': config,
             }
         )
     return {
         'sku_roles': rows,
         'portfolio_principle': 'SKU角色由需求、利润、生命周期和渠道任务动态决定，不采用固定四角色模板。',
         'economics_status': (economics or {}).get('status'),
-        'opportunity_signals': {'price_valleys': price_signals, 'configurations': config[:5]},
+        'opportunity_signals': {'price_valleys': price_signals, 'configurations': config},
     }
 
 
@@ -183,9 +183,9 @@ def build_positioning(request: dict[str, Any], culture: dict[str, Any], product_
     trust = supplied.get('trust_drivers') or product.get('trust_drivers') or []
     objections = supplied.get('objection_reducers') or product.get('objection_reducers') or []
     hierarchy = [{'priority': 'P0', 'message': primary, 'why': '首屏只保留一个核心记忆点，可降低信息竞争，让Hero与Listing首屏拥有明确任务。'}]
-    for x in secondary[:3]:
+    for x in secondary:
         hierarchy.append({'priority': 'P1', 'message': x, 'why': '用户理解核心主张后，再用次级购买理由增强相关性、利益或证据。'})
-    for x in trust[:2] + objections[:2]:
+    for x in trust + objections:
         hierarchy.append({'priority': 'P2', 'message': x, 'why': '身份识别与核心价值建立后，再用信任与异议消解推动转化。'})
     return {
         'positioning_statement': statement,
@@ -208,34 +208,49 @@ def build_positioning(request: dict[str, Any], culture: dict[str, Any], product_
     }
 
 
-def build_marketing_frameworks(positioning: dict[str, Any], questions: list[str], target: dict[str, Any]) -> dict[str, Any]:
-    race = [
-        {'stage':'RESEARCH','objective':'Research product truth, evidence, market, platform, audience/culture, competitor and regulatory context.','key_actions':'truth / evidence / market / platform / audience / culture / competitor / regulation','output':'research authority + gaps','platform':target.get('platform_family'),'culture_check':'Evidence-backed context; no identity-to-behavior inference.','kpi':'evidence coverage / source quality / unresolved P0','why':'Research establishes what can be known and claimed.'},
-        {'stage':'ACTION','objective':'Convert research into strategy, hierarchy, offer, content, creative, photography and budget choices.','key_actions':'STP/JTBD / positioning / 4P / funnel / content / photography / P0-P2','output':'strategy and production contracts','platform':target.get('platform_family'),'culture_check':'Culture changes expression and representation, not product truth.','kpi':'decision coverage / execution readiness','why':'Action converts evidence into explicit choices and tradeoffs.'},
-        {'stage':'COMMUNICATION','objective':'Execute platform-native Listing, creator/UGC, paid, owned, video/live and localized communication.','key_actions':'listing / PDP / creator / paid / live / social / CRM / localization','output':'customer-facing communication','platform':target.get('platform_family'),'culture_check':'Check script/model/wardrobe/scene/color/CTA against current cultural evidence.','kpi':'CTR / comprehension / engagement / CVR / qualified action','why':'Communication executes the strategy on native surfaces.'},
-        {'stage':'EVALUATION','objective':'Measure, attribute, test and route learning back to the smallest responsible layer.','key_actions':'metrics / attribution / A-B / ads / reviews / returns / economics / revision','output':'evaluation + local revision + learning','platform':target.get('platform_family'),'culture_check':'Include representation/cultural QA in performance review.','kpi':'incremental lift / contribution / error or return reduction','why':'Evaluation closes the loop without unnecessary broad redesign.'},
-    ]
-    return {
-        'STP': {
-            'segmentation_basis': 'Use evidence-backed demographic/behavioral/JTBD variables; identity variables are contextual, not deterministic behavior labels.',
-            'targeting': 'Prioritize the segment whose job/barrier aligns most strongly with product truth and offer.',
-            'positioning': positioning.get('positioning_statement'),
-        },
-        'JTBD': {
-            'shopper_questions': questions,
-            'job_statement': 'Help the shopper make the next purchase decision with the minimum necessary information and proof.',
-        },
-        '4P': {
-            'product': 'Express real product value and SKU role.',
-            'price': 'Use economics + market context; do not choose price from competitor averaging alone.',
-            'place': target.get('platform_family'),
-            'promotion': 'Sequence primary proposition → proof → objection reduction → action.',
-        },
-        'funnel': ['Identification', 'Relevance', 'Proof/Trust', 'Conversion', 'Usage/Retention'],
-        'RACE': race,
-        'why': 'Frameworks are decision lenses and should only be used where they change a concrete commercial action.',
+def build_marketing_frameworks(positioning: dict[str, Any], questions: list[str], target: dict[str, Any], framework_plan: Any = None) -> dict[str, Any]:
+    """Apply only decision frameworks selected by the user/host Agent. No framework bundle is mandatory."""
+    custom = {}
+    if isinstance(framework_plan, dict):
+        requested = framework_plan.get('frameworks') or framework_plan.get('requested') or []
+        custom = framework_plan.get('custom') or {}
+    else:
+        requested = framework_plan or []
+    if not isinstance(requested, (list, tuple, set, frozenset)):
+        requested = [requested]
+    requested = [str(x).upper() for x in requested if str(x or '').strip()]
+    out: dict[str, Any] = {
+        'status':'FRAMEWORKS_APPLIED' if requested or custom else 'NO_FRAMEWORK_REQUIRED',
+        'applied_frameworks':requested,
+        'why':'Frameworks are optional lenses. The Agent selects them only when they change a concrete commerce decision; Product Truth, evidence and shopper decisions remain the authority.',
     }
-
+    if 'STP' in requested:
+        out['STP']={
+            'segmentation_basis':'Use only evidence-backed segmentation variables relevant to this decision.',
+            'targeting':'Prioritize the segment whose job/barrier aligns most strongly with product truth and offer.',
+            'positioning':positioning.get('positioning_statement'),
+        }
+    if 'JTBD' in requested:
+        out['JTBD']={'shopper_questions':questions,'job_statement':'Help the shopper make the next purchase decision with the minimum necessary information and proof.'}
+    if '4P' in requested:
+        out['4P']={
+            'product':'Express real product value and SKU role.',
+            'price':'Use economics + market context; do not choose price from competitor averaging alone.',
+            'place':target.get('platform_family'),
+            'promotion':'Let the current decision architecture determine message sequence and channel use.',
+        }
+    if 'FUNNEL' in requested:
+        out['funnel']={'rule':'Derive stages from the observed buyer journey and current decision barriers; do not force a universal stage list.'}
+    if 'RACE' in requested:
+        out['RACE']=[
+            {'stage':'RESEARCH','objective':'Resolve evidence gaps that can materially change current commerce decisions.','key_actions':'agent-selected research','output':'evidence + decision updates','platform':target.get('platform_family'),'kpi':'decision-changing evidence / unresolved material risk','why':'Research exists to change or validate decisions, not to complete a checklist.'},
+            {'stage':'ACTION','objective':'Convert sufficient evidence into product/offer/content/creative/production choices.','key_actions':'agent-selected decision work','output':'strategy and execution contracts','platform':target.get('platform_family'),'kpi':'decision coverage / execution readiness','why':'Action is whatever decision work is needed for the current goal.'},
+            {'stage':'COMMUNICATION','objective':'Execute only the surfaces and messages selected for the current buyer journey.','key_actions':'agent-selected surfaces/assets','output':'customer-facing communication','platform':target.get('platform_family'),'kpi':'surface-appropriate outcome metric','why':'Communication follows the actual asset architecture, not a channel quota.'},
+            {'stage':'EVALUATION','objective':'Use observed outcomes to decide whether to stop, locally revise or replan.','key_actions':'measurement / feedback / revision routing','output':'learning + next action','platform':target.get('platform_family'),'kpi':'material learning / incremental outcome','why':'Evaluation closes the loop only where new evidence can improve the result.'},
+        ]
+    if isinstance(custom, dict):
+        out['custom']=custom
+    return out
 
 def build_culture_insights(target: dict[str, Any], culture: dict[str, Any]) -> dict[str, Any]:
     rows = []
@@ -338,11 +353,11 @@ def build_platform_content_matrix(target: dict[str, Any] | list[dict[str,Any]], 
                   'audience': 'TargetContext / AudienceContext 中的核心目标人群',
                   'topic': q,
                   'hook': hook,
-                  'script_structure': '钩子 → 核心价值/证据 → 适配或异议消解 → CTA；按Surface和资产类型调整节奏。',
+                  'script_structure': a.get('script_structure') or a.get('narrative_structure') or '由当前资产的消费者问题、证据关系、Surface与交互任务动态决定；不套固定钩子/证据/CTA顺序。',
                   'visual_form': f"{a.get('asset_type')} / {a.get('surface')}",
                   'cta': (a.get('visible_copy') or {}).get('cta') or '使用与当前旅程阶段匹配的平台原生下一步动作。',
                   'metric': a.get('success_metric') or ('CTR' if a.get('surface') in {'SEARCH_RESULTS', 'PAID_AD'} else 'CVR / comprehension / engagement as appropriate'),
-                  'race_stage': 'COMMUNICATION',
+                  'race_stage': a.get('race_stage'),
                   'culture_adaptation': culture.get('visual_implications', []) + culture.get('copy_implications', []),
                   'taboo_stereotype_check': '依据CultureContext做适配，不从身份直接推导消费行为。',
                   'why': a.get('reason_to_exist') or f'Needed to resolve shopper question: {q}',
@@ -437,7 +452,10 @@ def build_master_strategy(request: dict[str, Any], *, truth: dict[str, Any], res
     product_strategy = build_product_strategy(request, market, economics)
     positioning = build_positioning(request, culture, product_strategy)
     questions = request.get('shopper_questions') or [a.get('consumer_question') for a in asset_architecture.get('assets', []) if a.get('consumer_question')]
-    marketing = build_marketing_frameworks(positioning, questions, request.get('target') or {})
+    agent_plan=request.get('_agent_autonomy_plan') or {}
+    framework_plan=(agent_plan.get('strategy_frameworks') if isinstance(agent_plan,dict) else None)
+    if framework_plan is None: framework_plan=request.get('marketing_frameworks') or request.get('persuasion_frameworks')
+    marketing = build_marketing_frameworks(positioning, questions, request.get('target') or {}, framework_plan)
     culture_insights = build_culture_insights(request.get('target') or {}, culture)
     visual = build_visual_strategy(request, creative, photography_validation, culture)
     content_targets=request.get('platform_content_targets') or [request.get('target') or {}]
@@ -452,7 +470,7 @@ def build_master_strategy(request: dict[str, Any], *, truth: dict[str, Any], res
         '04_marketing_core_strategy': {'product_strategy': product_strategy, 'positioning': positioning, 'frameworks': marketing},
         '05_visual_photography_strategy': visual,
         '06_platform_content_matrix': content_matrix,
-        '07_race_execution_table': marketing['RACE'],
+        '07_race_execution_table': marketing.get('RACE', []),
         '08_culture_adaptation_checklist': culture_check,
         '09_risk_measurement_priority_next_steps': {
             'compliance': compliance,

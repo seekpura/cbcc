@@ -8,9 +8,9 @@ def compile_persuasion_frameworks(shopper_questions:list[str], product:dict[str,
     Frameworks are not asset templates. They annotate decision jobs so downstream
     content can use only the parts that actually help a shopper move forward.
     """
-    requested=requested or ['AIDA','FABE','4P']
+    requested=[] if requested is None else list(requested)
     qs=[q for q in shopper_questions if str(q).strip()]
-    out={'status':'COMPILED','frameworks':{},'principle':'Frameworks annotate shopper decisions; they do not determine a fixed asset sequence.'}
+    out={'status':'COMPILED' if requested else 'NOT_REQUESTED','frameworks':{},'requested':requested,'principle':'Frameworks are optional reasoning tools. Apply only frameworks the user/Agent selected because they change a concrete decision; they never determine a fixed asset sequence.'}
     if 'AIDA' in requested:
         stages=['ATTENTION','INTEREST','DESIRE','ACTION']
         out['frameworks']['AIDA']=[{'stage':stages[min(i,3)],'shopper_question':q} for i,q in enumerate(qs)]

@@ -22,7 +22,7 @@ from .decision import compile_persuasion_frameworks
 from .research import compile_research_gate, apply_host_research_response
 from .agent_autonomy import (
     compile_agent_autonomy_plan, research_requirements_from_plan, derive_content_families,
-    agent_creative_opportunities, agent_creative_directions,
+    agent_creative_opportunities, agent_creative_directions, compile_agent_next_action,
 )
 from .creative import compile_curation, compile_creative_council, compile_cmf, compile_inclusive_photography, apply_creative_system_to_assets
 from .creative_opportunity import compile_creative_opportunity_universe
@@ -407,6 +407,13 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
         st.set_gate('PRODUCTION','READY_REVIEW' if production_run.get('status')=='COMPLETE' else 'PENDING',production_artifacts,production_run)
     else:
         st.set_gate('PRODUCTION','PENDING',[],production_run)
+
+    agent_next_action=compile_agent_next_action(
+        agent_plan,request=request,research_gate=research_gate,asset_architecture=architecture,
+        creative_council=council,compliance=compliance,production_run=production_run,
+    )
+    _write(p/'artifacts/agent_next_action.json',agent_next_action)
+
     def _capability_row(name,input_active,input_status,consumers,downstream_ok=True):
         status='INTEGRATED_ACTIVE' if input_active and downstream_ok else ('INTEGRATED_INACTIVE_NO_PROJECT_INPUT' if not input_active else 'INTEGRATION_GAP')
         return {'capability':name,'project_input_active':bool(input_active),'input_status':input_status,'runtime_wiring_status':status,'consumers':consumers,'integrated':status!='INTEGRATION_GAP'}

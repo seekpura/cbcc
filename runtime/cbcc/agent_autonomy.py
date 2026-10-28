@@ -114,6 +114,7 @@ def compile_agent_autonomy_plan(request: Mapping[str, Any]) -> dict[str, Any]:
     content_scope = dict(agent.get('content_scope') or {}) if isinstance(agent.get('content_scope'), Mapping) else {}
     creative_exploration = dict(agent.get('creative_exploration') or {}) if isinstance(agent.get('creative_exploration'), Mapping) else {}
     iteration_policy = dict(agent.get('iteration_policy') or {}) if isinstance(agent.get('iteration_policy'), Mapping) else {}
+    strategy_frameworks = deepcopy(agent.get('strategy_frameworks') if agent.get('strategy_frameworks') is not None else (request.get('marketing_frameworks') if request.get('marketing_frameworks') is not None else request.get('persuasion_frameworks')))
 
     stop_conditions = _strings(agent.get('research_stop_conditions')) or [
         'Stop when additional research is unlikely to change a material strategy, listing, asset, compliance or production decision.',
@@ -156,6 +157,7 @@ def compile_agent_autonomy_plan(request: Mapping[str, Any]) -> dict[str, Any]:
         },
         'content_scope': content_scope,
         'creative_exploration': creative_exploration,
+        'strategy_frameworks': strategy_frameworks,
         'iteration_policy': iteration_policy,
         'host_agent_trace': deepcopy(agent.get('decision_trace') or []),
         'principle': 'Freeze facts and boundaries; let the agent decide the path. Dynamic does not mean random: material decisions should preserve evidence → decision → implementation trace.',
@@ -226,3 +228,89 @@ def agent_creative_opportunities(plan: Mapping[str, Any]) -> list[dict[str, Any]
 def agent_creative_directions(plan: Mapping[str, Any]) -> list[dict[str, Any]]:
     creative = plan.get('creative_exploration') if isinstance(plan.get('creative_exploration'), Mapping) else {}
     return _rows(creative.get('directions'))
+
+
+
+def compile_agent_next_action(
+    plan: Mapping[str, Any],
+    *,
+    request: Mapping[str, Any] | None = None,
+    research_gate: Mapping[str, Any] | None = None,
+    asset_architecture: Mapping[str, Any] | None = None,
+    creative_council: Mapping[str, Any] | None = None,
+    compliance: Mapping[str, Any] | None = None,
+    production_run: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Expose a decision frontier for the host Agent instead of ending after one compile pass.
+
+    This is not a fixed workflow. It reports unresolved material conditions and lets the host Agent choose
+    the next useful action or stop when the current goal is satisfied.
+    """
+    request = request or {}
+    research_gate = research_gate or {}
+    asset_architecture = asset_architecture or {}
+    creative_council = creative_council or {}
+    compliance = compliance or {}
+    production_run = production_run or {}
+
+    frontier: list[dict[str, Any]] = []
+    unresolved_research = [row for row in (research_gate.get('actions') or []) if row.get('status') != 'RESOLVED']
+    if unresolved_research:
+        frontier.append({
+            'action':'RESEARCH_OR_EVIDENCE_RESOLUTION',
+            'reason':'Current evidence gaps can still change one or more material decisions.',
+            'items':[row.get('action_id') for row in unresolved_research],
+            'agent_may_skip_when':'The host Agent determines the unresolved evidence cannot change the requested current-scope deliverable.',
+        })
+
+    coverage = asset_architecture.get('decision_coverage_summary') or {}
+    if int(coverage.get('uncovered_atomic_jobs') or 0) > 0:
+        frontier.append({
+            'action':'REPLAN_ASSET_ARCHITECTURE',
+            'reason':'At least one atomic shopper decision is not covered by a dedicated or explicitly merged asset.',
+            'count':int(coverage.get('uncovered_atomic_jobs') or 0),
+        })
+
+    assets = asset_architecture.get('assets') or []
+    if assets and not creative_council.get('selected_direction'):
+        frontier.append({
+            'action':'AUTHOR_OR_SELECT_CREATIVE_DIRECTION',
+            'reason':'Assets exist but no creative direction has been selected for production.',
+        })
+
+    compliance_status = str(compliance.get('status') or '').upper()
+    if compliance_status in {'HOLD','BLOCKED','FAIL','RESEARCH_REQUIRED'}:
+        frontier.append({
+            'action':'RESOLVE_COMPLIANCE_BOUNDARY',
+            'reason':'A current compliance/claim boundary can block publication or production.',
+            'status':compliance_status,
+        })
+
+    requested_production = bool(request.get('production_run'))
+    production_status = str(production_run.get('status') or 'NOT_REQUESTED').upper()
+    if requested_production and production_status not in {'COMPLETE','READY_REVIEW'}:
+        frontier.append({
+            'action':'PRODUCE_RESUME_OR_REPAIR',
+            'reason':'Production was requested and is not complete.',
+            'status':production_status,
+        })
+
+    iteration_policy = plan.get('iteration_policy') if isinstance(plan.get('iteration_policy'), Mapping) else {}
+    explicit_stop = bool(iteration_policy.get('stop'))
+    if explicit_stop:
+        recommendation = 'STOP_BY_AGENT_DECISION'
+    elif frontier:
+        recommendation = str((iteration_policy.get('next_action') or frontier[0]['action']))
+    else:
+        recommendation = 'STOP_CURRENT_SCOPE_SATISFIED'
+
+    return {
+        'version': VERSION,
+        'status':'ACTION_FRONTIER_OPEN' if frontier and not explicit_stop else 'CURRENT_SCOPE_SATISFIED',
+        'recommended_next_action':recommendation,
+        'frontier':frontier,
+        'fixed_sequence':False,
+        'agent_has_final_routing_authority':True,
+        'stop_conditions':((plan.get('research') or {}).get('stop_conditions') if isinstance(plan.get('research'), Mapping) else []) or [],
+        'principle':'Continue only while another action can materially improve correctness, commercial usefulness or execution readiness. Do not loop for quota completion.',
+    }
