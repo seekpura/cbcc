@@ -19,3 +19,5 @@ v0.6.14 provided an executable ProviderExecutor lifecycle, but the host still ne
 
 ## Boundary
 v0.6.15 does not add a provider-specific credential store or network SDK. The next host surface must invoke the bridge without serializing secrets into project files, command history or adapter declarations.
+
+- Release regression rule: compare full-suite failure node IDs with current main and ship only when `NEW_FAILURE_COUNT=0`.

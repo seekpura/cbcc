@@ -1,13 +1,22 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.14-provider-executor-lifecycle
+version: 0.6.15-provider-executor-bridge
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.15 Provider Adapter Registry / Executor Bridge
+- 新增 credential-free `ProviderAdapterRegistry`：按 provider / production mode / capabilities / operations 发现适配器，优先级选择确定性；显式指定 adapter 也必须通过 capability 匹配。
+- 新增 `ProviderExecutorBridge`，只编排现有 v0.6.14 `ProviderExecutor`；唯一执行链保持 `Provider Job → Adapter Registry → Executor Bridge → ProviderExecutor → Production Receipt → Ingest`，不建立旁路完成态。
+- 标准化 transient / permanent / rate-limit 错误；retry 有界，backoff 可配置，429 可使用 provider `retry_after_seconds`。未知异常默认永久失败，避免认证/参数错误无限重试。
+- `bridge_state.json` 只保存 adapter ID、策略、attempt history、cancel/reconcile 状态；runtime_context / callbacks / API keys / credentials 不写入项目文件。
+- 新增 cancel 与 reconcile 语义；reconcile 对比本地 executor state 与 provider 状态，不覆盖 `executor_state.json` 或 receipt lineage。
+- 新增 `HostCallbackExecutor` 与 `EPV_HOST_CALLBACK_V1`：真实宿主通过 runtime callback/SDK/client 注入 Provider 能力；CBCC 不保存凭证。Reference Memory adapter 保持 opt-in，不是 production default。
+- `provider_contract()` 对 EXTERNAL_ADAPTER 显式暴露 executor + bridge contract，避免 Bridge 成为未接路由的孤立模块。
 
 ## v0.6.14 Provider Executor Lifecycle
 - `ProviderExecutor` 是真实 Provider 执行的可插拔边界：adapter 自己负责 credentials / network client / vendor SDK，CBCC 负责 portable job、source lineage、idempotency、resume state、output hash 与 production receipt。

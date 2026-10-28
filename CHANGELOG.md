@@ -1,3 +1,11 @@
+## 0.6.15 — Provider Adapter Registry / Executor Bridge
+- Added credential-free provider adapter discovery and deterministic capability-based selection.
+- Added host executor bridge with bounded retry/backoff, provider retry-after, cancel and reconcile semantics.
+- Added host callback provider profile so real SDK/network/auth stay external to CBCC runtime state.
+- Kept one execution chain through existing ProviderExecutor → Production Receipt → Ingest authority.
+- Bound bridge capability contract into external provider routing.
+- See `CHANGELOG_V0615.md`.
+
 ## 0.6.14 — Provider Executor Lifecycle
 - Added pluggable `ProviderExecutor` execution boundary with credential/network ownership kept in provider adapters.
 - Added persisted executor state for upload/refresh → idempotent submit → poll/resume → collect → byte resolution → production receipt.

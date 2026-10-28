@@ -1,7 +1,7 @@
-# CBCC v0.6.14 CURRENT HANDOFF
+# CBCC v0.6.15 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.14-provider-executor-lifecycle`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.15-provider-executor-bridge`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -73,5 +73,17 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 8. v0.6.13 + v0.6.14 定向联测：9 passed。
 9. 全量回归与 v0.6.13 main 基线逐 node-id 对比：`NEW_FAILURE_COUNT=0`；不以固定失败数量阈值替代回归判断。
 
+## v0.6.15 已完成
+1. 新增 credential-free Adapter Registry：按 provider / mode / capability / operation discovery；确定性选择，不在 registry 保存认证信息。
+2. 新增 Executor Bridge：在 v0.6.14 executor 之上统一 retry / exponential backoff / provider retry-after / cancel / reconcile。
+3. `bridge_state.json` 与 `executor_state.json` 分工明确：前者保存宿主编排策略与尝试历史，后者继续保存 Provider job lifecycle；两者都不持久化 runtime credentials。
+4. 标准错误分类：只有显式 transient / rate-limit 才重试；未知错误按 permanent 处理。
+5. `HostCallbackExecutor` + `EPV_HOST_CALLBACK_V1` 已打通真实宿主注入面，SDK / HTTP client / auth callback 由宿主提供。
+6. Reference Memory adapter 仅 opt-in 测试使用，不进入 production default discovery。
+7. cancel / reconcile 与既有 external job ID / executor state 共用同一 lineage；没有第二套完成路径。
+8. `provider_contract()` 已显式暴露 executor + bridge contract。
+9. v0.6.13–v0.6.15 provider continuity 定向联测：16 passed。
+10. 全量回归与 v0.6.14 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；历史失败继续作为独立兼容性债务。
+
 ## 下一步唯一主任务
-**把 ProviderExecutor 从 reference protocol 推进到宿主可调用的 Adapter Registry / Executor Bridge：定义 provider adapter discovery、capability declaration、retry/backoff/rate-limit/cancel/reconcile 语义，并接一个真实 Provider profile 时保持凭证外置。与此同时继续以现有 `Provider Job → Executor → Production Receipt → Ingest` 为唯一执行链，不建立旁路。**
+**把 v0.6.15 Bridge 暴露成宿主可操作的 Execution Surface：增加 `adapter-list / provider-execute / provider-cancel / provider-reconcile` 等程序化/CLI 入口，以及不把密钥写进参数、项目文件或命令历史的 runtime-context 注入接口；这些入口必须复用 Adapter Registry → Executor Bridge → ProviderExecutor → Production Receipt → Ingest 单一链。随后再据宿主能力决定 MCP / Plugin action 映射，不先造第二套执行 runtime。**
