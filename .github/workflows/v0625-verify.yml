@@ -18,8 +18,10 @@ jobs:
           fetch-depth: 0
       - name: Verify frozen v0.6.24 main
         run: test "$(git rev-parse origin/main)" = "86af331bd13226abb87f1c62e6ac240fb87e4228"
-      - name: Apply v0.6.25 compiler patch
-        run: python .changes/v0625_apply.py
+      - name: Apply v0.6.25 patches
+        run: |
+          python .changes/v0625_apply.py
+          python .changes/v0625_fix_regressions.py
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
       - name: Targeted decision authority and autonomy continuity
@@ -33,7 +35,10 @@ jobs:
             tests/test_v0623_task_scoped_delivery.py \
             tests/test_v0622_dynamic_workspace.py \
             tests/test_v0622_relevance_driven_prompt_projection.py \
-            tests/test_v068_asset_production_workspace.py
+            tests/test_v068_asset_production_workspace.py \
+            tests/test_v0621_commerce_agent_autonomy.py \
+            tests/test_v0510_evidence_commerce_reconciliation.py::test_v0510_current_evidence_can_reorder_category_prior_and_offer_stays_hypothesis \
+            tests/test_v058_multicategory_strategy_validation.py::test_v058_platform_pack_does_not_censor_unverified_strategy_surfaces
       - name: Full regression node-id diff against v0.6.24 main
         env:
           PYTHONPATH: runtime
@@ -60,11 +65,15 @@ jobs:
           if new:
               print('NEW_FAILURES:'); print('\n'.join(new)); raise SystemExit(1)
           PY
-      - name: Commit materialized v0.6.25 compiler
+      - name: Commit materialized v0.6.25 source
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add runtime/cbcc/compiler.py
+          git add \
+            runtime/cbcc/compiler.py \
+            runtime/cbcc/decision_authority.py \
+            tests/test_v0621_commerce_agent_autonomy.py \
+            tests/test_v0625_decision_question_authority.py
           if ! git diff --cached --quiet; then
             git commit -m "feat: make decision questions and frameworks task scoped"
             git push origin HEAD:work/v0625-decision-question-authority
