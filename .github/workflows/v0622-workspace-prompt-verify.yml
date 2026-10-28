@@ -1,4 +1,4 @@
-name: CBCC v0.6.22 Dynamic Workspace and Prompt verification
+name: CBCC v0.6.22 Full regression
 
 on:
   push:
@@ -6,44 +6,71 @@ on:
       - work/v0622-dynamic-workspace-prompt
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  verify-workspace-prompt:
+  full-regression:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     env:
       PYTHONPATH: runtime
+      FROZEN_MAIN: 63c696af39ac309c9d275d88160fb1fe7921c778
     steps:
       - uses: actions/checkout@v4
-      - name: Preserve open photography execution contract
-        run: python .changes/v0622_open_camera_contract_fix.py
+        with:
+          fetch-depth: 0
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
-      - name: Run v0.6.22 targeted tests
+      - name: Verify main has not moved
         shell: bash
         run: |
-          mkdir -p .changes
+          git fetch origin main
+          actual="$(git rev-parse origin/main)"
+          echo "FROZEN_MAIN=$FROZEN_MAIN"
+          echo "ACTUAL_MAIN=$actual"
+          test "$actual" = "$FROZEN_MAIN"
+      - name: Run targeted and full branch regression
+        shell: bash
+        run: |
+          mkdir -p /tmp/v0622
+          BRANCH_SHA="$(git rev-parse HEAD)"
+          echo "$BRANCH_SHA" > /tmp/v0622/branch.sha
           set +e
-          pytest -q -ra \
-            tests/test_v0622_dynamic_workspace.py \
-            tests/test_v0622_relevance_driven_prompt_projection.py \
-            > .changes/v0622-targeted.txt 2>&1
-          rc=$?
+          pytest -q -ra tests/test_v0622_dynamic_workspace.py tests/test_v0622_relevance_driven_prompt_projection.py > /tmp/v0622/targeted.txt 2>&1
+          echo "$?" > /tmp/v0622/targeted.rc
+          pytest -q -ra > /tmp/v0622/branch.txt 2>&1
+          echo "$?" > /tmp/v0622/branch.rc
           set -e
-          echo "$rc" > .changes/v0622-targeted.rc
-          cat .changes/v0622-targeted.txt
-      - name: Commit open-contract fix and diagnostics
-        if: always()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add runtime/cbcc/prompt_compiler.py .changes/v0622-targeted.txt .changes/v0622-targeted.rc
-          if ! git diff --cached --quiet; then
-            git commit -m "fix: preserve open photography execution contracts in v0.6.22"
-            git push origin HEAD:work/v0622-dynamic-workspace-prompt
-          fi
-      - name: Enforce targeted result
-        if: always()
+          cat /tmp/v0622/targeted.txt
+          echo "BRANCH_FULL_RC=$(cat /tmp/v0622/branch.rc)"
+          grep -E '^(FAILED|ERROR) ' /tmp/v0622/branch.txt | sed -E 's/^(FAILED|ERROR) ([^ ]+).*/\2/' | sort -u > /tmp/v0622/branch.nodes || true
+      - name: Run frozen main regression in the same environment
         shell: bash
-        run: test "$(cat .changes/v0622-targeted.rc)" = "0"
+        run: |
+          git checkout --detach "$FROZEN_MAIN"
+          set +e
+          pytest -q -ra > /tmp/v0622/main.txt 2>&1
+          echo "$?" > /tmp/v0622/main.rc
+          set -e
+          echo "MAIN_FULL_RC=$(cat /tmp/v0622/main.rc)"
+          grep -E '^(FAILED|ERROR) ' /tmp/v0622/main.txt | sed -E 's/^(FAILED|ERROR) ([^ ]+).*/\2/' | sort -u > /tmp/v0622/main.nodes || true
+          git checkout --detach "$(cat /tmp/v0622/branch.sha)"
+      - name: Compare failed node IDs
+        shell: bash
+        run: |
+          comm -23 /tmp/v0622/branch.nodes /tmp/v0622/main.nodes > /tmp/v0622/new.nodes || true
+          echo "TARGETED_RC=$(cat /tmp/v0622/targeted.rc)"
+          echo "BRANCH_FULL_RC=$(cat /tmp/v0622/branch.rc)"
+          echo "MAIN_FULL_RC=$(cat /tmp/v0622/main.rc)"
+          echo "BRANCH_FAILURE_COUNT=$(wc -l < /tmp/v0622/branch.nodes)"
+          echo "MAIN_FAILURE_COUNT=$(wc -l < /tmp/v0622/main.nodes)"
+          echo "NEW_FAILURE_COUNT=$(wc -l < /tmp/v0622/new.nodes)"
+          if [ -s /tmp/v0622/new.nodes ]; then
+            echo '--- NEW FAILURES ---'
+            cat /tmp/v0622/new.nodes
+          fi
+      - name: Enforce release gate
+        shell: bash
+        run: |
+          test "$(cat /tmp/v0622/targeted.rc)" = "0"
+          test ! -s /tmp/v0622/new.nodes
