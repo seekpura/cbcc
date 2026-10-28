@@ -26,7 +26,7 @@ from .decision_authority import (
     compile_decision_trace_rows,
     augment_agent_next_action,
 )
-from .scope_readiness import compile_required_content_families, compile_gate_scope
+from .scope_readiness import compile_required_content_families, compile_gate_scope, request_intent_present
 from .research import compile_research_gate, apply_host_research_response
 from .agent_autonomy import (
     compile_agent_autonomy_plan, research_requirements_from_plan, derive_content_families,
@@ -139,7 +139,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     p=Path(project_dir)
     try: st=ProjectState.load(p)
     except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.12-portable-provider-package-production-receipt')
-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.27-current-scope-completion'; st.save(); _write(st.meta/'request.json',request)
+    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.28-agent-frontier-scope'; st.save(); _write(st.meta/'request.json',request)
 
     agent_plan=compile_agent_autonomy_plan(request)
     _write(p/'artifacts/agent_autonomy_plan.json',agent_plan)
@@ -454,7 +454,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
 
     production_run={'status':'NOT_REQUESTED','assets':[]}
     production_artifacts=[]
-    if request.get('production_run') and request.get('compile_assets') and asset_compile.get('status')=='COMPILED':
+    if request_intent_present(request,'production_run') and request.get('compile_assets') and asset_compile.get('status')=='COMPILED':
         pr=request.get('production_run') or {}
         production_run=build_production_run(p/'artifacts/asset_packages',request.get('production_provider_preferences'),pr.get('asset_ids'),pr.get('revision_scope'))
         provider_jobs=materialize_provider_jobs(p/'artifacts/asset_packages',production_run,p/'artifacts/provider_jobs')
@@ -469,6 +469,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     agent_next_action=compile_agent_next_action(
         agent_plan,request=request,research_gate=research_gate,asset_architecture=architecture,
         creative_council=council,compliance=compliance,production_run=production_run,
+        gate_scope=gate_scope,content_requiredness=content_requiredness,
     )
     agent_next_action=augment_agent_next_action(agent_next_action,question_authority)
     _write(p/'artifacts/agent_next_action.json',agent_next_action)
@@ -498,7 +499,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
         _capability_row('KNOWLEDGE_ONTOLOGY_PROMPTS',True,strategy_context.get('status'),['Section authority bindings across 01–09'],bool(strategy_context.get('selected_prompts')) and bool(strategy_context.get('selected_knowledge'))),
         _capability_row('COMPLIANCE',True,compliance.get('status'),['Strategy §9 risk','Claim/source publication boundary','Execution readiness'],True),
         _capability_row('ASSET_COMPILER',bool(request.get('compile_assets')),asset_compile.get('status'),['Per-asset 00–11 production packages','Package validation'],(not request.get('compile_assets')) or asset_compile.get('status')=='COMPILED'),
-        _capability_row('PROVIDER_PRODUCTION',bool(request.get('production_run')),production_run.get('status'),['Frozen Provider Jobs','Provider Result ingestion','Review workspace'],(not request.get('production_run')) or bool(production_run.get('provider_jobs'))),
+        _capability_row('PROVIDER_PRODUCTION',request_intent_present(request,'production_run'),production_run.get('status'),['Frozen Provider Jobs','Provider Result ingestion','Review workspace'],(not request_intent_present(request,'production_run')) or bool(production_run.get('provider_jobs'))),
         _capability_row('REVIEW_LOCAL_REVISION_PACKAGE_HASH',bool(request.get('compile_assets')),'WIRED' if request.get('compile_assets') else 'NOT_REQUESTED',['Asset package hash binding','Review workspace','Local revision scope','Provider result/package-hash validation'],True),
         _capability_row('MEASUREMENT_REVISION_INTEGRATION',bool(domain.get('ads') or domain.get('feedback') or domain.get('experiment')),revision_routing.get('status'),['Strategy §9','Decision Index','Local revision candidates'],True),
         _capability_row('POST_PRODUCTION_LEARNING_LOOP',(p/'artifacts/learning_latest.json').exists(),'LEARNING_APPLIED' if (p/'artifacts/learning_latest.json').exists() else 'NOT_YET_APPLIED',['Local Revision lineage','Measurement gate','Learning ledger','Strategy Authority local-layer overlays'],True),

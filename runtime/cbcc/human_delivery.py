@@ -164,12 +164,18 @@ def _delivery_task_scope(project:Path) -> dict[str,Any]:
     submission_terms=('seller center','upload listing','publish listing','上架','发布商品','商品发布')
     listing_active=bool(request.get('listing_input')) or any(x in {'LISTING','SEARCH','OFFER_PROMOTION'} for x in families) or any(t in objective for t in listing_terms)
     submission_sensitive=bool(request.get('listing_submission') or request.get('publish_listing') or request.get('submission_ready')) or any(t in objective for t in submission_terms)
-    frontier=list(next_action.get('frontier') or [])
+    blocking_frontier=list(next_action.get('blocking_frontier') or [])
+    advisory_frontier=list(next_action.get('advisory_frontier') or [])
+    frontier=list(next_action.get('frontier') or (blocking_frontier+advisory_frontier))
     return {
         'listing_active':listing_active,
         'listing_submission_sensitive':submission_sensitive,
         'families':families,
         'frontier':frontier,
+        'blocking_frontier':blocking_frontier,
+        'advisory_frontier':advisory_frontier,
+        'blocking_frontier_count':len(blocking_frontier),
+        'advisory_frontier_count':len(advisory_frontier),
         'recommended_next_action':next_action.get('recommended_next_action'),
         'scope_status':next_action.get('status'),
         'principle':'Human delivery follows the current commerce task. Preserved data does not become a blocking workspace merely because the system knows how to render it.',
@@ -320,11 +326,17 @@ def build_project_hub_md(center:dict[str,Any], strategy_path:str='strategy/MASTE
         lines += ['## Listing 当前范围','',f"- 状态：{r.get('status')}；当前要求字段中阻断 {r.get('pending_count',0)} 项；已就绪 {ready} 项；可选/规划缺口 {r.get('optional_gap_count',0)} 项。",'']
     else:
         lines += ['## Listing 当前范围','', '- 当前任务未激活 Listing；Listing 字段不参与项目 readiness。已有数据保留，但不会抢占视觉 / 内容 / 生产主任务。','']
-    frontier=scope.get('frontier') or []
-    if frontier:
-        lines += ['## Agent 识别的高价值下一动作','']
-        for item in frontier:
-            lines.append(f"- **{item.get('action') or 'NEXT'}**：{item.get('reason') or '继续处理当前未解决条件。'}")
+    blocking_frontier=scope.get('blocking_frontier') or []
+    advisory_frontier=scope.get('advisory_frontier') or []
+    if blocking_frontier:
+        lines += ['## 当前范围必须先解决','']
+        for item in blocking_frontier:
+            lines.append(f"- **{item.get('action') or 'NEXT'}**：{item.get('reason') or '该条件会阻断当前范围完成。'}")
+        lines.append('')
+    if advisory_frontier:
+        lines += ['## 可选后续优化 / 研究（不阻断当前完成）','']
+        for item in advisory_frontier:
+            lines.append(f"- **{item.get('action') or 'OPTIONAL'}**：{item.get('reason') or '可用于提高后续置信度或扩展范围。'}")
         lines.append('')
     if assets:
         lines += ['## 资产速览','', '| 资产 ID | 展示位置（Surface） | 角色 | 状态 |','|---|---|---|---|']

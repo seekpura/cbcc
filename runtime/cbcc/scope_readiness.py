@@ -8,6 +8,11 @@ from .dependencies import CANONICAL_GATES
 ASSET_FAMILIES={'VISUAL','RICH_CONTENT','VIDEO','CREATOR_AFFILIATE','LIVE','PAID','SOCIAL','STORE','CX','LIFECYCLE'}
 
 
+def request_intent_present(request: Mapping[str,Any], key: str) -> bool:
+    """Presence-based request intent; an empty dict/list may intentionally mean 'use defaults'."""
+    return key in request and request.get(key) is not None and request.get(key) is not False
+
+
 def _strings(value: Any) -> list[str]:
     if value is None:
         return []
@@ -71,7 +76,7 @@ def compile_required_content_families(
         required.add('COMPLIANCE'); reasons.setdefault('COMPLIANCE',[]).append('EXPLICIT_COMPLIANCE_DELIVERABLE')
 
     questions=bool((question_authority or {}).get('shopper_questions'))
-    production_intent=bool(request.get('compile_assets') or request.get('production_run'))
+    production_intent=bool(request.get('compile_assets')) or request_intent_present(request,'production_run')
     if production_intent and questions:
         for family in active:
             if family in ASSET_FAMILIES and family not in explicit_optional:
@@ -110,7 +115,7 @@ def compile_gate_scope(
     questions=bool((question_authority or {}).get('shopper_questions'))
     decision_gaps=bool((question_authority or {}).get('decision_gaps'))
     compile_assets=bool(request.get('compile_assets'))
-    production=bool(request.get('production_run'))
+    production=request_intent_present(request,'production_run')
     measurement=bool(request.get('measurement_plan') or request.get('experiment') or request.get('ad_analysis') or request.get('feedback_rows'))
     learning=bool(request.get('learning_cycle') or request.get('learning_input') or request.get('apply_learning'))
     culture=bool(request.get('audience_culture'))

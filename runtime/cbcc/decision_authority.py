@@ -3,6 +3,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Mapping
 
+from .scope_readiness import request_intent_present
+
 
 ASSET_FAMILIES = {
     'VISUAL','RICH_CONTENT','VIDEO','CREATOR_AFFILIATE','LIVE','PAID','SOCIAL','STORE','CX','LIFECYCLE'
@@ -85,7 +87,7 @@ def derive_task_content_families(
         or any((row.get('consumer_question') or row.get('shopper_question') or row.get('question')) for row in _rows(request.get('asset_jobs')))
         or any((row.get('consumer_question') or row.get('shopper_question') or row.get('question')) for row in _rows(request.get('video_jobs')))
     )
-    if (request.get('compile_assets') or request.get('production_run')) and authored_questions:
+    if (request.get('compile_assets') or request_intent_present(request,'production_run')) and authored_questions:
         # Surface is only an execution constraint after a real decision scope exists.  It never creates
         # Listing/Search/Offer work by itself, but it may select the concrete asset family needed to
         # answer an already-authored shopper question.
@@ -232,7 +234,7 @@ def compile_decision_question_authority(
         or request.get('asset_jobs')
         or request.get('video_jobs')
         or request.get('compile_assets')
-        or request.get('production_run')
+        or request_intent_present(request,'production_run')
     )
     decision_gaps: list[dict[str, Any]] = []
     if asset_scope_requested and not rows:
@@ -294,23 +296,36 @@ def augment_agent_next_action(
 ) -> dict[str, Any]:
     """Expose unresolved decision-scope gaps to the Agent instead of silently inventing questions/assets."""
     out = deepcopy(dict(next_action or {}))
-    frontier = list(out.get('frontier') or [])
+    blocking = list(out.get('blocking_frontier') or [])
+    advisory = list(out.get('advisory_frontier') or [])
+    if not blocking and not advisory:
+        # Backward-compatible input from older frontier shape.
+        blocking = [dict(x) for x in (out.get('frontier') or []) if isinstance(x,Mapping) and x.get('blocking') is not False]
+        advisory = [dict(x) for x in (out.get('frontier') or []) if isinstance(x,Mapping) and x.get('blocking') is False]
     for gap in question_authority.get('decision_gaps') or []:
         if not isinstance(gap, Mapping):
             continue
-        frontier.insert(0, {
+        blocking.insert(0, {
             'action':'AUTHOR_DECISION_OR_ASSET_SCOPE',
             'reason':gap.get('reason'),
             'code':gap.get('code'),
             'required_action':gap.get('required_action'),
             'blocking_scope':gap.get('blocking_scope') or [],
+            'blocking':True,
         })
-    if frontier:
-        out['frontier'] = frontier
-        out['status'] = 'ACTION_FRONTIER_OPEN'
-        current = str(out.get('recommended_next_action') or '')
+    out['blocking_frontier']=blocking
+    out['advisory_frontier']=advisory
+    out['frontier']=blocking+advisory
+    out['blocking_frontier_count']=len(blocking)
+    out['advisory_frontier_count']=len(advisory)
+    if blocking:
+        out['status']='ACTION_FRONTIER_OPEN'
+        current=str(out.get('recommended_next_action') or '')
         if current.startswith('STOP_') or not current:
-            out['recommended_next_action'] = frontier[0]['action']
+            out['recommended_next_action']=blocking[0]['action']
+    else:
+        out['status']='CURRENT_SCOPE_SATISFIED'
+        out['recommended_next_action']='STOP_BY_AGENT_DECISION' if out.get('agent_stop_requested') else 'STOP_CURRENT_SCOPE_SATISFIED'
     out['decision_question_authority'] = {
         'status':question_authority.get('status'),
         'question_count':question_authority.get('question_count', 0),

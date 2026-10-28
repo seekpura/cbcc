@@ -18,7 +18,8 @@ def test_advisory_research_does_not_force_another_agent_loop():
     assert out['status']=='CURRENT_SCOPE_SATISFIED'
     assert out['recommended_next_action']=='STOP_CURRENT_SCOPE_SATISFIED'
     assert out['blocking_frontier']==[]
-    assert out['advisory_frontier'][0]['action']=='OPTIONAL_RESEARCH_OR_EVIDENCE_REFRESH'
+    assert out['advisory_frontier'][0]['action']=='RESEARCH_OR_EVIDENCE_RESOLUTION'
+    assert out['advisory_frontier'][0]['blocking'] is False
 
 
 def test_research_blocks_only_when_routed_to_current_blocking_gate():
@@ -52,7 +53,7 @@ def test_agent_stop_cannot_override_hard_production_blocker():
 
 
 def test_decision_scope_gap_is_blocking_and_survives_advisory_frontier():
-    base={'status':'CURRENT_SCOPE_SATISFIED','recommended_next_action':'STOP_CURRENT_SCOPE_SATISFIED','blocking_frontier':[],'advisory_frontier':[{'action':'OPTIONAL_RESEARCH_OR_EVIDENCE_REFRESH','blocking':False}],'frontier':[]}
+    base={'status':'CURRENT_SCOPE_SATISFIED','recommended_next_action':'STOP_CURRENT_SCOPE_SATISFIED','blocking_frontier':[],'advisory_frontier':[{'action':'RESEARCH_OR_EVIDENCE_RESOLUTION','blocking':False}],'frontier':[]}
     q={'decision_gaps':[{'code':'ASSET_DECISION_SCOPE_NOT_AUTHORED','reason':'Need a real decision job','required_action':'Author scope','blocking_scope':['ASSET_ARCHITECTURE']}], 'status':'NO_SHOPPER_QUESTION_AUTHORED','question_count':0}
     out=augment_agent_next_action(base,q)
     assert out['status']=='ACTION_FRONTIER_OPEN'
@@ -93,7 +94,7 @@ def test_human_project_hub_separates_blocking_and_advisory_next_actions():
         'task_scope':{
             'families':['VISUAL'],'recommended_next_action':'AUTHOR_DECISION_OR_ASSET_SCOPE',
             'blocking_frontier':[{'action':'AUTHOR_DECISION_OR_ASSET_SCOPE','reason':'缺少真实资产决策任务'}],
-            'advisory_frontier':[{'action':'OPTIONAL_RESEARCH_OR_EVIDENCE_REFRESH','reason':'可选补充研究'}],
+            'advisory_frontier':[{'action':'RESEARCH_OR_EVIDENCE_RESOLUTION','reason':'可选补充研究','blocking':False}],
             'listing_active':False,
         },
         'media_slots':[],'risks_and_holds':[],
@@ -102,3 +103,9 @@ def test_human_project_hub_separates_blocking_and_advisory_next_actions():
     assert '当前范围必须先解决' in md
     assert '可选后续优化 / 研究（不阻断当前完成）' in md
     assert '缺少真实资产决策任务' in md and '可选补充研究' in md
+
+
+def test_empty_production_config_still_counts_as_explicit_production_intent():
+    out=compile_agent_next_action({},request={'production_run':{}},production_run={'status':'PENDING'},gate_scope=_gate_scope('PRODUCTION'),content_requiredness={})
+    assert out['status']=='ACTION_FRONTIER_OPEN'
+    assert out['blocking_frontier'][0]['action']=='PRODUCE_RESUME_OR_REPAIR'

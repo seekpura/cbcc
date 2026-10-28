@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import Any, Mapping
 
 from .models import stable_hash
+from .scope_readiness import request_intent_present
 
 VERSION = '0.6.21-commerce-agent-autonomy'
 
@@ -314,4 +315,123 @@ def compile_agent_next_action(
         'agent_has_final_routing_authority':True,
         'stop_conditions':((plan.get('research') or {}).get('stop_conditions') if isinstance(plan.get('research'), Mapping) else []) or [],
         'principle':'Continue only while another action can materially improve correctness, commercial usefulness or execution readiness. Do not loop for quota completion.',
+    }
+
+
+# v0.6.28 — current-scope frontier authority.
+_compile_agent_next_action_v0627 = compile_agent_next_action
+
+
+def _v0628_frontier_item_blocks(action:Mapping[str,Any], blocking_gates:set[str])->bool:
+    if str(action.get('status') or 'PENDING').upper()=='RESOLVED':
+        return False
+    if action.get('blocking') is False:
+        return False
+    required_for={str(x) for x in (action.get('required_for') or []) if str(x)}
+    if required_for & blocking_gates:
+        return True
+    canonical={
+        'EVIDENCE','PRODUCT_TRUTH','COMMERCE_ENTITY','TARGET_CONTEXT','CULTURE_CONTEXT','OFFER_ECONOMICS',
+        'DECISION','PLATFORM_COMPILE','CONTENT_GRAPH','ASSET_ARCHITECTURE','CREATIVE','STRATEGY_AUTHORITY',
+        'ASSET_COMPILE','EXECUTION','PRODUCTION','MEASUREMENT','LEARNING','AUDIT'
+    }
+    if required_for and required_for <= canonical:
+        return False
+    return action.get('blocking') is True
+
+
+def compile_agent_next_action(
+    plan: Mapping[str, Any],
+    *,
+    request: Mapping[str, Any] | None = None,
+    research_gate: Mapping[str, Any] | None = None,
+    asset_architecture: Mapping[str, Any] | None = None,
+    creative_council: Mapping[str, Any] | None = None,
+    compliance: Mapping[str, Any] | None = None,
+    production_run: Mapping[str, Any] | None = None,
+    gate_scope: Mapping[str, Any] | None = None,
+    content_requiredness: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Compile a blocking vs advisory frontier for the *current* requested scope.
+
+    Advisory work remains discoverable without forcing another loop.  An Agent stop request cannot override
+    current hard blockers such as required compliance, required asset decisions, or incomplete requested production.
+    """
+    request=request or {}; research_gate=research_gate or {}; asset_architecture=asset_architecture or {}
+    creative_council=creative_council or {}; compliance=compliance or {}; production_run=production_run or {}
+    gate_scope=gate_scope or {}; content_requiredness=content_requiredness or {}
+    gate_rows=gate_scope.get('gates') if isinstance(gate_scope.get('gates'),Mapping) else {}
+    blocking_gates={str(g) for g,m in gate_rows.items() if isinstance(m,Mapping) and m.get('blocking_for_current_scope')}
+    required_families={str(x) for x in (content_requiredness.get('required_families') or [])}
+
+    blocking_frontier=[]; advisory_frontier=[]
+    unresolved_research=[row for row in (research_gate.get('actions') or []) if row.get('status')!='RESOLVED']
+    blocking_research=[row for row in unresolved_research if _v0628_frontier_item_blocks(row,blocking_gates)]
+    advisory_research=[row for row in unresolved_research if row not in blocking_research]
+    if blocking_research:
+        blocking_frontier.append({
+            'action':'RESEARCH_OR_EVIDENCE_RESOLUTION',
+            'reason':'Current-scope blocking evidence can still change a required deliverable or hard boundary.',
+            'items':[row.get('action_id') for row in blocking_research],
+            'blocking':True,
+        })
+    if advisory_research:
+        advisory_frontier.append({
+            'action':'RESEARCH_OR_EVIDENCE_RESOLUTION',
+            'reason':'Additional evidence may improve confidence or a future scope, but is not required to close the current deliverable.',
+            'items':[row.get('action_id') for row in advisory_research],
+            'blocking':False,
+        })
+
+    coverage=asset_architecture.get('decision_coverage_summary') or {}
+    uncovered=int(coverage.get('uncovered_atomic_jobs') or 0)
+    if uncovered>0:
+        row={'action':'REPLAN_ASSET_ARCHITECTURE','reason':'At least one atomic shopper decision is not covered by a dedicated or explicitly merged asset.','count':uncovered}
+        (blocking_frontier if 'ASSET_ARCHITECTURE' in blocking_gates else advisory_frontier).append({**row,'blocking':'ASSET_ARCHITECTURE' in blocking_gates})
+
+    assets=asset_architecture.get('assets') or []
+    if assets and not creative_council.get('selected_direction'):
+        row={'action':'AUTHOR_OR_SELECT_CREATIVE_DIRECTION','reason':'Assets exist but no creative direction has been selected for production.'}
+        (blocking_frontier if 'CREATIVE' in blocking_gates else advisory_frontier).append({**row,'blocking':'CREATIVE' in blocking_gates})
+
+    compliance_status=str(compliance.get('status') or '').upper()
+    compliance_problem=compliance_status in {'HOLD','BLOCKED','FAIL','RESEARCH_REQUIRED'}
+    compliance_required=('COMPLIANCE' in required_families) or bool({'ASSET_COMPILE','EXECUTION','PRODUCTION'} & blocking_gates)
+    if compliance_problem:
+        row={'action':'RESOLVE_COMPLIANCE_BOUNDARY','reason':'A compliance/claim boundary remains unresolved.','status':compliance_status}
+        (blocking_frontier if compliance_required else advisory_frontier).append({**row,'blocking':compliance_required})
+
+    requested_production=request_intent_present(request,'production_run')
+    production_status=str(production_run.get('status') or 'NOT_REQUESTED').upper()
+    if requested_production and production_status not in {'COMPLETE','READY_REVIEW'}:
+        row={'action':'PRODUCE_RESUME_OR_REPAIR','reason':'Production was requested and is not complete.','status':production_status}
+        (blocking_frontier if 'PRODUCTION' in blocking_gates else advisory_frontier).append({**row,'blocking':'PRODUCTION' in blocking_gates})
+
+    iteration_policy=plan.get('iteration_policy') if isinstance(plan.get('iteration_policy'),Mapping) else {}
+    explicit_stop=bool(iteration_policy.get('stop'))
+    if blocking_frontier:
+        recommendation=str(iteration_policy.get('next_action') or blocking_frontier[0]['action'])
+        if recommendation.startswith('STOP_'):
+            recommendation=blocking_frontier[0]['action']
+        status='ACTION_FRONTIER_OPEN'
+    else:
+        recommendation='STOP_BY_AGENT_DECISION' if explicit_stop else 'STOP_CURRENT_SCOPE_SATISFIED'
+        status='CURRENT_SCOPE_SATISFIED'
+
+    return {
+        'version':'0.6.28-agent-frontier-scope',
+        'status':status,
+        'recommended_next_action':recommendation,
+        'blocking_frontier':blocking_frontier,
+        'advisory_frontier':advisory_frontier,
+        'frontier':blocking_frontier+advisory_frontier,
+        'blocking_frontier_count':len(blocking_frontier),
+        'advisory_frontier_count':len(advisory_frontier),
+        'agent_stop_requested':explicit_stop,
+        'agent_stop_overridden_by_hard_blocker':bool(explicit_stop and blocking_frontier),
+        'fixed_sequence':False,
+        'agent_has_final_routing_authority':True,
+        'hard_constraints_override_agent_stop':True,
+        'stop_conditions':((plan.get('research') or {}).get('stop_conditions') if isinstance(plan.get('research'),Mapping) else []) or [],
+        'principle':'Blocking frontier means the current requested scope cannot close safely/correctly. Advisory frontier is optional learning or future-scope improvement and must not force another loop. Continue only for material current-scope blockers.',
     }

@@ -106,17 +106,22 @@ def evaluate_scope_completion(
 
     frontier=[]; blocking_frontier=[]; advisory_frontier=[]
     agent=dict(agent_next_action or {})
-    for raw in agent.get('frontier') or []:
-        if not isinstance(raw,Mapping):
-            continue
-        row=dict(raw); frontier.append(row)
-        action=str(row.get('action') or '')
-        if action=='RESEARCH_OR_EVIDENCE_RESOLUTION':
-            (blocking_frontier if blocking_actions else advisory_frontier).append(row)
-        elif action in HARD_FRONTIER_ACTIONS:
-            blocking_frontier.append(row)
-        else:
-            advisory_frontier.append(row)
+    if 'blocking_frontier' in agent or 'advisory_frontier' in agent:
+        blocking_frontier=[dict(x) for x in (agent.get('blocking_frontier') or []) if isinstance(x,Mapping)]
+        advisory_frontier=[dict(x) for x in (agent.get('advisory_frontier') or []) if isinstance(x,Mapping)]
+        frontier=blocking_frontier+advisory_frontier
+    else:
+        for raw in agent.get('frontier') or []:
+            if not isinstance(raw,Mapping):
+                continue
+            row=dict(raw); frontier.append(row)
+            action=str(row.get('action') or '')
+            if action=='RESEARCH_OR_EVIDENCE_RESOLUTION':
+                (blocking_frontier if blocking_actions else advisory_frontier).append(row)
+            elif action in HARD_FRONTIER_ACTIONS:
+                blocking_frontier.append(row)
+            else:
+                advisory_frontier.append(row)
 
     blocker_count=len(gate_blockers)+len(item_blockers)+len(review_pending)+len(blocking_actions)+len(open_revisions)+len(blocking_frontier)
     ready=blocker_count==0
