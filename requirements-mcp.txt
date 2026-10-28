@@ -1,3 +1,4 @@
 # Optional runtime for the real MCP transport host (Python 3.11+).
 # Core CBCC strategy/production runtime does not import this dependency unless MCP hosting is used.
-mcp[cli]>=2,<3
+# v0.6.20 transport E2E is validated against MCP Python SDK 2.3.0 / protocol 2026-07-28.
+mcp[cli]>=2.3,<3
