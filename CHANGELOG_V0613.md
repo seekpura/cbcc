@@ -14,3 +14,6 @@
 
 ## Boundary
 Provider-specific credentials, upload APIs, polling clients and download authentication remain adapter/executor responsibilities. v0.6.13 defines the executable transport contract they must satisfy.
+
+## Compatibility
+- Materialized provider results keep legacy `fixture://` receipt semantics for deterministic local/test handoff. Strict byte resolution remains mandatory for real remote schemes (`http(s)`, `s3`, `gs`, Azure and provider URIs), preserving v0.6.13 remote-integrity guarantees without regressing the existing FILE_HANDOFF lifecycle.

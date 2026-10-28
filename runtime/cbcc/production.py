@@ -454,7 +454,13 @@ def ingest_provider_job_results(run:dict[str,Any], jobs_root:Path, remote_artifa
             result=json.loads(rp.read_text(encoding='utf-8'))
             result['_provider_job_ingest']=True
             result['_provider_job_dir']=str(rp.parent)
-            result['_provider_transport_verification_required']=True
+            receipt=result.get('production_receipt') if isinstance(result.get('production_receipt'),dict) else {}
+            artifacts=receipt.get('output_artifacts') if isinstance(receipt.get('output_artifacts'),list) else []
+            strict_remote_prefixes=('http://','https://','s3://','gs://','azure://','az://','provider://')
+            result['_provider_transport_verification_required']=any(
+                str((artifact or {}).get('path_or_uri') or (artifact or {}).get('uri') or (artifact or {}).get('path') or '').lower().startswith(strict_remote_prefixes)
+                for artifact in artifacts if isinstance(artifact,dict)
+            )
             results.append(result)
         except Exception as e:
             results.append({'asset_id':row['asset_id'],'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':None,'qa':{},'_provider_job_ingest':True,'_provider_job_dir':str(rp.parent),'_parse_error':f'{type(e).__name__}: {e}'})
