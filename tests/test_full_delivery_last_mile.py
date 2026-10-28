@@ -1,0 +1,103 @@
+from __future__ import annotations
+
+from pathlib import Path
+import json
+import subprocess
+import sys
+
+from cbcc.compiler import build_project
+from cbcc.delivery_export import export_delivery_package
+
+ROOT=Path(__file__).resolve().parents[1]
+
+
+def _pack(tmp_path:Path)->Path:
+    pack=tmp_path/'packs'; pack.mkdir(exist_ok=True)
+    (pack/'test.yaml').write_text(
+        'pack_id: test\nplatform_family: test_platform\nsite: "*"\nstatus: TEST_FIXTURE_VERIFIED\nsynthetic_for_test: true\n'
+        'capabilities: [LISTING, SEARCH, VISUAL, VIDEO, PAID, MEASUREMENT, COMPLIANCE]\n'
+        'surfaces: [PDP, GALLERY, PDP_VIDEO, PAID_AD]\nrule_atoms: []\nresearch_required_for: []\n',
+        encoding='utf-8'
+    )
+    return pack
+
+
+def _request():
+    return {
+        'project_id':'FULL-LAST-MILE',
+        'planning_only':True,
+        'full_strategy':True,
+        'product':{
+            'name':'Depth Contract Product','category':'beauty','net_content':'30ml',
+            'primary_conversion_proposition':'Evidence-bounded daily product value',
+            'formula':{'niacinamide':'1%'},
+        },
+        'claims':[
+            {'claim_id':'C1','claim':'Contains 1% niacinamide','evidence_grade':'B','status':'APPROVED','publication_status':'BOUNDED_SUPPORTED_CLAIM'},
+            {'claim_id':'C2','claim':'Feels lightweight','evidence_grade':'C','status':'PENDING'},
+        ],
+        'sources':[{'source_id':'SRC-PRODUCT','kind':'PRODUCT_TRUTH','source_type':'SUPPLIER_SPECIFICATION'}],
+        'target':{
+            'market':'MY','jurisdiction':'MY','platform_family':'test_platform','site':'TEST',
+            'primary_locale':'ms-MY','visible_copy_locales':['ms-MY'],'delivery_locale':'zh-CN','surfaces':['PDP','GALLERY']
+        },
+        'audience_culture':{
+            'race_ethnicity':[{'group':'多元马来西亚城市消费者','audience':'城市生活方式消费者'}],
+            'intersectionality':{'gender':'mixed','age':'18-34','income':'mid','geography':'urban'},
+            'copy_implications':['目标市场文案需本地自然表达并回译'],
+            'visual_implications':['避免单一族裔标签化'],
+            'casting_constraints':['人物出现时保持多样、真实、非刻板化'],
+        },
+        'content_families':['LISTING','VISUAL'],
+        'shopper_questions':['它是什么？','为什么与我有关？','凭什么相信？'],
+        'compile_assets':False,
+    }
+
+
+def test_full_export_revalidates_depth_and_materializes_visible_audits(tmp_path:Path):
+    project=tmp_path/'project'
+    build_project(project,_request(),_pack(tmp_path))
+    out=tmp_path/'delivery'
+    manifest=export_delivery_package(project,out)
+
+    depth=json.loads((out/'FULL_DELIVERY_DEPTH_AUDIT.json').read_text(encoding='utf-8'))
+    prompt=json.loads((out/'PROMPT_CONSUMPTION_AUDIT.json').read_text(encoding='utf-8'))
+    html=(out/'index.html').read_text(encoding='utf-8')
+
+    assert depth['mode']=='FULL'
+    assert depth['status']=='PASS', depth
+    assert depth['depth_contract']=='FULL_DECISION_DEPTH_V1'
+    assert prompt['status']=='PASS'
+    for token in [
+        '信息完整度','产品真相与价值边界','市场 / 平台 / 人群 / 文化洞察','核心商业策略',
+        '视觉 / 摄影 / CMF / 资产策略','平台内容与 Surface 执行','RACE传播框架执行表',
+        '族裔文化适配检查表','P0/P1/P2'
+    ]:
+        assert token in html, token
+    assert manifest['workspace_contract']['full_decision_depth']=='PASS'
+    assert manifest['workspace_contract']['full_visible_objects']=='PASS'
+    assert manifest['full_delivery_depth_audit']=='FULL_DELIVERY_DEPTH_AUDIT.json'
+    assert manifest['prompt_consumption_audit']=='PROMPT_CONSUMPTION_AUDIT.json'
+
+
+def test_plugin_wrapper_requires_full_depth_and_prompt_consumption_audit(tmp_path:Path):
+    # The repair script is idempotent; CI applies it before this test, but running it here makes
+    # the contract independently reproducible in local acceptance.
+    subprocess.run([sys.executable,str(ROOT/'scripts/repair_plugin_full_depth_contract.py')],cwd=ROOT,check=True)
+    source=(ROOT/'scripts/build_plugin_dist.py').read_text(encoding='utf-8')
+    for token in [
+        'FULL 项目深度合同（宿主不可改写成简版报告）',
+        'Prompt Consumption Audit',
+        '九域决策深度合同',
+        'FULL 与 TASK_SCOPED 分权',
+        'host_custom_short_report_cannot_substitute_full_delivery',
+    ]:
+        assert token in source, token
+
+    dist=tmp_path/'dist'
+    subprocess.run([sys.executable,str(ROOT/'scripts/build_plugin_dist.py'),'--output-dir',str(dist)],cwd=ROOT,check=True)
+    release=json.loads((dist/'release_manifest.json').read_text(encoding='utf-8'))
+    dc=release['delivery_contract']
+    assert dc['full_nine_domain_decision_depth_required'] is True
+    assert dc['prompt_consumption_audit_required'] is True
+    assert dc['host_custom_short_report_cannot_substitute_full_delivery'] is True
