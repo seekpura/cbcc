@@ -1,4 +1,4 @@
-name: CBCC v0.6.13 provider transport verify
+name: CBCC v0.6.13 provider transport materialize and diagnose
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  verify-and-finalize:
+  materialize-and-diagnose:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
@@ -30,35 +30,22 @@ jobs:
             tests/test_v0612_provider_portability_receipt.py \
             tests/test_v0613_provider_transport_integrity.py
 
-      - name: Full regression with historical failure ceiling
+      - name: Capture full regression without hiding diagnostics
         shell: bash
         run: |
           set +e
-          pytest -q > /tmp/full-regression.txt 2>&1
+          pytest -q > .changes/v0613-full-regression.txt 2>&1
           rc=$?
           set -e
-          cat /tmp/full-regression.txt
-          python - <<'PY'
-          import re
-          from pathlib import Path
-          text=Path('/tmp/full-regression.txt').read_text(errors='replace')
-          fails=[int(x) for x in re.findall(r'(\d+) failed', text)]
-          passes=[int(x) for x in re.findall(r'(\d+) passed', text)]
-          failed=fails[-1] if fails else 0
-          passed=passes[-1] if passes else 0
-          print(f'FULL_REGRESSION parsed: passed={passed} failed={failed}')
-          if failed > 12:
-              raise SystemExit(f'new regression: {failed} failures exceeds historical ceiling 12')
-          if passed < 107:
-              raise SystemExit(f'unexpected pass collapse: {passed} < 107')
-          PY
+          echo "$rc" > .changes/v0613-full-regression.rc
+          cat .changes/v0613-full-regression.txt
+          echo "FULL_REGRESSION_RC=$rc"
 
-      - name: Clean staging machinery and finalize branch
+      - name: Materialize patch and diagnostic evidence on work branch
         run: |
-          rm -f .changes/stage_v0613.py .changes/apply_v0613_inner.py .changes/v0613.trigger
-          rm -f .github/workflows/v0613-verify.yml
+          rm -f .changes/v0613.trigger
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "feat: finalize CBCC v0.6.13 provider transport integrity"
+          git commit -m "chore: materialize CBCC v0.6.13 provider transport diagnostics"
           git push origin HEAD:work/v0613-provider-transport
