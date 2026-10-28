@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Any
 
 from .provider_transport import adapter_profile_for
+from .provider_executor import executor_contract
 
 DEFAULT_PROVIDER_BY_MODE={
     'REAL_PHOTO':'HUMAN_PHOTOGRAPHY',
@@ -41,10 +42,12 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
     source_binding_required=bool(real_product_mode or fidelity=='LOCKED_PIXEL')
     if source_binding_required: required_inputs.extend(['source_product_assets','source_product_bindings'])
     if real_product_mode: required_inputs.extend(['photography_contract','shot_lighting_reasoning'])
+    adapter=spec.get('adapter','FILE_HANDOFF')
     return {
         'status':'READY' if not errors else 'HOLD','provider':provider,'production_mode':mode,'product_fidelity':fidelity,
         'required_inputs':required_inputs,'expected_outputs':list(dict.fromkeys(list(spec['outputs'])+['production_receipt'])),'human_review_required':spec['human_review'],
-        'adapter':spec.get('adapter','FILE_HANDOFF'),'adapter_profile':spec.get('adapter_profile') or adapter_profile_for(spec.get('adapter','FILE_HANDOFF'),provider),'locked_pixel_support':spec['locked_pixel'],
+        'adapter':adapter,'adapter_profile':spec.get('adapter_profile') or adapter_profile_for(adapter,provider),'locked_pixel_support':spec['locked_pixel'],
+        'executor_contract':executor_contract() if adapter=='EXTERNAL_ADAPTER' else None,
         'source_binding_contract':{
             'required': source_binding_required,
             'resolver_precedence':['PROVIDER_ASSET_HANDLE','PACKAGE_RELATIVE_PATH','LOCAL_FILE_PATH'],
