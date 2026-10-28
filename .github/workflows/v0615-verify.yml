@@ -1,0 +1,48 @@
+name: CBCC v0.6.15 provider bridge verification
+
+on:
+  push:
+    branches:
+      - work/v0615-provider-executor-bridge
+
+permissions:
+  contents: write
+
+jobs:
+  verify-provider-bridge:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply v0.6.15 bridge hardening patch
+        run: python .changes/v0615_bridge_patch.py
+      - name: Install test dependencies
+        run: python -m pip install -q pytest pyyaml
+      - name: Run provider continuity and bridge tests
+        shell: bash
+        run: |
+          mkdir -p .changes
+          set +e
+          pytest -q -ra \
+            tests/test_v0613_provider_transport_integrity.py \
+            tests/test_v0614_provider_executor_lifecycle.py \
+            tests/test_v0615_provider_executor_bridge.py \
+            > .changes/v0615-test-output.txt 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > .changes/v0615-test-output.rc
+          cat .changes/v0615-test-output.txt
+      - name: Commit implementation and diagnostics
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runtime/cbcc/provider_bridge.py .changes/v0615-test-output.txt .changes/v0615-test-output.rc
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: complete v0.6.15 provider adapter bridge runtime"
+            git push origin HEAD:work/v0615-provider-executor-bridge
+          fi
+      - name: Enforce targeted test result
+        if: always()
+        shell: bash
+        run: test "$(cat .changes/v0615-test-output.rc)" = "0"
