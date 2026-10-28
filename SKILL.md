@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.22-dynamic-workspace-prompt
+version: 0.6.23-task-scoped-delivery
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -9,6 +9,17 @@ version: 0.6.22-dynamic-workspace-prompt
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
 
+
+## v0.6.23 Task-Scoped Human Delivery + Listing Authority — 当前主权威
+- **人类工作区的主任务由当前 Commerce scope 决定，不再由系统拥有的全部能力反向规定。** Listing 数据可以长期保留，但视觉、内容、Prompt、生产等当前任务不因为价格、物流、退换货或卖家信息缺失而被整项目标记为 HOLD。
+- `compile_upload_center()` 读取当前 request、Agent content scope、Content Graph 与 `agent_next_action.json`；只有 Listing / Search / Offer 或明确上架发布任务激活时，上架字段才进入当前主工作面。
+- Listing readiness 改为 **task-scoped readiness**：只让当前平台明确 required 字段与真正 submission-sensitive 字段参与阻断；未供应的可选字段不再制造“待查证”权威。
+- 非 Listing 当前任务使用 `NOT_IN_CURRENT_SCOPE`；已有 Listing / Product 数据继续保存在结构化真源和 `preserved_listing_fields`，动态化不以删除信息换简洁。
+- Listing 激活时，字段按实际出现 / 平台 required / 当前提交需要动态形成，并按商品识别、类目搜索、购买决策、事实使用、Offer 履约等语义分组；不存在固定 25 字段展示配额。
+- Listing Conversion Architecture 的 click / expectation fields 同样从当前存在或 required 字段投影，不再默认强塞 `price / variant / primary_image / faq / usage / package / attributes`。
+- 项目总控台优先显示当前 Agent scope、动态 frontier、资产与真实风险；固定“四件事 / 四步正常使用路径”退出主权威。
+- v0.6.23 发布验证：targeted + compatibility `23 passed`；相对 frozen v0.6.22 main 的全量失败 node-id `NEW_FAILURE_COUNT=0`（两侧各 12 个既有历史失败）。
+- 详细变更见 `CHANGELOG_V0623.md`。
 
 ## v0.6.22 Dynamic Workspace + Relevant Prompt Projection — 当前主权威
 - **Workspace 也是 Agent 决策面的投影，不是固定功能目录。** 一级路由和首页动作只显示当前项目实际存在或当前 frontier 需要的业务对象；Archive 等机器追踪入口保持次级，不用固定菜单数制造“完整感”。

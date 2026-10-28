@@ -1,7 +1,7 @@
-# CBCC v0.6.22 CURRENT HANDOFF
+# CBCC v0.6.23 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.22-dynamic-workspace-prompt`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.23-task-scoped-delivery`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -176,5 +176,17 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 9. 发布验证：targeted + compatibility `20 passed`；branch 与冻结 main 全量各 `12` 个既有失败，失败 node-id 差分 `NEW_FAILURE_COUNT=0`。发布判断仍以新增失败集合为准，不为追求全绿倒退能力。
 10. MCP / Plugin / HTTP / Provider Host 继续保留为可选 integration layer；v0.6.22 没有把 transport 重新提升为 Commerce 主线。
 
+## v0.6.23 已完成 — Task-Scoped Human Delivery + Listing Authority
+1. `human_delivery.py` 不再无条件构造固定 25 个上架字段并用其支配全项目 readiness；当前 request、Agent content scope、Content Graph 与 `agent_next_action` 共同决定 Listing 是否属于当前工作范围。
+2. 非 Listing 当前任务明确为 `NOT_IN_CURRENT_SCOPE`：`copy_center` 不制造价格 / 物流 / 售后 / 卖家信息缺口；已有商品与 Listing 数据继续保存在 `preserved_listing_fields` / 结构化真源。
+3. Listing 当前任务只投影 supplied + platform-required + 真正 submission-sensitive 字段；可选缺口与阻断缺口分离，只有当前 required 字段可以进入 `READY_WITH_HOLDS`。
+4. 精确平台类目只有在真实上架 / 发布任务需要时才成为 submission-sensitive；规划 category 继续可以服务策略，但不伪装成 Seller Center 最终类目。
+5. 上架字段按实际内容动态形成语义组，而不是固定 canonical 字段表；中文项目交付与目标市场文案 / 中文释义继续并存。
+6. `listing_conversion_architecture()` 的 click / post-purchase fields 改为当前字段投影；不存在固定 field quota，也不再为了“完整”制造 price / variant / FAQ / usage / package 等槽位。
+7. 项目总控台改为当前 Commerce scope + Agent frontier + Assets + real risk，而不是固定“先看四件事 / 正常使用四步”。
+8. `compiler.py` runtime version 更新为 `0.6.23-task-scoped-delivery`；v0.6.21–v0.6.22 Agent/Workspace/Prompt 自主权继续保留。
+9. v0.6.23 targeted + compatibility：`23 passed`。
+10. 全量回归相对 frozen v0.6.22 main：main 12 failures / branch 12 failures / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+
 ## 下一步唯一主任务
-**继续 Commerce Agent 静态权威深审，优先检查 `human_delivery.py` / Listing / Strategy / Asset 编译：上架中心目前仍有固定 canonical 字段与 readiness 语义，视觉/内容任务不应因为 price / shipping / returns / seller_info 未填而被整页“待补”主导；Listing 分组、Strategy 输出和 Asset/Production 继续改成由当前商业目标与 `agent_next_action` 派生。用真实跨境电商商品验证研究→策略→资产→Prompt→生产→replan/stop 的自主闭环。MCP/HTTP 仅在真实宿主接入需求出现时维护。**
+**继续 Commerce Agent 静态权威深审，下一主线转向 Strategy Authority 与 Asset Architecture / Compiler。重点区分“机器兼容与追溯所需的完整结构”和“人类当前任务必须看到/执行的内容”：九段 Strategy、框架清单、Foundation/资产角色、默认购买问题或 Production 合同都不得因为历史 schema 存在就成为当前任务配额。保留 Product Truth、证据、合规、真实商品身份与生产 lineage，同时让策略模块、资产角色、页面与生产深度由当前商业目标、真实证据、Surface 和 `agent_next_action` 派生。用真实跨境商品跑研究→策略→资产→Prompt→生产→replan/stop 闭环，检查是否还有“为了完整而生成”的内容。MCP/HTTP 继续只作为可选 integration layer。**
