@@ -1,0 +1,86 @@
+from pathlib import Path
+import shutil
+
+ROOT = Path('.')
+
+# CURRENT_HANDOFF: update only current authority / release tail, keep historical record intact.
+handoff = ROOT / 'CURRENT_HANDOFF.md'
+h = handoff.read_text(encoding='utf-8')
+h = h.replace('# CBCC v0.6.21 CURRENT HANDOFF', '# CBCC v0.6.22 CURRENT HANDOFF', 1)
+h = h.replace('当前版本：`0.6.21-commerce-agent-autonomy`。', '当前版本：`0.6.22-dynamic-workspace-prompt`。', 1)
+h = h.replace('13 个历史 pytest 失败属于既有兼容性债务', '12 个历史 pytest 失败属于既有兼容性债务')
+marker = '## 下一步唯一主任务\n'
+if marker not in h:
+    raise SystemExit('CURRENT_HANDOFF next-task marker missing')
+release = '''## v0.6.22 已完成 — Dynamic Workspace + Relevance-driven Prompt Projection
+1. 新增 `workspace_autonomy.py`：一级 Workspace 路由按当前项目真实业务对象动态出现，不再固定展示 12 个模块；首页动作同时消费 `agent_next_action.json`，不固定成上架 / 做图 / 内容 / Prompt 四按钮。
+2. 单资产工作台改为独立相关视图，而不是固定生产流水线。Design Card/购买判断聚合为“决策”，Visual / Photography-CMF / Copy / Production / Prompt 仅在相关时出现；Agent 显式 view order 优先，默认 UI 顺序仅用于阅读，不拥有规划/执行权威。
+3. `trace + source files + unknown legacy views` 聚合到 `QA / 来源`，因此取消固定阶段后仍保持参数、源文件和历史资产内容完整可追溯。
+4. Canonical Prompt 改为 relevance-driven projection：非真实摄影资产不再为了字段完整强塞焦段、快门、ISO、主辅光、CCT、偏振、Prelight 或人物摄影段落；空/不相关 section 不进入 renderer prompt。
+5. 已经被 Agent/策略选定且确实绑定到当前资产的摄影参数不会被“相关性裁剪”误删。存在 asset-specific photography reasoning 时，策略层已决定的镜头 / CCT / 光圈等可继续贯穿 Design Card → Prompt → Trace → Production。
+6. Parameter Trace、QA photography checks 与 Renderer layer plan 同步改为任务相关；不存在“上游取消必填、下游 QA 又逼着补字段”的反向静态化。
+7. Human Workspace 继续中文优先；目标市场可见文案保留目标语言并提供中文释义。Content 工作区移除固定 Hook / CTA / 传播阶段的默认权威表述。
+8. 新增 v0.6.22 动态 Workspace / Prompt relevance 回归，并升级 v0.6.8 资产工作区兼容测试的旧“动态阶段”措辞；能力保护项（决策聚合、QA/来源、legacy recoverability）继续保留。
+9. 发布验证：targeted + compatibility `20 passed`；branch 与冻结 main 全量各 `12` 个既有失败，失败 node-id 差分 `NEW_FAILURE_COUNT=0`。发布判断仍以新增失败集合为准，不为追求全绿倒退能力。
+10. MCP / Plugin / HTTP / Provider Host 继续保留为可选 integration layer；v0.6.22 没有把 transport 重新提升为 Commerce 主线。
+
+## 下一步唯一主任务
+**继续 Commerce Agent 静态权威深审，优先检查 `human_delivery.py` / Listing / Strategy / Asset 编译：上架中心目前仍有固定 canonical 字段与 readiness 语义，视觉/内容任务不应因为 price / shipping / returns / seller_info 未填而被整页“待补”主导；Listing 分组、Strategy 输出和 Asset/Production 继续改成由当前商业目标与 `agent_next_action` 派生。用真实跨境电商商品验证研究→策略→资产→Prompt→生产→replan/stop 的自主闭环。MCP/HTTP 仅在真实宿主接入需求出现时维护。**
+'''
+h = h.split(marker, 1)[0] + release
+handoff.write_text(h, encoding='utf-8')
+
+# SKILL: preserve the full existing capability contract; only advance current authority/version.
+skill = ROOT / 'SKILL.md'
+s = skill.read_text(encoding='utf-8')
+s = s.replace('version: 0.6.21-commerce-agent-autonomy', 'version: 0.6.22-dynamic-workspace-prompt', 1)
+anchor = '## v0.6.21 Commerce Agent Autonomy — 当前主权威\n'
+section = '''## v0.6.22 Dynamic Workspace + Relevant Prompt Projection — 当前主权威
+- **Workspace 也是 Agent 决策面的投影，不是固定功能目录。** 一级路由和首页动作只显示当前项目实际存在或当前 frontier 需要的业务对象；Archive 等机器追踪入口保持次级，不用固定菜单数制造“完整感”。
+- 单资产页使用动态工作视图，不存在强制的“决策→画面→摄影→文案→Prompt→QA”执行顺序。缺失/不相关视图不占位；Agent 显式顺序优先，默认顺序只有展示意义。
+- Design Card / Product Truth / source / trace 仍完整保留。动态化不得以删信息换简洁；未知 legacy 资产内容必须可在 QA / 来源中回收。
+- Prompt Projection 只携带**实际影响当前资产**的视觉、构图、摄影、灯光、CMF、人物、Surface、编辑性与商品保真参数。不得把空 schema、全局摄影 toolbox 或“专业字段”机械倾倒给生成模型。
+- 一旦 Agent/策略已经为当前资产选定摄影/构图/灯光/CMF参数，它们必须继续贯穿执行链，不能因 relevance filtering 被误删。相关性裁剪的对象是无关默认值，不是已经做出的生产决策。
+- Parameter Trace、QA checks 与 Renderer layer plan 也必须 relevance-driven；下游不得反向逼上游虚构快门、ISO、CCT、Prelight、人物摄影或其它不相关字段。
+- Content/Listing/Strategy 的人类界面继续中文优先；目标市场语言与中文释义并存。固定 Hook/CTA/RACE/页面数量/模块数量均不拥有默认权威。
+- v0.6.22 发布验证：targeted + compatibility 20 passed；相对 v0.6.21 frozen main 的全量失败 node-id `NEW_FAILURE_COUNT=0`。
+- 详细变更见 `CHANGELOG_V0622.md`。
+
+'''
+if section not in s:
+    if anchor not in s:
+        raise SystemExit('SKILL v0.6.21 anchor missing')
+    s = s.replace(anchor, section + anchor, 1)
+skill.write_text(s, encoding='utf-8')
+
+(ROOT / 'CHANGELOG_V0622.md').write_text('''# CBCC v0.6.22 — Dynamic Workspace + Relevance-driven Prompt Projection
+
+## Commerce 主线
+v0.6.22 继续 v0.6.21 的 Agent Autonomy：静态权威不仅要从研究/策略中退出，也要从人类 Workspace、Prompt Projection、Parameter Trace、QA 和 Renderer Recipe 中退出。硬约束仍来自 Product Truth、用户锁定、平台/合规、真实商品身份与明确技术规格。
+
+## 主要变更
+- 新增 `workspace_autonomy.py`，根据真实业务对象与 `agent_next_action.json` 动态生成 Workspace 路由和首页动作。
+- 单资产页面改成动态相关视图，无固定步骤序列；Agent-authored view order 优先。
+- Design Card 决策、QA/来源、trace、source files 和 unknown legacy 内容保持完整可恢复。
+- Prompt 只投影实际相关参数；非摄影任务不再被强迫携带焦段、快门、ISO、CCT、Prelight、偏振或人物摄影字段。
+- 存在 asset-specific photography reasoning 时，已选定的策略摄影参数继续进入当前资产执行链。
+- Parameter Trace、QA checks、Renderer layer plan 同步按任务相关性生成。
+- 中文人类交付保持主层；目标市场可见语言保留原文并附中文释义。
+
+## 验证
+- v0.6.22 targeted + compatibility：20 passed。
+- frozen main `63c696a` 与 v0.6.22 branch 全量 pytest 均为 12 个既有失败。
+- 失败 node-id 差分：`NEW_FAILURE_COUNT=0`。
+
+## 下一主线
+继续深审 Listing / Human Delivery / Strategy / Asset 的隐藏静态权威，尤其是固定上架字段/readiness 对非 Listing 任务的干扰。MCP/HTTP 维持可选 integration layer，不作为下一主任务。
+''', encoding='utf-8')
+
+# Final release tree must not contain construction artifacts.
+shutil.rmtree(ROOT / '.changes', ignore_errors=True)
+workflow = ROOT / '.github/workflows/v0622-workspace-prompt-verify.yml'
+if workflow.exists():
+    workflow.unlink()
+self_path = ROOT / '.release/v0622_cleanup.py'
+if self_path.exists():
+    self_path.unlink()
