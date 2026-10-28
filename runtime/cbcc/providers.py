@@ -3,6 +3,7 @@ from typing import Any
 
 from .provider_transport import adapter_profile_for
 from .provider_executor import executor_contract
+from .provider_bridge import bridge_contract
 
 DEFAULT_PROVIDER_BY_MODE={
     'REAL_PHOTO':'HUMAN_PHOTOGRAPHY',
@@ -48,6 +49,7 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
         'required_inputs':required_inputs,'expected_outputs':list(dict.fromkeys(list(spec['outputs'])+['production_receipt'])),'human_review_required':spec['human_review'],
         'adapter':adapter,'adapter_profile':spec.get('adapter_profile') or adapter_profile_for(adapter,provider),'locked_pixel_support':spec['locked_pixel'],
         'executor_contract':executor_contract() if adapter=='EXTERNAL_ADAPTER' else None,
+        'executor_bridge_contract':bridge_contract() if adapter=='EXTERNAL_ADAPTER' else None,
         'source_binding_contract':{
             'required': source_binding_required,
             'resolver_precedence':['PROVIDER_ASSET_HANDLE','PACKAGE_RELATIVE_PATH','LOCAL_FILE_PATH'],
