@@ -20,7 +20,7 @@ jobs:
         run: |
           test "$(git rev-parse origin/main)" = "aceefb6e87615d126e4e883024c798942bb3ff7f"
       - name: Apply v0.6.23 patch
-        run: python .changes/v0623_patch.py
+        run: python .changes/v0623_patch_runner.py
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
       - name: Targeted autonomy and compatibility tests
@@ -52,6 +52,8 @@ jobs:
               return sorted(set(re.findall(r'^FAILED\s+([^\s]+)',text,re.M)))
           b=failed('/tmp/branch-pytest.txt'); m=failed('/tmp/main-pytest.txt')
           new=sorted(set(b)-set(m)); fixed=sorted(set(m)-set(b))
+          print('MAIN_PYTEST_RC=',"${MAIN_RC}")
+          print('BRANCH_PYTEST_RC=',"${BRANCH_RC}")
           print('MAIN_FAILURE_COUNT=',len(m))
           print('BRANCH_FAILURE_COUNT=',len(b))
           print('NEW_FAILURE_COUNT=',len(new))
