@@ -6,6 +6,8 @@ from .compiler import build_project
 from .audit import machine_audit
 from .review import materialize_review_workspace
 from .production import ingest_provider_job_results
+from .provider_bridge import ExecutionPolicy
+from .provider_surface import provider_execution_surface_from_environment
 from .learning_loop import compile_local_revision_jobs, ingest_local_revision_results, compile_learning_cycle, apply_learning_to_strategy, sync_local_revision_review_state
 
 def main(argv=None):
@@ -17,6 +19,10 @@ def main(argv=None):
     p=sp.add_parser('revise'); p.add_argument('--project-dir',required=True); p.add_argument('--changed',nargs='+',required=True)
     p=sp.add_parser('review-build'); p.add_argument('--project-dir',required=True)
     p=sp.add_parser('review-apply'); p.add_argument('--project-dir',required=True); p.add_argument('--review-file',required=True)
+    p=sp.add_parser('adapter-list'); p.add_argument('--provider'); p.add_argument('--production-mode'); p.add_argument('--capability',action='append')
+    p=sp.add_parser('provider-execute'); p.add_argument('--project-dir',required=True); p.add_argument('--asset-id',action='append'); p.add_argument('--adapter-id'); p.add_argument('--max-attempts',type=int,default=3); p.add_argument('--max-polls',type=int,default=8)
+    p=sp.add_parser('provider-cancel'); p.add_argument('--project-dir',required=True); p.add_argument('--asset-id',required=True); p.add_argument('--adapter-id'); p.add_argument('--reason')
+    p=sp.add_parser('provider-reconcile'); p.add_argument('--project-dir',required=True); p.add_argument('--asset-id',required=True); p.add_argument('--adapter-id')
     p=sp.add_parser('provider-ingest'); p.add_argument('--project-dir',required=True)
     p=sp.add_parser('revision-compile'); p.add_argument('--project-dir',required=True); p.add_argument('--revision-request-id',action='append')
     p=sp.add_parser('revision-ingest'); p.add_argument('--project-dir',required=True); p.add_argument('--revision-id',action='append')
@@ -36,6 +42,14 @@ def main(argv=None):
         st=ProjectState.load(Path(a.project_dir)); out=materialize_review_workspace(Path(a.project_dir),st.data)
     elif a.cmd=='review-apply':
         project=Path(a.project_dir); st=ProjectState.load(project); d=json.loads(Path(a.review_file).read_text(encoding='utf-8')); st.apply_review_decision(d); sync_local_revision_review_state(project,st.data); materialize_review_workspace(project,st.data); out=st.data
+    elif a.cmd=='adapter-list':
+        surface=provider_execution_surface_from_environment(); out=surface.list_adapters(provider=a.provider,production_mode=a.production_mode,required_capabilities=a.capability)
+    elif a.cmd=='provider-execute':
+        surface=provider_execution_surface_from_environment(); policy=ExecutionPolicy(max_attempts=max(1,a.max_attempts),max_polls_per_attempt=max(0,a.max_polls)); out=surface.execute_project(Path(a.project_dir),asset_ids=a.asset_id,adapter_id=a.adapter_id,policy=policy)
+    elif a.cmd=='provider-cancel':
+        surface=provider_execution_surface_from_environment(); requested=surface.request_cancel(Path(a.project_dir),a.asset_id,reason=a.reason); cancelled=surface.cancel_project_job(Path(a.project_dir),a.asset_id,adapter_id=a.adapter_id); out={'request':requested,'cancel':cancelled,'status':cancelled.get('status')}
+    elif a.cmd=='provider-reconcile':
+        surface=provider_execution_surface_from_environment(); out=surface.reconcile_project_job(Path(a.project_dir),a.asset_id,adapter_id=a.adapter_id)
     elif a.cmd=='provider-ingest':
         project=Path(a.project_dir); run_path=project/'artifacts/production_run.json'
         if not run_path.exists(): raise FileNotFoundError(f'No production run found: {run_path}')
