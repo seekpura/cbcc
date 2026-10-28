@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply staged lineage patch
-        run: python .changes/v0614_patch.py
+      - name: Apply execution transmission lineage patch
+        run: python .changes/v0614_transmission_lineage_patch.py
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
       - name: Run v0.6.14 executor lifecycle tests and capture diagnostics
@@ -36,8 +36,12 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add runtime/cbcc/provider_executor.py .changes/v0614-test-output.txt .changes/v0614-test-output.rc
+          git add runtime/cbcc/provider_executor.py runtime/cbcc/provider_transport.py .changes/v0614-test-output.txt .changes/v0614-test-output.rc
           if ! git diff --cached --quiet; then
-            git commit -m "fix: preserve portable lineage across provider executor handles"
+            git commit -m "fix: bind executor transmission to portable parent lineage"
             git push origin HEAD:work/v0614-provider-executor
           fi
+      - name: Enforce targeted test result
+        if: always()
+        shell: bash
+        run: test "$(cat .changes/v0614-test-output.rc)" = "0"
