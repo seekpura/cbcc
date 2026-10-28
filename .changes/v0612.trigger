@@ -1,1 +1,1 @@
-v0.6.12-portable-provider-package-production-receipt-rerun-2
+v0.6.12-portable-provider-package-production-receipt-rerun-3
