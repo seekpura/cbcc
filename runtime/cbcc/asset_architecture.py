@@ -263,16 +263,18 @@ def _context_questions(base:list[str], decision_context:dict[str,Any]|None, cate
 def build_asset_architecture(project_id:str,target:dict,questions:list[str],content_objects:list[dict[str,Any]],asset_jobs:list[dict[str,Any]]|None=None,decision_context:dict[str,Any]|None=None,category_family:str='GENERAL_COMMERCE')->dict[str,Any]:
     """Create assets from decision jobs. Explicit asset_jobs override defaults; no target count exists."""
     jobs=list(asset_jobs or [])
+    asset_scope_active=bool(jobs)
     if not jobs:
         candidates=[o for o in content_objects if o.get('family') in {'VISUAL','RICH_CONTENT','VIDEO','CREATOR_AFFILIATE','LIVE','PAID','SOCIAL','STORE','CX','LIFECYCLE'}]
         requested=set(target.get('surfaces') or [])
         requested_candidates=[o for o in candidates if not requested or o.get('surface') in requested]
         if requested_candidates: candidates=requested_candidates
+        asset_scope_active=bool(candidates)
         qrows=_context_questions(questions,decision_context,category_family)
         for qrow in qrows:
             q=qrow['question']
             if not candidates:
-                jobs.append({'consumer_question':q,'surface':'GALLERY','family':'VISUAL','strategic_job':'Resolve a purchase decision','decision_origin':qrow.get('origin'),'decision_intent':qrow.get('decision_intent') or classify_decision_intent(q,category_family),'compound_parent':qrow.get('compound_parent'),'compound_part':qrow.get('compound_part'),'auto_curated':True})
+                # No current visual/video/creator/paid Surface: keep the question in Strategy/Listing; do not manufacture a GALLERY asset.
                 continue
             ranked=sorted(candidates,key=lambda o:(_surface_score(q,o,category_family), bool(o.get('required'))),reverse=True)
             o=ranked[0]
@@ -307,8 +309,7 @@ def build_asset_architecture(project_id:str,target:dict,questions:list[str],cont
             'editable_layer_contract':j.get('editable_layer_contract') or _editable_layer_contract(mode,j.get('product_fidelity','REFERENCE_CONSTRAINED'))
         }
         seen[key]=len(assets); assets.append(asset)
-    for i,a in enumerate(assets[:-1]):
-        if not a.get('handoff'): a['handoff']=assets[i+1]['asset_id']
+    # List order is presentation only. Asset relationships/handoffs are explicit author decisions.
 
     # Preserve an explicit question -> atomic decision -> asset lineage.  This is not a gate: it is
     # the audit trail that prevents an aggressive merge from silently swallowing incremental buyer information.
@@ -337,6 +338,10 @@ def build_asset_architecture(project_id:str,target:dict,questions:list[str],cont
             'merge_basis':('SAME_INTENT_TOPIC_SURFACE_FAMILY' if matched and merged else None),
         })
     uncovered=[x for x in decision_audit if x['coverage_status']=='UNCOVERED']
+    unrouted_questions=[]
+    if not asset_scope_active:
+        unrouted_questions=[{'question':x.get('question'),'origin':x.get('origin'),'decision_intent':x.get('decision_intent')} for x in _context_questions(questions,decision_context,category_family)]
+    explicit_handoff_count=sum(1 for a in assets if a.get('handoff'))
     return {
         'status':'DYNAMIC_ASSET_ARCHITECTURE','fixed_count_authority':False,'asset_count':len(assets),'assets':assets,
         'decision_question_count':len({_norm(a.get('consumer_question')) for a in assets}),
@@ -345,6 +350,7 @@ def build_asset_architecture(project_id:str,target:dict,questions:list[str],cont
         'decision_intent_count':len({a.get('decision_intent') for a in assets if a.get('decision_intent')}),
         'decision_question_audit':decision_audit,
         'decision_coverage_summary':{
+            'status':'COVERAGE_COMPILED' if asset_scope_active else 'NO_ASSET_SURFACE_IN_CURRENT_SCOPE',
             'source_shopper_questions':len([q for q in questions if _norm(q)]),
             'atomic_decision_jobs':len(decision_audit),
             'covered_atomic_jobs':len(decision_audit)-len(uncovered),
@@ -352,6 +358,11 @@ def build_asset_architecture(project_id:str,target:dict,questions:list[str],cont
             'merged_atomic_jobs':sum(1 for x in decision_audit if x['coverage_status']=='MERGED_INTO_ASSET'),
             'principle':'Merge only when decision intent + sub-topic + surface + family match. A compound question may split into independent atomic jobs; every atomic job must remain traceable to a dedicated or explicitly merged asset.'
         },
+        'asset_scope_active':asset_scope_active,
+        'unrouted_questions':unrouted_questions,
+        'relationship_mode':'EXPLICIT_ONLY',
+        'explicit_handoff_count':explicit_handoff_count,
+        'auto_sequence_authority':False,
         'category_family':category_family,
         'curation_basis':['Consumer Decision Question','Decision Intent','Decision Topic','Strategic Job','Surface Need','Incremental Information','Business Hypothesis']
     }
