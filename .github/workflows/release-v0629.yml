@@ -1,4 +1,4 @@
-name: CBCC v0.6.29 release package
+name: CBCC human-delivery release acceptance
 
 on:
   push:
@@ -7,6 +7,16 @@ on:
       - '.github/workflows/release-v0629.yml'
       - 'scripts/build_plugin_dist.py'
       - 'scripts/build_dist.py'
+      - 'builders/project_delivery_builder.py'
+      - 'runtime/cbcc/delivery_export.py'
+      - 'runtime/cbcc/delivery_workspace.py'
+      - 'runtime/cbcc/delivery_html.py'
+      - 'runtime/cbcc/human_delivery.py'
+      - 'runtime/cbcc/cli.py'
+      - 'tests/test_delivery_release_acceptance.py'
+      - 'tests/test_v066_human_workspace_zh_first.py'
+      - 'tests/test_v067_workspace_information_architecture.py'
+      - 'tests/test_v068_asset_production_workspace.py'
       - 'README.md'
       - 'INSTALL.md'
       - 'requirements-runtime.txt'
@@ -18,7 +28,7 @@ permissions:
 jobs:
   package-and-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,7 +44,16 @@ jobs:
       - name: Smoke validators
         run: bash tests/run_smoke.sh
 
-      - name: v0.6.27-v0.6.29 release continuity
+      - name: Human delivery authority and workspace semantics
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_v066_human_workspace_zh_first.py \
+            tests/test_v067_workspace_information_architecture.py \
+            tests/test_delivery_release_acceptance.py
+
+      - name: Current-scope continuity
         env:
           PYTHONPATH: runtime
         run: |
@@ -61,6 +80,26 @@ jobs:
           print('release version contract PASS')
           PY
 
+      - name: Verify packaged source contains real delivery authority
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          p=Path('dist/cross-border-commerce-creative-plugin-v0.6.29.zip')
+          with zipfile.ZipFile(p) as z:
+              names=set(z.namelist())
+              root='cross-border-commerce-creative/skills/cross-border-commerce-creative/resources/'
+              required=[
+                  root+'runtime/cbcc/delivery_export.py',
+                  root+'runtime/cbcc/delivery_workspace.py',
+                  root+'builders/project_delivery_builder.py',
+                  root+'tests/test_delivery_release_acceptance.py',
+              ]
+              missing=[x for x in required if x not in names]
+              assert not missing, missing
+          print('packaged delivery authority PASS')
+          PY
+
       - name: Write SHA256 sums
         run: |
           cd dist
@@ -70,14 +109,14 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cbcc-v0.6.29-release
+          name: cbcc-v0.6.29-delivery-repair
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
             dist/release_manifest.json
           if-no-files-found: error
 
-      - name: Create or refresh GitHub Release
+      - name: Refresh GitHub Release assets after acceptance
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -87,6 +126,6 @@ jobs:
             gh release create v0.6.29 \
               dist/*.zip dist/SHA256SUMS.txt dist/release_manifest.json \
               --target "$GITHUB_SHA" \
-              --title "CBCC v0.6.29 — Final Stabilization" \
+              --title "CBCC v0.6.29 — Human Delivery Repaired" \
               --notes-file CHANGELOG_V0629.md
           fi
