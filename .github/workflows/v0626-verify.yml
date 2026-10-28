@@ -1,0 +1,71 @@
+name: CBCC v0.6.26 scope readiness verify
+
+on:
+  push:
+    branches:
+      - work/v0626-scope-readiness
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify frozen v0.6.25 main
+        run: test "$(git rev-parse origin/main)" = "14b55ce8404d78379f2e257eca5cc24e90fc0f2d"
+      - name: Apply v0.6.26 scope readiness patch
+        run: python .changes/v0626_apply.py
+      - name: Install test dependencies
+        run: python -m pip install -q pytest pyyaml
+      - name: Targeted scope readiness and continuity
+        env:
+          PYTHONPATH: runtime
+        run: |
+          python -m py_compile runtime/cbcc/scope_readiness.py runtime/cbcc/state.py runtime/cbcc/review.py runtime/cbcc/compiler.py
+          pytest -q \
+            tests/test_v0626_scope_readiness.py \
+            tests/test_v0625_decision_question_authority.py \
+            tests/test_v0624_strategy_asset_scope.py \
+            tests/test_v0623_task_scoped_delivery.py \
+            tests/test_v0622_dynamic_workspace.py \
+            tests/test_v068_asset_production_workspace.py
+      - name: Full regression node-id diff against v0.6.25 main
+        env:
+          PYTHONPATH: runtime
+        run: |
+          set +e
+          pytest -q > /tmp/branch.txt 2>&1
+          git worktree add /tmp/cbcc-main 14b55ce8404d78379f2e257eca5cc24e90fc0f2d
+          (cd /tmp/cbcc-main && PYTHONPATH=runtime pytest -q > /tmp/main.txt 2>&1)
+          set -e
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          def failed(path):
+              text=Path(path).read_text(encoding='utf-8',errors='replace')
+              return sorted(set(re.findall(r'^FAILED\s+([^\s]+)',text,re.M)))
+          branch=failed('/tmp/branch.txt'); main=failed('/tmp/main.txt')
+          new=sorted(set(branch)-set(main)); fixed=sorted(set(main)-set(branch))
+          print('MAIN_FAILURE_COUNT=',len(main))
+          print('BRANCH_FAILURE_COUNT=',len(branch))
+          print('NEW_FAILURE_COUNT=',len(new))
+          print('FIXED_FAILURE_COUNT=',len(fixed))
+          if fixed:
+              print('FIXED_FAILURES:'); print('\n'.join(fixed))
+          if new:
+              print('NEW_FAILURES:'); print('\n'.join(new)); raise SystemExit(1)
+          PY
+      - name: Commit materialized v0.6.26 source
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add runtime/cbcc/state.py runtime/cbcc/review.py runtime/cbcc/compiler.py
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: make content and gate readiness task scoped"
+            git push origin HEAD:work/v0626-scope-readiness
+          fi
