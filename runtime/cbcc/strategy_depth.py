@@ -1705,11 +1705,15 @@ def _v0624_rows(value):
     return value if isinstance(value,list) else [value]
 
 
+def _v0624_full_mode(request:dict[str,Any]) -> bool:
+    return bool(request.get('full_strategy') or request.get('full_delivery')) or str(request.get('strategy_delivery_mode') or request.get('delivery_mode') or '').upper() in {'FULL','FULL_STRATEGY','SIGNATURE'}
+
+
 def _v0624_framework_names(request:dict[str,Any]) -> list[str]:
     plan=request.get('_agent_autonomy_plan') or {}
     raw=plan.get('strategy_frameworks') if isinstance(plan,dict) else None
     if raw is None: raw=request.get('marketing_frameworks') if request.get('marketing_frameworks') is not None else request.get('persuasion_frameworks')
-    if raw is None: return []
+    if raw is None: raw=[]
     if isinstance(raw,str): raw=[x.strip() for x in re.split(r'[,/|]+',raw) if x.strip()]
     elif isinstance(raw,dict):
         if isinstance(raw.get('selected'),list): raw=raw.get('selected')
@@ -1727,6 +1731,9 @@ def _v0624_framework_names(request:dict[str,Any]) -> list[str]:
         key=str(x or '').strip().upper().replace(' ','_')
         name=aliases.get(key,str(x).strip())
         if name and name not in out: out.append(name)
+    if _v0624_full_mode(request):
+        for name in ['RACE','STP','JTBD','AIDA','FABE','4P','Funnel']:
+            if name not in out: out.append(name)
     return out
 
 
@@ -1742,6 +1749,13 @@ def _v0624_evaluation_requested(request:dict[str,Any], frameworks:list[str]|None
 def build_risk_priority_depth(info:dict[str,Any], request:dict[str,Any], compliance:dict[str,Any], research_gate:dict[str,Any], positioning:dict[str,Any], assets:list[dict[str,Any]], experiment:dict[str,Any]|None, market_depth:dict[str,Any]|None=None):
     base=_V0624_ORIG_RISK(info,request,compliance,research_gate,positioning,assets,experiment,market_depth)
     frameworks=_v0624_framework_names(request)
+    if _v0624_full_mode(request):
+        base['full_strategy_hard_contract']=True
+        base['agent_stop_eligible']=not any(
+            row.get('severity')=='P0' and row.get('status') in {'OPEN','HOLD','BLOCKED'}
+            for row in (base.get('risk_register') or []) if isinstance(row,dict)
+        )
+        return base
     pending=[x for x in (research_gate.get('actions') or []) if x.get('status')!='RESOLVED']
     p0=[]
     if compliance.get('status')=='HOLD':
@@ -1782,7 +1796,7 @@ def _v0624_human_projection(request:dict[str,Any], strategy:dict[str,Any], frame
         for x in _v0624_rows(src):
             name=str(x or '').strip()
             if name and name not in families: families.append(name)
-    full=bool(request.get('full_strategy') or request.get('full_delivery')) or str(request.get('strategy_delivery_mode') or request.get('delivery_mode') or '').upper() in {'FULL','FULL_STRATEGY','SIGNATURE'}
+    full=_v0624_full_mode(request)
     active=[]; reasons={}
     def add(key,reason):
         if key not in active: active.append(key); reasons[key]=reason
@@ -1827,8 +1841,8 @@ def _v0624_human_projection(request:dict[str,Any], strategy:dict[str,Any], frame
       'machine_sections_preserved':len(s),
       'content_families':families,
       'selected_frameworks':frameworks,
-      'fixed_human_section_quota':False,
-      'principle':'Machine schema stays complete for compatibility and lineage. Human strategy only renders material decisions for the current commerce task.'
+      'fixed_human_section_quota':bool(full),
+      'principle':('FULL commerce strategy uses the nine-domain hard delivery contract requested by the user; page/layout expression remains semantic and non-template.' if full else 'Machine schema stays complete for compatibility and lineage. Human strategy only renders material decisions for the current commerce task.')
     }
 
 
@@ -1858,6 +1872,19 @@ def build_master_strategy_depth(request:dict[str,Any], **kwargs):
     else:
         for row in s.get('06_platform_content_matrix') or []:
             if isinstance(row,dict): row['framework_context']=['RACE']
+    if _v0624_full_mode(request):
+        third=s.get('03_platform_region_audience_culture_insight') or {}
+        culture_depth=third.get('culture') if isinstance(third,dict) else {}
+        culture_depth=culture_depth if isinstance(culture_depth,dict) else {}
+        third['race_ethnicity']=culture_depth.get('race_ethnicity')
+        third['intersectionality_table']=culture_depth.get('intersectionality_table') or []
+        third['language_profiles']=culture_depth.get('language_profiles') or {}
+        third['culture_adaptation_rows']=culture_depth.get('adaptation_rows') or []
+        third['casting_constraints']=culture_depth.get('casting_constraints') or []
+        third['platform_audience_culture_rows']=culture_depth.get('platform_audience_culture_rows') or []
+        s['03_platform_region_audience_culture_insight']=third
+        if not s.get('08_culture_adaptation_checklist'):
+            s['08_culture_adaptation_checklist']=culture_depth.get('adaptation_rows') or []
     strategy['sections']=s
     strategy['selected_strategy_frameworks']=frameworks
     strategy['human_projection']=_v0624_human_projection(request,strategy,frameworks)
@@ -1875,7 +1902,7 @@ def _v0624_prune_numbered_sections(md:str, active:list[str]) -> str:
     heading_names={
       '1':'信息完整度 / 假设 / 决策','2':'产品真相与价值边界','3':'市场 / 平台 / 人群 / 文化洞察',
       '4':'核心商业策略','5':'视觉 / 摄影 / CMF / 资产策略','6':'平台内容与 Surface 执行',
-      '7':'RACE 执行（当前项目显式启用）','8':'文化适配（当前任务相关）','9':'风险 / 评估 / 下一动作'}
+      '7':'RACE传播框架执行表','8':'族裔文化适配检查表','9':'合规、文化敏感、风险、评估与 P0/P1/P2 下一步'}
     matches=list(re.finditer(r'(?m)^## ([1-9])\.\s.*$',md))
     if not matches: return md
     prefix=md[:matches[0].start()]
@@ -1896,7 +1923,10 @@ def render_master_strategy_cn_depth(strategy:dict[str,Any]):
     active=hp.get('active_sections') or list((strategy.get('sections') or {}).keys())
     md=_v0624_prune_numbered_sections(md,active)
     summary='、'.join(hp.get('active_sections') or [])
-    insert=f"\n> 人类策略投影：{hp.get('mode') or 'TASK_SCOPED'}；当前显示 {len(active)} 个相关决策域；固定九段人类配额：无。\n"
+    if str(hp.get('mode') or '').upper()=='FULL':
+        insert="\n> 人类策略投影：FULL；完整商品项目按 9 个硬交付域全部物化；RACE=Research → Action → Communication → Evaluation。页面/交互仍按业务对象设计，不等于固定页面模板。\n"
+    else:
+        insert=f"\n> 人类策略投影：{hp.get('mode') or 'TASK_SCOPED'}；当前显示 {len(active)} 个相关决策域；固定九段人类配额：无。\n"
     if '\n## ' in md:
         pos=md.find('\n## '); md=md[:pos]+insert+md[pos:]
     if '资产包连续性' not in md:
