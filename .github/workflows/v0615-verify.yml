@@ -27,6 +27,7 @@ jobs:
             tests/test_v0613_provider_transport_integrity.py \
             tests/test_v0614_provider_executor_lifecycle.py \
             tests/test_v0615_provider_executor_bridge.py \
+            tests/test_v0615_provider_contract_bridge.py \
             > .changes/v0615-test-output.txt 2>&1
           rc=$?
           set -e
