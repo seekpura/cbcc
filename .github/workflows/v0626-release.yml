@@ -1,0 +1,45 @@
+name: CBCC v0.6.26 release cleanup
+
+on:
+  push:
+    branches:
+      - work/v0626-scope-readiness
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify frozen main and validated source ancestry
+        run: |
+          test "$(git rev-parse origin/main)" = "14b55ce8404d78379f2e257eca5cc24e90fc0f2d"
+          git merge-base --is-ancestor 46ec71c HEAD
+      - name: Materialize release metadata
+        run: python .changes/v0626_release.py
+      - name: Verify release metadata
+        run: |
+          grep -Fx '0.6.26-scope-readiness' VERSION
+          grep -F 'version: 0.6.26-scope-readiness' SKILL.md
+          grep -F '# CBCC v0.6.26 CURRENT HANDOFF' CURRENT_HANDOFF.md
+          grep -F 'NEW_FAILURE_COUNT=0' CHANGELOG_V0626.md
+          grep -F '0.6.26-scope-readiness' runtime/cbcc/compiler.py
+      - name: Remove staging and temporary workflows
+        run: |
+          rm -f .changes/v0626_apply.py
+          rm -f .changes/v0626_release.py
+          rm -f .github/workflows/v0626-verify.yml
+          rm -f .github/workflows/v0626-release.yml
+          rmdir .changes 2>/dev/null || true
+      - name: Commit clean v0.6.26 release tree
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "release: finalize CBCC v0.6.26 scope readiness"
+          git push origin HEAD:work/v0626-scope-readiness
