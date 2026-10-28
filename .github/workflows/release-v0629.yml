@@ -32,6 +32,8 @@ jobs:
         run: bash tests/run_smoke.sh
 
       - name: v0.6.27-v0.6.29 release continuity
+        env:
+          PYTHONPATH: runtime
         run: |
           pytest -q \
             tests/test_v0627_current_scope_completion.py \
