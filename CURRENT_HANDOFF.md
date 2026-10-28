@@ -1,7 +1,7 @@
-# CBCC v0.6.17 CURRENT HANDOFF
+# CBCC v0.6.18 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.17-host-action-mapping`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.18-transport-descriptor-parity`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -110,5 +110,17 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 10. v0.6.13–v0.6.17 provider continuity + host-action 定向联测：33 passed。
 11. 全量回归与 v0.6.16 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；Action transport 发布不以固定失败数量阈值放行。
 
+## v0.6.18 已完成
+1. MCP tools 与 Plugin/OpenAPI descriptors 全部由 v0.6.17 canonical Action Catalog 生成，不再手写两套 schema。
+2. 6 个 canonical actions 在 MCP / Plugin 两种 transport 下保持 exact input-schema parity。
+3. descriptor parity 同时校验 tool/operation naming、permission scope、authorization source 与 credential-like field lint。
+4. checked-in `descriptor_manifest.json` 保存 canonical/MCP/Plugin schema hashes；当前 6 个 action 三方 hash 全部一致，issues=[]。
+5. checked-in `mcp_tools.json / plugin_openapi.json / descriptor_manifest.json` 与 runtime generator 输出完全一致。
+6. OpenAPI 使用同源相对 `/`；没有把 credential schema、API key 字段或假 provider runtime 放进 descriptor。
+7. `PluginActionTransportAdapter` 只做 operationId → canonical action → Dispatcher 转发，不持有 surface / bridge / executor。
+8. descriptor manifest 明确没有 MCP server / Plugin HTTP server；网络 host 仍是下一层薄适配器责任。
+9. v0.6.13–v0.6.18 provider continuity + transport parity 定向联测：40 passed。
+10. 全量回归与 v0.6.17 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；descriptor 发布必须保持 canonical schema parity。
+
 ## 下一步唯一主任务
-**基于 v0.6.17 canonical Action Catalog 生成真正可消费的 Transport Descriptors：MCP tool descriptor 与 Plugin/OpenAPI action descriptor 必须从同一 action schema 自动派生、通过 schema parity / authorization / secret-field lint；随后实现一个薄 transport adapter（优先选择与当前宿主最匹配者），其 handler 只能调用 ProviderActionDispatcher。禁止手写两套 schema、禁止 transport 自己执行 Provider lifecycle。**
+**在 v0.6.18 descriptors 之上实现一个真正可启动但仍然薄的 transport host：优先实现 Plugin/OpenAPI HTTP host（与当前 ChatGPT/Plugin 使用面最接近），只负责 HTTP request → operationId → `PluginActionTransportAdapter` → `ProviderActionDispatcher`，并把 `ActionAuthorization` 作为宿主注入而不是请求体 credential。补 health/schema endpoints、request size/JSON validation、authorization hook、pending/resume/status HTTP semantics 与 transport-level error mapping；禁止 transport host 直接调用 ProviderExecutionSurface / Bridge / Executor。MCP server 后续复用同一 canonical descriptors/dispatcher。**

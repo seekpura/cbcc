@@ -1,3 +1,11 @@
+## 0.6.18 — Transport Descriptor Parity
+- Added generated MCP tool and Plugin/OpenAPI 3.1 descriptors from the canonical host action catalog.
+- Added checked-in transport artifacts with exact schema/scope parity hashes and credential-field lint.
+- Added fail-closed parity checks for schema, authorization scope, operation naming and secret-field drift.
+- Added a thin PluginActionTransportAdapter that delegates only to ProviderActionDispatcher.
+- Explicitly records that no MCP server or Plugin HTTP server is included in this release.
+- See `CHANGELOG_V0618.md`.
+
 ## 0.6.17 — Host Action / MCP / Plugin Mapping
 - Added canonical provider action schemas and a host-neutral dispatcher over ProviderExecutionSurface.
 - Added explicit default-deny authorization scopes for read, execute, cancel, reconcile and status operations.

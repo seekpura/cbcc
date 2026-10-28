@@ -22,3 +22,5 @@ v0.6.17 established one canonical provider action catalog and dispatcher, but ex
 
 ## Boundary
 v0.6.18 makes the canonical action contract transport-consumable without adding a second runtime. A future concrete HTTP/MCP host must load these descriptors and forward calls to the existing dispatcher rather than reimplementing provider execution.
+
+- Release regression rule: compare full-suite failure node IDs with current main and ship only when `NEW_FAILURE_COUNT=0`.

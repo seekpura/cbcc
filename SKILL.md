@@ -1,13 +1,22 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.17-host-action-mapping
+version: 0.6.18-transport-descriptor-parity
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.18 Transport Descriptor Parity
+- 从 v0.6.17 canonical Action Catalog 自动派生 MCP tool descriptors 与 Plugin/OpenAPI 3.1 descriptors；transport 不维护第二份 action schema。
+- checked-in 生成物：`transport/mcp_tools.json`、`transport/plugin_openapi.json`、`transport/descriptor_manifest.json`，由生成器物化并由测试反向校验当前 canonical schema。
+- parity 必须同时满足：action 数量一致、tool/operation 名称一致、input schema exact equality、permission scope 一致、authorization source 一致、credential-like field lint 为零。
+- 每个 action 记录 canonical / MCP / Plugin schema hash；三者必须相同，schema 漂移 fail closed。
+- Plugin/OpenAPI 默认使用同源相对 server `/`，descriptor 本身不绑定假远程服务地址。
+- `PluginActionTransportAdapter` 是薄 operationId adapter，唯一执行依赖为 `ProviderActionDispatcher`；不持有 surface / bridge / executor。
+- checked-in manifest 明确 `mcp_server_included=false`、`plugin_http_server_included=false`：当前版本生成可消费 descriptor，但不伪造网络 server 已存在。
 
 ## v0.6.17 Host Action / MCP / Plugin Mapping
 - 新增 canonical host action catalog：`adapters.list / execute / status / resume / cancel / reconcile` 六个 action，schema 与 permission scope 由同一真源定义。
