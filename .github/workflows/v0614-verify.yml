@@ -1,4 +1,4 @@
-name: CBCC v0.6.14 provider executor verification
+name: CBCC v0.6.14 release verification
 
 on:
   push:
@@ -9,39 +9,137 @@ permissions:
   contents: write
 
 jobs:
-  verify-provider-executor:
+  verify-and-finalize:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply execution transmission lineage patch
-        run: python .changes/v0614_transmission_lineage_patch.py
+        with:
+          fetch-depth: 0
+
+      - name: Apply release documentation
+        run: python .changes/v0614_docs_patch.py
+
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
-      - name: Run v0.6.14 executor lifecycle tests and capture diagnostics
+
+      - name: Verify v0.6.13 transport and v0.6.14 executor lifecycle
+        run: |
+          pytest -q \
+            tests/test_v0613_provider_transport_integrity.py \
+            tests/test_v0614_provider_executor_lifecycle.py
+
+      - name: Compare full regression against current main
         shell: bash
         run: |
-          mkdir -p .changes
+          git fetch origin main
+          git worktree add /tmp/cbcc-main origin/main
+
           set +e
-          pytest -q -ra \
-            tests/test_v0613_provider_transport_integrity.py \
-            tests/test_v0614_provider_executor_lifecycle.py \
-            > .changes/v0614-test-output.txt 2>&1
-          rc=$?
+          python -m pytest -q -ra --tb=no > /tmp/v0614-head.txt 2>&1
+          head_rc=$?
+          (cd /tmp/cbcc-main && python -m pytest -q -ra --tb=no > /tmp/v0613-main.txt 2>&1)
+          main_rc=$?
           set -e
-          echo "$rc" > .changes/v0614-test-output.rc
-          cat .changes/v0614-test-output.txt
-      - name: Commit implementation and diagnostics
+
+          extract_failures() {
+            grep -E '^(FAILED|ERROR) ' "$1" \
+              | sed -E 's/^(FAILED|ERROR) //' \
+              | sed -E 's/ - .*//' \
+              | sort -u || true
+          }
+
+          extract_failures /tmp/v0614-head.txt > /tmp/head-failures.txt
+          extract_failures /tmp/v0613-main.txt > /tmp/main-failures.txt
+          comm -23 /tmp/head-failures.txt /tmp/main-failures.txt > /tmp/new-failures.txt
+          comm -13 /tmp/head-failures.txt /tmp/main-failures.txt > /tmp/fixed-failures.txt
+
+          head_count=$(wc -l < /tmp/head-failures.txt | tr -d ' ')
+          main_count=$(wc -l < /tmp/main-failures.txt | tr -d ' ')
+          new_count=$(wc -l < /tmp/new-failures.txt | tr -d ' ')
+          fixed_count=$(wc -l < /tmp/fixed-failures.txt | tr -d ' ')
+
+          mkdir -p .changes
+          {
+            echo "BASE_REF=origin/main"
+            echo "BASE_SHA=$(git -C /tmp/cbcc-main rev-parse HEAD)"
+            echo "HEAD_SHA=$(git rev-parse HEAD)"
+            echo "MAIN_PYTEST_RC=$main_rc"
+            echo "HEAD_PYTEST_RC=$head_rc"
+            echo "MAIN_FAILURE_COUNT=$main_count"
+            echo "HEAD_FAILURE_COUNT=$head_count"
+            echo "NEW_FAILURE_COUNT=$new_count"
+            echo "FIXED_FAILURE_COUNT=$fixed_count"
+            echo
+            echo "== NEW FAILURES IN v0.6.14 =="
+            cat /tmp/new-failures.txt
+            echo
+            echo "== FAILURES FIXED BY v0.6.14 =="
+            cat /tmp/fixed-failures.txt
+            echo
+            echo "== MAIN BASELINE FAILURES =="
+            cat /tmp/main-failures.txt
+            echo
+            echo "== v0.6.14 BRANCH FAILURES =="
+            cat /tmp/head-failures.txt
+            echo
+            echo "== MAIN TERMINAL TAIL =="
+            tail -30 /tmp/v0613-main.txt
+            echo
+            echo "== HEAD TERMINAL TAIL =="
+            tail -30 /tmp/v0614-head.txt
+          } > .changes/v0614-baseline-comparison.txt
+
+          echo "NEW_FAILURE_COUNT=$new_count" >> "$GITHUB_ENV"
+          echo "MAIN_FAILURE_COUNT=$main_count" >> "$GITHUB_ENV"
+          echo "HEAD_FAILURE_COUNT=$head_count" >> "$GITHUB_ENV"
+          echo "FIXED_FAILURE_COUNT=$fixed_count" >> "$GITHUB_ENV"
+
+      - name: Persist regression evidence before release decision
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add runtime/cbcc/provider_executor.py runtime/cbcc/provider_transport.py .changes/v0614-test-output.txt .changes/v0614-test-output.rc
+          git add .changes/v0614-baseline-comparison.txt
           if ! git diff --cached --quiet; then
-            git commit -m "fix: bind executor transmission to portable parent lineage"
+            git commit -m "test: compare v0.6.14 failures against v0.6.13 main"
             git push origin HEAD:work/v0614-provider-executor
           fi
-      - name: Enforce targeted test result
-        if: always()
+
+      - name: Reject newly introduced regressions
         shell: bash
-        run: test "$(cat .changes/v0614-test-output.rc)" = "0"
+        run: test "${NEW_FAILURE_COUNT:-unknown}" = "0"
+
+      - name: Record successful release verification
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('CURRENT_HANDOFF.md')
+          text = p.read_text(encoding='utf-8')
+          needle = '8. v0.6.13 + v0.6.14 定向联测：9 passed。'
+          replacement = needle + '\n9. 全量回归与 v0.6.13 main 基线逐 node-id 对比：`NEW_FAILURE_COUNT=0`；不以固定失败数量阈值替代回归判断。'
+          if replacement not in text:
+              text = text.replace(needle, replacement, 1)
+          p.write_text(text, encoding='utf-8')
+
+          p = Path('CHANGELOG_V0614.md')
+          text = p.read_text(encoding='utf-8')
+          line = '- Release regression rule: full-suite failure node IDs are compared with current main; v0.6.14 ships only when `NEW_FAILURE_COUNT=0`.\n'
+          if line not in text:
+              text += '\n' + line
+          p.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Remove temporary diagnostics and release workflow
+        run: |
+          rm -rf .changes
+          git rm -f .github/workflows/v0614-verify.yml
+
+      - name: Finalize clean v0.6.14 branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "release: finalize CBCC v0.6.14 provider executor lifecycle"
+          git push origin HEAD:work/v0614-provider-executor
