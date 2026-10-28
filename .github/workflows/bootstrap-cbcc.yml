@@ -37,7 +37,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import base64, hashlib, shutil, zipfile
+          import base64, hashlib, shutil, tarfile
 
           root = Path.cwd()
           chunks = sorted((root / '.bootstrap').glob('chunk-*'))
@@ -52,15 +52,17 @@ jobs:
           actual = hashlib.sha256(data).hexdigest()
           if actual != expected:
               raise SystemExit(f'archive sha256 mismatch: {actual} != {expected}')
+          if manifest.get('format') != 'tar.xz':
+              raise SystemExit('unexpected bootstrap format')
 
-          archive = Path('/tmp/cbcc-v0.6.6.zip')
+          archive = Path('/tmp/cbcc-v0.6.6.tar.xz')
           archive.write_bytes(data)
           extract = Path('/tmp/cbcc-v0.6.6-extract')
           if extract.exists():
               shutil.rmtree(extract)
           extract.mkdir(parents=True)
-          with zipfile.ZipFile(archive) as zf:
-              zf.extractall(extract)
+          with tarfile.open(archive, mode='r:xz') as tf:
+              tf.extractall(extract)
 
           source = extract / 'cross-border-commerce-creative-v0.6.6-human-workspace-zh-first'
           if not source.is_dir():
