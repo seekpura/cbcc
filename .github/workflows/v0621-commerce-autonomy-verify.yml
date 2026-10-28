@@ -12,6 +12,8 @@ jobs:
   verify-commerce-autonomy:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
     steps:
       - uses: actions/checkout@v4
       - name: Apply autonomy integration patch
