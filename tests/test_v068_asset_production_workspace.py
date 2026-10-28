@@ -47,7 +47,7 @@ def test_asset_production_workspace_groups_decisions_by_work_object():
     for label in ['决策 / Design Card','画面执行','摄影 / CMF','文案','Prompt 执行','QA / 来源']:
         assert label in page
     # overview + strategy are one decision stage, not two report tabs.
-    assert page.count('data-view="asset-stage-lst-03-decision"') == 2  # switch + panel
+    assert page.count('data-view="asset-view-lst-03-decision"') == 2  # switch + panel
     assert 'Design Card 概览' in page
     assert '购买障碍与目标信念' in page
 
@@ -69,8 +69,9 @@ def test_asset_stage_count_is_dynamic_from_available_content():
         prompt_cn='',prompt_en='',source_files=[]
     )
     page=_asset_page(minimal)
-    assert '2 个动态阶段' not in page
-    assert '1 个动态阶段' in page
+    assert '2 个相关视图' not in page
+    assert '1 个相关视图' in page
+    assert '无固定先后顺序' in page
     assert page.count('class="asset-phase workspace-switch') == 1
     assert '画面执行' in page
     assert '摄影 / CMF' not in page

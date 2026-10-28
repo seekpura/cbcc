@@ -654,11 +654,36 @@ def _prompt_workspace(assets:list[dict[str,Any]])->str:
 def _asset_page(a:dict[str,Any])->str:
     raw_views=list(a.get('views') or [])
     by_key={str(v.get('key') or ''):v for v in raw_views if isinstance(v,dict)}
-    ordered_keys=relevant_asset_view_keys(a)
+    raw_order=relevant_asset_view_keys(a)
     group=f'asset-workspace-{_slug(a["id"])}'
-    panels=[]
+    lenses={}
 
-    def prompt_body()->str:
+    def add(key:str,title:str,eyebrow:str,description:str,body:str):
+        if body and body.strip() and '暂无已确认内容' not in body:
+            lenses[key]={'key':key,'title':title,'eyebrow':eyebrow,'description':description,'body':body}
+
+    # Decision lens groups the Design Card overview and strategy because they answer one work object,
+    # but it is not a first step and carries no execution-order authority.
+    decision_parts=[]
+    for key,label in [('overview','Design Card 概览'),('strategy','购买决策')]:
+        view=by_key.get(key)
+        if view and (view.get('html') or '').strip():
+            decision_parts.append(f'<section class="asset-decision-block"><div class="asset-section-label">{label}</div>{view.get("html") or ""}</section>')
+    if decision_parts:
+        add('decision','决策 / Design Card','WHY · DECISION','查看这张资产为什么存在、要解决什么购买判断以及依据。',''.join(decision_parts))
+
+    direct={
+        'visual':('画面执行','VISUAL','查看当前资产实际采用的主体、关系、构图与信息层级。'),
+        'photo':('摄影 / CMF','PHOTO · CMF','仅显示本资产真正需要的摄影、灯光、材质、CMF 或色彩执行参数。'),
+        'copy':('文案','COPY','查看本资产实际承担的目标市场可见文案与中文说明。'),
+        'production':('生产说明','PRODUCTION','查看与本资产执行方式直接相关的生产备注。'),
+    }
+    for key,(title,eyebrow,desc) in direct.items():
+        view=by_key.get(key)
+        if view:
+            add(key,title,eyebrow,desc,view.get('html') or '')
+
+    if a.get('prompt_cn') or a.get('prompt_en'):
         parts=[];aid=_slug(a['id'])
         if a.get('prompt_cn'):
             cid=f'asset-{aid}-prompt-cn'
@@ -666,35 +691,45 @@ def _asset_page(a:dict[str,Any])->str:
         if a.get('prompt_en'):
             eid=f'asset-{aid}-prompt-en'
             parts.append(f'''<section class="prompt-secondary"><div class="prompt-head"><div><span>发送生成模型</span><h3>英文 / 目标模型提示词</h3></div><button class="copy-btn mini" data-copy="{eid}">复制生成提示词</button></div><pre id="{eid}"><code>{html.escape(a['prompt_en'])}</code></pre></section>''')
-        return '<div class="asset-prompt-console"><div class="prompt-workbench">'+''.join(parts)+'</div><div class="language-note">只核对当前资产实际相关的决策、画面、摄影 / CMF、文案和保真约束。缺失或不相关的维度不应为了“字段完整”被补造；Prompt 是执行合同，不是独立创意来源。</div></div>'
+        body='<div class="asset-prompt-console"><div class="prompt-workbench">'+''.join(parts)+'</div><div class="language-note">只核对当前资产实际相关的决策、画面、摄影 / CMF、文案和保真约束。缺失或不相关的维度不应为了“字段完整”被补造；Prompt 是执行合同，不是独立创意来源。</div></div>'
+        add('prompt','Prompt 执行','EXECUTION','执行当前已编译的生产 Prompt；不补造无关参数。',body)
 
-    title_map={'overview':'资产概览','strategy':'策划与决策','visual':'画面与版式','photo':'摄影 / CMF','copy':'文案','production':'生产说明','trace':'合同 / 参数追踪','prompt':'Prompt 执行','qa':'来源 / QA'}
-    eyebrow_map={'overview':'WHY','strategy':'DECISION','visual':'VISUAL','photo':'PHOTO / CMF','copy':'COPY','production':'PRODUCTION','trace':'TRACE','prompt':'EXECUTION','qa':'SOURCE / QA'}
-    description_map={
-        'overview':'快速理解这张资产存在的理由与消费者问题。',
-        'strategy':'查看当前资产自己的购买决策、证据和商业假设。',
-        'visual':'查看当前资产实际采用的主体、关系、构图和信息层级。',
-        'photo':'仅显示本资产真正需要的摄影、灯光、材质、CMF或色彩执行参数。',
-        'copy':'查看本资产实际承担的目标市场可见文案与中文说明。',
-        'production':'查看与本资产执行方式直接相关的生产备注。',
-        'trace':'核对事实、参数与机器合同的来源追踪。',
-        'prompt':'执行当前已编译的生产 Prompt；不补造无关参数。',
-        'qa':'查看源文件与必要的质量追踪。',
-    }
+    # QA/trace is one recoverability lens: machine trace, source files and unknown legacy views all remain accessible.
+    qa_parts=[]
+    trace=by_key.get('trace')
+    if trace and (trace.get('html') or '').strip():
+        qa_parts.append('<section class="asset-qa-source"><div class="asset-section-label">合同 / 参数追踪</div>'+str(trace.get('html') or '')+'</section>')
+    known={'overview','strategy','visual','photo','copy','production','trace'}
+    for view in raw_views:
+        if not isinstance(view,dict): continue
+        key=str(view.get('key') or '')
+        if key in known: continue
+        body=str(view.get('html') or '').strip()
+        if not body: continue
+        title=str(view.get('title') or '补充资料')
+        qa_parts.append(f'<section class="asset-qa-source"><div class="asset-section-label">{html.escape(title)}</div>{body}</section>')
     source_files=a.get('source_files') or []
-    for key in ordered_keys:
-        if key=='prompt':
-            body=prompt_body()
-        elif key=='qa':
-            if not source_files: continue
-            body='<section class="asset-source-ledger"><div class="asset-section-label">源文件账本</div><ul>'+''.join(f'<li>{html.escape(str(x))}</li>' for x in source_files)+'</ul></section>'
-        else:
-            view=by_key.get(key)
-            if not view: continue
-            body=view.get('html') or ''
-            if not body.strip() or '暂无已确认内容' in body: continue
-        panels.append({'key':key,'title':title_map.get(key,by_key.get(key,{}).get('title') or '工作视图'),'eyebrow':eyebrow_map.get(key,'VIEW'),'description':description_map.get(key,'这是由当前资产内容动态生成的工作视图。'),'body':body})
+    if source_files:
+        qa_parts.append('<section class="asset-source-ledger"><div class="asset-section-label">源文件账本</div><ul>'+''.join(f'<li>{html.escape(str(x))}</li>' for x in source_files)+'</ul></section>')
+    if qa_parts:
+        add('qa','QA / 来源','TRACE · QA','核对事实、参数、机器合同、源文件与兼容性资料；这些追踪信息不进入生成 Prompt。',''.join(qa_parts))
 
+    # Agent-authored order wins. Otherwise use a stable UI reading order only for presentation;
+    # absent lenses are never manufactured and this order has no planning/execution authority.
+    alias={'overview':'decision','strategy':'decision','trace':'qa','qa':'qa','prompt':'prompt'}
+    explicit=list(a.get('agent_view_order') or a.get('workspace_view_order') or [])
+    order=[]
+    for key in explicit:
+        mapped=alias.get(str(key),str(key))
+        if mapped in lenses and mapped not in order: order.append(mapped)
+    for raw in raw_order:
+        mapped=alias.get(str(raw),str(raw))
+        if mapped not in lenses and str(raw) not in known and 'qa' in lenses: mapped='qa'
+        if mapped in lenses and mapped not in order: order.append(mapped)
+    for key in ['decision','visual','photo','copy','production','prompt','qa']:
+        if key in lenses and key not in order: order.append(key)
+
+    panels=[lenses[k] for k in order]
     if not panels:
         panels=[{'key':'empty','title':'资产概览','eyebrow':'ASSET','description':'当前资产还没有可执行的人类工作视图。','body':'<div class="empty">暂无资产内容。</div>'}]
 

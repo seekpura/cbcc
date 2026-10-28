@@ -62,7 +62,7 @@ def _derived_photo_contract(asset: dict[str, Any], strategy_authority: dict[str,
     visual=sections.get('05_visual_photography_strategy') or {}
     reasoning=_asset_reasoning(strategy_authority,asset.get('asset_id'))
     capture_mode=str(explicit.get('capture_mode') or reasoning.get('capture_mode') or asset.get('capture_mode') or '').upper() or None
-    inherit_global=bool(explicit.get('inherit_strategy_photography') or reasoning.get('inherit_strategy_photography') or capture_mode=='REAL_PHOTO')
+    inherit_global=bool(explicit.get('inherit_strategy_photography') or reasoning.get('inherit_strategy_photography') or bool(reasoning) or capture_mode=='REAL_PHOTO')
 
     camera={}
     if inherit_global and isinstance(visual.get('camera'),dict): camera.update(visual.get('camera') or {})
