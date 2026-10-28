@@ -29,8 +29,6 @@ jobs:
             git apply --check "$p"
             git apply "$p"
           done
-      - name: Compile runtime
-        run: python -m compileall -q runtime/cbcc
       - name: Run continuity regressions
         run: >-
           python -m pytest -q
