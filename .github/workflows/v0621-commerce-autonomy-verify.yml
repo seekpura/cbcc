@@ -30,6 +30,7 @@ jobs:
           pytest -q -ra \
             tests/test_v0621_commerce_agent_autonomy.py \
             tests/test_v0621_agent_replan_and_frameworks.py \
+            tests/test_v0621_relevance_driven_photography.py \
             > .changes/v0621-commerce-autonomy-output.txt 2>&1
           rc=$?
           set -e
@@ -40,11 +41,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add runtime/cbcc/agent_autonomy.py runtime/cbcc/compiler.py runtime/cbcc/creative.py runtime/cbcc/creative_opportunity.py runtime/cbcc/decision.py runtime/cbcc/strategy_authority.py \
-            tests/test_v0621_commerce_agent_autonomy.py tests/test_v0621_agent_replan_and_frameworks.py \
+          git add runtime/cbcc/agent_autonomy.py runtime/cbcc/compiler.py runtime/cbcc/creative.py runtime/cbcc/creative_opportunity.py runtime/cbcc/decision.py runtime/cbcc/strategy_authority.py runtime/cbcc/tools/visual.py \
+            tests/test_v0621_commerce_agent_autonomy.py tests/test_v0621_agent_replan_and_frameworks.py tests/test_v0621_relevance_driven_photography.py \
             .changes/v0621-commerce-autonomy-output.txt .changes/v0621-commerce-autonomy-output.rc
           if ! git diff --cached --quiet; then
-            git commit -m "feat: extend v0.6.21 commerce agent autonomy loop"
+            git commit -m "feat: make v0.6.21 photography precision relevance-driven"
             git push origin HEAD:work/v0621-commerce-agent-autonomy
           fi
       - name: Enforce targeted result
