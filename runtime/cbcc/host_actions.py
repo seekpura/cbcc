@@ -47,18 +47,32 @@ def _normalize_key(value: Any) -> str:
     return text
 
 
-def forbidden_secret_fields(payload: Any, prefix: str = '') -> list[str]:
-    """Return forbidden credential-bearing field paths from an action payload.
+def _credential_like_key(key: str) -> bool:
+    if key in _FORBIDDEN_SECRET_KEYS:
+        return True
+    suffixes = (
+        '_api_key', '_api_token', '_access_token', '_refresh_token', '_token',
+        '_secret', '_client_secret', '_password', '_passwd', '_credentials',
+        '_credential', '_authorization', '_auth_header', '_private_key',
+        '_access_key', '_secret_key', '_session_token',
+    )
+    prefixes = ('authorization_', 'bearer_', 'secret_', 'password_')
+    return key.endswith(suffixes) or key.startswith(prefixes)
 
-    The policy is intentionally field based. Credential values belong to the v0.6.16 runtime-context
-    resolver, never to host action/MCP/plugin JSON payloads.
+
+def forbidden_secret_fields(payload: Any, prefix: str = '') -> list[str]:
+    """Return credential-bearing field paths from an action payload.
+
+    Credential-like keys are rejected even when namespaced (for example provider_api_key or
+    oauth_token). Credential values belong only to the v0.6.16 runtime-context resolver, never to
+    host action/MCP/plugin JSON payloads.
     """
     found: list[str] = []
     if isinstance(payload, dict):
         for raw_key, value in payload.items():
             key = _normalize_key(raw_key)
             path = f'{prefix}.{raw_key}' if prefix else str(raw_key)
-            if key in _FORBIDDEN_SECRET_KEYS:
+            if _credential_like_key(key):
                 found.append(path)
             found.extend(forbidden_secret_fields(value, path))
     elif isinstance(payload, list):
