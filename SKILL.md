@@ -1,13 +1,23 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.16-provider-host-execution-surface
+version: 0.6.17-host-action-mapping
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.17 Host Action / MCP / Plugin Mapping
+- 新增 canonical host action catalog：`adapters.list / execute / status / resume / cancel / reconcile` 六个 action，schema 与 permission scope 由同一真源定义。
+- `ProviderActionDispatcher` 只调用 v0.6.16 `ProviderExecutionSurface`；Action / MCP / Plugin 不复制 ProviderExecutor、Bridge、Receipt 或 ProjectState completion runtime。
+- authorization 默认 DENY；read / execute / cancel / reconcile 权限显式分离，mutating action 必须持有对应 scope。
+- 长任务不建立第二套 async job DB：execute 返回稳定非敏感 operation ID；status 只读现有 `bridge_state / executor_state / result / production_run`；resume 重新进入同一持久化 Provider lifecycle，因此不重复 submit。
+- operation ID 与 project + materialized job scope 绑定；status/resume 改换 asset scope 会被拒绝。
+- action payload 在 dispatch 前递归拒绝 credential-like 字段，包含 exact 与 namespaced 形式：`api_key / provider_api_key / oauth_token / clientSecret / password / credential / authorization / private_key` 等。
+- runtime context 继续只来自 ProviderExecutionSurface resolver，不进入 action JSON。
+- `action_transport_manifest()` 仅声明 MCP tool name / Plugin operationId 的薄映射，并显式声明当前仓库没有 MCP/Plugin server；未来 transport 只能包裹 canonical dispatcher。
 
 ## v0.6.16 Provider Host Execution Surface
 - 新增 `ProviderExecutionSurface`，把 v0.6.15 Adapter Registry / Executor Bridge 暴露成宿主可操作入口；仍然复用唯一链路 `Provider Job → Adapter Registry → Executor Bridge → ProviderExecutor → Production Receipt → Ingest`。

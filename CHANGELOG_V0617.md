@@ -25,3 +25,5 @@ v0.6.16 exposed a secure ProviderExecutionSurface to Python and CLI hosts, but t
 
 ## Boundary
 v0.6.17 defines the canonical action contract and dispatch runtime. A concrete MCP server or ChatGPT Plugin transport should be a thin schema/transport wrapper over this contract, not a second provider execution implementation.
+
+- Release regression rule: compare full-suite failure node IDs with current main and ship only when `NEW_FAILURE_COUNT=0`.

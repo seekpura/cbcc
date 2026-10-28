@@ -1,3 +1,11 @@
+## 0.6.17 — Host Action / MCP / Plugin Mapping
+- Added canonical provider action schemas and a host-neutral dispatcher over ProviderExecutionSurface.
+- Added explicit default-deny authorization scopes for read, execute, cancel, reconcile and status operations.
+- Added status/resume semantics over existing persisted provider state without a second async job database.
+- Added stable operation scope binding and recursive rejection of exact/namespaced credential-bearing action fields.
+- Added declarative MCP tool / Plugin operation mappings without claiming a transport server exists.
+- See `CHANGELOG_V0617.md`.
+
 ## 0.6.16 — Provider Host Execution Surface
 - Added programmatic ProviderExecutionSurface over the existing adapter registry/executor bridge.
 - Added `adapter-list`, `provider-execute`, `provider-cancel`, and `provider-reconcile` CLI operations with no secret-bearing CLI arguments.

@@ -1,7 +1,7 @@
-# CBCC v0.6.16 CURRENT HANDOFF
+# CBCC v0.6.17 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.16-provider-host-execution-surface`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.17-host-action-mapping`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -97,5 +97,18 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 9. v0.6.13–v0.6.16 provider continuity + host-surface 定向联测：23 passed。
 10. 全量回归与 v0.6.15 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；发布判断继续以新增失败集合为准。
 
+## v0.6.17 已完成
+1. 仓库审计确认当前没有 MCP server / Plugin action runtime，因此没有伪造“已接 MCP”；先建立 host-neutral canonical Action Contract + Dispatcher。
+2. 六个 canonical actions：adapter list、execute、status、resume、cancel、reconcile；每个 action 有明确 input schema / output status / permission scope。
+3. authorization 默认 DENY；`PROVIDER_ADAPTER_READ / PROVIDER_STATUS_READ / PROVIDER_EXECUTE / PROVIDER_CANCEL / PROVIDER_RECONCILE` 权限独立。
+4. Action Dispatcher 只调用现有 `ProviderExecutionSurface`，不直接 instantiate executor，不复制 Provider runtime。
+5. execute → PENDING → status(read-only) → resume 已跑通；resume 复用同一 external job，Reference Executor submit count 保持 1。
+6. operation ID 绑定 project + materialized job scope；scope 被改动时 status/resume 拒绝继续。
+7. 不建立第二套 async job DB；状态继续来自 `bridge_state.json / executor_state.json / result.json / production_run.json`。
+8. action payload 禁止 credential-like 字段，包含 namespaced key；runtime context 继续只由 v0.6.16 Host Surface resolver 注入。
+9. 提供 MCP tool name / Plugin operationId 的 declarative thin mapping，但 manifest 明确 `claims_mcp_server_exists=false / claims_plugin_server_exists=false`。
+10. v0.6.13–v0.6.17 provider continuity + host-action 定向联测：33 passed。
+11. 全量回归与 v0.6.16 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；Action transport 发布不以固定失败数量阈值放行。
+
 ## 下一步唯一主任务
-**把 v0.6.16 Host Execution Surface 映射到真实宿主 Action / MCP / Plugin 调用层：先审计当前 ChatGPT Plugin / 宿主可暴露的 action schema，再让 `adapter-list / provider-execute / provider-cancel / provider-reconcile` 直接调用现有 ProviderExecutionSurface；补 action authorization、长任务 resume/status 与 secret/runtime-context 边界。禁止复制 Provider runtime、禁止在 action schema 中出现 credential 值字段。**
+**基于 v0.6.17 canonical Action Catalog 生成真正可消费的 Transport Descriptors：MCP tool descriptor 与 Plugin/OpenAPI action descriptor 必须从同一 action schema 自动派生、通过 schema parity / authorization / secret-field lint；随后实现一个薄 transport adapter（优先选择与当前宿主最匹配者），其 handler 只能调用 ProviderActionDispatcher。禁止手写两套 schema、禁止 transport 自己执行 Provider lifecycle。**
