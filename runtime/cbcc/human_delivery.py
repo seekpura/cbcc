@@ -138,6 +138,58 @@ def _risk_summary(project:Path) -> list[dict[str,Any]]:
     return out[:100]
 
 
+
+def _string_list(value):
+    if value is None: return []
+    if not isinstance(value,(list,tuple,set,frozenset)): value=[value]
+    return [str(x).strip() for x in value if str(x or '').strip()]
+
+
+def _delivery_task_scope(project:Path) -> dict[str,Any]:
+    request=_read_json(project/'meta/request.json',{})
+    plan=_read_json(project/'artifacts/agent_autonomy_plan.json',{})
+    next_action=_read_json(project/'artifacts/agent_next_action.json',{})
+    graph=_read_json(project/'artifacts/content_graph.json',{})
+    scope=(plan.get('content_scope') or {}) if isinstance(plan.get('content_scope'),dict) else {}
+    families=[]
+    for source in [request.get('content_families'),scope.get('families'),scope.get('content_families')]:
+        for x in _string_list(source):
+            if x not in families: families.append(x)
+    if not families:
+        for obj in graph.get('objects') or []:
+            fam=str((obj or {}).get('family') or '').strip()
+            if fam and fam not in families: families.append(fam)
+    objective=' '.join(_string_list([request.get('goal'),request.get('task'),request.get('objective'),request.get('intent')])).casefold()
+    listing_terms=('listing','seller center','upload listing','publish listing','上架','发布商品','商品发布','上架资料')
+    submission_terms=('seller center','upload listing','publish listing','上架','发布商品','商品发布')
+    listing_active=bool(request.get('listing_input')) or any(x in {'LISTING','SEARCH','OFFER_PROMOTION'} for x in families) or any(t in objective for t in listing_terms)
+    submission_sensitive=bool(request.get('listing_submission') or request.get('publish_listing') or request.get('submission_ready')) or any(t in objective for t in submission_terms)
+    frontier=list(next_action.get('frontier') or [])
+    return {
+        'listing_active':listing_active,
+        'listing_submission_sensitive':submission_sensitive,
+        'families':families,
+        'frontier':frontier,
+        'recommended_next_action':next_action.get('recommended_next_action'),
+        'scope_status':next_action.get('status'),
+        'principle':'Human delivery follows the current commerce task. Preserved data does not become a blocking workspace merely because the system knows how to render it.',
+    }
+
+
+_FIELD_LABELS={
+    'title':'产品标题','product_name':'商品名称','brand':'品牌','category':'平台类目','category_id':'类目ID','category_path':'类目路径',
+    'highlights':'核心卖点','bullets':'卖点','description':'商品描述','attributes':'属性','backend_terms':'后台关键词','search_terms':'搜索词',
+    'usage':'使用方法','ingredients':'成分','warnings':'警示','faq':'FAQ','package':'包装/包含物','sku':'SKU','variant':'变体','price':'价格','offer':'优惠/Offer',
+    'shipping':'物流承诺','returns':'退换货/售后','seller_info':'卖家/责任方信息',
+}
+_FIELD_GROUPS={
+    'title':'商品识别','product_name':'商品识别','brand':'商品识别','sku':'商品识别','variant':'商品识别',
+    'category':'类目 / 搜索','category_id':'类目 / 搜索','category_path':'类目 / 搜索','backend_terms':'类目 / 搜索','search_terms':'类目 / 搜索',
+    'highlights':'购买决策','bullets':'购买决策','description':'购买决策','faq':'购买决策',
+    'attributes':'事实 / 使用','usage':'事实 / 使用','ingredients':'事实 / 使用','warnings':'事实 / 使用','package':'事实 / 使用',
+    'price':'Offer / 履约','offer':'Offer / 履约','shipping':'Offer / 履约','returns':'Offer / 履约','seller_info':'Offer / 履约',
+}
+
 def compile_upload_center(project_dir:Path) -> dict[str,Any]:
     project=Path(project_dir)
     target=_target_summary(project); product=_product_summary(project)
@@ -145,29 +197,61 @@ def compile_upload_center(project_dir:Path) -> dict[str,Any]:
     pc=_read_json(project/'artifacts/platform_compile.json',{})
     econ=_read_json(project/'artifacts/offer_economics.json',{})
     category=_category_contract(target,fields,pc)
+    task_scope=_delivery_task_scope(project)
     delivery_locale=target.get('delivery_locale') or 'zh-CN'
     localized_map={(str(r.get('locale') or ''),str(r.get('field') or '')):r for r in localized_rows}
     primary_locale=str((comp.get('localization_transcreation') or {}).get('primary_locale') or target.get('locale') or '')
-    canonical=[
-        ('title','产品标题'),('product_name','商品名称'),('brand','品牌'),('category','平台类目'),('category_id','类目ID'),('category_path','类目路径'),
-        ('highlights','核心卖点'),('bullets','卖点'),('description','商品描述'),('attributes','属性'),('backend_terms','后台关键词'),('search_terms','搜索词'),
-        ('usage','使用方法'),('ingredients','成分'),('warnings','警示'),('faq','FAQ'),('package','包装/包含物'),('sku','SKU'),('variant','变体'),('price','价格'),('offer','优惠/Offer'),
-        ('shipping','物流承诺'),('returns','退换货/售后'),('seller_info','卖家/责任方信息'),
-    ]
     values=dict(fields)
-    values.setdefault('brand',product.get('brand')); values.setdefault('product_name',product.get('product_name')); values.setdefault('sku',product.get('sku'))
-    values['category']=category.get('name'); values['category_id']=category.get('id'); values['category_path']=category.get('path')
+    for key,val in [('brand',product.get('brand')),('product_name',product.get('product_name')),('sku',product.get('sku'))]:
+        if val not in (None,'',[],{}): values.setdefault(key,val)
+    if category.get('name') not in (None,'',[],{}): values.setdefault('category',category.get('name'))
+    if category.get('id') not in (None,'',[],{}): values.setdefault('category_id',category.get('id'))
+    if category.get('path') not in (None,'',[],{}): values.setdefault('category_path',category.get('path'))
     if econ:
-        values.setdefault('price',_first(econ.get('price'),econ.get('selling_price')))
+        price=_first(econ.get('price'),econ.get('selling_price'))
+        if price not in (None,'',[],{}): values.setdefault('price',price)
+
+    contracts={str(x.get('field')):x for x in (comp.get('field_contracts') or []) if isinstance(x,dict) and x.get('field')}
+    required={k for k,v in contracts.items() if bool(v.get('required'))}
+    submission_sensitive=bool(task_scope.get('listing_submission_sensitive'))
+    submission_fields={'category','category_id','category_path'} if submission_sensitive else set()
+    listing_active=bool(task_scope.get('listing_active'))
+
+    # Preserve known data even when Listing is outside the current scope, but do not promote it into a blocking workspace.
+    preserved=[{'field':k,'label':_FIELD_LABELS.get(k,k),'value':v} for k,v in values.items() if not str(k).startswith('_') and v not in (None,'',[],{})]
+    if not listing_active:
+        return {
+            'version':'0.6.23','delivery_language':{'locale':delivery_locale,'default_rule':'默认中文交付；用户明确要求其他交付语言时覆盖。','foreign_copy_rule':'目标市场可见文案保持目标语言；人类交付同时显示中文释义/用途说明。'},
+            'target':target,'product':product,'category':category,'task_scope':task_scope,
+            'readiness':{'status':'NOT_IN_CURRENT_SCOPE','pending_count':0,'pending_fields':[],'optional_gap_count':0,'scope':'NON_LISTING_CURRENT_TASK'},
+            'copy_center':[],'field_groups':[],'preserved_listing_fields':preserved,'localized_copy':localized_rows,
+            'field_contracts':comp.get('field_contracts') or [],'platform_profile':comp.get('platform_native_listing_profile') or {},
+            'media_slots':_extract_media(project),'risks_and_holds':_risk_summary(project),
+            'human_rule':'当前任务不需要 Listing 时，上架字段不会占据主工作区或制造全项目 HOLD；已有 Listing 数据仍保留在结构化真源中。'
+        }
+
+    # Listing workspace is driven by supplied values + current platform-required fields + explicitly submission-sensitive fields.
+    relevant=[]
+    for field,value in values.items():
+        if str(field).startswith('_'): continue
+        if value not in (None,'',[],{}) and field not in relevant: relevant.append(field)
+    for field in list(contracts):
+        if field in required and field not in relevant: relevant.append(field)
+    for field in submission_fields:
+        if field not in relevant: relevant.append(field)
+
+    preferred=['title','product_name','brand','sku','variant','category','category_id','category_path','highlights','bullets','description','attributes','backend_terms','search_terms','usage','ingredients','warnings','faq','package','price','offer','shipping','returns','seller_info']
+    order=[x for x in preferred if x in relevant]+[x for x in relevant if x not in preferred]
     copy_center=[]
-    used=set()
-    for field,label in canonical:
+    for field in order:
         value=values.get(field)
-        if field in {'category','category_id','category_path'}:
-            status=category.get('status') if field=='category' else ('READY' if value not in (None,'',[],{}) and category.get('exact_category_verified') else '待查证')
+        is_required=field in required or field in submission_fields
+        if field in {'category','category_id','category_path'} and value not in (None,'',[],{}) and not category.get('exact_category_verified'):
+            status='待查证' if is_required else '规划参考'
         elif value in (None,'',[],{}):
-            status='待查证' if field in {'price','shipping','returns','seller_info'} else '待补'
-        else: status='READY'
+            status='待补' if is_required else '可选待补'
+        else:
+            status='READY'
         companion=(localized_map.get((primary_locale,field)) or {}) if primary_locale else {}
         delivery_translation=companion.get('delivery_translation'); delivery_note=companion.get('delivery_note')
         if field=='brand' and value not in (None,'',[],{}) and not delivery_translation:
@@ -176,72 +260,79 @@ def compile_upload_center(project_dir:Path) -> dict[str,Any]:
             delivery_translation='SKU 标识，无需翻译'; delivery_note='保留内部/平台 SKU 标识。'
         if field=='category_id' and value not in (None,'',[],{}) and not delivery_translation:
             delivery_translation='平台类目 ID，无需翻译'
-        if field=='category' and not delivery_translation and str(value or '').casefold()=='beauty':
-            delivery_translation='美妆（规划品类；平台精确上架类目待查证）'; delivery_note='这是规划层品类，不代表 Seller Center 的最终类目名称/ID/路径。'
-        copy_center.append({'group':'上架资料','field':field,'label':label,'value':value,'status':status,'copyable':value not in (None,'',[],{}),'locale':primary_locale or None,'delivery_locale':delivery_locale,'delivery_translation':delivery_translation,'delivery_note':delivery_note,'delivery_companion_status':('NOT_REQUIRED' if not primary_locale or str(primary_locale).casefold()==str(delivery_locale).casefold() else ('READY' if delivery_translation not in (None,'') else '待补中文释义'))})
-        used.add(field)
-    for k,v in values.items():
-        if k in used or str(k).startswith('_'): continue
-        copy_center.append({'group':'其他平台字段','field':k,'label':k,'value':v,'status':'READY' if v not in (None,'',[],{}) else '待补','copyable':v not in (None,'',[],{}),'locale':primary_locale or None,'delivery_locale':delivery_locale,'delivery_translation':None,'delivery_companion_status':('NOT_APPLICABLE_EMPTY' if v in (None,'',[],{}) else ('NOT_REQUIRED' if not primary_locale or str(primary_locale).casefold()==str(delivery_locale).casefold() else '待补中文释义'))})
-    hard_pending=[x for x in copy_center if x['status']=='待查证']
+        copy_center.append({
+            'group':_FIELD_GROUPS.get(field,'其他平台字段'),'field':field,'label':_FIELD_LABELS.get(field,field),'value':value,'status':status,
+            'required_for_current_scope':is_required,'copyable':value not in (None,'',[],{}),'locale':primary_locale or None,'delivery_locale':delivery_locale,
+            'delivery_translation':delivery_translation,'delivery_note':delivery_note,
+            'delivery_companion_status':('NOT_REQUIRED' if not primary_locale or str(primary_locale).casefold()==str(delivery_locale).casefold() else ('READY' if delivery_translation not in (None,'') else ('NOT_APPLICABLE_EMPTY' if value in (None,'',[],{}) else '待补中文释义'))),
+        })
+    blocking=[x for x in copy_center if x.get('required_for_current_scope') and x.get('status') in {'待补','待查证'}]
+    optional=[x for x in copy_center if not x.get('required_for_current_scope') and x.get('status') in {'可选待补','规划参考'}]
+    groups=[]
+    for name in ['商品识别','类目 / 搜索','购买决策','事实 / 使用','Offer / 履约','其他平台字段']:
+        rows=[x for x in copy_center if x.get('group')==name]
+        if rows: groups.append({'group':name,'fields':[x.get('field') for x in rows],'ready':sum(1 for x in rows if x.get('status')=='READY'),'pending':sum(1 for x in rows if x.get('status') in {'待补','待查证'})})
     return {
-        'version':'0.6.6','delivery_language':{'locale':delivery_locale,'default_rule':'默认中文交付；用户明确要求其他交付语言时覆盖。','foreign_copy_rule':'目标市场可见文案保持目标语言；人类交付同时显示中文释义/用途说明。'},'target':target,'product':product,'category':category,
-        'readiness':{'status':'READY_WITH_HOLDS' if hard_pending else 'READY','pending_count':len(hard_pending),'pending_fields':[x['field'] for x in hard_pending]},
-        'copy_center':copy_center,'localized_copy':localized_rows,
+        'version':'0.6.23','delivery_language':{'locale':delivery_locale,'default_rule':'默认中文交付；用户明确要求其他交付语言时覆盖。','foreign_copy_rule':'目标市场可见文案保持目标语言；人类交付同时显示中文释义/用途说明。'},
+        'target':target,'product':product,'category':category,'task_scope':task_scope,
+        'readiness':{'status':'READY_WITH_HOLDS' if blocking else 'READY_FOR_CURRENT_SCOPE','pending_count':len(blocking),'pending_fields':[x['field'] for x in blocking],'optional_gap_count':len(optional),'optional_fields':[x['field'] for x in optional],'scope':'LISTING_CURRENT_TASK'},
+        'copy_center':copy_center,'field_groups':groups,'preserved_listing_fields':preserved,'localized_copy':localized_rows,
         'field_contracts':comp.get('field_contracts') or [],'platform_profile':comp.get('platform_native_listing_profile') or {},
         'media_slots':_extract_media(project),'risks_and_holds':_risk_summary(project),
-        'human_rule':'中文是默认项目交付语言。目标市场文案可以是 BM/EN/AR 等，但必须在同一界面同时显示中文释义或用途说明；用户不需要掌握目标语言才能评审和执行。'
+        'human_rule':'只让当前 Listing 任务真正要求的字段参与 readiness。已有但非当前任务必需的字段保留；未供应的可选字段不制造 HOLD。'
     }
 
 
 def render_upload_center_md(center:dict[str,Any]) -> str:
-    t=center.get('target') or {}; p=center.get('product') or {}; r=center.get('readiness') or {}
-    lines=['# 上架资料中心','',f"> 状态：**{r.get('status')}**｜待查证字段：{r.get('pending_count',0)}",'',
+    t=center.get('target') or {}; r=center.get('readiness') or {}; scope=center.get('task_scope') or {}
+    lines=['# 上架资料中心','',f"> 当前范围：**{r.get('scope')}**｜状态：**{r.get('status')}**",'',
            '## 目标','',f"- 平台/站点：{_clean_text(_first(t.get('platform'),t.get('site'),'待查证'))}",f"- 市场：{_clean_text(t.get('market') or '待查证')}",f"- Locale：{_clean_text(t.get('locale') or '待查证')}",f"- 商品：{_human_product_label(center)}",'']
-    lines += ['## 一页上架字段','', '| 字段 | 目标语言 | 目标文案 | 中文释义 / 用途 | 状态 |','|---|---|---|---|---|']
-    for x in center.get('copy_center') or []:
-        v=_clean_text(x.get('value')).replace('\n','<br>').replace('|','\\|') or '—'
-        if x.get('value') in (None,'',[],{}): zh='—'
-        else: zh=_clean_text(x.get('delivery_translation') or ('同交付语言，无需另译' if x.get('delivery_companion_status')=='NOT_REQUIRED' else '待补中文释义 / 用途')).replace('\n','<br>').replace('|','\\|')
-        lines.append(f"| {x.get('label')} | {x.get('locale') or '—'} | {v} | {zh} | {x.get('status')} |")
-    lines += ['','## 平台类目','',f"- 类目名称：{_clean_text((center.get('category') or {}).get('name') or '待查证')}",f"- 类目 ID：{_clean_text((center.get('category') or {}).get('id') or '待查证')}",f"- 类目路径：{_clean_text((center.get('category') or {}).get('path') or '待查证')}",f"- 规则：{(center.get('category') or {}).get('rule')}"]
-    if center.get('media_slots'):
-        lines += ['','## 媒体/资产槽位','', '| 资产 ID | 展示位置（Surface） | 角色 | 状态 |','|---|---|---|---|']
-        for a in center['media_slots']:
-            lines.append(f"| {a.get('asset_id') or '—'} | {a.get('surface') or '—'} | {_clean_text(a.get('role') or a.get('title') or '—').replace('|','\\|')} | {a.get('status') or '—'} |")
+    if not scope.get('listing_active'):
+        lines += ['## 当前任务不需要上架字段','', 'Listing 数据仍保留在项目真源中，但当前视觉 / 内容 / 生产任务不会因为价格、物流、退换货或卖家信息缺失而被标记为 HOLD。']
+        kept=center.get('preserved_listing_fields') or []
+        if kept:
+            lines += ['','### 已保留的数据','']
+            for x in kept[:20]: lines.append(f"- **{x.get('label')}**：{_clean_text(x.get('value'))}")
+        return '\n'.join(lines)+'\n'
+    lines += ['## 当前 Listing 工作字段','',f"真正阻断当前范围：{r.get('pending_count',0)} 项；可选/规划缺口：{r.get('optional_gap_count',0)} 项。",'']
+    for group in center.get('field_groups') or []:
+        rows=[x for x in center.get('copy_center') or [] if x.get('group')==group.get('group')]
+        lines += [f"### {group.get('group')}",'','| 字段 | 目标市场内容 | 中文释义 / 用途 | 当前任务要求 | 状态 |','|---|---|---|---|---|']
+        for x in rows:
+            v=_clean_text(x.get('value')).replace('\n','<br>').replace('|','\\|') or '—'
+            zh=_clean_text(x.get('delivery_translation') or ('同交付语言，无需另译' if x.get('delivery_companion_status')=='NOT_REQUIRED' else ('—' if x.get('value') in (None,'',[],{}) else '待补中文释义 / 用途'))).replace('\n','<br>').replace('|','\\|')
+            lines.append(f"| {x.get('label')} | {v} | {zh} | {'是' if x.get('required_for_current_scope') else '否'} | {x.get('status')} |")
+        lines.append('')
     if center.get('risks_and_holds'):
-        lines += ['','## 风险 / 待补 / 待查证','']
+        lines += ['## 风险 / 待查证','']
         for x in center['risks_and_holds'][:30]: lines.append(f"- **{x.get('status')}** · {x.get('source')}/{x.get('type')}：{x.get('item')}")
-    lines += ['','---','','> 单字段/逐资产文件仍保留，用于版本、修改和生产；正常上架与项目评审优先看本文件或 `index.html`。']
     return '\n'.join(lines)+'\n'
 
 
 def build_project_hub_md(center:dict[str,Any], strategy_path:str='strategy/MASTER_STRATEGY_CN.md') -> str:
-    t=center.get('target') or {}; p=center.get('product') or {}; r=center.get('readiness') or {}
+    t=center.get('target') or {}; r=center.get('readiness') or {}; scope=center.get('task_scope') or {}
     assets=center.get('media_slots') or []; risks=center.get('risks_and_holds') or []
-    ready=sum(1 for x in center.get('copy_center') or [] if x.get('status')=='READY')
-    pending=sum(1 for x in center.get('copy_center') or [] if x.get('status')!='READY')
-    lines=['# 项目总控台','',
-           f"**{_human_product_label(center)}**",'',
+    lines=['# 项目总控台','',f"**{_human_product_label(center)}**",'',
            f"平台：{_clean_text(_first(t.get('platform'),t.get('site'),'待查证'))}｜市场：{_clean_text(t.get('market') or '待查证')}｜目标Locale：{_clean_text(t.get('locale') or '待查证')}｜交付语言：{_clean_text(t.get('delivery_locale') or 'zh-CN')}",'',
-           '## 先看这四件事','',
-           f"- **上架状态**：{r.get('status')}；字段 READY {ready}，待补/待查证 {pending}。",
-           f"- **平台类目**：{_clean_text(_first((center.get('category') or {}).get('path'),(center.get('category') or {}).get('name'),'待查证'))}",
-           f"- **资产数量**：{len(assets)} 个已规划媒体资产。",
-           f"- **风险/待办**：{len(risks)} 项开放事项。",'',
-           '## 正常使用路径','',
-           '1. **要上架** → 直接进入 HTML 的「上架资料」，所有可复制字段集中呈现。','2. **要看全局策略** → 进入 HTML 的「策略」页面，完整正文已内嵌。','3. **要做图/视频** → 进入 HTML 的「资产库」并打开对应 资产详情页；设计卡、摄影合同、中英文提示词与生产说明均在同一 HTML 内。','4. **要改东西** → 按具体字段 / 资产 ID 修改；Markdown/JSON 是可编辑与机器真源，不是理解项目的前置步骤。','',
-           '## 上架关键字段速览','', '| 字段 | 目标市场内容 | 中文释义 / 用途 | 状态 |','|---|---|---|---|']
-    for x in (center.get('copy_center') or [])[:14]:
-        val=_clean_text(x.get('value')).replace('\n',' / ').replace('|','\\|')
-        if len(val)>180: val=val[:177]+'...'
-        zh=_clean_text(x.get('delivery_translation') or ('同交付语言，无需另译' if x.get('delivery_companion_status')=='NOT_REQUIRED' else ('—' if x.get('value') in (None,'',[],{}) else '待补中文释义 / 用途'))).replace('\n',' / ').replace('|','\\|')
-        if len(zh)>180: zh=zh[:177]+'...'
-        lines.append(f"| {x.get('label')} | {val or '—'} | {zh or '—'} | {x.get('status')} |")
-    lines += ['','## 资产速览','', '| 资产 ID | 展示位置（Surface） | 角色 | 状态 |','|---|---|---|---|']
-    for a in assets[:30]: lines.append(f"| {a.get('asset_id') or '—'} | {a.get('surface') or '—'} | {_clean_text(a.get('role') or a.get('title') or '—').replace('|','\\|')} | {a.get('status') or '—'} |")
+           '## 当前任务','',f"- 内容/能力范围：{', '.join(scope.get('families') or []) or '由当前项目对象动态决定'}",f"- Agent 下一动作：{scope.get('recommended_next_action') or '当前范围可停止或由 Agent 自主选择'}",f"- 已规划资产：{len(assets)}",f"- 开放风险/待查证：{len(risks)}",'']
+    if scope.get('listing_active'):
+        ready=sum(1 for x in center.get('copy_center') or [] if x.get('status')=='READY')
+        lines += ['## Listing 当前范围','',f"- 状态：{r.get('status')}；当前要求字段中阻断 {r.get('pending_count',0)} 项；已就绪 {ready} 项；可选/规划缺口 {r.get('optional_gap_count',0)} 项。",'']
+    else:
+        lines += ['## Listing 当前范围','', '- 当前任务未激活 Listing；Listing 字段不参与项目 readiness。已有数据保留，但不会抢占视觉 / 内容 / 生产主任务。','']
+    frontier=scope.get('frontier') or []
+    if frontier:
+        lines += ['## Agent 识别的高价值下一动作','']
+        for item in frontier:
+            lines.append(f"- **{item.get('action') or 'NEXT'}**：{item.get('reason') or '继续处理当前未解决条件。'}")
+        lines.append('')
+    if assets:
+        lines += ['## 资产速览','', '| 资产 ID | 展示位置（Surface） | 角色 | 状态 |','|---|---|---|---|']
+        for a in assets[:30]: lines.append(f"| {a.get('asset_id') or '—'} | {a.get('surface') or '—'} | {_clean_text(a.get('role') or a.get('title') or '—').replace('|','\\|')} | {a.get('status') or '—'} |")
+        lines.append('')
     if risks:
-        lines += ['','## 当前风险 / 待查证','']
+        lines += ['## 当前风险 / 待查证','']
         for x in risks[:12]: lines.append(f"- **{x.get('status')}** {x.get('item')}")
-    lines += ['','## 深度文件','',f"- 完整策略：`{strategy_path}`",'- 上架资料：`01_LISTING_UPLOAD_READY.md`','- 逐资产：`asset_packages/` 或 `assets/`','- 支撑分析：`supporting_analysis/`','','> 交付原则：**一个入口看全局，一个上架中心直接复制，单文件只用于下钻。**']
+        lines.append('')
+    lines += ['## 深度文件','',f"- 完整策略：`{strategy_path}`",'- 上架资料（仅当前范围需要时使用）：`01_LISTING_UPLOAD_READY.md`','- 逐资产：`asset_packages/` 或 `assets/`','- 支撑分析：`supporting_analysis/`','','> 交付原则：**当前商业任务决定主工作面；结构化真源负责保存，不反过来规定用户必须先看什么。**']
     return '\n'.join(lines)+'\n'

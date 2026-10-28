@@ -354,7 +354,17 @@ def claim_source_trace_summary(trace:list[dict[str,Any]]) -> dict[str,Any]:
 
 
 def listing_conversion_architecture(fields:dict[str,Any], keywords:dict[str,Any], objections:list[dict[str,Any]]|None=None, rules:dict[str,Any]|None=None)->dict[str,Any]:
-    objections=objections or []
+    objections=objections or []; rules=rules or {}
+    names=[str(k) for k,v in fields.items() if not str(k).startswith('_') and v not in (None,'',[],{})]
+    for k,v in rules.items():
+        if isinstance(v,dict) and v.get('required') and str(k) not in names: names.append(str(k))
+    decision_map=field_decision_map(fields,rules)
+    click_candidates=['title','brand','product_name','price','variant']
+    click_fields=[x for x in click_candidates if x in names]
+    if not click_fields:
+        click_fields=[row.get('field') for row in decision_map if 'IDENTIFY' in str(row.get('decision_job') or '')][:3]
+    post_candidates=['faq','usage','package','attributes','warnings','shipping','returns']
+    post_fields=[x for x in post_candidates if x in names]
     return {
         'search_layer':{
             'job':'Match high-priority search intent while preserving readable product identity.',
@@ -363,20 +373,24 @@ def listing_conversion_architecture(fields:dict[str,Any], keywords:dict[str,Any]
         },
         'click_layer':{
             'job':'Make the exact product and first reason-to-click immediately legible.',
-            'fields':['title','primary_image','price','variant'],
-            'why':'Click surfaces compress attention and should not carry equal-weight secondary messages.'
+            'fields':click_fields,
+            'dynamic_from_current_fields':True,
+            'why':'Click surfaces only expose fields that actually exist or are required for this Listing contract; no price/variant/image slot is manufactured for completeness.'
         },
         'decision_layer':{
             'job':'Sequence relevance, benefit, proof, fit and objection resolution.',
-            'field_decision_map':field_decision_map(fields,rules),
+            'field_decision_map':decision_map,
             'objections':objection_resolution_plan(objections),
             'why':'PDP/listing content should answer the next buyer question rather than repeat the same selling point across fields.'
         },
         'post_purchase_prevention':{
             'job':'Clarify package contents, usage, compatibility, size and expectations before purchase when relevant.',
-            'fields':['faq','usage','package','attributes'],
-            'why':'Expectation clarity can reduce misunderstanding-driven returns and customer-service burden.'
-        }
+            'fields':post_fields,
+            'dynamic_from_current_fields':True,
+            'why':'Expectation fields appear only when supplied/required/relevant; the runtime does not invent a universal after-sales checklist.'
+        },
+        'active_fields':names,
+        'fixed_field_quota':None,
     }
 
 
