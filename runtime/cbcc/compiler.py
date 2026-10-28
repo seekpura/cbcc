@@ -20,6 +20,10 @@ from .category_strategy import infer_category_family
 from .asset_compiler import compile_asset_packages, validate_asset_packages
 from .decision import compile_persuasion_frameworks
 from .research import compile_research_gate, apply_host_research_response
+from .agent_autonomy import (
+    compile_agent_autonomy_plan, research_requirements_from_plan, derive_content_families,
+    agent_creative_opportunities, agent_creative_directions,
+)
 from .creative import compile_curation, compile_creative_council, compile_cmf, compile_inclusive_photography, apply_creative_system_to_assets
 from .creative_opportunity import compile_creative_opportunity_universe
 from .video_creator import build_video_creator_plan, enrich_video_plan_with_strategy
@@ -123,12 +127,16 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     p=Path(project_dir)
     try: st=ProjectState.load(p)
     except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.12-portable-provider-package-production-receipt')
-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.12-portable-provider-package-production-receipt'; st.save(); _write(st.meta/'request.json',request)
+    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.21-commerce-agent-autonomy'; st.save(); _write(st.meta/'request.json',request)
+
+    agent_plan=compile_agent_autonomy_plan(request)
+    _write(p/'artifacts/agent_autonomy_plan.json',agent_plan)
 
     evidence={'sources':request.get('sources',[]),'assumptions':request.get('assumptions',[])}
     ep=_write(p/'artifacts/evidence.json',evidence); st.set_gate('EVIDENCE','READY_REVIEW',[ep],evidence); st.checkpoint('EVIDENCE','READY_REVIEW')
 
-    research_gate=compile_research_gate(request.get('research_requirements'),request.get('sources',[]),request.get('research_as_of'))
+    research_gate=compile_research_gate(research_requirements_from_plan(request,agent_plan),request.get('sources',[]),request.get('research_as_of'))
+    research_gate['agent_autonomy']={'plan_status':agent_plan.get('status'),'authority':(agent_plan.get('research') or {}).get('authority'),'stop_conditions':(agent_plan.get('research') or {}).get('stop_conditions') or []}
     if request.get('host_research_responses'): research_gate=apply_host_research_response(research_gate,request.get('host_research_responses'))
     rgp=_write(p/'artifacts/research_gate.json',research_gate)
     for a in research_gate.get('actions',[]):
@@ -267,7 +275,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
             outp=p/'artifacts/listing_final_copy'/f'{loc}.md'; outp.parent.mkdir(parents=True,exist_ok=True); outp.write_text('\n'.join(lines),encoding='utf-8')
     _write(p/'artifacts/domain_analysis.json',domain)
 
-    families=request.get('content_families') or DEFAULT_FAMILIES
+    families=derive_content_families(request,agent_plan,family_surface=FAMILY_SURFACE,available_families=DEFAULT_FAMILIES)
     capabilities=set(pc.get('capabilities',[])); objects=[]
     requested_surfaces=set(t.get('surfaces') or [])
     supported_surfaces=set(pc.get('surfaces') or [])
@@ -283,7 +291,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
         obj=ContentObject(oid,FAMILY_KIND.get(fam,fam.lower()),fam,'Resolve shopper decision job',target.target_id,FAMILY_SURFACE.get(fam),True,
             payload=payload,source_ids=truth['source_ids'],upstream_hashes={'PRODUCT_TRUTH':st.data['gates']['PRODUCT_TRUTH']['authority_hash'],'TARGET_CONTEXT':st.data['gates']['TARGET_CONTEXT']['authority_hash'],'CULTURE_CONTEXT':st.data['gates']['CULTURE_CONTEXT']['authority_hash']},language=lang)
         objects.append(obj.to_dict()); _write(p/f'artifacts/objects/{oid}.json',obj.to_dict())
-    cg={'objects':objects,'dynamic_count':len(objects),'fixed_count_authority':False}
+    cg={'objects':objects,'dynamic_count':len(objects),'fixed_count_authority':False,'scope_authority':'AGENT_OR_TASK_DERIVED','agent_plan_status':agent_plan.get('status')}
     cgp=_write(p/'artifacts/content_graph.json',cg); st.set_gate('CONTENT_GRAPH','READY_REVIEW',[cgp],cg); st.checkpoint('CONTENT_GRAPH','READY_REVIEW')
 
     market_fit_contract=compile_market_evidence_fit_contract(request,domain.get('market'))
@@ -307,10 +315,11 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     inclusive=compile_inclusive_photography(culture,request.get('photography_contract'),architecture.get('assets') or [])
     _write(p/'artifacts/inclusive_photography.json',inclusive)
     creative_opportunity_universe=compile_creative_opportunity_universe(
-        truth,product_visual_intelligence,category_family,architecture.get('assets') or [],curation,culture,tc
+        truth,product_visual_intelligence,category_family,architecture.get('assets') or [],curation,culture,tc,
+        agent_opportunities=agent_creative_opportunities(agent_plan),
     )
     _write(p/'artifacts/creative_opportunity_universe.json',creative_opportunity_universe)
-    council=compile_creative_council(request.get('creative_directions'),curation,truth,culture,pc,category_family,[a.get('decision_intent') for a in architecture.get('assets') or []],creative_opportunity_universe)
+    council=compile_creative_council(request.get('creative_directions') or agent_creative_directions(agent_plan),curation,truth,culture,pc,category_family,[a.get('decision_intent') for a in architecture.get('assets') or []],creative_opportunity_universe)
     _write(p/'artifacts/creative_council.json',council)
     architecture=apply_creative_system_to_assets(architecture,council,cmf,request.get('photography_contract'))
     inclusive=compile_inclusive_photography(culture,request.get('photography_contract'),architecture.get('assets') or [])
@@ -326,7 +335,8 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
               'foundation_asset_ids':[x['asset_id'] for x in foundation['roles']], 'source_truth_binding':st.data['gates']['PRODUCT_TRUTH']['authority_hash'],
               'culture_context_hash':st.data['gates']['CULTURE_CONTEXT']['authority_hash'],'language_profiles':culture['language_profiles'],
               'curation':curation,'creative_opportunity_universe':creative_opportunity_universe,'creative_council':council,'cmf':cmf,'inclusive_photography':inclusive,
-              'surface_architecture':surface_architecture,'asset_expression_assignment':architecture.get('creative_system_assignment'),'product_visual_intelligence':product_visual_intelligence,'creative_anchor_plan':creative_anchors}
+              'surface_architecture':surface_architecture,'asset_expression_assignment':architecture.get('creative_system_assignment'),'product_visual_intelligence':product_visual_intelligence,'creative_anchor_plan':creative_anchors,
+              'agent_autonomy_plan':agent_plan}
     crp=_write(p/'artifacts/creative_contract.json',creative)
     creative_ready=(not photography_validation or photography_validation.get('pass')) and council.get('status')=='SELECTED'
     st.set_gate('CREATIVE','READY_REVIEW' if creative_ready else 'HOLD',[crp],creative)
@@ -348,7 +358,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     _write(p/'artifacts/strategy_reasoning_context.json',strategy_context)
 
     # Strategy Authority: positive commercial design is the main deliverable; governance remains a background guardrail.
-    strategy_request=dict(request); strategy_request['claims']=claims; strategy_request['_market_evidence_fit_contract']=market_fit_contract
+    strategy_request=dict(request); strategy_request['claims']=claims; strategy_request['_market_evidence_fit_contract']=market_fit_contract; strategy_request['_agent_autonomy_plan']=agent_plan
     strategy=build_master_strategy(
         strategy_request, truth=truth, research_gate=research_gate, market=domain.get('market'), economics=domain.get('economics'),
         culture=culture, platform_compile=pc, creative=creative, photography_validation=photography_validation,

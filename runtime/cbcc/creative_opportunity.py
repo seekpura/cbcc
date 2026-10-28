@@ -36,10 +36,38 @@ def compile_creative_opportunity_universe(
     product_truth:dict[str,Any], product_visual_intelligence:dict[str,Any]|None,
     category_family:str|None, assets:list[dict[str,Any]]|None,
     curation:dict[str,Any]|None=None, culture:dict[str,Any]|None=None,
-    target:dict[str,Any]|None=None,
+    target:dict[str,Any]|None=None, agent_opportunities:list[dict[str,Any]]|None=None,
 )->dict[str,Any]:
     """Build a search-before-selection universe of visual mechanisms, not a style library."""
     product=_product(product_truth); pvi=product_visual_intelligence or {}; curation=curation or {}; target=target or {}
+    if agent_opportunities:
+        authored=[]
+        for index,raw in enumerate(agent_opportunities):
+            if not isinstance(raw,dict):
+                continue
+            row=dict(raw)
+            mid=str(row.get('mechanism_id') or f'AGENT-MECHANISM-{index+1:02d}')
+            row['mechanism_id']=mid
+            row.setdefault('mechanism_name',mid.replace('_',' ').replace('-',' ').title())
+            row.setdefault('domain','AGENT_DISCOVERED')
+            row.setdefault('decision_intents',[])
+            row.setdefault('direction_role','PRIMARY_MECHANISM')
+            row.setdefault('score',0.85)
+            row.setdefault('opportunity_id','COP-'+stable_hash([product.get('name'),category_family,mid,row])[:10].upper())
+            row.setdefault('activation_signals',{'agent_authored':True})
+            authored.append(row)
+        return {
+            'status':'AGENT_AUTHORED_CREATIVE_OPPORTUNITY_UNIVERSE',
+            'product_name':product.get('name'),'category_family':category_family,
+            'observed_decision_intents':[str(a.get('decision_intent') or 'DECISION_SUPPORT').upper() for a in (assets or [])],
+            'opportunity_count':len(authored),'opportunities':authored,
+            'reference_whitespace_signals':curation.get('white_space') or [],
+            'category_cliche_signals':curation.get('category_cliches') or [],
+            'search_domains':list(dict.fromkeys(str(row.get('domain') or 'AGENT_DISCOVERED') for row in authored)),
+            'selection_rule':'Host agent authored the opportunity universe from current evidence. Runtime does not impose a mechanism quota or style library.',
+            'target_context':{'market':target.get('market'),'platform_family':target.get('platform_family'),'site':target.get('site'),'category':target.get('category')},
+            'culture_boundary':'Culture/identity may change casting, language and scene when supported by evidence; never use identity as a stereotype-based style shortcut.',
+        }
     intents=[str(a.get('decision_intent') or 'DECISION_SUPPORT').upper() for a in (assets or [])]
     intent_set=set(intents); appearance=_appearance_text(pvi)
     has_material=any(x in appearance for x in ('material','glass','plastic','metal','fabric','nylon','finish','texture','transparent','reflect','gloss','matte','织','玻璃','塑料','金属','透明','反光')) or bool(intent_set&MATERIAL_INTENTS)
@@ -148,13 +176,17 @@ def compile_creative_opportunity_universe(
         r['activation_signals']={'matched_decision_intents':hits,'category_prior':row['mechanism_id'] in category_prior,'material_signal':has_material if row['mechanism_id']=='OPP-MATERIAL-OPTICS' else None,'reference_whitespace':len(whitespace) if row['mechanism_id']=='OPP-CATEGORY-CONVENTION-BREAK' else None}
         activated.append(r)
     activated.sort(key=lambda x:(x['score'],x['mechanism_id']),reverse=True)
-    selected=activated[:12]  # bounded 6–12 search universe; current library exposes 12 mechanisms.
+    if activated:
+        adaptive_floor=max(0.55,float(activated[0].get('score') or 0)-0.18)
+        selected=[row for row in activated if float(row.get('score') or 0)>=adaptive_floor]
+    else:
+        selected=[]
     return {
         'status':'CREATIVE_OPPORTUNITY_UNIVERSE_COMPILED','product_name':product.get('name'),'category_family':category_family,
         'observed_decision_intents':intents,'opportunity_count':len(selected),'opportunities':selected,
-        'reference_whitespace_signals':whitespace[:5],'category_cliche_signals':cliches[:5],
-        'search_domains':['PRODUCT_STRUCTURE','EVIDENCE_SYSTEM','HUMAN_CONTEXT','MATERIAL_CMF','SPATIAL_RELATION','BEHAVIOR_FLOW','RISK_REDUCTION','SYSTEM_MAP','INFORMATION_DESIGN','CATEGORY_WHITESPACE','REMOTE_DOMAIN'],
-        'selection_rule':'Explore mechanisms first; cluster into materially different directions only after product/decision/surface fit is visible. Opportunities are mechanisms, not finished styles.',
+        'reference_whitespace_signals':whitespace,'category_cliche_signals':cliches,
+        'search_domains':list(dict.fromkeys(str(row.get('domain') or '') for row in selected if row.get('domain'))),
+        'selection_rule':'Fallback heuristics rank mechanisms by current evidence and keep the materially relevant set. No fixed mechanism count is authoritative; a host agent may replace this universe entirely.',
         'target_context':{'market':target.get('market'),'platform_family':target.get('platform_family'),'site':target.get('site'),'category':target.get('category')},
         'culture_boundary':'Culture/identity may change casting, language and scene when supported by evidence; never use identity as a stereotype-based style shortcut.',
     }

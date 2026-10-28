@@ -76,7 +76,7 @@ def _legacy_opportunity_fallback(product_truth:dict[str,Any], decision_intents:l
 
 
 def _auto_directions(product_truth:dict[str,Any], curation:dict[str,Any], culture:dict[str,Any], platform_compile:dict[str,Any], category_family:str|None=None, decision_intents:list[str]|None=None, opportunity_universe:dict[str,Any]|None=None)->list[dict[str,Any]]:
-    """Synthesize 3–5 materially different directions *after* mechanism search.
+    """Synthesize a task-dependent number of materially different directions after mechanism search.
 
     Route labels are compatibility tags for downstream routing, not a fixed style library. The visible
     direction name, thesis, composition, product role and proof language are built from current
@@ -87,19 +87,21 @@ def _auto_directions(product_truth:dict[str,Any], curation:dict[str,Any], cultur
     universe=opportunity_universe or _legacy_opportunity_fallback(product_truth,decision_intents)
     opportunities=[dict(x) for x in (universe.get('opportunities') or []) if isinstance(x,dict)]
     opportunities.sort(key=lambda x:(float(x.get('score') or 0),str(x.get('mechanism_id') or '')),reverse=True)
-    if len(opportunities)<6:
+    if not opportunities:
         fallback=_legacy_opportunity_fallback(product_truth,decision_intents)
-        have={x.get('mechanism_id') for x in opportunities}
-        opportunities += [x for x in fallback.get('opportunities',[]) if x.get('mechanism_id') not in have]
-    opportunities=opportunities[:12]
+        opportunities=list(fallback.get('opportunities') or [])
     # Universal information/whitespace mechanisms are valuable modifiers but must not become the
     # default creative direction for every category. Primary mechanisms seed directions; support
     # mechanisms are paired once each where possible to produce genuinely different syntheses.
     primary_pool=[x for x in opportunities if x.get('direction_role')=='PRIMARY_MECHANISM']
-    if len(primary_pool)<3:
+    if not primary_pool:
         primary_pool=opportunities[:]
-    n_dirs=max(3,min(5,len(primary_pool)))
-    leads=primary_pool[:n_dirs]
+    if primary_pool:
+        top_score=max(float(x.get('score') or 0) for x in primary_pool)
+        direction_floor=max(0.55,top_score-0.12)
+        leads=[x for x in primary_pool if float(x.get('score') or 0)>=direction_floor]
+    else:
+        leads=[]
     support_pool=[x for x in opportunities if x.get('opportunity_id') not in {y.get('opportunity_id') for y in leads}]
     used_support=set(); pairs=[]
     for lead in leads:
@@ -196,8 +198,8 @@ def compile_creative_council(directions:list[dict[str,Any]]|None, curation:dict[
         'creative_opportunity_universe_status':(opportunity_universe or {}).get('status') if opportunity_universe else 'COMPATIBILITY_FALLBACK',
         'creative_opportunity_count':(opportunity_universe or {}).get('opportunity_count') if opportunity_universe else 12,
         'selected_opportunity_ids':(selected or {}).get('opportunity_ids') or [],
-        'search_before_selection_trace':{'rule':'Explore 6–12 product/decision/material/scene/reference-whitespace mechanisms before synthesizing 3–5 directions. Stable route labels are downstream compatibility tags, not a style template.','opportunity_status':(opportunity_universe or {}).get('status'),'opportunity_count':(opportunity_universe or {}).get('opportunity_count'),'direction_count':len(rows)},
-        'minimum_material_difference_contract':{'required_differences':4,'dimensions':['buyer_entry','creative_thesis','composition_grammar','product_role','image_language','proof_mechanism','verbal_thesis','color_world']},
+        'search_before_selection_trace':{'rule':'Explore until the agent has enough materially different, evidence-supported options to make the decision. No fixed mechanism or direction count is authoritative. Stable route labels are compatibility tags only.','opportunity_status':(opportunity_universe or {}).get('status'),'opportunity_count':(opportunity_universe or {}).get('opportunity_count'),'direction_count':len(rows)},
+        'minimum_material_difference_contract':{'required_differences':'TASK_DEPENDENT','dimensions':['buyer_entry','creative_thesis','composition_grammar','product_role','image_language','proof_mechanism','verbal_thesis','color_world'],'rule':'Differentiate on the dimensions that materially change the shopper experience; do not satisfy a numeric diversity quota.'},
         'council_roles':['ECOMMERCE_STRATEGY','BUYER_DECISION','ART_DIRECTION','PRODUCT_TRUTH','CLAIMS_EVIDENCE','PLATFORM_COMPLIANCE','LOCALIZATION','PRODUCTION_SCALABILITY'],
         'red_team_checks':['product_truth_fit','shopper_decision_fit','culture_fit','platform_fit','production_feasibility','category_cliche_risk','same_layout_collapse_risk','fixed_direction_library_leak'],
         'curation_status':curation.get('status'),'culture_status':culture.get('status'),'platform_status':platform_compile.get('status'),
@@ -206,46 +208,24 @@ def compile_creative_council(directions:list[dict[str,Any]]|None, curation:dict[
     }
 
 def _expression_variant(asset:dict[str,Any], direction:dict[str,Any], ordinal:int)->dict[str,Any]:
-    intent=str(asset.get('decision_intent') or 'DECISION_SUPPORT').upper(); surface=str(asset.get('surface') or 'GALLERY').upper()
-    variants={
-      'IDENTIFY':('IDENTITY_HERO','product-dominant identity field','front/3Q label-readable view','minimal category cue'),
-      'RELEVANCE':('CONTEXT_ENTRY','context-led relevance frame','human/object/environment relationship','specific use context'),
-      'PROOF':('EVIDENCE_EDITORIAL','proof-led hierarchy','orthographic/macro/evidence plane','verified proof artifact/data'),
-      'PERFORMANCE_PROOF':('CAUSAL_TASK','input→product→outcome relationship','mechanism/task angle','task context'),
-      'USAGE':('DECISIVE_ACTION','action-led use moment','interaction/contact-point angle','hands/body/real use context'),
-      'DIFFERENTIATION':('MECHANISM_COMPARE','feature/mode differentiation','feature-reveal angle','only relevant comparison cues'),
-      'SIZE_CAPACITY':('SCALE_MEASURE','measurement + contents relationship','orthographic/open view','scale reference'),
-      'SIZE_FIT':('FIT_GUIDE','body/measurement relationship','fit-preserving view','body/garment scale cues'),
-      'FIT_WEAR':('ON_BODY','on-body fit moment','fit-preserving medium/wide frame','human as fit reference'),
-      'MATERIAL_SENSORY':('MATERIAL_MACRO','texture/material field','macro/raking detail','minimal'),
-      'PORTABILITY':('CARRY_SCALE','carry burden in context','human-scale perspective','hand/bag/desk reference'),
-      'CARE_MAINTENANCE':('CARE_STEP','maintenance step/detail','functional close-up','tool/cloth/sink only if real'),
-      'SEAL_LEAK':('CLOSURE_MECHANISM','closure state + orientation','seal close-up','use orientation'),
-      'COMPATIBILITY':('RELATIONSHIP_DIAGRAM','product↔compatible object relationship','connection/dimension view','compatible object only'),
-      'PACKAGE_CONTENTS':('CONTENTS_REVEAL','contents inventory/reveal','top-down/open package','included components only'),
-      'INGREDIENT_COMPOSITION':('FORMULA_SOURCE_MAP','verified composition/source hierarchy','label/detail + restrained information map','only source-bound ingredient/composition evidence'),
-      'INGREDIENT_DIETARY':('LABEL_FACTS_SYSTEM','label facts + dietary-fit hierarchy','orthographic label/readability view','only verified label/certification/allergen context'),
-      'SITE_FIT':('SPACE_CLEARANCE_PLAN','product dimensions inside a real installation/space logic','orthographic/environment relationship view','measured clearance/site reference'),
-      'SIZE_FIT':('MEASUREMENT_FIT_SYSTEM','body/garment measurement relationship','fit-preserving front/side or measurement view','measurement references only'),
-      'SENSORY_PREP':('PREP_SEQUENCE','preparation/use sequence with truthful sensory cues','step/action view','real preparation context only'),
-      'WARRANTY_SERVICE':('SERVICE_PATH','ownership-risk reduction through service/warranty path','document/service relationship view','verified service/warranty evidence'),
-      'DELIVERY_INSTALLATION':('FULFILLMENT_INSTALL_FLOW','delivery/assembly/install relationship','space/process view','verified fulfillment/install conditions'),
-      'TOTAL_COST_OWNERSHIP':('OWNERSHIP_COST_MAP','initial purchase + verified ongoing-cost relationship','information-led product/system view','verified cost/consumable/service facts'),
-      'STORAGE_STACKING':('STORAGE_SYSTEM','stacking/nesting/storage-footprint relationship','top-down or space-fit view','real storage system context'),
-      'WEATHER_BOUNDARY':('BOUNDARY_CONDITION','condition→capability→limit relationship','material/use-condition view','only verified weather/water boundary cues'),
-      'EXPECTATION_BOUNDARY':('TRUTH_LIMIT','promise + explicit boundary hierarchy','product/evidence-led explanatory view','only verified expectation/limitation evidence'),
-      'DECISION_SUPPORT':('SINGLE_DECISION_EXPLAINER','one unresolved shopper decision made spatially explicit','view chosen from the evidence relationship','only context required for that one decision'),
-    }
-    name,grammar,view,context=variants.get(intent,('DECISION_FIELD','decision-specific evidence hierarchy','view that exposes evidence','only decision-relevant context'))
-    # Alternate spatial rhythm across adjacent assets even inside one system.
-    rhythm=['LEFT_WEIGHTED','CENTERED_OBJECT_STUDY','DIAGONAL_ACTION','TOP_DOWN_SYSTEM','EDGE_CROP_MACRO'][ordinal % 5]
-    if surface in {'PAID_AD','SHORT_VIDEO','CREATOR'} and intent not in {'PROOF','SIZE_CAPACITY'}: rhythm='NATIVE_ACTION_'+rhythm
+    """Derive expression from the actual asset decision signature; never rotate a fixed layout library."""
+    del ordinal
+    sig=dict(asset.get('visual_production_signature') or {})
+    authored=asset.get('agent_visual_expression') if isinstance(asset.get('agent_visual_expression'),dict) else {}
+    composition=authored.get('composition_grammar') or sig.get('composition_grammar') or 'Build hierarchy from the decision-critical evidence relationship.'
+    view=authored.get('preferred_view') or authored.get('camera_or_view') or sig.get('camera_or_view') or 'Choose the view that exposes the decision-critical evidence plane.'
+    context=authored.get('context_role') or sig.get('context_role') or 'Include only context that changes the shopper decision.'
+    variant_id=authored.get('variant_id') or 'EXPR-'+stable_hash([asset.get('asset_id'),asset.get('decision_intent'),composition,view,context,direction.get('direction_id')])[:8].upper()
     return {
-        'variant_id':name,'spatial_rhythm':rhythm,'composition_grammar':grammar,'preferred_view':view,'context_role':context,
+        'variant_id':variant_id,
+        'spatial_rhythm':authored.get('spatial_rhythm') or 'DECISION_DERIVED',
+        'composition_grammar':composition,
+        'preferred_view':view,
+        'context_role':context,
         'direction_id':direction.get('direction_id'),'direction_route':direction.get('route'),'direction_thesis':direction.get('creative_thesis'),
-        'same_layout_guard':'Do not inherit the previous asset composition. Preserve design-system tokens but rebuild hierarchy from this asset decision job.'
+        'authority':'AGENT_OR_ASSET_DECISION_SIGNATURE' if authored or sig else 'GENERAL_FALLBACK',
+        'same_layout_guard':'Do not inherit the previous asset composition. Rebuild hierarchy from this asset decision job and its evidence plane.',
     }
-
 
 def apply_creative_system_to_assets(architecture:dict[str,Any], council:dict[str,Any], cmf:dict[str,Any]|None=None, photography:dict[str,Any]|None=None)->dict[str,Any]:
     selected=(council or {}).get('selected_direction') or {}; alternatives=(council or {}).get('alternative_directions') or []
