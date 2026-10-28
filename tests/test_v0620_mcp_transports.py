@@ -40,12 +40,12 @@ def test_streamable_http_carries_headers_to_host_resolver_without_trusting_them_
             json_response=True,
             stateless_http=True,
         )
-        url = 'http://127.0.0.1/mcp'
+        url = 'http://127.0.0.1:8000/mcp'
         transport = httpx2.ASGITransport(app=app)
         async with host.server.session_manager.run():
             async with httpx2.AsyncClient(
                 transport=transport,
-                base_url='http://127.0.0.1',
+                base_url='http://127.0.0.1:8000',
                 headers={'X-Host-Identity': 'operator-42'},
             ) as http_client:
                 async with Client(streamable_http_client(url, http_client=http_client)) as client:
