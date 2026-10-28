@@ -1,0 +1,127 @@
+.................FFFF..                                                  [100%]
+=================================== FAILURES ===================================
+________ test_adapter_listing_is_available_without_runtime_credentials _________
+
+    def test_adapter_listing_is_available_without_runtime_credentials():
+        surface = provider_execution_surface_from_environment(env={})
+        out = surface.list_adapters(provider='EPV_ADAPTER', production_mode='REAL_PRODUCT_COMPOSITE')
+        assert out['status'] == 'ADAPTERS_DISCOVERED'
+        assert out['count'] == 1
+        assert out['adapters'][0]['adapter_id'] == 'EPV_HOST_CALLBACK_V1'
+        serialized = json.dumps(out)
+>       assert 'api_key' not in serialized and 'secret' not in serialized.lower()
+E       assert ('api_key' not in '{"status": ...TION gate"}}'
+E         
+E         'api_key' is contained here:
+E           ION gate"}} and 'secret' not in '{"status": ...tion gate"}}'
+E         
+E         'secret' is contained here:
+E         ?           ^^^^^^^^^^^^
+E           en", "cli_secret_arguments": "forbidden", "host_module_environment_variable": "cbcc_provider_host_module", "host_module_value_is_module_name_not_credentials": true, "credential_ownership": "host"}, "completion_authority": "existing ingest_provider_job_results + projectstate production gate"}}
+E         ?           ^^^^^^^^^^^^^^^^^^)
+
+tests/test_v0616_provider_host_surface.py:129: AssertionError
+_ test_programmatic_surface_executes_ingests_updates_state_and_never_persists_secret _
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_programmatic_surface_exec0')
+
+    def test_programmatic_surface_executes_ingests_updates_state_and_never_persists_secret(tmp_path):
+        project, jobs = _materialize_project(tmp_path)
+        secret = 'DO-NOT-PERSIST-V0616-SECRET'
+        reference = ReferenceMemoryExecutor(poll_sequence=('COMPLETED',))
+        registry = build_default_adapter_registry()
+    
+        def resolver(adapter_id, job_dir, job):
+            return {'callbacks': _callbacks(reference), 'api_key': secret}
+    
+        surface = ProviderExecutionSurface(registry, context_resolver=resolver)
+        out = surface.execute_project(
+            project,
+            adapter_id='EPV_HOST_CALLBACK_V1',
+            policy=ExecutionPolicy(max_attempts=2, max_polls_per_attempt=2),
+        )
+        assert out['status'] == 'PROVIDER_EXECUTION_COMPLETE'
+>       assert out['ingest_status'] == 'COMPLETE'
+E       AssertionError: assert 'REVIEW_REQUIRED' == 'COMPLETE'
+E         
+E         - COMPLETE
+E         + REVIEW_REQUIRED
+
+tests/test_v0616_provider_host_surface.py:148: AssertionError
+_ test_environment_host_module_contains_only_module_name_and_executes_real_callbacks _
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_environment_host_module_c0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x794fae5e4510>
+
+    def test_environment_host_module_contains_only_module_name_and_executes_real_callbacks(tmp_path, monkeypatch):
+        project, _ = _materialize_project(tmp_path)
+        secret = 'HOST-ONLY-V0616-KEY'
+        reference = ReferenceMemoryExecutor(poll_sequence=('COMPLETED',))
+        module_name = 'cbcc_v0616_test_host'
+        _install_host_module(monkeypatch, module_name, _callbacks(reference), secret)
+        assert sys.modules[module_name] is not None
+        assert secret not in module_name
+    
+        surface = provider_execution_surface_from_environment()
+        out = surface.execute_project(project, adapter_id='EPV_HOST_CALLBACK_V1')
+        assert out['status'] == 'PROVIDER_EXECUTION_COMPLETE'
+>       assert out['ingest_status'] == 'COMPLETE'
+E       AssertionError: assert 'REVIEW_REQUIRED' == 'COMPLETE'
+E         
+E         - COMPLETE
+E         + REVIEW_REQUIRED
+
+tests/test_v0616_provider_host_surface.py:180: AssertionError
+________ test_cli_adapter_list_and_provider_execute_reuse_host_surface _________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_cli_adapter_list_and_prov0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x794fae5e4b00>
+capsys = <_pytest.capture.CaptureFixture object at 0x794fae8b97f0>
+
+    def test_cli_adapter_list_and_provider_execute_reuse_host_surface(tmp_path, monkeypatch, capsys):
+        project, _ = _materialize_project(tmp_path)
+        secret = 'CLI-HOST-ONLY-KEY'
+        reference = ReferenceMemoryExecutor(poll_sequence=('COMPLETED',))
+        module_name = 'cbcc_v0616_cli_host'
+        _install_host_module(monkeypatch, module_name, _callbacks(reference), secret)
+    
+        assert cli_main(['adapter-list', '--provider', 'EPV_ADAPTER', '--production-mode', 'REAL_PRODUCT_COMPOSITE']) == 0
+        listed = json.loads(capsys.readouterr().out)
+        assert listed['adapters'][0]['adapter_id'] == 'EPV_HOST_CALLBACK_V1'
+    
+        assert cli_main([
+            'provider-execute', '--project-dir', str(project),
+            '--adapter-id', 'EPV_HOST_CALLBACK_V1', '--max-attempts', '2', '--max-polls', '2',
+        ]) == 0
+        executed = json.loads(capsys.readouterr().out)
+        assert executed['status'] == 'PROVIDER_EXECUTION_COMPLETE'
+>       assert executed['ingest_status'] == 'COMPLETE'
+E       AssertionError: assert 'REVIEW_REQUIRED' == 'COMPLETE'
+E         
+E         - COMPLETE
+E         + REVIEW_REQUIRED
+
+tests/test_v0616_provider_host_surface.py:201: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_v0616_provider_host_surface.py::test_adapter_listing_is_available_without_runtime_credentials - assert ('api_key' not in '{"status": ...TION gate"}}'
+  
+  'api_key' is contained here:
+    ION gate"}} and 'secret' not in '{"status": ...tion gate"}}'
+  
+  'secret' is contained here:
+  ?           ^^^^^^^^^^^^
+    en", "cli_secret_arguments": "forbidden", "host_module_environment_variable": "cbcc_provider_host_module", "host_module_value_is_module_name_not_credentials": true, "credential_ownership": "host"}, "completion_authority": "existing ingest_provider_job_results + projectstate production gate"}}
+  ?           ^^^^^^^^^^^^^^^^^^)
+FAILED tests/test_v0616_provider_host_surface.py::test_programmatic_surface_executes_ingests_updates_state_and_never_persists_secret - AssertionError: assert 'REVIEW_REQUIRED' == 'COMPLETE'
+  
+  - COMPLETE
+  + REVIEW_REQUIRED
+FAILED tests/test_v0616_provider_host_surface.py::test_environment_host_module_contains_only_module_name_and_executes_real_callbacks - AssertionError: assert 'REVIEW_REQUIRED' == 'COMPLETE'
+  
+  - COMPLETE
+  + REVIEW_REQUIRED
+FAILED tests/test_v0616_provider_host_surface.py::test_cli_adapter_list_and_provider_execute_reuse_host_surface - AssertionError: assert 'REVIEW_REQUIRED' == 'COMPLETE'
+  
+  - COMPLETE
+  + REVIEW_REQUIRED
+4 failed, 19 passed in 0.68s
