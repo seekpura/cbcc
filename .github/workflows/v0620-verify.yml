@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Apply MCP 2026 cacheable-result compliance
+        run: python .changes/v0620_spec_patch.py
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
       - name: Run provider continuity through MCP stdio
@@ -38,14 +40,15 @@ jobs:
           set -e
           echo "$rc" > .changes/v0620-test-output.rc
           cat .changes/v0620-test-output.txt
-      - name: Commit diagnostics
+      - name: Commit implementation and diagnostics
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .changes/v0620-test-output.txt .changes/v0620-test-output.rc
+          git add runtime/cbcc/mcp_stdio.py tests/test_v0620_mcp_stdio_host.py \
+            .changes/v0620-test-output.txt .changes/v0620-test-output.rc
           if ! git diff --cached --quiet; then
-            git commit -m "test: capture v0.6.20 MCP stdio diagnostics"
+            git commit -m "fix: align v0.6.20 MCP cacheable results with 2026-07-28"
             git push origin HEAD:work/v0620-mcp-stdio-host
           fi
       - name: Enforce targeted test result
