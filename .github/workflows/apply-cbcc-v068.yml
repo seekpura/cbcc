@@ -17,14 +17,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Apply release patch
+      - name: Apply release patches
         shell: bash
         run: |
           set -euo pipefail
-          git apply --check .changes/v068-meta.patch
-          git apply .changes/v068-meta.patch
-          git apply --check .changes/v068-delivery.patch
-          git apply .changes/v068-delivery.patch
+          for p in $(find .changes -maxdepth 1 -name 'v068-*.patch' -type f | sort); do
+            echo "applying $p"
+            git apply --check "$p"
+            git apply "$p"
+          done
           test "$(tr -d '\r\n ' < VERSION)" = '0.6.8'
 
       - name: Verify semantic and asset workspaces
@@ -57,7 +58,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -f .changes/v068-meta.patch .changes/v068-delivery.patch .changes/apply-v068.trigger
+          rm -f .changes/v068-*.patch .changes/apply-v068.trigger
           rm -f .github/workflows/apply-cbcc-v068.yml
           rmdir .changes 2>/dev/null || true
           git config user.name 'github-actions[bot]'
