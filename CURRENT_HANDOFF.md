@@ -1,7 +1,7 @@
-# CBCC v0.6.24 CURRENT HANDOFF
+# CBCC v0.6.25 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.24-task-scoped-strategy-asset`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.25-decision-question-authority`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -201,5 +201,19 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 10. 全量回归：frozen v0.6.23 main `12 failures` / v0.6.24 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
 11. 本轮额外审计 12 个 baseline node-id，确认其中多项是旧英文标题、旧版本前缀、旧状态字符串或被更强 Claim/Compliance 合同取代的断言；以后继续逐项分类，不能把“12”本身当发布标准。
 
+## v0.6.25 已完成 — Decision Question + Framework Authority
+1. 新增 `decision_authority.py`，把 Shopper Question、Decision Trace、Framework Selection、Content-family activation 的当前任务权威从 Compiler 静态默认中拆出。
+2. 删除 Compiler 无输入时自动制造的四个 shopper questions；问题可以为空，空本身不是错误。
+3. 问题来源只接受用户/调用方、Agent authored scope/trace、显式 Asset/Video job、以及当前 Listing/CX 的真实异议；物化 `decision_question_authority.json` 记录来源与 lineage。
+4. 删除问题数组位置 → RACE/Funnel stage 的静态映射；没有显式 RACE 与 stage 时 `race_stage=None`。
+5. 删除 Compiler 默认 decision framework 列表；只有用户/Agent 明确选择的框架进入 Decision Trace / persuasion compiler。
+6. Target Surface 单独存在不再制造 Content family；平台/Surface 是约束，不是“系统能做什么就都做什么”的配额。
+7. 保留真实生产兼容：已有 shopper question + `compile_assets/production_run` 时，Surface 可以把这些已有问题路由到 VISUAL / VIDEO / CREATOR / CX 等资产 family；不会凭空添加 Listing/Search/Offer 工作。
+8. 请求资产/生产但没有问题/Asset job 时，`agent_next_action.json` 暴露 `AUTHOR_DECISION_OR_ASSET_SCOPE`；Agent 先定义真正决策任务，Runtime 不用默认问题填空。
+9. v0.6.21 的静态源码字符串测试同步升级为当前更强合同；真实 v0.5.10 / v0.5.8 多品类生产兼容保持通过。
+10. targeted + continuity：`46 passed`。
+11. 全量回归：frozen v0.6.24 main `12 failures` / v0.6.25 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+
 ## 下一步唯一主任务
-**继续 Commerce Agent 静态权威深审，下一轮优先处理 Compiler / Decision Trace / default shopper questions：当前 `compiler.py` 仍存在无输入时自动生成四个 shopper questions、默认 decision framework 列表，以及部分兼容层可能把“系统会什么”误当成“本项目必须研究/回答什么”。目标是让问题发现、Decision Trace、Framework selection、Content/Asset scope 全部由当前 Commerce goal、Product Truth、证据缺口、Surface 与 Agent plan 派生，同时保留机器兼容、证据、合规与生产 lineage。继续用真实跨境商品验证 Research → Strategy → Content/Asset → Prompt → Production → Replan/Stop，检查是否仍有为完整度制造的问题、页面、字段、实验或资产。MCP/HTTP 继续只作为可选 integration layer。**
+**继续 Commerce Agent 静态权威深审，下一轮优先处理 Content Object / Gate / Requiredness / readiness：当前 Compiler 仍对生成出来的 ContentObject 统一写 `required=True`，多个 Gate 仍以固定 `READY_REVIEW / PENDING` 语义组织，可能继续把“对象存在”误当成“当前任务必须完成”。目标是让 Content Object requiredness、Gate/readiness、Creative/Execution readiness 与 Agent 当前 scope / real blockers / requested deliverable 对齐；机器审计与 lineage 继续保留，但不能反过来制造工作。继续用真实多品类与 KIYUU 类资产验证 Strategy → Content/Asset → Prompt → Production → Review / Stop，逐项审 baseline node-id 中的真实断链。MCP/HTTP/Provider Host 继续只作为可选 integration layer。**
+

@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.24-task-scoped-strategy-asset
+version: 0.6.25-decision-question-authority
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -9,6 +9,18 @@ version: 0.6.24-task-scoped-strategy-asset
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
 
+
+## v0.6.25 Decision Question Authority — 当前主权威
+- **消费者问题允许为空。** Runtime 不再因为目标平台、PDP Surface 或“电商通常要回答这些问题”而自动制造 `What is it / Why relevant / What evidence / What after purchase` 四问。
+- 新增 `decision_question_authority.json`：问题只来自用户/调用方、Agent content scope / decision trace、显式 Asset/Video job，以及当前 Listing/CX 中真实存在的异议；每条问题保留 origin / decision job / surface / family / evidence lineage。
+- Decision Trace 不再按问题数组位置机械映射 `ACTION / COMMUNICATION / EVALUATION` 或 `IDENTIFY / RELATE / VERIFY / USE`；RACE stage 只有在 RACE 被显式选择且该问题本身有阶段信息时才出现。
+- Decision Framework 不再有默认全家桶。`decision_frameworks` / Agent `strategy_frameworks` 是唯一选择权威；AIDA / FABE / 4P 的 persuasion compiler 也只消费显式选中的框架。
+- Content family 继续 task-scoped：目标 Surface 单独存在只是执行约束，不会制造 Listing / Search / Offer / Visual 工作；只有真实任务信号才激活 family。
+- 兼容边界：当已经存在明确 shopper question 且明确请求 `compile_assets / production_run` 时，请求 Surface 可以决定这些**已有问题**应落入 VISUAL / VIDEO / CREATOR / CX 等哪种资产 family；这是路由，不是 Surface 配额。
+- 明确请求资产/生产但没有任何决策问题/Asset job 时，不再用 Runtime 默认问题补洞，而是在 `agent_next_action.json` 暴露 `AUTHOR_DECISION_OR_ASSET_SCOPE`，交还 Agent 决策。
+- Product Truth、Evidence、Market/Listing、Strategy 九段机器兼容结构、动态 Asset、Photography/CMF、00–13 包、Provider / Review / Revision / Hash lineage 全部继续保留。
+- v0.6.25 targeted + continuity：`46 passed`；全量相对 frozen v0.6.24 main：12 vs 12，`NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+- 详细变更见 `CHANGELOG_V0625.md`。
 
 ## v0.6.24 Task-Scoped Strategy + Asset Authority — 当前主权威
 - **机器兼容结构与人类当前任务分层。** `strategy_authority.json` 继续保留九段 canonical section、证据、追溯和资产包绑定；`MASTER_STRATEGY_CN.md` 只投影当前 Commerce 目标真正相关的决策域，不再把九段目录当成人类配额。
