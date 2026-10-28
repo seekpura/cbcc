@@ -1,7 +1,7 @@
-# CBCC v0.6.25 CURRENT HANDOFF
+# CBCC v0.6.26 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.25-decision-question-authority`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.26-scope-readiness`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -214,6 +214,18 @@ Commerce Goal → Product Truth / Hard Boundaries → Agent Evidence-Gap Discove
 10. targeted + continuity：`46 passed`。
 11. 全量回归：frozen v0.6.24 main `12 failures` / v0.6.25 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
 
+## v0.6.26 已完成 — Task-Scoped Content + Gate Readiness
+1. 新增 `scope_readiness.py` 与 `content_requiredness.json`：Content family active/preserved 与 current deliverable requiredness 分离。
+2. ContentObject 的 `required` 不再全量 `True`；显式 deliverable / current production scope 才升级为 required。
+3. 新增 `gate_scope.json`；18 个 canonical Gate 继续保留机器审计与 dependency lineage，但每个 Gate 有独立 `required_for_current_scope / blocking_for_current_scope / scope_status / scope_reason`。
+4. ProjectState Gate record 持久化 scope 元数据；动态化不删除 gate。
+5. Review Manifest 取消“除 ASSET_COMPILE/PRODUCTION 外所有 gate required”的硬编码；只有当前 scope 的 blocking gate 才形成 `required_missing`。
+6. Supporting ContentObject 保留但不自动进入 `review_pending`；Human workspace 可以看到数据，而不会把支持资料变成待办。
+7. Planning-only Platform Compile required/context 与 blocking 拆分，当前规则待研究不阻断可以继续完成的策略范围。
+8. Review HTML / checklist 明示 Runtime Status / Current Scope / Blocking，减少流水线错觉。
+9. targeted + continuity：`34 passed`。
+10. 全量回归：frozen v0.6.25 main `12 failures` / v0.6.26 branch `12 failures` / `NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+
 ## 下一步唯一主任务
-**继续 Commerce Agent 静态权威深审，下一轮优先处理 Content Object / Gate / Requiredness / readiness：当前 Compiler 仍对生成出来的 ContentObject 统一写 `required=True`，多个 Gate 仍以固定 `READY_REVIEW / PENDING` 语义组织，可能继续把“对象存在”误当成“当前任务必须完成”。目标是让 Content Object requiredness、Gate/readiness、Creative/Execution readiness 与 Agent 当前 scope / real blockers / requested deliverable 对齐；机器审计与 lineage 继续保留，但不能反过来制造工作。继续用真实多品类与 KIYUU 类资产验证 Strategy → Content/Asset → Prompt → Production → Review / Stop，逐项审 baseline node-id 中的真实断链。MCP/HTTP/Provider Host 继续只作为可选 integration layer。**
+**继续 final completion / review lifecycle 深审。当前 `ProjectState.final_ready` 初始化为 False，Compiler 完成后仍无条件写回 False；需要确认 Review Accept / required scope closure / Agent stop 是否能形成真实、可解释的最终完成态。目标不是“所有 canonical gate 都 LOCKED”，而是：当前 scope required + blocking 项闭环、required review items 完成、无 unresolved blocking action 时，项目才可进入 READY；支持性 Gate/对象不阻断。必须保持局部 Revision / dependency invalidation 能把 readiness 精确打回受影响层，并继续与 Agent `STOP_CURRENT_SCOPE` / replan frontier 对齐。**
 

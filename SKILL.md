@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.25-decision-question-authority
+version: 0.6.26-scope-readiness
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -9,6 +9,19 @@ version: 0.6.25-decision-question-authority
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
 
+
+## v0.6.26 Task-Scoped Content + Gate Readiness — 当前主权威
+- **对象存在 ≠ 当前任务必须完成。** 新增 `content_requiredness.json`，把 active/preserved family 与 `required_for_current_scope` 明确拆开；Listing/Compliance 等可以继续作为支持权威存在，而不自动变成人类当前交付债务。
+- ContentObject 不再统一写 `required=True`。显式 content scope、Asset/Video/Paid/Measurement/Compliance deliverable，以及“已有决策问题 + 明确资产生产意图”才会把对应 family 升级为当前 required deliverable。
+- 新增 `gate_scope.json`：18 个 canonical gate 全部继续保留，但每个 Gate 增加 `required_for_current_scope / blocking_for_current_scope / scope_status / scope_reason`。
+- ProjectState 继续保存 canonical Gate 与 dependency lineage；`NOT_IN_CURRENT_SCOPE` Gate 可以维持机器状态/工件，不再反向制造 readiness debt。
+- Planning-only 的 Platform Compile 可以是当前需要的证据上下文，但不因动态规则待研究而阻断 Strategy；required 与 blocking 明确分离。
+- Review Manifest 不再硬编码“除 ASSET_COMPILE / PRODUCTION 外全部 Gate required”；只让当前 scope 的 blocking Gate 进入 `required_missing`。
+- Supporting ContentObject 仍可审阅、追溯、被 Strategy/Asset 消费，但默认不会进入 `review_pending` 阻断当前交付。
+- Review HTML / checklist 同时显示 Runtime Status、Current Scope 与 Blocking，避免把机器流水线状态误读成用户工作流。
+- canonical gates、Product Truth、Decision Authority、Strategy、Asset/Photography/Prompt、00–13 包、Provider/Review/Revision/Hash lineage 均继续保留。
+- v0.6.26 targeted + continuity：`34 passed`；全量相对 frozen v0.6.25 main：12 vs 12，`NEW_FAILURE_COUNT=0` / `FIXED_FAILURE_COUNT=0`。
+- 详细变更见 `CHANGELOG_V0626.md`。
 
 ## v0.6.25 Decision Question Authority — 当前主权威
 - **消费者问题允许为空。** Runtime 不再因为目标平台、PDP Surface 或“电商通常要回答这些问题”而自动制造 `What is it / Why relevant / What evidence / What after purchase` 四问。
