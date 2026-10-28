@@ -139,5 +139,6 @@ def test_commerce_autonomy_module_has_no_transport_or_mcp_dependency():
 def test_compiler_no_longer_uses_default_all_family_expansion():
     source = Path('runtime/cbcc/compiler.py').read_text(encoding='utf-8')
     assert "families=request.get('content_families') or DEFAULT_FAMILIES" not in source
-    assert 'derive_content_families(' in source
+    assert 'derive_task_content_families(' in source
+    assert "['What is it?','Why is it relevant to me?','What evidence supports the choice?','What should happen after purchase?']" not in source
     assert 'agent_autonomy_plan.json' in source

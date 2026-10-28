@@ -132,3 +132,18 @@ def test_explicit_asset_job_is_a_real_question_source_and_builds_only_that_asset
     assert arch['assets'][0]['consumer_question']==q['shopper_questions'][0]
     assert trace['frameworks']==[]
     assert trace['traces'][0]['race_stage'] is None
+
+
+def test_authored_questions_plus_compile_assets_can_activate_requested_asset_surfaces():
+    req=_request(
+        compile_assets=True,
+        shopper_questions=['What product proof must the shopper see?'],
+        target={
+            'market':'MY','jurisdiction':'MY','platform_family':'test_platform','site':'TEST',
+            'primary_locale':'en-MY','visible_copy_locales':['en-MY'],
+            'surfaces':['PDP','GALLERY','PDP_VIDEO','CREATOR','FAQ']
+        },
+    )
+    families=derive_task_content_families(req,{},available_families=AVAILABLE)
+    assert families==['VISUAL','VIDEO','CREATOR_AFFILIATE','CX']
+    assert 'LISTING' not in families and 'OFFER_PROMOTION' not in families and 'SEARCH' not in families

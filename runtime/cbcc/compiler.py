@@ -19,6 +19,13 @@ from .asset_architecture import build_asset_architecture
 from .category_strategy import infer_category_family
 from .asset_compiler import compile_asset_packages, validate_asset_packages
 from .decision import compile_persuasion_frameworks
+from .decision_authority import (
+    derive_task_content_families,
+    selected_decision_frameworks,
+    compile_decision_question_authority,
+    compile_decision_trace_rows,
+    augment_agent_next_action,
+)
 from .research import compile_research_gate, apply_host_research_response
 from .agent_autonomy import (
     compile_agent_autonomy_plan, research_requirements_from_plan, derive_content_families,
@@ -131,7 +138,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     p=Path(project_dir)
     try: st=ProjectState.load(p)
     except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.12-portable-provider-package-production-receipt')
-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.24-task-scoped-strategy-asset'; st.save(); _write(st.meta/'request.json',request)
+    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.25-decision-question-authority'; st.save(); _write(st.meta/'request.json',request)
 
     agent_plan=compile_agent_autonomy_plan(request)
     _write(p/'artifacts/agent_autonomy_plan.json',agent_plan)
@@ -230,15 +237,9 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     if request.get('experiment'):
         x=request['experiment']; domain['experiment']=compile_experiment_analysis(x); _write(p/'artifacts/experiment_analysis.json',domain['experiment'])
 
-    questions=request.get('shopper_questions') or ['What is it?','Why is it relevant to me?','What evidence supports the choice?','What should happen after purchase?']
-    stages=['ACTION','ACTION','COMMUNICATION','EVALUATION']; traces=[]
-    for i,q in enumerate(questions):
-        traces.append(DecisionTrace(stages[min(i,3)],q,['IDENTIFY','RELATE','VERIFY','USE'][min(i,3)],rationale='Derived from explicit shopper question; framework is a decision aid, not a fixed asset template.').to_dict())
-    persuasion=compile_persuasion_frameworks(questions,facts,domain.get('economics'),request.get('persuasion_frameworks'))
-    dd={'traces':traces,'frameworks':request.get('decision_frameworks',['RACE','STP_JTBD','Fogg','Means-End','Signaling','FIRST','Cognitive Budget','Belief Sequence','Commerce Response Ladder']),
-        'persuasion':persuasion,'culture_status':culture.get('status'),'race_ethnicity':culture.get('race_ethnicity'),'intersectionality':culture.get('intersectionality'),
-        'domain_inputs':{'market':domain.get('market',{}).get('status'),'economics':domain.get('economics',{}).get('status'),'ads':domain.get('ads',{}).get('status'),'feedback':domain.get('feedback',{}).get('status'),'experiment':domain.get('experiment',{}).get('status')}}
-    dp=_write(p/'artifacts/decision_trace.json',dd); st.set_gate('DECISION','READY_REVIEW',[dp],dd); st.checkpoint('DECISION','READY_REVIEW')
+    # v0.6.25: decision questions/frameworks are compiled after Listing/current task signals are known.
+    # No generic four-question journey or all-framework list is injected here.
+    questions=[]
 
     required_rules=request.get('required_platform_rules',[])
     platform_target={**t,'visible_copy_locales':lang.visible_copy_locales}
@@ -279,7 +280,43 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
             outp=p/'artifacts/listing_final_copy'/f'{loc}.md'; outp.parent.mkdir(parents=True,exist_ok=True); outp.write_text('\n'.join(lines),encoding='utf-8')
     _write(p/'artifacts/domain_analysis.json',domain)
 
-    families=derive_content_families(request,agent_plan,family_surface=FAMILY_SURFACE,available_families=DEFAULT_FAMILIES)
+    families=derive_task_content_families(request,agent_plan,available_families=DEFAULT_FAMILIES)
+    selected_frameworks=selected_decision_frameworks(request,agent_plan)
+    agent_plan['strategy_frameworks']=selected_frameworks
+    agent_plan['content_scope_authority']='EXPLICIT_TASK_SIGNALS_ONLY'
+    agent_plan['target_surfaces_are_constraints_not_content_quotas']=True
+    question_authority=compile_decision_question_authority(
+        request,agent_plan,
+        listing=((domain.get('listing') or {}).get('compiled') or {}),
+        active_families=families,
+    )
+    questions=list(question_authority.get('shopper_questions') or [])
+    agent_plan['decision_question_authority']={
+        'status':question_authority.get('status'),
+        'question_count':question_authority.get('question_count',0),
+        'decision_gap_count':len(question_authority.get('decision_gaps') or []),
+        'synthetic_default_questions':False,
+    }
+    _write(p/'artifacts/agent_autonomy_plan.json',agent_plan)
+    dqa=_write(p/'artifacts/decision_question_authority.json',question_authority)
+    traces=compile_decision_trace_rows(question_authority,selected_frameworks)
+    persuasion_requested=[x for x in selected_frameworks if x in {'AIDA','FABE','4P'}]
+    persuasion=compile_persuasion_frameworks(questions,facts,domain.get('economics'),persuasion_requested)
+    dd={
+        'status':'DECISION_TRACE_COMPILED' if traces else 'NO_DECISION_TRACE_REQUIRED',
+        'traces':traces,
+        'frameworks':selected_frameworks,
+        'framework_selection_authority':'EXPLICIT_AGENT_OR_USER_ONLY',
+        'fixed_framework_quota':False,
+        'synthetic_default_questions':False,
+        'question_authority_artifact':dqa,
+        'persuasion':persuasion,
+        'culture_status':culture.get('status'),'race_ethnicity':culture.get('race_ethnicity'),'intersectionality':culture.get('intersectionality'),
+        'domain_inputs':{'market':domain.get('market',{}).get('status'),'economics':domain.get('economics',{}).get('status'),'ads':domain.get('ads',{}).get('status'),'feedback':domain.get('feedback',{}).get('status'),'experiment':domain.get('experiment',{}).get('status')},
+        'principle':'Decision Trace records current authored/grounded decision jobs. Question order does not assign funnel/RACE stage, and runtime capability does not select a framework.'
+    }
+    dp=_write(p/'artifacts/decision_trace.json',dd)
+    st.set_gate('DECISION','READY_REVIEW',[dp,dqa],dd); st.checkpoint('DECISION','READY_REVIEW')
     capabilities=set(pc.get('capabilities',[])); objects=[]
     requested_surfaces=set(t.get('surfaces') or [])
     supported_surfaces=set(pc.get('surfaces') or [])
@@ -416,6 +453,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
         agent_plan,request=request,research_gate=research_gate,asset_architecture=architecture,
         creative_council=council,compliance=compliance,production_run=production_run,
     )
+    agent_next_action=augment_agent_next_action(agent_next_action,question_authority)
     _write(p/'artifacts/agent_next_action.json',agent_next_action)
 
     def _capability_row(name,input_active,input_status,consumers,downstream_ok=True):

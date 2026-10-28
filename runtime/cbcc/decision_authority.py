@@ -78,6 +78,27 @@ def derive_task_content_families(
     if any(request.get(k) for k in ('source_product_assets','creative_references','creative_directions','photography_contract','visual_strategy','cmf')):
         chosen.append('VISUAL')
 
+    authored_questions = bool(
+        request.get('shopper_questions')
+        or scope.get('decision_questions')
+        or scope.get('shopper_questions')
+        or any((row.get('consumer_question') or row.get('shopper_question') or row.get('question')) for row in _rows(request.get('asset_jobs')))
+        or any((row.get('consumer_question') or row.get('shopper_question') or row.get('question')) for row in _rows(request.get('video_jobs')))
+    )
+    if (request.get('compile_assets') or request.get('production_run')) and authored_questions:
+        # Surface is only an execution constraint after a real decision scope exists.  It never creates
+        # Listing/Search/Offer work by itself, but it may select the concrete asset family needed to
+        # answer an already-authored shopper question.
+        surface_asset_family = {
+            'GALLERY':'VISUAL', 'LONGFORM':'RICH_CONTENT', 'PDP_VIDEO':'VIDEO',
+            'CREATOR':'CREATOR_AFFILIATE', 'LIVE':'LIVE', 'PAID_AD':'PAID',
+            'SOCIAL_CONTENT':'SOCIAL', 'STORE_BANNER':'STORE', 'FAQ':'CX', 'CRM':'LIFECYCLE',
+        }
+        for surface in _strings((request.get('target') or {}).get('surfaces')):
+            family = surface_asset_family.get(surface)
+            if family:
+                chosen.append(family)
+
     return [family for family in dict.fromkeys(chosen) if family in allowed]
 
 
