@@ -29,10 +29,10 @@ tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_executor_upload_submit
         assert result['production_receipt']['output_artifacts'][0]['sha256'] == hashlib.sha256(executor.default_output).hexdigest()
         assert result['production_receipt']['layer_manifest'][0]['source_sha256'] == source_sha
 >       assert result['source_binding_hash'] == original_binding_hash
-E       AssertionError: assert '82a4b5d52502...29d5ff214f2dd' == '43b2b597163e...400c2867e71dc'
+E       AssertionError: assert 'e1673bb351dc...9ff3c2af8b5e8' == '43b2b597163e...400c2867e71dc'
 E         
 E         - 43b2b597163ebc100bcece146b97de5248b2f4f43cc53eb4417400c2867e71dc
-E         + 82a4b5d5250262cefc8496929e90c7a73c5809d83e96b75c3aa29d5ff214f2dd
+E         + e1673bb351dc646916c77fcea187d68313a767ced83d169f38a9ff3c2af8b5e8
 
 tests/test_v0614_provider_executor_lifecycle.py:115: AssertionError
 _ test_batch_executor_consumes_materialized_job_index_and_writes_ingestable_result _
@@ -57,12 +57,12 @@ E         + REVIEW_REQUIRED
 
 tests/test_v0614_provider_executor_lifecycle.py:135: AssertionError
 =========================== short test summary info ============================
-FAILED tests/test_v0614_provider_executor_lifecycle.py::test_executor_upload_submit_resume_download_receipt_and_existing_ingest - AssertionError: assert '82a4b5d52502...29d5ff214f2dd' == '43b2b597163e...400c2867e71dc'
+FAILED tests/test_v0614_provider_executor_lifecycle.py::test_executor_upload_submit_resume_download_receipt_and_existing_ingest - AssertionError: assert 'e1673bb351dc...9ff3c2af8b5e8' == '43b2b597163e...400c2867e71dc'
   
   - 43b2b597163ebc100bcece146b97de5248b2f4f43cc53eb4417400c2867e71dc
-  + 82a4b5d5250262cefc8496929e90c7a73c5809d83e96b75c3aa29d5ff214f2dd
+  + e1673bb351dc646916c77fcea187d68313a767ced83d169f38a9ff3c2af8b5e8
 FAILED tests/test_v0614_provider_executor_lifecycle.py::test_batch_executor_consumes_materialized_job_index_and_writes_ingestable_result - AssertionError: assert 'REVIEW_REQUIRED' == 'COMPLETE'
   
   - COMPLETE
   + REVIEW_REQUIRED
-2 failed, 7 passed in 0.31s
+2 failed, 7 passed in 0.21s
