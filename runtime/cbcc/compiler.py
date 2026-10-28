@@ -22,6 +22,10 @@ from .decision import compile_persuasion_frameworks
 from .research import compile_research_gate, apply_host_research_response
 from .agent_autonomy import (
     compile_agent_autonomy_plan, research_requirements_from_plan, derive_content_families,
+    agent_creative_opportunities, agent_creative_directions,
+)
+from .agent_autonomy import (
+    compile_agent_autonomy_plan, research_requirements_from_plan, derive_content_families,
     agent_creative_opportunities, agent_creative_directions, compile_agent_next_action,
 )
 from .creative import compile_curation, compile_creative_council, compile_cmf, compile_inclusive_photography, apply_creative_system_to_assets
