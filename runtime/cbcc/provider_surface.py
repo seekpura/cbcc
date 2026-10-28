@@ -166,7 +166,11 @@ class ProviderExecutionSurface:
             status = str(row.get('status') or 'UNKNOWN')
             counts[status] = counts.get(status, 0) + 1
         all_selected_complete = bool(rows) and all(x.get('status') == 'COMPLETE' for x in rows)
-        all_results_present = all(Path(str(x.get('result_path'))).exists() for x in index.get('jobs') or [] if x.get('result_path'))
+        indexed_jobs = list(index.get('jobs') or [])
+        all_results_present = bool(indexed_jobs) and all(
+            bool(x.get('result_path')) and Path(str(x['result_path'])).exists()
+            for x in indexed_jobs
+        )
 
         ingest = None
         if ingest_when_complete and all_selected_complete and all_results_present and run_path.exists():
