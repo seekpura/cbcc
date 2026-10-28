@@ -1,7 +1,7 @@
-# CBCC v0.6.19 CURRENT HANDOFF
+# CBCC v0.6.20 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.19-plugin-http-host`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.20-mcp-host`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -134,5 +134,17 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 9. v0.6.13–v0.6.19 provider continuity + transport HTTP 定向联测：48 passed。
 10. 全量回归与 v0.6.18 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；HTTP transport 发布保持 canonical descriptor/dispatcher authority。
 
+## v0.6.20 已完成
+1. 先核对 MCP 2026-07-28 官方规范和 Python SDK v2，再实现 transport；本轮实际 CI 使用 `mcp 2.3.0`。
+2. 新增真实 `MCPActionTransportAdapter + CBCCMCPHost`；low-level Server 直接消费 canonical MCP descriptors/input schemas，避免 decorator/signature 重新派生 schema。
+3. 官方 SDK 负责 `server/discover`、协议协商与旧 initialize fallback；CBCC 不复制 MCP wire protocol。
+4. 真实 in-process Client、Streamable HTTP Client、stdio subprocess 三条 E2E 均使用官方 MCP Client 跑通；协议协商结果为 `2026-07-28`。
+5. `tools/list` 根据宿主 `ActionAuthorization` scope 暴露工具；默认无 scope 时工具列表为空；直接调用已知工具仍由 Dispatcher 返回 DENIED。
+6. `tools/call` 只进入 `ProviderActionDispatcher`；secret-like arguments、required fields、operation scope、PENDING/status/resume 继续复用 canonical Action contract。
+7. `CBCC_MCP_AUTH_MODULE` 只保存模块名；HTTP headers / request meta 不被 CBCC 视为可信身份，只传给宿主 resolver 做实际验证。
+8. Streamable HTTP 保留官方 DNS-rebinding protection；CLI 对 loopback 生成精确端口 Host/Origin allowlist，公网必须显式 allowlist 或显式 trusted-proxy ownership，拒绝 `:*` wildcard。
+9. v0.6.13–v0.6.20 provider/action/Plugin/MCP continuity + transport security 定向联测：61 passed。
+10. 全量回归与 v0.6.19 main 按失败 node-id 对比：`NEW_FAILURE_COUNT=0`；发布判断仍只看新增失败集合。
+
 ## 下一步唯一主任务
-**在 v0.6.19 HTTP host 完成后，为 v0.6.18 已生成的 MCP tool descriptors 实现同样薄的真实 MCP transport host。实施前先核对当前 MCP 官方 transport/SDK 规范，再选择宿主最合适的 stdio / Streamable HTTP 入口；无论 transport 形式如何，都必须复用 canonical `mcp_tools.json` / Action Catalog / `ProviderActionDispatcher` / `ActionAuthorization`，不得复制 ProviderExecutionSurface、Bridge、Executor 或另建 completion/state authority。补 MCP initialize/list-tools/call-tool、authorization 注入、pending/status/resume 语义、schema parity 与 transport-level error mapping。**
+**把 v0.6.20 MCP transport 从“宿主授权 resolver”推进到生产部署授权合同：先重新核对 MCP 2026-07-28 当前 Authorization / Protected Resource Metadata / OAuth 规范与 Python SDK v2 `AuthSettings / TokenVerifier` 接口，再为 Streamable HTTP 增加可选的原生 Bearer/OAuth gate，并把验证后的 principal/scopes 映射为现有 `ActionAuthorization`。必须保持 stdio 本地模式独立、tool arguments 无 credential 字段、ProviderActionDispatcher 继续是唯一 action authority；禁止把 access token 写入 project state / bridge / executor / result / logs。补 unauthorized/insufficient-scope/metadata discovery/token-verifier failure/secret-redaction E2E。**

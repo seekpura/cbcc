@@ -1,3 +1,11 @@
+## 0.6.20 — Real MCP Host
+- Added a real official-SDK MCP server over the canonical provider action dispatcher.
+- Preserved exact v0.6.18 generated tool schemas through the low-level MCP Server API.
+- Added real stdio, in-process and Streamable HTTP MCP client E2E on protocol 2026-07-28 / SDK 2.3.0.
+- Added default-deny host authorization, scope-filtered tool discovery and canonical secret-field rejection.
+- Hardened Streamable HTTP deployment with exact Host/Origin allowlists and explicit public-bind policy.
+- See `CHANGELOG_V0620.md`.
+
 ## 0.6.19 — Plugin/OpenAPI HTTP Host
 - Added a real startable WSGI Plugin/OpenAPI host over generated action routes.
 - Kept the only runtime chain through PluginActionTransportAdapter → ProviderActionDispatcher.

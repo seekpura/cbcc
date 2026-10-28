@@ -1,13 +1,25 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.19-plugin-http-host
+version: 0.6.20-mcp-host
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.20 Real MCP Host
+- 新增真正可运行的 MCP host，基于官方 Model Context Protocol Python SDK v2；本轮 CI 实际验证 `mcp 2.3.0`，协议基线为 `2026-07-28`。
+- 使用 low-level `Server` 的 `on_list_tools / on_call_tool / get_tool_input_schema`，工具名、描述和 `inputSchema` 原样消费 v0.6.18 `mcp_tool_descriptors()`；不由 Python 函数签名重新生成第二套 schema。
+- 官方 SDK 负责 `server/discover`、当前协议协商与旧客户端 initialize fallback；CBCC 不手写协议兼容层。
+- 真正跑通两种 transport：本地 `stdio` 与部署型 `Streamable HTTP`；没有新增 legacy SSE transport。
+- MCP transport 唯一执行链仍是 `MCP tool → ProviderActionDispatcher → ProviderExecutionSurface`；`mcp_host.py` 不 import/call Surface、Bridge 或 Executor。
+- `CBCC_MCP_AUTH_MODULE` 只指定宿主授权模块；request headers / `_meta` 只作为宿主验证输入，CBCC 不把客户端 header 直接当身份；默认 DENY。
+- `tools/list` 按 ActionAuthorization scope 过滤；`tools/call` 继续经过 canonical Dispatcher，credential-like tool arguments 仍在执行前拒绝。
+- PENDING / status / resume 复用 v0.6.17 稳定 operation ID 与既有 provider persisted state；没有第二套 MCP async database。
+- Streamable HTTP CLI 默认使用精确端口 Host/Origin allowlist；公网 bind 必须显式 allowlist 或明确交给可信反向代理做 Host 校验；拒绝当前 SDK 已知存在匹配边界的 `:*` wildcard 模式。
+- `claims_mcp_server_exists=false / mcp_server_included=false` 继续只描述 v0.6.17/18 mapping/descriptor 层本身不内嵌 server；仓库从 v0.6.20 起已真实包含 MCP runtime。
 
 ## v0.6.19 Plugin/OpenAPI HTTP Host
 - 新增真正可启动的 `PluginHTTPApplication` / WSGI host；HTTP action route 全部来自 v0.6.18 generated OpenAPI descriptor，不手写第二套路由表。
