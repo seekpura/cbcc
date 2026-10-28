@@ -17,7 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Apply autonomy integration patch
-        run: python .changes/v0621_commerce_autonomy_patch.py
+        run: |
+          python .changes/v0621_commerce_autonomy_patch.py
+          python .changes/v0621_commerce_autonomy_round2.py
       - name: Install test dependencies
         run: python -m pip install -q pytest pyyaml
       - name: Run autonomy and core commerce tests
@@ -25,7 +27,10 @@ jobs:
         run: |
           mkdir -p .changes
           set +e
-          pytest -q -ra tests/test_v0621_commerce_agent_autonomy.py > .changes/v0621-commerce-autonomy-output.txt 2>&1
+          pytest -q -ra \
+            tests/test_v0621_commerce_agent_autonomy.py \
+            tests/test_v0621_agent_replan_and_frameworks.py \
+            > .changes/v0621-commerce-autonomy-output.txt 2>&1
           rc=$?
           set -e
           echo "$rc" > .changes/v0621-commerce-autonomy-output.rc
@@ -35,9 +40,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add runtime/cbcc/agent_autonomy.py runtime/cbcc/compiler.py runtime/cbcc/creative.py runtime/cbcc/creative_opportunity.py tests/test_v0621_commerce_agent_autonomy.py .changes/v0621-commerce-autonomy-output.txt .changes/v0621-commerce-autonomy-output.rc
+          git add runtime/cbcc/agent_autonomy.py runtime/cbcc/compiler.py runtime/cbcc/creative.py runtime/cbcc/creative_opportunity.py runtime/cbcc/decision.py runtime/cbcc/strategy_authority.py \
+            tests/test_v0621_commerce_agent_autonomy.py tests/test_v0621_agent_replan_and_frameworks.py \
+            .changes/v0621-commerce-autonomy-output.txt .changes/v0621-commerce-autonomy-output.rc
           if ! git diff --cached --quiet; then
-            git commit -m "feat: materialize v0.6.21 commerce agent autonomy"
+            git commit -m "feat: extend v0.6.21 commerce agent autonomy loop"
             git push origin HEAD:work/v0621-commerce-agent-autonomy
           fi
       - name: Enforce targeted result
