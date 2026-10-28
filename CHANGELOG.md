@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.11 — Source Master Binding + Frozen Revision Enforcement
+- Added machine-readable source-product bindings to Renderer Recipe and Provider Job, including resolver/locator, SHA256, pixel lock, allowed transforms and identity features.
+- Re-verified local product-master existence and SHA256 at provider handoff instead of trusting compile-time ingest state.
+- Required LOCKED_PIXEL result lineage for source asset IDs + SHA256 and bound results to a `source_binding_hash`.
+- Enforced frozen-layer mutation reporting and revision changed-layer scope.
+- Extended source-binding requirements to every LOCKED_PIXEL provider mode, including graphic-design placement workflows.
+- Real KIYUU three-asset provider run verified 3/3 jobs bind the same verified source master.
+- Focused v0.6.7–v0.6.11 regression: 18 passed. Full suite: 107 passed / 12 existing failures.
+- See `CHANGELOG_V0611.md`.
+
 ## 0.6.10 — Visual Execution + Locked Copy Continuity
 - Propagated approved visual elements, precision boundaries, editable/frozen layers and product-fidelity mode into CN/EN Render Prompts and the human Visual production workspace.
 - Routed structured `information_design.locked_visible_copy` into the human Copy workspace instead of relying on legacy copy fields or Markdown fallback.

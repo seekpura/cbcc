@@ -1,7 +1,7 @@
-# CBCC v0.6.10 CURRENT HANDOFF
+# CBCC v0.6.11 CURRENT HANDOFF
 
 ## 唯一当前基线
-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.10-visual-execution-copy-continuity`。
+GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.11-source-master-binding-frozen-revision`。
 
 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
 
@@ -39,5 +39,14 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
 4. 13 个历史 pytest 失败属于既有兼容性债务，不能为了“全绿”倒退当前能力。
 5. Render Prompt 继续禁止 Asset / Project / Direction ID、RACE、KPI 等内部元数据；精确可见文案继续 deterministic composition。
 
+## v0.6.11 已完成
+1. `source_product_assets` 不再只留在 QA 合同：Renderer Recipe 与 Provider Job 都有机器可读 `source_product_bindings`。
+2. LOCAL_FILE_PATH 在 handoff 时重新检查存在性和 SHA256；编译后母版移动/被替换会 HOLD，不会继续发单。
+3. LOCKED_PIXEL 结果必须回报母版 ID + SHA256 lineage，并回显 `source_binding_hash`；错误 hash / 错 binding 进入 Review。
+4. Local Revision 结果增加 `changed_layers`；报告修改 frozen 商品身份层会触发 `FROZEN_LAYER_MUTATION_REPORTED`。
+5. GRAPHIC_DESIGN 等 LOCKED_PIXEL Provider 也必须声明 source binding 输入，不再仅摄影/合成模式携带。
+6. 真实 KIYUU 三资产 production run：3/3 Provider Job 绑定同一经过 handoff 校验的商品母版。
+7. v0.6.7–v0.6.11 定向联测：18 passed；全量：107 passed / 12 个既有历史失败。
+
 ## 下一步唯一主任务
-**继续用真实 KIYUU SKU 审计 Product Fidelity / Source Product Master → Provider Job → Renderer Recipe → QA / Local Revision 的生产交付链，重点确认 LOCKED_PIXEL 冻结合同在实际 Provider handoff 与局部修订时不会被降级成文字提醒。只修真实断链。**
+**继续审计 Provider Adapter Bridge 的“可携带执行”能力：LOCAL_FILE_PATH、PROVIDER_ASSET_HANDLE、package/job 导出与外部 Provider 实际可解析资源之间是否存在断链；重点确认 job 离开当前文件系统后不会出现“合同完整但母版拿不到”的伪可执行状态，并检查 layer_manifest / capture_metadata 能否形成真实生产回执。只修实际断链。**

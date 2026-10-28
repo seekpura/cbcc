@@ -1082,7 +1082,7 @@ def build_master_strategy_depth(request:dict[str,Any], *, truth:dict[str,Any], r
         if isinstance(val,dict) and bindings.get(key): val['reasoning_authorities']=bindings.get(key)
     executive=build_executive_summary_depth(info,market_depth,sku,positioning,visual,portfolio,risk,request.get('target') or {})
     decision_index=build_decision_index_depth(sections)
-    return {'status':'STRATEGY_AUTHORITY_COMPILED','runtime_strategy_depth':'0.6.10-visual-execution-copy-continuity','positive_design_first':True,'governance_role':'BACKGROUND_GUARDRAIL','strategy_decision_contract':'WHAT → WHY → EVIDENCE → CONSUMER → PLATFORM → CULTURE → BUSINESS → EXECUTION → MEASUREMENT','asset_package_preservation':'REQUIRED','platform_compile_status':platform_compile.get('status'),'authoring_context':authoring_context or {},'reasoning_authority_bindings':bindings,'executive_summary':executive,'decision_index':decision_index,'sections':sections}
+    return {'status':'STRATEGY_AUTHORITY_COMPILED','runtime_strategy_depth':'0.6.11-source-master-binding-frozen-revision','positive_design_first':True,'governance_role':'BACKGROUND_GUARDRAIL','strategy_decision_contract':'WHAT → WHY → EVIDENCE → CONSUMER → PLATFORM → CULTURE → BUSINESS → EXECUTION → MEASUREMENT','asset_package_preservation':'REQUIRED','platform_compile_status':platform_compile.get('status'),'authoring_context':authoring_context or {},'reasoning_authority_bindings':bindings,'executive_summary':executive,'decision_index':decision_index,'sections':sections}
 
 def _cn_human(v):
     if isinstance(v,dict): return {k:_cn_human(x) for k,x in v.items()}
@@ -1653,7 +1653,7 @@ def build_master_strategy_depth(request:dict[str,Any], **kwargs):
         last['output_self_check']={'fabrication_check':'未来源化事实不得输出为确定事实。','why_check':'关键策略需有WHY。','culture_check':'需完成交叉性/包容性校验。','compliance_check':'强监管与Claim P0。','metric_check':'关键动作需指标/归因。','assumption_check':'事实/假设分离。'}
     s['09_risk_measurement_priority_next_steps']=last
     strategy['sections']=s
-    strategy['runtime_strategy_depth']='0.6.10-visual-execution-copy-continuity'
+    strategy['runtime_strategy_depth']='0.6.11-source-master-binding-frozen-revision'
     strategy['race_authority']='Research → Action → Communication → Evaluation'
     strategy['evidence_grade_authority']=EVIDENCE_LEVELS
     strategy['delivery_contract']=validate_strategy_delivery(strategy)

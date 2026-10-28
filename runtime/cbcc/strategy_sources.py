@@ -193,7 +193,7 @@ def compile_strategy_reasoning_context(request: dict[str, Any]) -> dict[str, Any
     bindings={k:[x for x in v if x in prompt_ids or x in knowledge_ids] for k,v in bindings.items()}
 
     return {
-        'status':'STRATEGY_REASONING_CONTEXT_COMPILED','version':'0.6.10-visual-execution-copy-continuity','active_domains':sorted(domains),
+        'status':'STRATEGY_REASONING_CONTEXT_COMPILED','version':'0.6.11-source-master-binding-frozen-revision','active_domains':sorted(domains),
         'purpose':'Project-specific selection and content-level consumption of professional reasoning authorities. Deterministic truth/calculations remain separate authorities.',
         'selected_prompts':prompts,'selected_knowledge':knowledge,
         'authority_bindings':bindings,

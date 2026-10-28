@@ -574,9 +574,29 @@ def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target:
         'editable_layer_contract': card.get('editable_layer_contract'), 'precision_boundaries': card.get('precision_boundaries'),
         'approved_visual_elements': card.get('approved_visual_elements')
     }
+    source_bindings = []
+    for row in source_assets:
+        if not isinstance(row, dict):
+            continue
+        handle = row.get('provider_asset_handle')
+        path = row.get('path')
+        source_bindings.append({
+            'asset_id': row.get('asset_id'),
+            'role': row.get('role'),
+            'locator': {
+                'kind': 'PROVIDER_ASSET_HANDLE' if handle else ('LOCAL_FILE_PATH' if path else 'UNRESOLVED'),
+                'value': handle or path,
+            },
+            'sha256': row.get('sha256'),
+            'ingest_status': row.get('ingest_status'),
+            'pixel_lock': bool(row.get('pixel_lock')),
+            'allowed_transforms': list(row.get('allowed_transforms') or []),
+            'identity_features': list(row.get('identity_features') or []),
+        })
     renderer = {
         'route': asset.get('production_mode'), 'single_asset_single_canvas': True, 'contact_sheet': False,
         'real_product_master_required': asset.get('product_fidelity') == 'LOCKED_PIXEL',
+        'source_product_bindings': source_bindings,
         'deterministic_text_composition': bool(locked_copy),
         'text_policy': {
             'exact_copy_mode': 'DETERMINISTIC_COMPOSITION_AFTER_RENDER',

@@ -35,8 +35,23 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
     if fidelity=='LOCKED_PIXEL' and spec.get('locked_pixel') in {'NOT_APPLICABLE','REFERENCE_ONLY'}:
         errors.append('LOCKED_PIXEL_PROVIDER_MISMATCH')
     required_inputs=['asset_manifest','strategy','visual_spec','source_trace','layout_contract','surface_production_contract','design_card','canonical_prompt_contract','renderer_recipe']
-    if mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'}: required_inputs.extend(['source_product_assets','photography_contract','shot_lighting_reasoning'])
-    return {'status':'READY' if not errors else 'HOLD','provider':provider,'production_mode':mode,'product_fidelity':fidelity,'required_inputs':required_inputs,'expected_outputs':spec['outputs'],'human_review_required':spec['human_review'],'adapter':spec.get('adapter','FILE_HANDOFF'),'locked_pixel_support':spec['locked_pixel'],'errors':errors}
+    real_product_mode=mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','VIDEO'}
+    source_binding_required=bool(real_product_mode or fidelity=='LOCKED_PIXEL')
+    if source_binding_required: required_inputs.extend(['source_product_assets','source_product_bindings'])
+    if real_product_mode: required_inputs.extend(['photography_contract','shot_lighting_reasoning'])
+    return {
+        'status':'READY' if not errors else 'HOLD','provider':provider,'production_mode':mode,'product_fidelity':fidelity,
+        'required_inputs':required_inputs,'expected_outputs':spec['outputs'],'human_review_required':spec['human_review'],
+        'adapter':spec.get('adapter','FILE_HANDOFF'),'locked_pixel_support':spec['locked_pixel'],
+        'source_binding_contract':{
+            'required': source_binding_required,
+            'resolver_precedence':['PROVIDER_ASSET_HANDLE','LOCAL_FILE_PATH'],
+            'integrity_key':'sha256',
+            'required_binding_fields':['asset_id','locator','sha256','pixel_lock','allowed_transforms','identity_features'],
+            'locked_pixel_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_layer_operation','product_identity_preserved'] if fidelity=='LOCKED_PIXEL' else [],
+        },
+        'errors':errors
+    }
 
 
 def route_production(asset:dict[str,Any],preferences:dict[str,Any]|None=None)->dict[str,Any]:

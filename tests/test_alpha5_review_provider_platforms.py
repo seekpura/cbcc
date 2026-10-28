@@ -11,12 +11,13 @@ from cbcc.production import build_production_run, apply_production_result
 
 
 def _test_master():
-    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','sha256':'a'*64,'ingest_status':'HASH_VERIFIED_LOCAL','pixel_lock':True}]
+    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','provider_asset_handle':'fixture://TEST-MASTER','sha256':'a'*64,'ingest_status':'EXTERNAL_HANDLE_HASH_DECLARED','pixel_lock':True}]
 
 def _quality_observations(row):
     out={}
     for k in row['production_quality_contract']['required_result_observations']:
         if k=='source_product_asset_ids_used': out[k]=['TEST-MASTER']
+        elif k=='source_product_hashes_used': out[k]={'TEST-MASTER':'a'*64}
         elif k=='product_layer_operation': out[k]='COMPOSITE_LOCKED'
         else: out[k]={'status':'PASS','evidence':'test observation for '+k}
     return out
@@ -59,9 +60,9 @@ def test_provider_adapter_contract_and_result_validation(tmp_path):
     compile_asset_packages(tmp_path,[asset],{'name':'P'},{'platform_family':'x','site':'MY','market':'Malaysia'},{'visual_implications':[]},{'visible_copy_locales':['en-MY']},{'profiles':[]},source_product_assets=_test_master())
     run=build_production_run(tmp_path)
     row=run['assets'][0]
-    passed=apply_production_result(run,[{'asset_id':row['asset_id'],'package_hash':row['package_hash'],'provider':row['provider'],'output_path':'out.png','qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(row)}])
+    passed=apply_production_result(run,[{'asset_id':row['asset_id'],'package_hash':row['package_hash'],'provider':row['provider'],'output_path':'out.png','production_contract_ack':True,'source_binding_hash':row['production_quality_contract']['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(row)}])
     assert passed['status']=='COMPLETE'
-    mismatch=apply_production_result(run,[{'asset_id':row['asset_id'],'package_hash':row['package_hash'],'provider':'CG_3D_PROVIDER','output_path':'out.png','qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(row)}])
+    mismatch=apply_production_result(run,[{'asset_id':row['asset_id'],'package_hash':row['package_hash'],'provider':'CG_3D_PROVIDER','output_path':'out.png','production_contract_ack':True,'source_binding_hash':row['production_quality_contract']['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(row)}])
     assert any(x['code']=='PROVIDER_ID_MISMATCH' for x in mismatch['issues'])
 
 

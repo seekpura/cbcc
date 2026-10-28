@@ -1,7 +1,7 @@
 from __future__ import annotations
 from pathlib import Path
 from typing import Any
-import json, yaml
+import json, yaml, hashlib
 from .models import stable_hash
 from .providers import route_production, validate_provider_result
 
@@ -17,14 +17,56 @@ def _read_json(path:Path, default=None):
 
 _REAL_PRODUCT_MODES={'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','VIDEO'}
 
-def _usable_source_product_assets(manifest:dict[str,Any])->list[dict[str,Any]]:
-    out=[]
+def _sha256_file(path:Path)->str:
+    h=hashlib.sha256()
+    with Path(path).open('rb') as f:
+        for chunk in iter(lambda:f.read(1024*1024),b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+def _source_product_bindings(manifest:dict[str,Any])->tuple[list[dict[str,Any]],list[dict[str,Any]]]:
+    """Resolve production-time source bindings and re-check local-file integrity at handoff.
+
+    Compile-time ingest status alone is not enough: a local master may move or change between
+    package compilation and provider handoff. External handles remain explicit adapter bindings
+    and are integrity-bound by their declared SHA256.
+    """
+    ready=[]; errors=[]
     for row in manifest.get('source_product_assets') or []:
-        if not isinstance(row,dict): continue
-        status=str(row.get('ingest_status') or '').upper()
-        if row.get('sha256') and status in {'HASH_VERIFIED_LOCAL','EXTERNAL_HANDLE_HASH_DECLARED'}:
-            out.append(row)
-    return out
+        if not isinstance(row,dict):
+            continue
+        aid=row.get('asset_id'); handle=row.get('provider_asset_handle'); raw_path=row.get('path'); declared=str(row.get('sha256') or '').lower() or None
+        locator_kind='PROVIDER_ASSET_HANDLE' if handle else ('LOCAL_FILE_PATH' if raw_path else 'UNRESOLVED')
+        locator_value=handle or raw_path
+        status='UNRESOLVED_AT_HANDOFF'; actual=None
+        if handle and declared:
+            status='READY_PROVIDER_HANDLE'
+        elif raw_path:
+            path=Path(str(raw_path)).expanduser()
+            if path.exists() and path.is_file():
+                actual=_sha256_file(path)
+                status='READY_LOCAL_VERIFIED' if declared and actual==declared else ('LOCAL_HASH_MISMATCH' if declared else 'LOCAL_HASH_MISSING')
+            else:
+                status='LOCAL_FILE_MISSING_AT_HANDOFF'
+        binding={
+            'asset_id':aid,'role':row.get('role'),
+            'locator':{'kind':locator_kind,'value':locator_value},
+            'sha256':declared,'handoff_sha256':actual or declared,'handoff_status':status,
+            'pixel_lock':bool(row.get('pixel_lock')),
+            'allowed_transforms':list(row.get('allowed_transforms') or []),
+            'identity_features':list(row.get('identity_features') or []),
+        }
+        if status in {'READY_PROVIDER_HANDLE','READY_LOCAL_VERIFIED'}:
+            ready.append(binding)
+        else:
+            errors.append({'asset_id':aid,'status':status,'locator_kind':locator_kind})
+    return ready,errors
+
+def _usable_source_product_assets(manifest:dict[str,Any])->list[dict[str,Any]]:
+    # Backward-compatible view for human/QA contracts; execution uses _source_product_bindings.
+    bindings,_=_source_product_bindings(manifest)
+    by_id={str(x.get('asset_id')):x for x in manifest.get('source_product_assets') or [] if isinstance(x,dict)}
+    return [by_id[str(x.get('asset_id'))] for x in bindings if str(x.get('asset_id')) in by_id]
 
 def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict[str,Any]:
     layout=_read_json(package_dir/'04_layout_contract.json',{})
@@ -34,13 +76,17 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
     mode=str(manifest.get('production_mode') or '').upper()
     signature=manifest.get('visual_production_signature') or layout.get('visual_production_signature') or {}
     edit=manifest.get('editable_layer_contract') or layout.get('editable_layer_contract') or {}
-    sources=_usable_source_product_assets(manifest)
-    source_ids=[x.get('asset_id') for x in sources if x.get('asset_id')]
+    source_bindings,source_binding_errors=_source_product_bindings(manifest)
+    source_ids=[x.get('asset_id') for x in source_bindings if x.get('asset_id')]
+    source_by_id={str(x.get('asset_id')):x for x in manifest.get('source_product_assets') or [] if isinstance(x,dict) and x.get('asset_id')}
+    sources=[source_by_id[str(aid)] for aid in source_ids if str(aid) in source_by_id]
     real_product_required=(fidelity=='LOCKED_PIXEL' or mode in _REAL_PRODUCT_MODES) and mode not in {'AI_GENERATIVE','DOCUMENTATION'}
     preflight_errors=[]
     if real_product_required and not sources:
         preflight_errors.append('REAL_PRODUCT_MASTER_NOT_BOUND')
-    if fidelity=='LOCKED_PIXEL' and sources and not any(bool(x.get('pixel_lock')) for x in sources):
+    if real_product_required and not source_bindings:
+        preflight_errors.append('REAL_PRODUCT_MASTER_NOT_RESOLVABLE_AT_HANDOFF')
+    if fidelity=='LOCKED_PIXEL' and source_bindings and not any(bool(x.get('pixel_lock')) for x in source_bindings):
         preflight_errors.append('LOCKED_PIXEL_MASTER_NOT_DECLARED')
     if fidelity=='LOCKED_PIXEL' and mode=='AI_GENERATIVE':
         preflight_errors.append('LOCKED_PIXEL_GENERATIVE_CONFLICT')
@@ -48,15 +94,18 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
     if mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','VIDEO'}:
         required_observations.append('photography_cmf_alignment')
     if fidelity=='LOCKED_PIXEL':
-        required_observations += ['product_identity_preserved','source_product_asset_ids_used','product_layer_operation']
+        required_observations += ['product_identity_preserved','source_product_asset_ids_used','source_product_hashes_used','product_layer_operation']
     return {
-        'version':'0.6.10-visual-execution-copy-continuity',
+        'version':'0.6.11-source-master-binding-frozen-revision',
         'preflight_status':'READY' if not preflight_errors else 'HOLD',
         'preflight_errors':preflight_errors,
         'product_fidelity':fidelity,
         'production_mode':mode,
         'real_product_master_required':real_product_required,
         'source_product_assets':sources,
+        'source_product_bindings':source_bindings,
+        'source_product_binding_errors':source_binding_errors,
+        'source_binding_hash':stable_hash(source_bindings),
         'source_product_asset_ids':source_ids,
         'locked_pixel_rule':('Use the exact supplied product master as an immutable pixel layer; preserve logo, packaging print, product color identity, geometry and proportions. Only contract-authorized placement/compositing transforms are permitted.' if fidelity=='LOCKED_PIXEL' else 'Preserve verified product identity and do not invent unsupported product detail.'),
         'visual_production_signature':signature,
@@ -99,7 +148,7 @@ def _quality_result_issues(row:dict[str,Any], result:dict[str,Any])->list[str]:
     qc=row.get('production_quality_contract') or {}
     obs=result.get('quality_observations') or {}
     issues=[]
-    special={'source_product_asset_ids_used','product_layer_operation'}
+    special={'source_product_asset_ids_used','source_product_hashes_used','product_layer_operation'}
     for key in qc.get('required_result_observations') or []:
         if key not in obs or obs.get(key) in (None,'',[]):
             issues.append('QUALITY_OBSERVATION_MISSING:'+str(key)); continue
@@ -121,6 +170,12 @@ def _quality_result_issues(row:dict[str,Any], result:dict[str,Any])->list[str]:
         used=set(obs.get('source_product_asset_ids_used') or [])
         if allowed and (not used or not used.issubset(allowed)):
             issues.append('SOURCE_PRODUCT_ASSET_LINEAGE_MISMATCH')
+        expected_hashes={str(x.get('asset_id')):str(x.get('sha256') or '') for x in qc.get('source_product_bindings') or [] if x.get('asset_id')}
+        used_hashes=obs.get('source_product_hashes_used') or {}
+        if isinstance(used_hashes,list):
+            used_hashes={str(x.get('asset_id')):str(x.get('sha256') or '') for x in used_hashes if isinstance(x,dict) and x.get('asset_id')}
+        if not isinstance(used_hashes,dict) or any(str(used_hashes.get(aid) or '')!=sha for aid,sha in expected_hashes.items() if aid in used):
+            issues.append('SOURCE_PRODUCT_HASH_LINEAGE_MISMATCH')
     return list(dict.fromkeys(issues))
 
 
@@ -180,7 +235,8 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]])->dic
         if r.get('package_hash') != row.get('package_hash'):
             local.append('PACKAGE_HASH_MISMATCH')
         binding=row.get('production_contract_binding') or {}
-        if 'production_contract_ack' in r and not r.get('production_contract_ack'):
+        fidelity=str((row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()
+        if (fidelity=='LOCKED_PIXEL' and r.get('production_contract_ack') is not True) or ('production_contract_ack' in r and not r.get('production_contract_ack')):
             local.append('PRODUCTION_CONTRACT_NOT_ACKNOWLEDGED')
         if r.get('layout_contract_hash') and r.get('layout_contract_hash') != binding.get('layout_contract_hash'):
             local.append('LAYOUT_CONTRACT_HASH_MISMATCH')
@@ -188,10 +244,23 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]])->dic
             local.append('PHOTOGRAPHY_CONTRACT_HASH_MISMATCH')
         if r.get('prompt_contract_hash') and r.get('prompt_contract_hash') != binding.get('prompt_contract_hash'):
             local.append('PROMPT_CONTRACT_HASH_MISMATCH')
+        qc=row.get('production_quality_contract') or {}
+        expected_source_binding_hash=qc.get('source_binding_hash')
+        if str(qc.get('product_fidelity') or '').upper()=='LOCKED_PIXEL':
+            if not r.get('source_binding_hash') or r.get('source_binding_hash')!=expected_source_binding_hash:
+                local.append('SOURCE_BINDING_HASH_MISMATCH')
+        edit=qc.get('editable_layer_contract') or {}
+        frozen_layers=set(edit.get('frozen_layers') or [])
+        changed_layers=set(r.get('changed_layers') or [])
+        if changed_layers & frozen_layers:
+            local.append('FROZEN_LAYER_MUTATION_REPORTED')
         scope=row.get('revision_scope') or {}
         if scope:
             allowed=set(scope.get('allowed_fields',[])); changed=set(r.get('changed_fields',[]))
             if changed-allowed: local.append('REVISION_SCOPE_VIOLATION')
+            allowed_layers=set(scope.get('allowed_layers') or [])
+            if not isinstance(r.get('changed_layers'),list): local.append('REVISION_CHANGED_LAYERS_MISSING')
+            elif allowed_layers and changed_layers-allowed_layers: local.append('REVISION_LAYER_SCOPE_VIOLATION')
         qa=r.get('qa') or {}; pass_required=all(bool(qa.get(k)) for k in ['product','fact','claim','visual','culture','platform'])
         if not pass_required: local.append('QA_INCOMPLETE')
         result_status='PASS' if not local else 'REVIEW_REQUIRED'
@@ -223,12 +292,16 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
             'provider_contract':row.get('provider_contract'),
             'production_contract_binding':row.get('production_contract_binding'),
             'production_quality_contract':row.get('production_quality_contract'),
+            'source_product_bindings':(row.get('production_quality_contract') or {}).get('source_product_bindings') or [],
+            'source_binding_hash':(row.get('production_quality_contract') or {}).get('source_binding_hash'),
             'execution_brief':{
                 'primary_decision_job':((row.get('production_quality_contract') or {}).get('visual_production_signature') or {}).get('visual_job'),
                 'visual_information_grammar':((row.get('production_quality_contract') or {}).get('visual_production_signature') or {}).get('composition_grammar'),
                 'decision_critical_evidence_plane':((row.get('production_quality_contract') or {}).get('visual_production_signature') or {}).get('evidence_plane'),
                 'differentiation_axis':((row.get('production_quality_contract') or {}).get('visual_production_signature') or {}).get('differentiation_axis'),
                 'locked_pixel_rule':(row.get('production_quality_contract') or {}).get('locked_pixel_rule'),
+                'source_product_bindings':(row.get('production_quality_contract') or {}).get('source_product_bindings') or [],
+                'source_binding_hash':(row.get('production_quality_contract') or {}).get('source_binding_hash'),
                 'copy_visual_alignment':(row.get('production_quality_contract') or {}).get('copy_visual_alignment'),
                 'photography_cmf_contract':(row.get('production_quality_contract') or {}).get('photography_cmf_contract'),
                 'editable_layer_contract':(row.get('production_quality_contract') or {}).get('editable_layer_contract'),
@@ -239,16 +312,16 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
             'revision_scope':row.get('revision_scope'),
             'execution_policy':{'replanning_allowed':False,'one_asset_one_output':True,'return_same_package_hash':True,'contract_binding_must_not_change':True,'real_product_master_substitution_allowed':False},
             'result_contract':{
-                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations'],
+                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations'] + (['source_binding_hash','production_contract_ack'] if str((row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()=='LOCKED_PIXEL' else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
                 'qa_required':['product','fact','claim','visual','culture','platform'],
                 'quality_observations_required':(row.get('production_quality_contract') or {}).get('required_result_observations',[]),
-                'optional':['changed_fields','provider_metadata','layer_manifest','capture_metadata','production_contract_ack','layout_contract_hash','photography_contract_hash','prompt_contract_hash']
+                'optional':['changed_fields','changed_layers','provider_metadata','layer_manifest','capture_metadata','production_contract_ack','source_binding_hash','layout_contract_hash','photography_contract_hash','prompt_contract_hash']
             }
         }
         (d/'job.json').write_text(json.dumps(job,ensure_ascii=False,indent=2),encoding='utf-8')
         qkeys=(row.get('production_quality_contract') or {}).get('required_result_observations',[])
-        qobs={k:([] if k=='source_product_asset_ids_used' else ('' if k=='product_layer_operation' else {'status':'UNVERIFIED','evidence':None})) for k in qkeys}
-        (d/'result.template.json').write_text(json.dumps({'asset_id':aid,'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':'','changed_fields':[],'qa':{'product':False,'fact':False,'claim':False,'visual':False,'culture':False,'platform':False},'quality_observations':qobs,'provider_metadata':{},'production_contract_ack':False,'layout_contract_hash':(row.get('production_contract_binding') or {}).get('layout_contract_hash'),'photography_contract_hash':(row.get('production_contract_binding') or {}).get('photography_contract_hash'),'prompt_contract_hash':(row.get('production_contract_binding') or {}).get('prompt_contract_hash')},ensure_ascii=False,indent=2),encoding='utf-8')
+        qobs={k:([] if k=='source_product_asset_ids_used' else ({} if k=='source_product_hashes_used' else ('' if k=='product_layer_operation' else {'status':'UNVERIFIED','evidence':None}))) for k in qkeys}
+        (d/'result.template.json').write_text(json.dumps({'asset_id':aid,'provider':row.get('provider'),'package_hash':row.get('package_hash'),'output_path':'','changed_fields':[],'changed_layers':[],'qa':{'product':False,'fact':False,'claim':False,'visual':False,'culture':False,'platform':False},'quality_observations':qobs,'provider_metadata':{},'production_contract_ack':False,'source_binding_hash':(row.get('production_quality_contract') or {}).get('source_binding_hash'),'layout_contract_hash':(row.get('production_contract_binding') or {}).get('layout_contract_hash'),'photography_contract_hash':(row.get('production_contract_binding') or {}).get('photography_contract_hash'),'prompt_contract_hash':(row.get('production_contract_binding') or {}).get('prompt_contract_hash')},ensure_ascii=False,indent=2),encoding='utf-8')
         index.append({'asset_id':aid,'job_id':job['job_id'],'provider':job['provider'],'adapter':job['adapter'],'job_path':str(d/'job.json'),'result_path':str(d/'result.json')})
     manifest={'status':'JOBS_MATERIALIZED','job_count':len(index),'jobs':index,'authority_note':'Jobs are frozen execution envelopes carrying asset-specific real-product, visual, surface, copy and photography/CMF production contracts. Provider completion is not inferred until a result is explicitly ingested; provider completion is still not independent review acceptance.'}
     (jobs/'PROVIDER_JOB_INDEX.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8')

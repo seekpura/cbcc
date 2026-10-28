@@ -10,7 +10,7 @@ from cbcc.production import build_production_run, materialize_provider_jobs, ing
 
 
 def _test_master_record():
-    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','sha256':'a'*64,'ingest_status':'HASH_VERIFIED_LOCAL','pixel_lock':True}]
+    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','provider_asset_handle':'fixture://TEST-MASTER','sha256':'a'*64,'ingest_status':'EXTERNAL_HANDLE_HASH_DECLARED','pixel_lock':True}]
 
 def _bind_test_master(req,tmp_path):
     master=tmp_path/'test-product-master.bin'; master.write_bytes(b'test-product-master')
@@ -21,6 +21,9 @@ def _quality_observations(job):
     out={}
     for k in job['result_contract']['quality_observations_required']:
         if k=='source_product_asset_ids_used': out[k]=['TEST-MASTER']
+        elif k=='source_product_hashes_used':
+            bindings=job.get('source_product_bindings') or (job.get('production_quality_contract') or {}).get('source_product_bindings') or []
+            out[k]={x['asset_id']:x['sha256'] for x in bindings}
         elif k=='product_layer_operation': out[k]='COMPOSITE_LOCKED'
         else: out[k]={'status':'PASS','evidence':'test observation for '+k}
     return out
@@ -60,7 +63,7 @@ def test_provider_filesystem_job_envelope_and_ingest(tmp_path):
     assert job_index['job_count']==1
     row=run['assets'][0]; job=json.loads((jobs/row['asset_id']/'job.json').read_text(encoding='utf-8'))
     assert job['execution_policy']['replanning_allowed'] is False and job['package_hash']==row['package_hash']
-    result={'asset_id':row['asset_id'],'provider':row['provider'],'package_hash':row['package_hash'],'output_path':'final.png','changed_fields':[],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
+    result={'asset_id':row['asset_id'],'provider':row['provider'],'package_hash':row['package_hash'],'output_path':'final.png','changed_fields':[],'changed_layers':[],'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
     (jobs/row['asset_id']/'result.json').write_text(json.dumps(result),encoding='utf-8')
     ingested=ingest_provider_job_results(run,jobs)
     assert ingested['status']=='COMPLETE' and ingested['provider_results_ingested']==1
@@ -121,7 +124,7 @@ def test_provider_ingest_cli_lifecycle(tmp_path, capsys):
     assert idx['job_count']>0
     for row in idx['jobs']:
         job=json.loads(Path(row['job_path']).read_text(encoding='utf-8'))
-        result={'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(proj/f"outputs/{job['asset_id']}.png"),'changed_fields':[],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
+        result={'asset_id':job['asset_id'],'provider':job['provider'],'package_hash':job['package_hash'],'output_path':str(proj/f"outputs/{job['asset_id']}.png"),'changed_fields':[],'changed_layers':[],'production_contract_ack':True,'source_binding_hash':job['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(job)}
         Path(row['result_path']).write_text(json.dumps(result),encoding='utf-8')
     assert cli_main(['provider-ingest','--project-dir',str(proj)])==0
     out=json.loads((proj/'artifacts/production_run.json').read_text(encoding='utf-8'))

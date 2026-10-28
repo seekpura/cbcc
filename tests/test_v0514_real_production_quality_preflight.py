@@ -18,8 +18,8 @@ def _asset(aid='AST-V0514-HERO', intent='IDENTIFY', topic='What is it?'):
 
 def _bound_master():
     return [{
-        'asset_id':'MASTER-01','role':'FRONT_MASTER','path':'/test/master.png','sha256':'a'*64,
-        'ingest_status':'HASH_VERIFIED_LOCAL','pixel_lock':True,
+        'asset_id':'MASTER-01','role':'FRONT_MASTER','provider_asset_handle':'fixture://MASTER-01','sha256':'a'*64,
+        'ingest_status':'EXTERNAL_HANDLE_HASH_DECLARED','pixel_lock':True,
         'allowed_transforms':['PROPORTIONAL_SCALE','PLACEMENT','MASK_OR_CROP','COMPOSITE'],
         'identity_features':['logo','packaging_print','color','geometry','proportions']
     }]
@@ -37,6 +37,7 @@ def _quality_pass(job:dict):
     out={}
     for k in job['result_contract']['quality_observations_required']:
         if k=='source_product_asset_ids_used': out[k]=['MASTER-01']
+        elif k=='source_product_hashes_used': out[k]={'MASTER-01':'a'*64}
         elif k=='product_layer_operation': out[k]='COMPOSITE_LOCKED'
         else: out[k]={'status':'PASS','evidence':'provider observation recorded for '+k}
     return out
@@ -68,7 +69,7 @@ def test_provider_quality_result_requires_observation_evidence_not_boolean_check
     root=tmp_path/'packs'; _compile(root,True)
     run=build_production_run(root); row=run['assets'][0]
     base={'asset_id':row['asset_id'],'provider':row['provider'],'package_hash':row['package_hash'],'output_path':'out.png',
-          'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True}}
+          'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'production_contract_ack':True,'source_binding_hash':row['production_quality_contract']['source_binding_hash']}
     weak={**base,'quality_observations':{k:(['MASTER-01'] if k=='source_product_asset_ids_used' else ('COMPOSITE_LOCKED' if k=='product_layer_operation' else True)) for k in row['production_quality_contract']['required_result_observations']}}
     reviewed=apply_production_result(run,[weak])
     assert reviewed['status']=='REVIEW_REQUIRED'

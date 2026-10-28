@@ -312,7 +312,7 @@ def apply_learning_to_strategy(project_dir:Path, learning:dict[str,Any])->dict[s
         elif any(x in key for x in ['VISUAL','HERO','CREATIVE','PHOTO']):
             _append_overlay_once(visual.setdefault('learning_revision_overlays',[]))
     strategy.setdefault('learning_history',[]).append({'cycle_id':learning.get('cycle_id'),'recommendation':learning.get('recommendation'),'applied_at':_now()})
-    strategy['runtime_strategy_depth']='0.6.10-visual-execution-copy-continuity'
+    strategy['runtime_strategy_depth']='0.6.11-source-master-binding-frozen-revision'
     # Add an explicit decision-index record even if deterministic index builders do not know the new overlay shape.
     strategy.setdefault('decision_index',[]).append({'decision_id':'DEC-LEARN-'+str(learning.get('cycle_id')),'domain':'LEARNING','what':learning.get('recommendation'),'why':learning.get('why'),'evidence':[x.get('metric') for x in learning.get('metric_comparison',[])],'execution':'Apply only to '+', '.join(learning.get('edit_layers') or [])+'; freeze '+', '.join(learning.get('freeze_layers') or []),'measurement':'Re-check the original symptom after the local revision; causal credit only when the supplied causal evidence supports it.'})
     materialize_strategy(project/'artifacts/strategy',strategy)

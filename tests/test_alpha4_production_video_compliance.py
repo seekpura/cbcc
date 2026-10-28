@@ -8,12 +8,13 @@ from cbcc.asset_compiler import compile_asset_packages
 
 
 def _test_master():
-    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','sha256':'a'*64,'ingest_status':'HASH_VERIFIED_LOCAL','pixel_lock':True}]
+    return [{'asset_id':'TEST-MASTER','role':'FRONT_MASTER','provider_asset_handle':'fixture://TEST-MASTER','sha256':'a'*64,'ingest_status':'EXTERNAL_HANDLE_HASH_DECLARED','pixel_lock':True}]
 
 def _quality_observations(row):
     out={}
     for k in row['production_quality_contract']['required_result_observations']:
         if k=='source_product_asset_ids_used': out[k]=['TEST-MASTER']
+        elif k=='source_product_hashes_used': out[k]={'TEST-MASTER':'a'*64}
         elif k=='product_layer_operation': out[k]='COMPOSITE_LOCKED'
         else: out[k]={'status':'PASS','evidence':'test observation for '+k}
     return out
@@ -39,7 +40,7 @@ def test_production_runner_preserves_frozen_package_and_requires_qa(tmp_path):
     assert run['replanning_allowed'] is False and run['assets'][0]['frozen_strategy'] is True
     missing=apply_production_result(run,[])
     assert missing['status']=='REVIEW_REQUIRED'
-    passed=apply_production_result(run,[{'asset_id':'AST-AAAAAAAAAA','package_hash':run['assets'][0]['package_hash'],'output_path':'A.png','qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(run['assets'][0])}])
+    passed=apply_production_result(run,[{'asset_id':'AST-AAAAAAAAAA','package_hash':run['assets'][0]['package_hash'],'output_path':'A.png','production_contract_ack':True,'source_binding_hash':run['assets'][0]['production_quality_contract']['source_binding_hash'],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(run['assets'][0])}])
     assert passed['status']=='COMPLETE' and passed['assets'][0]['result_status']=='PASS'
 
 
@@ -48,7 +49,7 @@ def test_local_revision_scope_blocks_unapproved_changes(tmp_path):
     compile_asset_packages(tmp_path,assets,{'name':'P'},{'platform_family':'x','site':'MY','market':'Malaysia'},{'visual_implications':[]},{'visible_copy_locales':['en-MY']},{'profiles':[]},source_product_assets=_test_master())
     run=build_production_run(tmp_path,revision_scope={'asset_id':'AST-BBBBBBBBBB','allowed_fields':['spoon_presence']})
     h=run['assets'][0]['package_hash']
-    bad=apply_production_result(run,[{'asset_id':'AST-BBBBBBBBBB','package_hash':h,'changed_fields':['spoon_presence','composition'],'output_path':'B.png','qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(run['assets'][0])}])
+    bad=apply_production_result(run,[{'asset_id':'AST-BBBBBBBBBB','package_hash':h,'changed_fields':['spoon_presence','composition'],'output_path':'B.png','production_contract_ack':True,'source_binding_hash':run['assets'][0]['production_quality_contract']['source_binding_hash'],'changed_layers':[],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(run['assets'][0])}])
     assert bad['status']=='REVIEW_REQUIRED' and any(x['code']=='REVISION_SCOPE_VIOLATION' for x in bad['issues'])
-    good=apply_production_result(run,[{'asset_id':'AST-BBBBBBBBBB','package_hash':h,'changed_fields':['spoon_presence'],'output_path':'B.png','qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(run['assets'][0])}])
+    good=apply_production_result(run,[{'asset_id':'AST-BBBBBBBBBB','package_hash':h,'changed_fields':['spoon_presence'],'output_path':'B.png','production_contract_ack':True,'source_binding_hash':run['assets'][0]['production_quality_contract']['source_binding_hash'],'changed_layers':[],'qa':{'product':True,'fact':True,'claim':True,'visual':True,'culture':True,'platform':True},'quality_observations':_quality_observations(run['assets'][0])}])
     assert good['status']=='COMPLETE'
