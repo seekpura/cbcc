@@ -22,13 +22,40 @@ jobs:
           python .changes/apply_v0612.py
           python - <<'PY'
           from pathlib import Path
-          path=Path('runtime/cbcc/provider_portability.py')
-          text=path.read_text(encoding='utf-8')
+
+          portability=Path('runtime/cbcc/provider_portability.py')
+          text=portability.read_text(encoding='utf-8')
           old="_CAPTURE_METADATA_MODES = {'REAL_PHOTO', 'VIDEO?}"
           new="_CAPTURE_METADATA_MODES = {'REAL_PHOTO', 'VIDEO'}"
           if old not in text:
               raise SystemExit('malformed capture mode line not found')
-          path.write_text(text.replace(old,new,1),encoding='utf-8')
+          text=text.replace(old,new,1)
+          helper='''\ndef rebind_portable_execution_metadata(value: Any, upstream_bindings: list[dict[str, Any]] | None, portable_bindings: list[dict[str, Any]] | None) -> Any:\n    """Replace only source-master host paths with their verified portable job locators.\n\n    Frozen package hashes still bind the original compiled package. This projection is only the\n    provider-facing execution metadata, so stale host paths cannot accidentally become execution\n    locators after the job leaves the CBCC runtime host.\n    """\n    portable_by_id = {str(row.get('asset_id')): row for row in (portable_bindings or []) if isinstance(row, dict) and row.get('asset_id')}\n    replacements: dict[str, str] = {}\n    for row in upstream_bindings or []:\n        if not isinstance(row, dict):\n            continue\n        locator = row.get('locator') or {}\n        if str(locator.get('kind') or '').upper() != 'LOCAL_FILE_PATH' or not locator.get('value'):\n            continue\n        portable = portable_by_id.get(str(row.get('asset_id'))) or {}\n        portable_locator = portable.get('locator') or {}\n        if str(portable_locator.get('kind') or '').upper() == 'PACKAGE_RELATIVE_PATH' and portable_locator.get('value'):\n            replacements[str(locator.get('value'))] = str(portable_locator.get('value'))\n\n    def walk(node: Any) -> Any:\n        if isinstance(node, dict):\n            return {key: walk(item) for key, item in node.items()}\n        if isinstance(node, list):\n            return [walk(item) for item in node]\n        if isinstance(node, tuple):\n            return tuple(walk(item) for item in node)\n        if isinstance(node, str) and node in replacements:\n            return replacements[node]\n        return node\n\n    return walk(value)\n'''
+          anchor='\ndef build_production_receipt_contract('
+          if 'def rebind_portable_execution_metadata(' not in text:
+              if anchor not in text:
+                  raise SystemExit('provider portability helper anchor not found')
+              text=text.replace(anchor,helper+anchor,1)
+          portability.write_text(text,encoding='utf-8')
+
+          production=Path('runtime/cbcc/production.py')
+          p=production.read_text(encoding='utf-8')
+          old_import='from .provider_portability import materialize_portable_job_inputs, build_production_receipt_contract, production_receipt_template, validate_production_receipt'
+          new_import=old_import+', rebind_portable_execution_metadata'
+          if old_import not in p:
+              raise SystemExit('provider portability import anchor not found')
+          p=p.replace(old_import,new_import,1)
+          quality_anchor="        quality['canonical_prompt_contract']=canonical\n"
+          quality_new=quality_anchor+"        quality=rebind_portable_execution_metadata(quality,upstream_qc.get('source_product_bindings') or [],portable_bindings)\n        quality.setdefault('provider_job_portability',{})['host_source_paths_rebound']=True\n"
+          if quality_anchor not in p:
+              raise SystemExit('quality portability anchor not found')
+          p=p.replace(quality_anchor,quality_new,1)
+          binding_anchor="        binding['canonical_prompt_contract']=bound_canonical\n"
+          binding_new=binding_anchor+"        binding=rebind_portable_execution_metadata(binding,upstream_qc.get('source_product_bindings') or [],portable_bindings)\n"
+          if binding_anchor not in p:
+              raise SystemExit('binding portability anchor not found')
+          p=p.replace(binding_anchor,binding_new,1)
+          production.write_text(p,encoding='utf-8')
 
           test=Path('tests/test_v0611_provider_source_binding.py')
           t=test.read_text(encoding='utf-8')
