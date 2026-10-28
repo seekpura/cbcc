@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Apply dynamic workspace and prompt patches
         run: |
+          python .changes/v0622_fix_workspace_patch_syntax.py
           python .changes/v0622_workspace_patch.py
           python .changes/v0622_workspace_hardening.py
           python .changes/v0622_prompt_patch.py
