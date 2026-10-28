@@ -1,0 +1,130 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index d1c814d..80243b7 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -1,5 +1,13 @@
+ # Changelog
+ 
++## 0.6.10 — Visual Execution + Locked Copy Continuity
++- Propagated approved visual elements, precision boundaries, editable/frozen layers and product-fidelity mode into CN/EN Render Prompts and the human Visual production workspace.
++- Routed structured `information_design.locked_visible_copy` into the human Copy workspace instead of relying on legacy copy fields or Markdown fallback.
++- Removed exact locked visible copy from renderer-facing Surface / Copy Budget JSON while preserving deterministic copy overlay and human review visibility.
++- Added Parameter Trace coverage for Visual Execution Boundaries / Editability and real KIYUU three-asset regression coverage.
++- Full suite: 103 passed / 12 remaining failures; no v0.6.9 passing test regressed, and one prior provider-quality preflight failure now passes with the richer execution trace.
++- See `CHANGELOG_V0610.md`.
++
+ ## 0.6.9 — Photography Execution Continuity
+ - Preserved explicit capture/composite mode, complete composition execution data, and output color-management contract in each Design Card.
+ - Propagated that contract into CN/EN Canonical Prompts, Parameter Trace, Machine Visual Contract, and the human Photography / CMF production workspace.
+diff --git a/CHANGELOG_V0610.md b/CHANGELOG_V0610.md
+new file mode 100644
+index 0000000..273e5e1
+--- /dev/null
++++ b/CHANGELOG_V0610.md
+@@ -0,0 +1,19 @@
++# CBCC v0.6.10 — Visual Execution + Locked Copy Continuity
++
++## 本轮真实断链
++1. `approved_visual_elements`、`precision_boundaries`、`editable_layer_contract` 已在 Design Card / Machine Contract 中存在，但 Render Prompt 不消费；人类 Visual 工作台也未直接显示。
++2. 人类资产页的 Copy 结构化读取仍指向旧 `copy_language` / `copy`，没有读取当前权威字段 `information_design.locked_visible_copy`。
++3. 英文 Render Prompt 通过 `surface_contract` / `copy_budget` 整包 JSON 把 `locked_copy` 精确营销文案重新泄漏给图像模型，与 deterministic text composition 规则冲突。
++
++## 修复
++- CN/EN Prompt 新增 Visual Execution Boundaries / Editability，传递：允许视觉元素、精确执行边界、可编辑层、冻结层、商品 Fidelity 与安全的局部修改规则。
++- Parameter Trace 新增同名执行位置。
++- 人类 Visual 工作台直接显示 Fidelity、允许视觉元素、精确边界、可编辑/冻结层与局部修改规则。
++- Copy 工作台直接读取 `information_design.locked_visible_copy`，并同步显示确定性排版规则、文案预算和字体方向。
++- Render Prompt 在序列化 Surface / Copy Budget 前递归移除精确文案字段；精确文案仍完整保留在 `deterministic_copy_overlay` 与人类交付。
++- `00_HUMAN_DESIGN_CARD_CN.md` 同步加入视觉边界与编辑冻结合同。
++
++## 回归
++- 新增 `tests/test_v0610_visual_execution_copy_continuity.py`。
++- v0.6.7 / v0.6.8 / v0.6.9 / v0.6.10 定向联测：14 passed。
++- 全量：103 passed / 12 个剩余失败；v0.6.9 已通过项无回退，并有 1 个既有 Provider Quality Preflight 失败因执行追踪增强转为通过。
+diff --git a/CURRENT_HANDOFF.md b/CURRENT_HANDOFF.md
+index 7c405c0..28bbca2 100644
+--- a/CURRENT_HANDOFF.md
++++ b/CURRENT_HANDOFF.md
+@@ -1,7 +1,7 @@
+-# CBCC v0.6.9 CURRENT HANDOFF
++# CBCC v0.6.10 CURRENT HANDOFF
+ 
+ ## 唯一当前基线
+-GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.9-photography-execution-continuity`。
++GitHub 私有仓库：`seekpura/cbcc`，`main` 是唯一源码真源。当前版本：`0.6.10-visual-execution-copy-continuity`。
+ 
+ 2026-10-28 已完成一次性仓库恢复；`.bootstrap` / chunk / 源码解包 workflow 已退出。私有 ChatGPT 插件是 GitHub 源码的派生发行包，不是反向源码权威。
+ 
+@@ -24,6 +24,14 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
+ 5. v0.6.7 + v0.6.8 + v0.6.9 定向联测：12 passed。
+ 6. 全量回归：100 passed / 13 个既有 baseline failures；本轮无新增失败。
+ 
++## v0.6.10 已完成
++1. 修复 Approved Visual / Precision / Editability 只停留在 Design Card 的断链；CN/EN Prompt、Parameter Trace 与人类 Visual 工作台现在都消费正确执行子集。
++2. 修复人类 Copy 工作台仍读取旧字段的问题；当前直接读取 `information_design.locked_visible_copy`。
++3. 修复英文 Render Prompt 通过 Surface / Copy Budget JSON 泄漏精确营销文案的问题；精确文案只留在 deterministic overlay 与人类 Copy 工作台。
++4. 真实 KIYUU 三资产验证：允许视觉元素、LOCKED_PIXEL、product_master_pixels 等冻结层进入执行 Prompt；锁定营销文案不进入图像模型 Prompt。
++5. v0.6.7 + v0.6.8 + v0.6.9 + v0.6.10 定向联测：14 passed。
++6. 全量回归：103 passed / 12 个剩余失败；v0.6.9 已通过项无回退，并有 1 个既有 Provider Quality Preflight 失败因执行追踪增强转为通过。
++
+ ## 明确边界
+ 1. 当前 ChatGPT Plugin 仍是 Skills-only，七大 Python Runtime 未 MCP 化。
+ 2. 当前平台精确类目 / 规则 / 费率必须来自实时官方数据或用户资料；离线 Runtime 不猜。
+@@ -32,4 +40,4 @@ Product Truth → Research → Action → Communication → Evaluation → Produ
+ 5. Render Prompt 继续禁止 Asset / Project / Direction ID、RACE、KPI 等内部元数据；精确可见文案继续 deterministic composition。
+ 
+ ## 下一步唯一主任务
+-**继续用真实 KIYUU SKU 做视觉执行一致性审计：重点检查 `approved_visual_elements` 与 `editable_layer_contract` 是否在 Design Card、Machine Contract、Canonical Prompt 和人类生产台各自出现在正确层级。只把真正影响生成 / 合成 / 后期编辑的约束送入 Prompt；内部控制信息留在合同与 QA。发现断链只修最小责任层。**
++**继续用真实 KIYUU SKU 审计 Product Fidelity / Source Product Master → Provider Job → Renderer Recipe → QA / Local Revision 的生产交付链，重点确认 LOCKED_PIXEL 冻结合同在实际 Provider handoff 与局部修订时不会被降级成文字提醒。只修真实断链。**
+diff --git a/README.md b/README.md
+index 37ab4ce..89e346e 100644
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,4 @@
+-# Cross-Border Commerce Creative — v0.6.9
++# Cross-Border Commerce Creative — v0.6.10
+ 
+ CBCC 是跨境电商 Product Truth、市场/竞品/人群、产品/SKU/Offer、Listing/Search、文化本地化、视觉/摄影、动态图片/视频、广告、评论闭环、生产与学习系统。
+ 
+@@ -14,6 +14,7 @@ CBCC 是跨境电商 Product Truth、市场/竞品/人群、产品/SKU/Offer、L
+ - v0.6.7 开始，Strategy / Content / Visual / Listing / Prompt / Evidence 使用不同的信息架构与交互语法；Content 是一级工作区，主策略第 6/7 章不再塞回 Strategy。
+ - v0.6.8 将单资产详情升级为独立生产台：Design Card / 购买决策、画面执行、摄影 / CMF、文案、Prompt、QA / 来源按真实内容动态出现，不再复用通用模块页。
+ - v0.6.9 将显式 Photography Contract 的拍摄/合成模式、完整构图执行字典（含商品占画、负空间与未来扩展字段）、输出色彩管理贯穿到 Design Card、CN/EN Canonical Prompt、Parameter Trace、Machine Visual Contract 与单资产生产台。
++- v0.6.10 将 Approved Visual Elements、Precision Boundaries、Editable/Frozen Layers 与 Product Fidelity 贯穿到 Render Prompt 和人类 Visual 工作台；锁定可见文案只保留在 deterministic overlay / Copy 工作台，不再通过 Surface / Copy Budget JSON 泄漏给图像模型。
+ 
+ ## 主要入口
+ - `SKILL.md`
+diff --git a/SKILL.md b/SKILL.md
+index 74ff268..3ffa1aa 100644
+--- a/SKILL.md
++++ b/SKILL.md
+@@ -1,7 +1,7 @@
+ ---
+ name: cross-border-commerce-creative
+ description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
+-version: 0.6.9-photography-execution-continuity
++version: 0.6.10-visual-execution-copy-continuity
+ ---
+ 
+ # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
+@@ -9,6 +9,13 @@ version: 0.6.9-photography-execution-continuity
+ ## Purpose
+ Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+ 
++## v0.6.10 视觉执行边界 + 锁定文案隔离
++- `approved_visual_elements`、`precision_boundaries`、`editable_layer_contract` 与 `product_fidelity` 是逐资产生产执行合同；不能只停留在 Design Card / JSON，必须在 Render Prompt 与人类 Visual 工作台出现正确的可执行子集。
++- Render Prompt 必须明确允许视觉元素、精确边界、可编辑层、冻结层和商品 Fidelity；局部修改只能动明确可编辑层，LOCKED_PIXEL 商品身份层保持冻结。
++- `information_design.locked_visible_copy` 是确定性文字合成权威。精确目标市场文案必须留在 `deterministic_copy_overlay` 与人类 Copy 工作台；Surface / Copy Budget 进入图像模型前必须移除 `locked_copy` / `visible_copy` 等精确文案字段。
++- 人类单资产工作台的 Copy 阶段直接读取 `information_design.locked_visible_copy`，不再依赖旧 `copy_language` / `copy` 字段或旁路 Markdown 才能看到锁定文案。
++- Parameter Trace 新增 `VISUAL EXECUTION BOUNDARIES / EDITABILITY`，用于证明视觉允许项、精确边界和编辑冻结合同真正进入执行层。
++
+ ## v0.6.9 摄影执行合同连续性
+ - 显式 `Photography Contract` 是生产执行权威之一。`capture_mode`、完整 `composition` 字典与显式 `color_management` 必须原样进入 Design Card 的 `photography_execution`；不得只抽取旧白名单中的镜头、机位和灯光字段。
+ - `photography_execution` 必须继续进入 CN/EN Canonical Prompt、Parameter Trace、Machine Visual Contract 与人类单资产「摄影 / CMF」工作区。策划里用于出图的参数，最终必须能在执行层找到。
+diff --git a/VERSION b/VERSION
+index 1a5ac0d..04e84f8 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-0.6.9
++0.6.10

@@ -1,0 +1,78 @@
+diff --git a/runtime/cbcc/prompt_compiler.py b/runtime/cbcc/prompt_compiler.py
+index d3dda18..7b00a81 100644
+--- a/runtime/cbcc/prompt_compiler.py
++++ b/runtime/cbcc/prompt_compiler.py
+@@ -251,6 +251,20 @@ def _render_anchor(cs:dict[str,Any])->str:
+     return ''
+ 
+ 
++def _render_without_exact_copy(value: Any) -> Any:
++    """Keep layout/copy-budget constraints while withholding exact visible copy from render prompts.
++
++    Exact target-market text belongs to deterministic_copy_overlay and the human Copy workbench.
++    Passing it back through surface/copy-budget JSON would contradict the renderer text policy.
++    """
++    hidden = {'locked_copy', 'locked_visible_copy', 'visible_copy', 'target_copy', 'delivery_translation'}
++    if isinstance(value, dict):
++        return {k: _render_without_exact_copy(v) for k, v in value.items() if str(k) not in hidden}
++    if isinstance(value, list):
++        return [_render_without_exact_copy(v) for v in value]
++    return value
++
++
+ def _clean_render_lines(lines:list[str])->list[str]:
+     out=[]
+     for x in lines:
+@@ -406,6 +420,11 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+     photo_exec = card.get('photography_execution') or {}
+     lm = card['lighting_material_cmf']; inc = card.get('inclusive_photography') or {}; info = card['information_design']
+     prod = card['product_identity']; surface = card.get('surface_contract') or {}; loc = card['market_locale']
++    approved_visual = card.get('approved_visual_elements') or []
++    precision = card.get('precision_boundaries') or []
++    editable = card.get('editable_layer_contract') or {}
++    surface_render = _render_without_exact_copy(surface)
++    copy_budget_render = _render_without_exact_copy(info.get('copy_budget') or {})
+     cn = language.upper() == 'CN'
+ 
+     if cn:
+@@ -457,7 +476,14 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+             '', '【Surface / 信息设计】',
+             _cn_surface_summary(surface,info), f"字体 / 文案方向：{_txt(_cn_phrase(info.get('typography')))}",
+             '生成画面时为锁定文案预留清晰版式区，但不要让图像模型重写包装文字或最终营销文案；精确文案在后期确定性合成。',
++            '', '【视觉执行边界 / 可编辑性】',
++            f"允许进入画面的视觉元素：{_txt(_cn_phrase(approved_visual))}",
++            f"精确执行边界：{_txt(_cn_phrase(precision))}",
++            f"可编辑层：{_txt(_cn_phrase(editable.get('editable_layers')))}",
++            f"冻结层：{_txt(_cn_phrase(editable.get('frozen_layers')))}",
++            '局部修改规则：只允许修改明确列出的可编辑层；冻结的商品真源与身份层保持不变，除非重新编译新的商品真源包。' if editable else '',
+             '', '【真实商品身份】',
++            f"商品保真模式：{_txt(prod.get('product_fidelity'))}",
+             '以随任务提供的真实商品母版 / 参考图作为唯一商品身份视觉依据。不得重画、改字、改 Logo、改包装几何比例、改真实产品颜色或凭空补不存在的结构。',
+             '', '【禁止生成】',
+             '不得生成未被产品真源 / 证据支持的成分、质地、认证、检测、疗效、人体结果、before/after、比较数字或包装文字；不得为了“高级感”添加与购买判断无关的水花、粒子、实验室符号、抽象光环或模板化卡片。'
+@@ -497,9 +523,16 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+             f"Body / age / disability: {_txt(inc.get('body_age_disability'))}", f"AI bias controls: {_txt(inc.get('ai_bias_controls'))}",
+             f"Representation principle: {_txt(inc.get('representation_principle'))}",
+             '', '[SURFACE / INFORMATION DESIGN]',
+-            f"Surface visual constraints: {_txt(surface)}", f"Copy budget: {_txt(info.get('copy_budget'))}", f"Typography direction: {_txt(info.get('typography'))}",
++            f"Surface visual constraints: {_txt(surface_render)}", f"Copy budget: {_txt(copy_budget_render)}", f"Typography direction: {_txt(info.get('typography'))}",
+             'Reserve deliberate layout zones for locked copy, but do not ask the image model to retype packaging or final marketing copy. Exact approved text is composed deterministically after generation.',
++            '', '[VISUAL EXECUTION BOUNDARIES / EDITABILITY]',
++            f"Approved visual elements: {_txt(approved_visual)}",
++            f"Precision boundaries: {_txt(precision)}",
++            f"Editable layers: {_txt(editable.get('editable_layers'))}",
++            f"Frozen layers: {_txt(editable.get('frozen_layers'))}",
++            'Local edit rule: Change only the explicitly listed editable layers; frozen product-truth and identity layers remain untouched unless a new source-of-truth package is compiled.' if editable else '',
+             '', '[REAL PRODUCT IDENTITY]',
++            f"Product fidelity mode: {_txt(prod.get('product_fidelity'))}",
+             prod.get('rule'), 'Use the real product master/reference images supplied with this task as the sole visual identity authority.',
+             '', '[DO NOT GENERATE]',
+             'Do not invent unsupported ingredients, textures, tests, certifications, efficacy, body outcomes, before/after, comparison numbers or package copy. Do not add arbitrary premium splashes, particles, laboratory symbolism, abstract halos or repetitive card layouts.'
+@@ -515,6 +548,7 @@ def _parameter_trace(card: dict[str, Any]) -> list[dict[str, Any]]:
+         {'strategy_parameter': 'lighting / CCT / ratio / prelight / polarization / CMF / material response / color management', 'render_location': 'LIGHTING / MATERIAL / CMF', 'value': card.get('lighting_material_cmf')},
+         {'strategy_parameter': 'skin-tone exposure / hair / wardrobe / intersectionality', 'render_location': 'INCLUSIVE HUMAN PHOTOGRAPHY', 'value': card.get('inclusive_photography')},
+         {'strategy_parameter': 'surface / safe zone / copy budget / typography', 'render_location': 'SURFACE / INFORMATION DESIGN', 'value': {'surface': card.get('surface_contract'), 'information_design': card.get('information_design')}},
++        {'strategy_parameter': 'approved visual elements / precision boundaries / editable & frozen layers', 'render_location': 'VISUAL EXECUTION BOUNDARIES / EDITABILITY', 'value': {'approved_visual_elements': card.get('approved_visual_elements'), 'precision_boundaries': card.get('precision_boundaries'), 'editable_layer_contract': card.get('editable_layer_contract')}},
+         {'strategy_parameter': 'product fidelity / real masters', 'render_location': 'REAL PRODUCT IDENTITY', 'value': card.get('product_identity')},
+     ]
+ 

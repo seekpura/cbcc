@@ -1,0 +1,89 @@
+diff --git a/runtime/cbcc/compiler.py b/runtime/cbcc/compiler.py
+index d14ec07..97953b8 100644
+--- a/runtime/cbcc/compiler.py
++++ b/runtime/cbcc/compiler.py
+@@ -122,8 +122,8 @@ def _product_truth_source_ids(request:dict)->list[str]:
+ def build_project(project_dir:Path,request:dict,packs_dir:Path):
+     p=Path(project_dir)
+     try: st=ProjectState.load(p)
+-    except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.9-photography-execution-continuity')
+-    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.9-photography-execution-continuity'; st.save(); _write(st.meta/'request.json',request)
++    except Exception: st=ProjectState.init(p,request.get('project_id','project'),version='0.6.10-visual-execution-copy-continuity')
++    st.data['request_hash']=stable_hash(request); st.data['runtime_version']='0.6.10-visual-execution-copy-continuity'; st.save(); _write(st.meta/'request.json',request)
+ 
+     evidence={'sources':request.get('sources',[]),'assumptions':request.get('assumptions',[])}
+     ep=_write(p/'artifacts/evidence.json',evidence); st.set_gate('EVIDENCE','READY_REVIEW',[ep],evidence); st.checkpoint('EVIDENCE','READY_REVIEW')
+diff --git a/runtime/cbcc/learning_loop.py b/runtime/cbcc/learning_loop.py
+index d90fe5d..13e5161 100644
+--- a/runtime/cbcc/learning_loop.py
++++ b/runtime/cbcc/learning_loop.py
+@@ -312,7 +312,7 @@ def apply_learning_to_strategy(project_dir:Path, learning:dict[str,Any])->dict[s
+         elif any(x in key for x in ['VISUAL','HERO','CREATIVE','PHOTO']):
+             _append_overlay_once(visual.setdefault('learning_revision_overlays',[]))
+     strategy.setdefault('learning_history',[]).append({'cycle_id':learning.get('cycle_id'),'recommendation':learning.get('recommendation'),'applied_at':_now()})
+-    strategy['runtime_strategy_depth']='0.6.9-photography-execution-continuity'
++    strategy['runtime_strategy_depth']='0.6.10-visual-execution-copy-continuity'
+     # Add an explicit decision-index record even if deterministic index builders do not know the new overlay shape.
+     strategy.setdefault('decision_index',[]).append({'decision_id':'DEC-LEARN-'+str(learning.get('cycle_id')),'domain':'LEARNING','what':learning.get('recommendation'),'why':learning.get('why'),'evidence':[x.get('metric') for x in learning.get('metric_comparison',[])],'execution':'Apply only to '+', '.join(learning.get('edit_layers') or [])+'; freeze '+', '.join(learning.get('freeze_layers') or []),'measurement':'Re-check the original symptom after the local revision; causal credit only when the supplied causal evidence supports it.'})
+     materialize_strategy(project/'artifacts/strategy',strategy)
+diff --git a/runtime/cbcc/production.py b/runtime/cbcc/production.py
+index c5d4990..7d7909d 100644
+--- a/runtime/cbcc/production.py
++++ b/runtime/cbcc/production.py
+@@ -50,7 +50,7 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
+     if fidelity=='LOCKED_PIXEL':
+         required_observations += ['product_identity_preserved','source_product_asset_ids_used','product_layer_operation']
+     return {
+-        'version':'0.6.9-photography-execution-continuity',
++        'version':'0.6.10-visual-execution-copy-continuity',
+         'preflight_status':'READY' if not preflight_errors else 'HOLD',
+         'preflight_errors':preflight_errors,
+         'product_fidelity':fidelity,
+diff --git a/runtime/cbcc/state.py b/runtime/cbcc/state.py
+index 9154594..b62ebc6 100644
+--- a/runtime/cbcc/state.py
++++ b/runtime/cbcc/state.py
+@@ -13,7 +13,7 @@ class ProjectState:
+     @property
+     def meta(self): return self.project_dir/'.cbcc'
+     @classmethod
+-    def init(cls, project_dir:Path, project_id:str, version='0.6.9-photography-execution-continuity'):
++    def init(cls, project_dir:Path, project_id:str, version='0.6.10-visual-execution-copy-continuity'):
+         p=Path(project_dir); (p/'.cbcc/checkpoints').mkdir(parents=True,exist_ok=True); (p/'artifacts/objects').mkdir(parents=True,exist_ok=True)
+         data={'project_id':project_id,'runtime_version':version,'revision':0,'current_stage':'INIT','created_at':now(),'updated_at':now(),
+               'gates':{g:{'status':'PENDING','artifact_paths':[],'authority_hash':None,'updated_at':None} for g in CANONICAL_GATES},
+diff --git a/runtime/cbcc/strategy_depth.py b/runtime/cbcc/strategy_depth.py
+index df3b6aa..fb10032 100644
+--- a/runtime/cbcc/strategy_depth.py
++++ b/runtime/cbcc/strategy_depth.py
+@@ -1082,7 +1082,7 @@ def build_master_strategy_depth(request:dict[str,Any], *, truth:dict[str,Any], r
+         if isinstance(val,dict) and bindings.get(key): val['reasoning_authorities']=bindings.get(key)
+     executive=build_executive_summary_depth(info,market_depth,sku,positioning,visual,portfolio,risk,request.get('target') or {})
+     decision_index=build_decision_index_depth(sections)
+-    return {'status':'STRATEGY_AUTHORITY_COMPILED','runtime_strategy_depth':'0.6.9-photography-execution-continuity','positive_design_first':True,'governance_role':'BACKGROUND_GUARDRAIL','strategy_decision_contract':'WHAT → WHY → EVIDENCE → CONSUMER → PLATFORM → CULTURE → BUSINESS → EXECUTION → MEASUREMENT','asset_package_preservation':'REQUIRED','platform_compile_status':platform_compile.get('status'),'authoring_context':authoring_context or {},'reasoning_authority_bindings':bindings,'executive_summary':executive,'decision_index':decision_index,'sections':sections}
++    return {'status':'STRATEGY_AUTHORITY_COMPILED','runtime_strategy_depth':'0.6.10-visual-execution-copy-continuity','positive_design_first':True,'governance_role':'BACKGROUND_GUARDRAIL','strategy_decision_contract':'WHAT → WHY → EVIDENCE → CONSUMER → PLATFORM → CULTURE → BUSINESS → EXECUTION → MEASUREMENT','asset_package_preservation':'REQUIRED','platform_compile_status':platform_compile.get('status'),'authoring_context':authoring_context or {},'reasoning_authority_bindings':bindings,'executive_summary':executive,'decision_index':decision_index,'sections':sections}
+ 
+ def _cn_human(v):
+     if isinstance(v,dict): return {k:_cn_human(x) for k,x in v.items()}
+@@ -1653,7 +1653,7 @@ def build_master_strategy_depth(request:dict[str,Any], **kwargs):
+         last['output_self_check']={'fabrication_check':'未来源化事实不得输出为确定事实。','why_check':'关键策略需有WHY。','culture_check':'需完成交叉性/包容性校验。','compliance_check':'强监管与Claim P0。','metric_check':'关键动作需指标/归因。','assumption_check':'事实/假设分离。'}
+     s['09_risk_measurement_priority_next_steps']=last
+     strategy['sections']=s
+-    strategy['runtime_strategy_depth']='0.6.9-photography-execution-continuity'
++    strategy['runtime_strategy_depth']='0.6.10-visual-execution-copy-continuity'
+     strategy['race_authority']='Research → Action → Communication → Evaluation'
+     strategy['evidence_grade_authority']=EVIDENCE_LEVELS
+     strategy['delivery_contract']=validate_strategy_delivery(strategy)
+diff --git a/runtime/cbcc/strategy_sources.py b/runtime/cbcc/strategy_sources.py
+index acd09f6..61ec692 100644
+--- a/runtime/cbcc/strategy_sources.py
++++ b/runtime/cbcc/strategy_sources.py
+@@ -193,7 +193,7 @@ def compile_strategy_reasoning_context(request: dict[str, Any]) -> dict[str, Any
+     bindings={k:[x for x in v if x in prompt_ids or x in knowledge_ids] for k,v in bindings.items()}
+ 
+     return {
+-        'status':'STRATEGY_REASONING_CONTEXT_COMPILED','version':'0.6.9-photography-execution-continuity','active_domains':sorted(domains),
++        'status':'STRATEGY_REASONING_CONTEXT_COMPILED','version':'0.6.10-visual-execution-copy-continuity','active_domains':sorted(domains),
+         'purpose':'Project-specific selection and content-level consumption of professional reasoning authorities. Deterministic truth/calculations remain separate authorities.',
+         'selected_prompts':prompts,'selected_knowledge':knowledge,
+         'authority_bindings':bindings,
