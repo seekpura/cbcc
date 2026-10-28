@@ -1,13 +1,20 @@
 ---
 name: cross-border-commerce-creative
 description: Positive-first cross-border commerce strategy authority with product truth, market/SKU/economics, positioning, culture, listing, visual/photography, dynamic assets, production handoff and learning.
-version: 0.6.9-photography-execution-continuity
+version: 0.6.10-visual-execution-copy-continuity
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.
+
+## v0.6.10 视觉执行边界 + 锁定文案隔离
+- `approved_visual_elements`、`precision_boundaries`、`editable_layer_contract` 与 `product_fidelity` 是逐资产生产执行合同；不能只停留在 Design Card / JSON，必须在 Render Prompt 与人类 Visual 工作台出现正确的可执行子集。
+- Render Prompt 必须明确允许视觉元素、精确边界、可编辑层、冻结层和商品 Fidelity；局部修改只能动明确可编辑层，LOCKED_PIXEL 商品身份层保持冻结。
+- `information_design.locked_visible_copy` 是确定性文字合成权威。精确目标市场文案必须留在 `deterministic_copy_overlay` 与人类 Copy 工作台；Surface / Copy Budget 进入图像模型前必须移除 `locked_copy` / `visible_copy` 等精确文案字段。
+- 人类单资产工作台的 Copy 阶段直接读取 `information_design.locked_visible_copy`，不再依赖旧 `copy_language` / `copy` 字段或旁路 Markdown 才能看到锁定文案。
+- Parameter Trace 新增 `VISUAL EXECUTION BOUNDARIES / EDITABILITY`，用于证明视觉允许项、精确边界和编辑冻结合同真正进入执行层。
 
 ## v0.6.9 摄影执行合同连续性
 - 显式 `Photography Contract` 是生产执行权威之一。`capture_mode`、完整 `composition` 字典与显式 `color_management` 必须原样进入 Design Card 的 `photography_execution`；不得只抽取旧白名单中的镜头、机位和灯光字段。

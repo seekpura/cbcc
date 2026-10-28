@@ -51,6 +51,8 @@ def _human_asset_design_card_markdown(asset:dict[str,Any], prompt_bundle:dict[st
     cam=card.get('composition_camera') or {}
     lm=card.get('lighting_material_cmf') or {}
     info=card.get('information_design') or {}
+    identity=card.get('product_identity') or {}
+    editability=card.get('editable_layer_contract') or {}
     copy=asset.get('visible_copy') or {}
     if not isinstance(copy,dict): copy={'target_copy':copy}
     zh_copy=copy.get('delivery_translation') or copy.get('zh') or copy.get('zh-CN') or copy.get('chinese')
@@ -76,6 +78,12 @@ def _human_asset_design_card_markdown(asset:dict[str,Any], prompt_bundle:dict[st
         f"- **色温**：{lm.get('cct') or '—'}",
         f"- **光比 / Prelight**：{_cn_phrase(lm.get('exposure_ratio_plan')) or '—'}",
         f"- **CMF / 材质响应**：{_cn_phrase(lm.get('cmf') or lm.get('material_response_to_show')) or '—'}",
+        f"- **商品保真模式**：{identity.get('product_fidelity') or asset.get('product_fidelity') or '—'}",
+        f"- **允许进入画面的视觉元素**：{card.get('approved_visual_elements') or '—'}",
+        f"- **精确执行边界**：{card.get('precision_boundaries') or '—'}",
+        f"- **可编辑层**：{editability.get('editable_layers') or '—'}",
+        f"- **冻结层**：{editability.get('frozen_layers') or '—'}",
+        f"- **局部修订规则**：{editability.get('revision_rule') or '—'}",
         '', '## 3. 文案与语言','',
         f"- **人类交付语言**：{language_contract.get('delivery_locale') or 'zh-CN'}",
         f"- **目标市场可见语言**：{language_contract.get('primary_locale') or '按目标市场策划'}",

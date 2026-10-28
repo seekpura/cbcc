@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.10 — Visual Execution + Locked Copy Continuity
+- Propagated approved visual elements, precision boundaries, editable/frozen layers and product-fidelity mode into CN/EN Render Prompts and the human Visual production workspace.
+- Routed structured `information_design.locked_visible_copy` into the human Copy workspace instead of relying on legacy copy fields or Markdown fallback.
+- Removed exact locked visible copy from renderer-facing Surface / Copy Budget JSON while preserving deterministic copy overlay and human review visibility.
+- Added Parameter Trace coverage for Visual Execution Boundaries / Editability and real KIYUU three-asset regression coverage.
+- Full suite: 103 passed / 12 remaining failures; no v0.6.9 passing test regressed, and one prior provider-quality preflight failure now passes with the richer execution trace.
+- See `CHANGELOG_V0610.md`.
+
 ## 0.6.9 — Photography Execution Continuity
 - Preserved explicit capture/composite mode, complete composition execution data, and output color-management contract in each Design Card.
 - Propagated that contract into CN/EN Canonical Prompts, Parameter Trace, Machine Visual Contract, and the human Photography / CMF production workspace.

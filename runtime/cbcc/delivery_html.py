@@ -485,7 +485,7 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
 
     views=[]
     if design:
-        commerce=design.get('commerce_task') or {}; narrative=design.get('visual_narrative') or {}; subject=design.get('subject_action_environment_props') or {}; comp=design.get('composition_camera') or {}; light=design.get('lighting_material_cmf') or {}; copyc=design.get('copy_language') or design.get('copy') or {}; product_role=design.get('product_presence') or design.get('product_role') or {}; surfacec=design.get('surface_contract') or design.get('surface_native_contract') or {}
+        commerce=design.get('commerce_task') or {}; narrative=design.get('visual_narrative') or {}; subject=design.get('subject_action_environment_props') or {}; comp=design.get('composition_camera') or {}; light=design.get('lighting_material_cmf') or {}; info=design.get('information_design') or {}; copyc=design.get('copy_language') or design.get('copy') or info.get('locked_visible_copy') or {}; product_role=design.get('product_presence') or design.get('product_role') or {}; surfacec=design.get('surface_contract') or design.get('surface_native_contract') or {}; identity=design.get('product_identity') or {}; editability=design.get('editable_layer_contract') or {}
         qzh=_intent_question_zh(intent,commerce.get('consumer_question'))
         overview='<div class="design-card-hero"><div class="design-question"><span>消费者要确认的问题</span><h2>'+html.escape(qzh)+'</h2>'+(f'<small>原始目标问题：{html.escape(str(commerce.get("consumer_question")))}</small>' if commerce.get('consumer_question') and not _has_cjk(commerce.get('consumer_question')) else '')+'</div>'+_human_kv([
           ('为什么必须有这张资产',commerce.get('reason_to_exist')),('购买障碍',commerce.get('purchase_barrier')),('进入状态',commerce.get('entry_state')),('目标信念',commerce.get('target_belief')),('退出状态',commerce.get('exit_state')),('新增信息',commerce.get('incremental_information')),('画面必须传达',narrative.get('what_must_be_visible') or design.get('visual_objective')),('成功指标',commerce.get('success_metric')),('后续承接',commerce.get('handoff'))
@@ -496,7 +496,7 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
         ])
         views.append({'key':'strategy','title':'策划与决策','html':strategy})
         visual=_human_kv([
-          ('决策关键瞬间',design.get('decisive_moment') or narrative.get('decisive_moment')),('画面必须可见',narrative.get('what_must_be_visible')),('主体',subject.get('subject')),('动作',subject.get('action')),('环境',subject.get('environment')),('道具',subject.get('props')),('构图语法',comp.get('composition_grammar')),('空间节奏',comp.get('spatial_rhythm')),('视角 / 机位',comp.get('camera_or_view')),('产品出现方式',(product_role.get('production_resolution') or product_role.get('planning_state')) if isinstance(product_role,dict) else product_role),('展示位置（Surface）',surface),('信息表达方式',(surfacec.get('representation') if isinstance(surfacec,dict) else None)),('文案密度',(surfacec.get('copy_budget') or {}).get('density_class') if isinstance(surfacec,dict) else None),('移动端扫描原则','第一眼只承载一个主要购买答案；次级解释移到相邻原生内容位。' if isinstance(surfacec,dict) and surfacec else None)
+          ('决策关键瞬间',design.get('decisive_moment') or narrative.get('decisive_moment')),('画面必须可见',narrative.get('what_must_be_visible')),('主体',subject.get('subject')),('动作',subject.get('action')),('环境',subject.get('environment')),('道具',subject.get('props')),('构图语法',comp.get('composition_grammar')),('空间节奏',comp.get('spatial_rhythm')),('视角 / 机位',comp.get('camera_or_view')),('产品出现方式',(product_role.get('production_resolution') or product_role.get('planning_state')) if isinstance(product_role,dict) else product_role),('商品保真模式',identity.get('product_fidelity')),('允许进入画面的视觉元素',design.get('approved_visual_elements')),('精确执行边界',design.get('precision_boundaries')),('可编辑层',editability.get('editable_layers')),('冻结层',editability.get('frozen_layers')),('局部修订规则',editability.get('revision_rule')),('展示位置（Surface）',surface),('信息表达方式',(surfacec.get('representation') if isinstance(surfacec,dict) else None)),('文案密度',(surfacec.get('copy_budget') or {}).get('density_class') if isinstance(surfacec,dict) else None),('移动端扫描原则','第一眼只承载一个主要购买答案；次级解释移到相邻原生内容位。' if isinstance(surfacec,dict) and surfacec else None)
         ])
         views.append({'key':'visual','title':'画面与版式','html':visual})
         photo_exec=design.get('photography_execution') or {}
@@ -505,7 +505,7 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
         ])
         views.append({'key':'photo','title':'摄影 / CMF','html':photo})
         if copyc:
-            views.append({'key':'copy','title':'文案','html':_human_kv([('目标市场可见文案 / Copy Contract',copyc)])})
+            views.append({'key':'copy','title':'文案','html':_human_kv([('锁定的目标市场可见文案',copyc),('确定性排版规则',info.get('copy_visual_rule')),('文案预算',info.get('copy_budget')),('字体方向',info.get('typography'))])})
     # Human-facing Markdown files remain useful, but machine YAML/JSON is never the default asset view.
     group_files={'strategy':[],'visual':[],'photo':[],'copy':[],'production':[],'trace':[]}
     for f in sorted(path.iterdir()):

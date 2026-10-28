@@ -50,7 +50,7 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
     if fidelity=='LOCKED_PIXEL':
         required_observations += ['product_identity_preserved','source_product_asset_ids_used','product_layer_operation']
     return {
-        'version':'0.6.9-photography-execution-continuity',
+        'version':'0.6.10-visual-execution-copy-continuity',
         'preflight_status':'READY' if not preflight_errors else 'HOLD',
         'preflight_errors':preflight_errors,
         'product_fidelity':fidelity,
