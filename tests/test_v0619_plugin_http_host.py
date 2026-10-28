@@ -9,7 +9,7 @@ import json
 import sys
 import types
 
-from cbcc.action_transports import PluginActionTransportAdapter, plugin_openapi_descriptor
+from cbcc.action_transports import plugin_openapi_descriptor
 from cbcc.host_actions import (
     ACTION_ADAPTER_LIST,
     ActionAuthorization,
@@ -66,10 +66,10 @@ def _request(base: str, path: str, *, method='GET', body=None, headers=None):
     try:
         response = urlopen(request, timeout=5)
         payload = json.loads(response.read().decode('utf-8'))
-        return response.status, dict(response.headers.items()), payload
+        return response.status, {k.lower(): v for k, v in response.headers.items()}, payload
     except HTTPError as exc:
         payload = json.loads(exc.read().decode('utf-8'))
-        return exc.code, dict(exc.headers.items()), payload
+        return exc.code, {k.lower(): v for k, v in exc.headers.items()}, payload
 
 
 def _run_server(server):
@@ -163,9 +163,9 @@ def test_pending_dispatch_maps_to_202_and_operation_headers():
         code, headers, payload = _request(base, path, method='POST', body={})
         assert code == 202
         assert payload['status'] == 'PENDING'
-        assert headers['Retry-After'] == '3'
-        assert headers['X-Cbcc-Operation-Id'] == 'OP-live-123'
-        assert headers['X-Cbcc-Operation-State'] == 'PENDING'
+        assert headers['retry-after'] == '3'
+        assert headers['x-cbcc-operation-id'] == 'OP-live-123'
+        assert headers['x-cbcc-operation-state'] == 'PENDING'
     finally:
         server.shutdown(); server.server_close(); thread.join(timeout=5)
 
