@@ -1,0 +1,3 @@
+# Optional runtime for the real MCP transport host (Python 3.11+).
+# Core CBCC strategy/production runtime does not import this dependency unless MCP hosting is used.
+mcp[cli]>=2,<3
