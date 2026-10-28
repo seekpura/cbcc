@@ -1,0 +1,54 @@
+name: CBCC v0.6.22 Dynamic Workspace and Prompt verification
+
+on:
+  push:
+    branches:
+      - work/v0622-dynamic-workspace-prompt
+
+permissions:
+  contents: write
+
+jobs:
+  verify-workspace-prompt:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply dynamic workspace and prompt patches
+        run: |
+          python .changes/v0622_workspace_patch.py
+          python .changes/v0622_workspace_hardening.py
+          python .changes/v0622_prompt_patch.py
+      - name: Install test dependencies
+        run: python -m pip install -q pytest pyyaml
+      - name: Run v0.6.22 targeted tests
+        shell: bash
+        run: |
+          mkdir -p .changes
+          set +e
+          pytest -q -ra \
+            tests/test_v0622_dynamic_workspace.py \
+            tests/test_v0622_relevance_driven_prompt_projection.py \
+            > .changes/v0622-targeted.txt 2>&1
+          rc=$?
+          set -e
+          echo "$rc" > .changes/v0622-targeted.rc
+          cat .changes/v0622-targeted.txt
+      - name: Commit materialized implementation and diagnostics
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runtime/cbcc/workspace_autonomy.py runtime/cbcc/delivery_html.py runtime/cbcc/prompt_compiler.py \
+            tests/test_v0622_dynamic_workspace.py tests/test_v0622_relevance_driven_prompt_projection.py \
+            .changes/v0622-targeted.txt .changes/v0622-targeted.rc
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: materialize v0.6.22 dynamic workspace and prompt projection"
+            git push origin HEAD:work/v0622-dynamic-workspace-prompt
+          fi
+      - name: Enforce targeted result
+        if: always()
+        shell: bash
+        run: test "$(cat .changes/v0622-targeted.rc)" = "0"
