@@ -1,0 +1,98 @@
+diff --git a/runtime/cbcc/prompt_compiler.py b/runtime/cbcc/prompt_compiler.py
+index ebc3e2f..d3dda18 100644
+--- a/runtime/cbcc/prompt_compiler.py
++++ b/runtime/cbcc/prompt_compiler.py
+@@ -94,7 +94,9 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
+     presence = asset.get('product_presence') or {}
+     p = _derived_photo_contract(asset, strategy_authority, photography)
+     camera = p.get('camera') or {}
++    composition_execution = p.get('composition') or {}
+     lighting = p.get('lighting') or {}
++    color_management_execution = p.get('color_management') or {}
+     cmf = p.get('cmf') or {}
+     reasoning = p.get('asset_reasoning') or {}
+     sections = (strategy_authority or {}).get('sections') or {}
+@@ -157,6 +159,11 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
+             'safe_zone': brief.get('safe_zone') or surface.get('safe_zone'),
+             'parameter_why': reasoning.get('parameter_why') or {}
+         },
++        'photography_execution': {
++            'capture_mode': p.get('capture_mode'),
++            'composition': composition_execution,
++            'color_management': color_management_execution,
++        },
+         'lighting_material_cmf': {
+             'key': lighting.get('key'), 'fill': lighting.get('fill'), 'negative_fill': lighting.get('negative_fill'),
+             'rim': lighting.get('rim'), 'cct': lighting.get('cct'), 'shadow': lighting.get('shadow'),
+@@ -396,6 +403,7 @@ def _cn_surface_summary(surface:dict[str,Any], info:dict[str,Any])->str:
+ 
+ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+     cs = card['creative_system']; sae = card['subject_action_environment_props']; cam = card['composition_camera']
++    photo_exec = card.get('photography_execution') or {}
+     lm = card['lighting_material_cmf']; inc = card.get('inclusive_photography') or {}; info = card['information_design']
+     prod = card['product_identity']; surface = card.get('surface_contract') or {}; loc = card['market_locale']
+     cn = language.upper() == 'CN'
+@@ -430,6 +438,8 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+             f"对焦面 / 景深：{_txt(_cn_phrase(cam.get('focus_plane')))} / {_txt(_cn_phrase(cam.get('aperture_dof_intent')))}",
+             f"快门 / ISO：{_txt(_cn_phrase(cam.get('shutter_speed')))} / {_txt(_cn_phrase(cam.get('iso')))}",
+             f"裁切 / 产品方向 / 安全区：{_txt(_cn_phrase(cam.get('crop')))} / {_txt(_cn_phrase(cam.get('product_orientation')))} / {_txt(_cn_phrase(cam.get('safe_zone')))}",
++            f"拍摄 / 合成模式：{_txt(_cn_phrase(photo_exec.get('capture_mode')))}",
++            f"构图执行合同：{_txt(_cn_phrase(photo_exec.get('composition')))}",
+             '', '【灯光 / 材质 / CMF】',
+             f"主光 / 补光 / 负补光 / 轮廓光：{_txt(key_cn)} / {_txt(fill_cn)} / {_txt(neg_cn)} / {_txt(rim_cn)}",
+             f"色温 / 阴影 / 高光：{_txt(_cn_phrase(lm.get('cct')))} / {_txt(_cn_phrase(lm.get('shadow')))} / {_txt(_cn_phrase(lm.get('highlight_policy')))}",
+@@ -437,6 +447,7 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+             f"Prelight：{prelight}",
+             f"CMF：{_txt(_cn_phrase(lm.get('cmf')))}", f"需要表现的材质响应：{_txt(_cn_phrase(lm.get('material_response_to_show')))}",
+             f"拍摄影响：{_txt(_cn_phrase(lm.get('capture_implications')))}", f"后期影响：{_txt(_cn_phrase(lm.get('post_implications')))}",
++            f"色彩管理合同：{_txt(_cn_phrase(photo_exec.get('color_management')))}",
+             f"颜色一致性：{color_consistency}", '材质真实性边界：只表现商品真源/CMF 支持的材质、表面处理、透明度与光泽；不得凭空增加液体、膏体、金属、玻璃或其他物理效果。',
+             '', '【包容性人物摄影】',
+             f"肤色曝光：{_txt(inc_skin)}", f"发质 / 服化道：{_txt(inc_hair)}",
+@@ -469,6 +480,8 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+             f"Focus plane / depth of field: {_txt(cam.get('focus_plane'))} / {_txt(cam.get('aperture_dof_intent'))}",
+             f"Shutter / ISO: {_txt(cam.get('shutter_speed'))} / {_txt(cam.get('iso'))}",
+             f"Crop / product orientation / safe zone: {_txt(cam.get('crop'))} / {_txt(cam.get('product_orientation'))} / {_txt(cam.get('safe_zone'))}",
++            f"Capture / composite mode: {_txt(photo_exec.get('capture_mode'))}",
++            f"Composition execution contract: {_txt(photo_exec.get('composition'))}",
+             '', '[LIGHTING / MATERIAL / CMF]',
+             f"Key / fill / negative fill / rim: {_txt(lm.get('key'))} / {_txt(lm.get('fill'))} / {_txt(lm.get('negative_fill'))} / {_txt(lm.get('rim'))}",
+             f"CCT / shadow / highlight policy: {_txt(lm.get('cct'))} / {_txt(lm.get('shadow'))} / {_txt(lm.get('highlight_policy'))}",
+@@ -476,6 +489,7 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
+             f"Prelight plan: {_txt(lm.get('prelight_plan'))}", f"Lighting diagram: {_txt(lm.get('lighting_diagram'))}",
+             f"CMF: {_txt(lm.get('cmf'))}", f"Material response to show: {_txt(lm.get('material_response_to_show'))}",
+             f"Capture implications: {_txt(lm.get('capture_implications'))}", f"Post implications: {_txt(lm.get('post_implications'))}",
++            f"Color management contract: {_txt(photo_exec.get('color_management'))}",
+             f"Color consistency: {_txt(lm.get('color_consistency_plan'))}", f"Material-truth boundary: {lm.get('material_truth_rule')}",
+             '', '[INCLUSIVE HUMAN PHOTOGRAPHY]',
+             f"Skin-tone exposure: {_txt(inc.get('skin_tone_exposure'))}", f"Hair / wardrobe / makeup: {_txt(inc.get('hair_and_styling'))}",
+@@ -497,6 +511,7 @@ def _parameter_trace(card: dict[str, Any]) -> list[dict[str, Any]]:
+     return [
+         {'strategy_parameter': 'creative thesis / image language / creative anchor', 'render_location': 'RENDER OBJECTIVE', 'value': card.get('creative_system')},
+         {'strategy_parameter': 'composition / camera / lens / focus / exposure settings', 'render_location': 'COMPOSITION / CAMERA', 'value': card.get('composition_camera')},
++        {'strategy_parameter': 'capture mode / product occupancy / negative space / output color management', 'render_location': 'PHOTOGRAPHY EXECUTION CONTRACT', 'value': card.get('photography_execution')},
+         {'strategy_parameter': 'lighting / CCT / ratio / prelight / polarization / CMF / material response / color management', 'render_location': 'LIGHTING / MATERIAL / CMF', 'value': card.get('lighting_material_cmf')},
+         {'strategy_parameter': 'skin-tone exposure / hair / wardrobe / intersectionality', 'render_location': 'INCLUSIVE HUMAN PHOTOGRAPHY', 'value': card.get('inclusive_photography')},
+         {'strategy_parameter': 'surface / safe zone / copy budget / typography', 'render_location': 'SURFACE / INFORMATION DESIGN', 'value': {'surface': card.get('surface_contract'), 'information_design': card.get('information_design')}},
+@@ -519,7 +534,7 @@ def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target:
+             'immutable_identity_fields': ['logo', 'packaging_print', 'product_color_identity', 'geometry', 'proportions'] if asset.get('product_fidelity') == 'LOCKED_PIXEL' else ['verified_product_identity', 'approved_claim_facts'],
+         },
+         'product_presence': card.get('product_presence'), 'information_assetization': card.get('information_assetization'),
+-        'composition_camera': card.get('composition_camera'), 'lighting_material_cmf': card.get('lighting_material_cmf'),
++        'composition_camera': card.get('composition_camera'), 'photography_execution': card.get('photography_execution'), 'lighting_material_cmf': card.get('lighting_material_cmf'),
+         'inclusive_photography': card.get('inclusive_photography'), 'information_design': card.get('information_design'),
+         'surface_contract': card.get('surface_contract'), 'creative_system': card.get('creative_system'),
+         'editable_layer_contract': card.get('editable_layer_contract'), 'precision_boundaries': card.get('precision_boundaries'),
+diff --git a/runtime/cbcc/state.py b/runtime/cbcc/state.py
+index e1ff9bb..9154594 100644
+--- a/runtime/cbcc/state.py
++++ b/runtime/cbcc/state.py
+@@ -13,7 +13,7 @@ class ProjectState:
+     @property
+     def meta(self): return self.project_dir/'.cbcc'
+     @classmethod
+-    def init(cls, project_dir:Path, project_id:str, version='0.6.8-asset-production-workspace'):
++    def init(cls, project_dir:Path, project_id:str, version='0.6.9-photography-execution-continuity'):
+         p=Path(project_dir); (p/'.cbcc/checkpoints').mkdir(parents=True,exist_ok=True); (p/'artifacts/objects').mkdir(parents=True,exist_ok=True)
+         data={'project_id':project_id,'runtime_version':version,'revision':0,'current_stage':'INIT','created_at':now(),'updated_at':now(),
+               'gates':{g:{'status':'PENDING','artifact_paths':[],'authority_hash':None,'updated_at':None} for g in CANONICAL_GATES},

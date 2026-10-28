@@ -1,0 +1,134 @@
+diff --git a/mnt/data/cbcc_recovery/release/cross-border-commerce-creative-v0.6.7-semantic-workspaces/tests/test_v069_photography_execution_continuity.py b/tests/test_v069_photography_execution_continuity.py
+new file mode 100644
+index 0000000..b7c6b75
+--- /dev/null
++++ b/tests/test_v069_photography_execution_continuity.py
+@@ -0,0 +1,128 @@
++from pathlib import Path
++import json
++import shutil
++import sys
++
++ROOT = Path(__file__).resolve().parents[1]
++sys.path.insert(0, str(ROOT / 'runtime'))
++
++from cbcc.compiler import build_project
++from cbcc.delivery_html import build_delivery_html
++from cbcc.prompt_compiler import compile_asset_prompt
++
++
++def _photo_contract():
++    return {
++        'capture_mode': 'COMPOSITE',
++        'camera': {
++            'focal_length_mm': 85,
++            'camera_height': 'product center',
++            'focus_plane': 'front label',
++        },
++        'composition': {
++            'product_occupancy': {'height_pct': 68},
++            # Future/non-whitelisted execution keys must survive without a compiler update.
++            'negative_space': {'right_pct': 32},
++            'subject_clearance': '12% around label',
++        },
++        'lighting': {
++            'key': {'direction': 'camera-left', 'modifier': 'large diffusion'},
++            'cct': 5200,
++            'highlight_policy': 'protect white packaging and label',
++        },
++        'color_management': {
++            'output_space': 'sRGB',
++            'product_color_fidelity': 'locked real-product layer',
++        },
++        'cmf': {
++            'color': 'warm neutral white with authentic deep green brand accents',
++            'material': 'real supplied package layer',
++            'finish': 'controlled soft highlights',
++        },
++    }
++
++
++def _asset():
++    return {
++        'asset_id': 'AST-PHOTO-CONTINUITY',
++        'asset_name': 'Photo Continuity Proof',
++        'asset_type': 'IMAGE',
++        'surface': 'GALLERY',
++        'family': 'VISUAL',
++        'production_mode': 'REAL_PRODUCT_COMPOSITE',
++        'product_fidelity': 'LOCKED_PIXEL',
++        'product_presence': {'planning_state': 'REQUIRED'},
++        'consumer_question': 'What is this product?',
++        'strategic_job': 'Identify the exact product.',
++        'belief_target': 'The exact product is immediately clear.',
++        'creative_brief': {'composition': 'single hero product with deliberate negative space'},
++    }
++
++
++def test_photography_execution_contract_survives_design_card_prompt_and_trace():
++    photo = _photo_contract()
++    out = compile_asset_prompt(
++        _asset(),
++        {'name': 'Test product'},
++        {'market': 'Malaysia', 'platform_family': 'tiktok_shop'},
++        {},
++        {},
++        photography=photo,
++        source_product_assets=[{'asset_id': 'REAL-1', 'pixel_lock': True}],
++    )
++
++    execution = out['design_card']['photography_execution']
++    assert execution['capture_mode'] == 'COMPOSITE'
++    assert execution['composition'] == photo['composition']
++    assert execution['color_management'] == photo['color_management']
++    assert out['machine_visual_contract']['photography_execution'] == execution
++
++    for prompt in (out['prompt_cn'], out['prompt_en']):
++        for required in ['COMPOSITE', '68', '32', '12% around label', 'sRGB', 'locked real-product layer']:
++            assert required in prompt
++
++    trace = [
++        x for x in out['parameter_trace']
++        if x.get('render_location') == 'PHOTOGRAPHY EXECUTION CONTRACT'
++    ]
++    assert len(trace) == 1
++    assert trace[0]['value'] == execution
++
++
++def test_real_kiyuu_fixture_preserves_explicit_photo_contract_through_human_workspace(tmp_path):
++    fixture = ROOT / 'tests' / 'fixtures' / 'kiyuu_my_tiktok'
++    request = json.loads((fixture / 'request.json').read_text(encoding='utf-8'))
++    build_project(tmp_path, request, fixture)
++
++    package_root = tmp_path / 'artifacts' / 'asset_packages'
++    packages = sorted(p for p in package_root.iterdir() if p.is_dir())
++    assert len(packages) == 3
++
++    for package in packages:
++        design = json.loads((package / '12_design_card.json').read_text(encoding='utf-8'))
++        prompt = json.loads((package / '13_prompt_contract.json').read_text(encoding='utf-8'))
++        execution = design['photography_execution']
++
++        assert execution['capture_mode'] == 'COMPOSITE'
++        assert execution['composition']['product_occupancy']['height_pct'] == 68
++        assert execution['color_management']['output_space'] == 'sRGB'
++        assert execution['color_management']['product_color_fidelity'] == 'locked real-product layer'
++
++        for key in ('canonical_prompt_cn', 'canonical_prompt_en'):
++            text = prompt[key]
++            for required in ['COMPOSITE', '68', 'sRGB', 'locked real-product layer']:
++                assert required in text
++
++        assert any(
++            row.get('render_location') == 'PHOTOGRAPHY EXECUTION CONTRACT'
++            and row.get('value') == execution
++            for row in prompt['parameter_trace']
++        )
++
++    html = build_delivery_html(tmp_path, tmp_path / 'index.html').read_text(encoding='utf-8')
++    assert html.count('拍摄 / 合成模式') >= len(packages)
++    assert html.count('构图执行合同') >= len(packages)
++    assert html.count('输出色彩管理') >= len(packages)
++    assert 'COMPOSITE' in html
++    assert 'sRGB' in html
++    assert 'locked real-product layer' in html
