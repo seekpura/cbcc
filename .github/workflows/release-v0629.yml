@@ -5,18 +5,24 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/release-v0629.yml'
+      - 'SKILL.md'
       - 'scripts/build_plugin_dist.py'
       - 'scripts/build_dist.py'
       - 'builders/project_delivery_builder.py'
       - 'runtime/cbcc/delivery_export.py'
       - 'runtime/cbcc/delivery_workspace.py'
       - 'runtime/cbcc/delivery_html.py'
+      - 'runtime/cbcc/delivery_contract.py'
       - 'runtime/cbcc/human_delivery.py'
+      - 'runtime/cbcc/strategy_depth.py'
+      - 'runtime/cbcc/creative.py'
       - 'runtime/cbcc/cli.py'
       - 'tests/test_delivery_release_acceptance.py'
+      - 'tests/test_full_strategy_hard_contract.py'
+      - 'tests/test_v0624_strategy_asset_scope.py'
+      - 'tests/test_v0625_decision_question_authority.py'
       - 'tests/test_v066_human_workspace_zh_first.py'
       - 'tests/test_v067_workspace_information_architecture.py'
-      - 'tests/test_v068_asset_production_workspace.py'
       - 'README.md'
       - 'INSTALL.md'
       - 'requirements-runtime.txt'
@@ -44,6 +50,18 @@ jobs:
       - name: Smoke validators
         run: bash tests/run_smoke.sh
 
+      - name: FULL hard contract and task-scoped autonomy coexist
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_full_strategy_hard_contract.py \
+            tests/test_v0624_strategy_asset_scope.py \
+            tests/test_v0625_decision_question_authority.py
+          grep -q 'FULL vs TASK_SCOPED Delivery Authority' SKILL.md
+          grep -q 'C 级证据不得形成硬宣称' SKILL.md
+          grep -q 'RACE=Research → Action → Communication → Evaluation' SKILL.md
+
       - name: Human delivery authority and workspace semantics
         env:
           PYTHONPATH: runtime
@@ -68,7 +86,7 @@ jobs:
       - name: Build Runtime archive
         run: python scripts/build_dist.py dist/cross-border-commerce-creative-runtime-v0.6.29.zip
 
-      - name: Verify release versions
+      - name: Verify release versions and delivery contract
         run: |
           test "$(cat VERSION)" = "0.6.29-final-stabilization"
           python - <<'PY'
@@ -77,10 +95,15 @@ jobs:
           d=json.loads(Path('dist/release_manifest.json').read_text(encoding='utf-8'))
           assert d['version']=='0.6.29', d
           assert d['source_version']=='0.6.29-final-stabilization', d
-          print('release version contract PASS')
+          c=d.get('delivery_contract') or {}
+          assert c.get('complete_html_required') is True, c
+          assert c.get('artifact_required_for_full_task') is True, c
+          assert c.get('object_based_asset_workspace') is True, c
+          assert c.get('chat_only_completion_forbidden') is True, c
+          print('release + delivery contract PASS')
           PY
 
-      - name: Verify packaged source contains real delivery authority
+      - name: Verify packaged source contains real delivery and FULL authority
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -90,14 +113,21 @@ jobs:
               names=set(z.namelist())
               root='cross-border-commerce-creative/skills/cross-border-commerce-creative/resources/'
               required=[
+                  root+'SKILL.md',
                   root+'runtime/cbcc/delivery_export.py',
                   root+'runtime/cbcc/delivery_workspace.py',
+                  root+'runtime/cbcc/delivery_contract.py',
+                  root+'runtime/cbcc/strategy_depth.py',
                   root+'builders/project_delivery_builder.py',
                   root+'tests/test_delivery_release_acceptance.py',
+                  root+'tests/test_full_strategy_hard_contract.py',
               ]
               missing=[x for x in required if x not in names]
               assert not missing, missing
-          print('packaged delivery authority PASS')
+              skill=z.read(root+'SKILL.md').decode('utf-8')
+              assert 'FULL vs TASK_SCOPED Delivery Authority' in skill
+              assert 'C 级证据不得形成硬宣称' in skill
+          print('packaged delivery + FULL authority PASS')
           PY
 
       - name: Write SHA256 sums
