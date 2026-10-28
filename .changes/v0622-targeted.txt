@@ -1,22 +1,2 @@
-........F....                                                            [100%]
-=================================== FAILURES ===================================
-__________ test_actual_real_photo_decisions_are_preserved_end_to_end ___________
-
-    def test_actual_real_photo_decisions_are_preserved_end_to_end():
-        photo={
-            'capture_mode':'REAL_PHOTO','repeatable_capture':True,
-            'camera':{'perspective_contract':'front three-quarter label-readable view','camera_distance':'80cm','focus_plane':'front label plane'},
-            'lighting':{'key':{'direction':'camera-left broad source','modifier':'large diffusion'},'cct':'5000K','prelight_plan':'neutral product reference frame'},
-            'color_management':{'output_space':'sRGB','product_color_fidelity':'preserve verified product color'},
-        }
-        out=_compile(_asset(production_mode='REAL_PHOTO'),photography=photo)
-        en=out['prompt_en']; machine=out['machine_visual_contract']
-        assert '[COMPOSITION / CAMERA]' in en
-        assert '[LIGHTING / MATERIAL / CMF]' in en
->       assert 'front three-quarter label-readable view' in en
-E       AssertionError: assert 'front three-quarter label-readable view' in '[RENDER OBJECTIVE]\nVisual task: One decision-critical relationship\n\n[SUBJECT / ACTION / ENVIRONMENT]\nSubject: ver.... Do not add arbitrary premium splashes, particles, laboratory symbolism, abstract halos or repetitive card layouts.\n'
-
-tests/test_v0622_relevance_driven_prompt_projection.py:67: AssertionError
-=========================== short test summary info ============================
-FAILED tests/test_v0622_relevance_driven_prompt_projection.py::test_actual_real_photo_decisions_are_preserved_end_to_end - AssertionError: assert 'front three-quarter label-readable view' in '[RENDER OBJECTIVE]\nVisual task: One decision-critical relationship\n\n[SUBJECT / ACTION / ENVIRONMENT]\nSubject: ver.... Do not add arbitrary premium splashes, particles, laboratory symbolism, abstract halos or repetitive card layouts.\n'
-1 failed, 12 passed in 0.10s
+.............                                                            [100%]
+13 passed in 0.13s
