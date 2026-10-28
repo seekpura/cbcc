@@ -1,0 +1,47 @@
+name: CBCC v0.6.28 release cleanup
+
+on:
+  push:
+    branches:
+      - work/v0628-agent-frontier-scope
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify frozen main and validated source ancestry
+        run: |
+          test "$(git rev-parse origin/main)" = "a0e1260aa41080f1a5c62e97d919cb2e506d5bca"
+          git merge-base --is-ancestor 8a85c5bd6dfca4bc75895724f3e130bbca09cd25 HEAD
+      - name: Materialize release metadata
+        run: python .changes/v0628_release.py
+      - name: Verify release metadata
+        run: |
+          grep -Fx '0.6.28-agent-frontier-scope' VERSION
+          grep -F 'version: 0.6.28-agent-frontier-scope' SKILL.md
+          grep -F '# CBCC v0.6.28 CURRENT HANDOFF' CURRENT_HANDOFF.md
+          grep -F 'NEW_FAILURE_COUNT=0' CHANGELOG_V0628.md
+          grep -F '0.6.28-agent-frontier-scope' runtime/cbcc/compiler.py
+      - name: Remove staging and temporary workflows
+        run: |
+          rm -f .changes/v0628_apply.py
+          rm -f .changes/v0628_fix_production_intent.py
+          rm -f .changes/v0628_fix_research_action_identity.py
+          rm -f .changes/v0628_release.py
+          rm -f .github/workflows/v0628-verify.yml
+          rm -f .github/workflows/v0628-release.yml
+          rmdir .changes 2>/dev/null || true
+      - name: Commit clean v0.6.28 release tree
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "release: finalize CBCC v0.6.28 Agent frontier scope"
+          git push origin HEAD:work/v0628-agent-frontier-scope
