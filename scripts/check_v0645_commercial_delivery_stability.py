@@ -26,6 +26,10 @@ def main() -> int:
         raise SystemExit('defaultPrompt must not regain business-policy content')
 
     skill_root = root / 'skills' / 'cross-border-commerce-creative'
+    agent_yaml = (skill_root / 'agents' / 'openai.yaml').read_text(encoding='utf-8')
+    if 'default_prompt:' in agent_yaml:
+        raise SystemExit('agents/openai.yaml must not carry a hidden business default_prompt')
+
     host = (skill_root / 'SKILL.md').read_text(encoding='utf-8')
     canonical = (skill_root / 'resources' / 'SKILL.md').read_text(encoding='utf-8')
     required_authority = [
@@ -44,7 +48,7 @@ def main() -> int:
     files = {
         'platform_scope.py': ['UNSPECIFIED', 'CURRENT_REQUEST', '_target_is_explicit'],
         'delivery_language_matrix.py': ['EN_PLATFORM_PRIMARY_CN', 'CN_ONLY', 'EN_CN_PENDING_PLATFORM_PRIMARY'],
-        'source_truth_media.py': ['SOURCE_TRUTH_MEDIA_AUDIT.json', "package / 'sources'"],
+        'source_truth_media.py': ['SOURCE_TRUTH_MEDIA_AUDIT.json', 'SOURCE_TRUTH_STATUS.md', "package / 'sources'"],
         'commercial_workspace_shell.py': ["WORKSPACE_SHELL_VERSION = 'cbcc-commercial-v1'", '一次只显示一个一级工作面'],
         'delivery_export.py': ['materialize_source_truth_media', 'resolve_platform_scope', 'audit_language_delivery', 'apply_commercial_workspace_shell'],
     }
