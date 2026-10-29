@@ -12,6 +12,9 @@ on:
       - 'runtime/cbcc/surface_advisory_authority.py'
       - 'tests/test_v0630_agent_art_direction_authority.py'
       - 'tests/test_v0630_surface_agent_authority.py'
+      - 'tests/test_v0630_agent_art_direction_e2e.py'
+      - 'knowledge/creative_direction_surface_prompt_system.md'
+      - 'knowledge/asset_portfolio_curation.md'
       - 'prompts/dynamic_asset_curation.md'
       - 'prompts/creative_direction_surface_prompt_compiler.md'
       - 'prompts/visual_photography_strategy.md'
@@ -54,7 +57,8 @@ jobs:
         run: |
           pytest -q \
             tests/test_v0630_agent_art_direction_authority.py \
-            tests/test_v0630_surface_agent_authority.py
+            tests/test_v0630_surface_agent_authority.py \
+            tests/test_v0630_agent_art_direction_e2e.py
 
       - name: Existing prompt and current-scope regressions
         env:
