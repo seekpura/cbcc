@@ -1,0 +1,63 @@
+name: Apply v0.6.31 Prompt Workspace UI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0631-prompt-workspace-ui.yml'
+      - 'scripts/apply_v0631_prompt_workspace_ui.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+      - name: Apply prompt workspace UI separation
+        run: python scripts/apply_v0631_prompt_workspace_ui.py
+      - name: Compile renderer
+        env:
+          PYTHONPATH: .:runtime
+        run: python -m py_compile runtime/cbcc/delivery_html.py
+      - name: Verify model-prompt UI semantics
+        run: |
+          grep -q 'Model Prompt CN｜中文模型提示词' runtime/cbcc/delivery_html.py
+          grep -q 'Model Prompt EN｜英文模型提示词' runtime/cbcc/delivery_html.py
+          grep -q '这里只展示模型输入' runtime/cbcc/delivery_html.py
+          grep -q "views.append({'key':'production','title':'生产 / 装配说明'" runtime/cbcc/delivery_html.py
+          ! grep -q 'Prompt 是执行合同' runtime/cbcc/delivery_html.py
+          ! grep -q '<h3>中文规范生产提示词</h3>' runtime/cbcc/delivery_html.py
+      - name: Preserve model-native prompt and Agent authority tests
+        env:
+          PYTHONPATH: .:runtime
+        run: |
+          pytest -q tests/test_v0631_model_native_prompt_contract.py
+          pytest -q \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0630_surface_agent_authority.py \
+            tests/test_v0630_agent_art_direction_e2e.py \
+            tests/test_v0630_prompt_art_direction_projection.py
+      - name: Commit UI separation
+        run: |
+          if git diff --quiet; then
+            echo 'No UI changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add runtime/cbcc/delivery_html.py
+          git commit -m 'fix: separate model prompt UI from production assembly notes'
+          git push
