@@ -32,5 +32,11 @@ jobs:
         run: python scripts/check_commercial_prompt_density.py
       - name: Build v0.6.42 installable package
         run: python -m scripts.build_plugin_dist_v0642 --output-dir dist_v0642
+      - name: Unpack the actual installable plugin archive
+        run: |
+          rm -rf dist_v0642/unpacked
+          mkdir -p dist_v0642/unpacked
+          unzip -q dist_v0642/cross-border-commerce-creative-plugin-v0.6.42.zip -d dist_v0642/unpacked
+          test -f dist_v0642/unpacked/cross-border-commerce-creative/plugin.json
       - name: Check packaged Host/Canonical authority and final delivery path
-        run: python scripts/check_v0642_regression_recovery.py dist_v0642/plugin/cross-border-commerce-creative
+        run: python scripts/check_v0642_regression_recovery.py dist_v0642/unpacked/cross-border-commerce-creative
