@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/v0630-agent-art-direction-authority.yml'
+      - 'SKILL.md'
       - 'runtime/cbcc/__init__.py'
       - 'runtime/cbcc/agent_art_direction_authority.py'
       - 'runtime/cbcc/agent_authority_prompt_compiler.py'
@@ -19,6 +20,7 @@ on:
       - 'prompts/creative_direction_surface_prompt_compiler.md'
       - 'prompts/visual_photography_strategy.md'
       - 'references/ASSET_COMPILER_SPEC.md'
+      - 'scripts/build_plugin_dist.py'
   workflow_dispatch:
 
 permissions:
@@ -27,7 +29,7 @@ permissions:
 jobs:
   agent-art-direction-authority:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,3 +70,50 @@ jobs:
             tests/test_prompt_execution_decision_preservation.py \
             tests/test_v0628_agent_frontier_scope.py \
             tests/test_v0629_final_stabilization.py
+
+      - name: Build installable Plugin and Skill packages
+        run: python scripts/build_plugin_dist.py --output-dir dist-v0630-check
+
+      - name: Verify packaged Agent authority continuity
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+
+          out=Path('dist-v0630-check')
+          plugins=sorted(out.glob('cross-border-commerce-creative-plugin-v*.zip'))
+          skills=sorted(out.glob('cross-border-commerce-creative-skill-v*.zip'))
+          assert plugins, 'plugin archive missing'
+          assert skills, 'skill archive missing'
+          required=[
+              'runtime/cbcc/__init__.py',
+              'runtime/cbcc/agent_art_direction_authority.py',
+              'runtime/cbcc/agent_authority_prompt_compiler.py',
+              'runtime/cbcc/agent_plan_input_bridge.py',
+              'runtime/cbcc/surface_advisory_authority.py',
+              'tests/test_v0630_agent_art_direction_authority.py',
+              'tests/test_v0630_surface_agent_authority.py',
+              'tests/test_v0630_agent_art_direction_e2e.py',
+              'knowledge/creative_direction_surface_prompt_system.md',
+              'knowledge/asset_portfolio_curation.md',
+          ]
+          with zipfile.ZipFile(plugins[-1]) as z:
+              names=set(z.namelist())
+              skill_root='cross-border-commerce-creative/skills/cross-border-commerce-creative/'
+              resource_root=skill_root+'resources/'
+              for rel in required:
+                  assert resource_root+rel in names, rel
+              skill=z.read(resource_root+'SKILL.md').decode('utf-8')
+              assert 'Agent Creative Authority — highest current precedence' in skill
+              assert 'validate → serialize → compile → trace → execute → package → test' in skill
+              assert 'Surface 不是创意权威' in skill
+              assert 'Prompt Compiler 是 compiler，不是 designer' in skill
+              init=z.read(resource_root+'runtime/cbcc/__init__.py').decode('utf-8')
+              assert 'surface_advisory_authority' in init
+              assert 'agent_authority_prompt_compiler' in init
+          with zipfile.ZipFile(skills[-1]) as z:
+              names=set(z.namelist())
+              assert any(name.endswith('/SKILL.md') or name=='SKILL.md' for name in names)
+              assert any(name.endswith('runtime/cbcc/agent_art_direction_authority.py') for name in names)
+          print('packaged Agent Creative Authority continuity PASS')
+          PY
