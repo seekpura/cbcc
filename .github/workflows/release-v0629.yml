@@ -14,12 +14,15 @@ on:
       - 'runtime/cbcc/delivery_html.py'
       - 'runtime/cbcc/delivery_contract.py'
       - 'runtime/cbcc/human_delivery.py'
+      - 'runtime/cbcc/human_language_delivery.py'
       - 'runtime/cbcc/strategy_depth.py'
       - 'runtime/cbcc/prompt_compiler.py'
       - 'runtime/cbcc/asset_compiler.py'
       - 'runtime/cbcc/creative.py'
       - 'runtime/cbcc/cli.py'
+      - 'references/FINAL_OUTPUT_CONTRACT.md'
       - 'tests/test_delivery_release_acceptance.py'
+      - 'tests/test_human_language_delivery_contract.py'
       - 'tests/test_full_strategy_hard_contract.py'
       - 'tests/test_full_delivery_last_mile.py'
       - 'tests/test_prompt_execution_decision_preservation.py'
@@ -76,6 +79,16 @@ jobs:
         env:
           PYTHONPATH: runtime
         run: pytest -q tests/test_full_delivery_last_mile.py
+
+      - name: Chinese-base human language delivery contract
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q tests/test_human_language_delivery_contract.py
+          grep -q '人类语言交付 Gate' references/FINAL_OUTPUT_CONTRACT.md
+          grep -q 'HUMAN_LANGUAGE_AUDIT.json' runtime/cbcc/delivery_export.py
+          grep -q 'FOREIGN_ASSET_COPY_WITHOUT_CN_COMPANION' runtime/cbcc/human_language_delivery.py
+          grep -q 'FOREIGN_LISTING_COPY_WITHOUT_CN_COMPANION' runtime/cbcc/human_language_delivery.py
 
       - name: Human delivery authority and workspace semantics
         env:
@@ -136,15 +149,18 @@ jobs:
               root='cross-border-commerce-creative/skills/cross-border-commerce-creative/resources/'
               required=[
                   root+'SKILL.md',
+                  root+'references/FINAL_OUTPUT_CONTRACT.md',
                   root+'runtime/cbcc/delivery_export.py',
                   root+'runtime/cbcc/delivery_workspace.py',
                   root+'runtime/cbcc/delivery_html.py',
                   root+'runtime/cbcc/delivery_contract.py',
+                  root+'runtime/cbcc/human_language_delivery.py',
                   root+'runtime/cbcc/strategy_depth.py',
                   root+'runtime/cbcc/prompt_compiler.py',
                   root+'runtime/cbcc/asset_compiler.py',
                   root+'builders/project_delivery_builder.py',
                   root+'tests/test_delivery_release_acceptance.py',
+                  root+'tests/test_human_language_delivery_contract.py',
                   root+'tests/test_full_strategy_hard_contract.py',
                   root+'tests/test_full_delivery_last_mile.py',
                   root+'tests/test_prompt_execution_decision_preservation.py',
@@ -152,16 +168,22 @@ jobs:
               missing=[x for x in required if x not in names]
               assert not missing, missing
               skill=z.read(root+'SKILL.md').decode('utf-8')
+              final_contract=z.read(root+'references/FINAL_OUTPUT_CONTRACT.md').decode('utf-8')
               export=z.read(root+'runtime/cbcc/delivery_export.py').decode('utf-8')
+              language=z.read(root+'runtime/cbcc/human_language_delivery.py').decode('utf-8')
               prompt=z.read(root+'runtime/cbcc/prompt_compiler.py').decode('utf-8')
               assert 'FULL vs TASK_SCOPED Delivery Authority' in skill
               assert 'FULL Decision-Depth + Prompt Execution Continuity' in skill
               assert 'C 级证据不得形成硬宣称' in skill
+              assert '人类语言交付 Gate' in final_contract
+              assert 'HUMAN_LANGUAGE_AUDIT.json' in export
+              assert 'FOREIGN_ASSET_COPY_WITHOUT_CN_COMPANION' in language
+              assert 'FOREIGN_LISTING_COPY_WITHOUT_CN_COMPANION' in language
               assert 'FULL_DELIVERY_DEPTH_AUDIT.json' in export
               assert 'PROMPT_CONSUMPTION_AUDIT.json' in export
               assert '_prompt_consumption_audit' in prompt
               assert 'CANONICAL_PROMPT_COMPILED_EXECUTION_PRESERVING' in prompt
-          print('packaged delivery + FULL depth + prompt continuity authority PASS')
+          print('packaged delivery + FULL depth + prompt continuity + Chinese-base human language authority PASS')
           PY
 
       - name: Write SHA256 sums
@@ -173,7 +195,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cbcc-v0.6.29-full-depth-prompt-repair
+          name: cbcc-v0.6.29-full-depth-prompt-language-repair
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
