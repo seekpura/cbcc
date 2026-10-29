@@ -1,0 +1,40 @@
+name: Apply reference-guided asset and capability continuity repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-reference-guided-capability-repair.yml'
+      - 'scripts/repair_reference_guided_assets_and_capability_continuity.py'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ github.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply repair
+        run: python scripts/repair_reference_guided_assets_and_capability_continuity.py
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+      - name: Targeted regression
+        env:
+          PYTHONPATH: runtime
+        run: |
+          python -m py_compile runtime/cbcc/compiler.py runtime/cbcc/asset_architecture.py runtime/cbcc/prompt_compiler.py runtime/cbcc/asset_compiler.py runtime/cbcc/delivery_export.py runtime/cbcc/tools/seven_agent.py
+          pytest -q tests/test_reference_guided_optional_prompt_and_capability_continuity.py tests/test_v060_capability_complete_rebase.py tests/test_v0511_integration_quality_depth.py
+      - name: Commit repaired source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add runtime/cbcc/compiler.py runtime/cbcc/asset_architecture.py runtime/cbcc/prompt_compiler.py runtime/cbcc/asset_compiler.py runtime/cbcc/delivery_export.py runtime/cbcc/tools/seven_agent.py tests/test_reference_guided_optional_prompt_and_capability_continuity.py
+          git commit -m 'fix: make product assets reference-guided and restore capability continuity'
+          git push origin HEAD:main
