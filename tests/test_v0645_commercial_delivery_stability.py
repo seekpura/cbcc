@@ -102,6 +102,34 @@ def test_language_audit_accepts_generic_locale_alias_for_platform_primary():
     assert audit['status'] == 'PASS'
 
 
+def test_language_audit_does_not_require_localized_versions_of_identifiers():
+    plan = build_language_delivery_plan({'platform': 'Shopee', 'market': 'MY', 'primary_locale': 'ms-MY'})
+    center = {
+        'localized_copy': [
+            {'locale': 'en', 'field': 'title', 'value': 'Daily Gel', 'delivery_translation': '日常凝胶'},
+            {'locale': 'ms-MY', 'field': 'title', 'value': 'Gel Harian', 'delivery_translation': '日常凝胶'},
+        ],
+        'copy_center': [
+            {'field': 'sku', 'value': 'K01-30G'},
+            {'field': 'brand', 'value': 'KIYUU'},
+            {'field': 'category_id', 'value': '123456'},
+        ],
+    }
+    audit = audit_language_delivery(center, plan)
+    assert audit['status'] == 'PASS'
+    assert not any(x.get('field') in {'sku', 'brand', 'category_id'} for x in audit['missing'])
+
+
+def test_china_language_audit_accepts_native_chinese_without_translation_companion():
+    plan = build_language_delivery_plan({'platform': 'Tmall', 'market': 'CN', 'primary_locale': 'zh-CN'})
+    center = {'copy_center': [
+        {'locale': 'zh-CN', 'field': 'title', 'value': '日常控油保湿凝胶'},
+        {'locale': 'zh-CN', 'field': 'description', 'value': '适合日常使用的轻盈凝胶。'},
+    ]}
+    audit = audit_language_delivery(center, plan)
+    assert audit['status'] == 'PASS'
+
+
 def test_source_truth_media_is_copied_for_self_contained_html(tmp_path: Path):
     project = tmp_path / 'project'
     package = tmp_path / 'package'
