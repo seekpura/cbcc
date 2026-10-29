@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Any
+import re
 
 
 _CHINA_PLATFORMS = {
@@ -8,6 +9,17 @@ _CHINA_PLATFORMS = {
     'xiaohongshu', 'red', '1688', 'weidian', 'kuaishou', 'suning',
 }
 _CHINA_MARKETS = {'CN', 'CHINA', '中国', '中国大陆', 'MAINLAND CHINA'}
+_LOCALIZED_LISTING_FIELDS = {
+    'title', 'product_title', 'product_name', 'category', 'platform_category', 'category_name', 'category_path',
+    'highlights', 'bullets', 'bullet_points', 'description', 'short_description', 'long_description',
+    'attributes', 'attribute', 'variant', 'variation', 'variation_name', 'variation_value',
+    'search_terms', 'backend_terms', 'keywords', 'usage', 'directions', 'warnings', 'cautions', 'faq',
+    'package', 'package_contents', 'material', 'color', 'size', 'offer', 'shipping', 'returns', 'seller_info',
+}
+_TECHNICAL_FIELDS = {
+    'brand', 'sku', 'gtin', 'ean', 'upc', 'barcode', 'category_id', 'product_id', 'item_id',
+    'model', 'model_number', 'part_number', 'hs_code', 'url', 'uri', 'hex', 'inci',
+}
 
 
 def _norm(value: Any) -> str:
@@ -98,14 +110,33 @@ def _locale_matches(actual: str, required: str) -> bool:
         return True
     a_base = a.split('-', 1)[0]
     r_base = r.split('-', 1)[0]
-    # `ms` and `ms-MY` (or `th`/`th-TH`) are the same authored language layer.
     return a_base == r_base and ('-' not in a or '-' not in r)
+
+
+def _has_cjk(value: Any) -> bool:
+    if isinstance(value, dict):
+        return any(_has_cjk(v) for v in value.values())
+    if isinstance(value, (list, tuple, set)):
+        return any(_has_cjk(v) for v in value)
+    return bool(re.search(r'[\u3400-\u4dbf\u4e00-\u9fff]', str(value or '')))
+
+
+def _is_localizable_row(row: dict[str, Any]) -> bool:
+    field = _norm(row.get('field')).casefold()
+    if not field or field in _TECHNICAL_FIELDS:
+        return False
+    if row.get('localizable') is False or row.get('translate') is False:
+        return False
+    if row.get('localizable') is True or row.get('translate') is True:
+        return True
+    return field in _LOCALIZED_LISTING_FIELDS
 
 
 def audit_language_delivery(center: dict[str, Any], plan: dict[str, Any]) -> dict[str, Any]:
     """Audit Listing/localized human copy without inventing translations.
 
-    Runtime verifies that authored language layers exist. It never creates English/platform-primary copy
+    Runtime verifies authored language layers only for human-localizable commerce fields. Technical IDs,
+    brand identifiers and machine keys remain exact. Runtime never creates English/platform-primary copy
     merely to satisfy the contract.
     """
     rows = [x for x in (center.get('localized_copy') or []) if isinstance(x, dict)]
@@ -118,7 +149,7 @@ def audit_language_delivery(center: dict[str, Any], plan: dict[str, Any]) -> dic
     for row in rows + copy_rows:
         field = _norm(row.get('field'))
         value = row.get('value')
-        if field and value not in (None, '', [], {}) and field not in fields:
+        if _is_localizable_row(row) and field and value not in (None, '', [], {}) and field not in fields:
             fields.append(field)
 
     if not fields:
@@ -128,16 +159,25 @@ def audit_language_delivery(center: dict[str, Any], plan: dict[str, Any]) -> dic
     missing = []
     for field in fields:
         for locale in required_locales:
-            matches = [r for r in rows if _norm(r.get('field')) == field and _locale_matches(_norm(r.get('locale')), locale) and r.get('value') not in (None, '', [], {})]
+            matches = [
+                r for r in rows
+                if _norm(r.get('field')) == field
+                and _is_localizable_row(r)
+                and _locale_matches(_norm(r.get('locale')), locale)
+                and r.get('value') not in (None, '', [], {})
+            ]
             if not matches:
                 missing.append({'field': field, 'locale': locale, 'reason': 'AUTHORED_COPY_REQUIRED'})
 
-    # Chinese is normally a same-object interpretation companion, not a duplicate target-market package.
     if plan.get('chinese_interpretation_required'):
         for field in fields:
-            candidates = [r for r in rows + copy_rows if _norm(r.get('field')) == field and r.get('value') not in (None, '', [], {})]
+            candidates = [
+                r for r in rows + copy_rows
+                if _norm(r.get('field')) == field and _is_localizable_row(r) and r.get('value') not in (None, '', [], {})
+            ]
             if candidates and not any(
-                r.get('delivery_translation') not in (None, '', '待补中文释义')
+                _has_cjk(r.get('value'))
+                or r.get('delivery_translation') not in (None, '', '待补中文释义')
                 or r.get('delivery_translation_zh') not in (None, '', '待补中文释义')
                 or _locale_matches(_norm(r.get('locale')), 'zh-CN')
                 for r in candidates
@@ -149,4 +189,5 @@ def audit_language_delivery(center: dict[str, Any], plan: dict[str, Any]) -> dic
         'missing': missing,
         'plan': plan,
         'audited_fields': fields,
+        'technical_fields_exempt': sorted(_TECHNICAL_FIELDS),
     }
