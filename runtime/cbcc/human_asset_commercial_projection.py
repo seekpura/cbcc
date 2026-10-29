@@ -27,9 +27,25 @@ def _line(label: str, value: Any) -> str:
 def _commercial_section(prompt_bundle: dict[str, Any]) -> str:
     card = _dict(prompt_bundle.get('design_card'))
     ctx = _dict(card.get('commerce_decision_context'))
-    if not ctx:
+    subject = _dict(card.get('subject_system'))
+    if not ctx and not subject:
         return ''
-    rows = ['## 上游商业决策与血缘', '', '> 本资产只继承与当前购买问题、Surface、RACE 和商业任务相关的上游决策；未绑定的数据不会为了“显得完整”塞进画面。', '']
+    rows = ['## 上游商业决策、主体系统与血缘', '', '> 本资产只继承与当前购买问题、Surface、RACE 和商业任务相关的上游决策；未绑定的数据不会为了“显得完整”塞进画面。主体按资产任务决定，不默认人物。', '']
+
+    if subject:
+        rows += [
+            '### 主体系统（Subject Presence System）', '',
+            _line('主体类型', subject.get('subject_type')),
+            _line('主主体', subject.get('primary_subject')),
+            _line('次主体', subject.get('secondary_subjects')),
+            _line('主体动作', subject.get('action')),
+            _line('主体与商品关系', subject.get('subject_product_relationship')),
+            _line('主体与场景关系', subject.get('subject_scene_relationship')),
+            _line('主体约束', subject.get('subject_constraints')),
+            _line('主体决策权威', subject.get('authority')),
+            '',
+        ]
+        rows = [x for x in rows if x != ''] + ['']
 
     positioning = _dict(ctx.get('positioning'))
     rows += [x for x in [
@@ -44,7 +60,7 @@ def _commercial_section(prompt_bundle: dict[str, Any]) -> str:
         _line('目标人群', audience.get('segments')),
         _line('文化 / 交叉性', audience.get('intersectionality')),
         _line('视觉执行含义', audience.get('visual_implications')),
-        _line('人物 / 场景边界', audience.get('casting_constraints') or audience.get('taboo_stereotype_risks')),
+        _line('主体 / 场景边界', audience.get('casting_constraints') or audience.get('taboo_stereotype_risks')),
     ] if x]
 
     market = _dict(ctx.get('market'))
@@ -78,7 +94,7 @@ def _commercial_section(prompt_bundle: dict[str, Any]) -> str:
         for ref in refs:
             if isinstance(ref, dict):
                 rows.append(f'- `{ref.get("domain")}` ← `{ref.get("source_artifact")}` · `{ref.get("source_path")}`')
-    rows += ['', '### 消费边界', '', '- 商业决策影响当前资产的购买问题、信息层级、文案、证据、场景或 Offer；摄影/灯光/CMF 与空间参数仍由本资产 Art Direction / Production Parameter Closure 独立闭环。', '- 经济公式、Runtime 状态码、无关工具数据进入 Inspector / Assembly，不进入消费者可见画面。', '']
+    rows += ['', '### 消费边界', '', '- 商业决策影响当前资产的购买问题、信息层级、文案、证据、场景或 Offer；主体系统、摄影/灯光/CMF 与空间参数仍由本资产 Art Direction / Production Parameter Closure 独立闭环。', '- 人、动物、植物、商品/物体、环境、复合主体或无主体都是合法逐资产选择；Runtime 不从类目自动补人物。', '- 经济公式、Runtime 状态码、无关工具数据进入 Inspector / Assembly，不进入消费者可见画面。', '']
     return '\n'.join(rows)
 
 
