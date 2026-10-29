@@ -42,11 +42,22 @@ def plugin_manifest(version: str) -> dict:
     return manifest
 
 
+def openai_yaml() -> str:
+    # Invocation metadata only. Business/product authority lives in Host/Canonical Skill.
+    return '''interface:
+  display_name: Cross-Border Commerce Creative
+  short_description: 跨境电商策略、内容、创意与完整交付
+policy:
+  allow_implicit_invocation: true
+'''
+
+
 def build(output_dir: Path) -> dict:
     base.DEFAULT_PROMPTS = []
     base.plugin_manifest = plugin_manifest
     base.skill_wrapper = skill_wrapper
     base.copy_repo_resources = copy_repo_resources
+    base.openai_yaml = openai_yaml
     base.build(output_dir)
 
     manifest_path = output_dir / 'release_manifest.json'
@@ -61,6 +72,8 @@ def build(output_dir: Path) -> dict:
         'china_platform_chinese_only': True,
         'workspace_shell_version': 'cbcc-commercial-v1',
         'workspace_shell_frozen_across_normal_releases': True,
+        'manifest_default_prompt_absent': True,
+        'agent_yaml_business_default_prompt_absent': True,
         'v0644_default_prompt_boundary_preserved': True,
         'v0643_chinese_interpretation_preserved': True,
         'v0642_routed_workspace_preserved': True,
