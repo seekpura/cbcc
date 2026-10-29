@@ -9,6 +9,7 @@ on:
       - 'scripts/patch_v0632_closure_language_and_status.py'
       - 'scripts/patch_v0631_prompt_fixture_for_v0632.py'
       - 'scripts/patch_v0632_graphic_test_diagnostics.py'
+      - 'scripts/patch_v0632_route_value_detection.py'
   workflow_dispatch:
 
 permissions:
@@ -38,6 +39,7 @@ jobs:
           python scripts/patch_v0632_closure_language_and_status.py
           python scripts/patch_v0631_prompt_fixture_for_v0632.py
           python scripts/patch_v0632_graphic_test_diagnostics.py
+          python scripts/patch_v0632_route_value_detection.py
 
       - name: Compile production-parameter closure
         env:
