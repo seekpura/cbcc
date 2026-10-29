@@ -277,6 +277,10 @@ def build(output_dir: Path) -> dict:
             'chat_only_completion_forbidden': True,
             'full_nine_domain_decision_depth_required': True,
             'prompt_consumption_audit_required': True,
+            'prompt_consumption_blocks_project_completion': False,
+            'product_source_default_reference_guided': True,
+            'photorealism_default_required': False,
+            'seven_agent_capability_continuity_required': True,
             'host_custom_short_report_cannot_substitute_full_delivery': True,
         },
     }
