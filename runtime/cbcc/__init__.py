@@ -21,14 +21,34 @@ from . import agent_art_direction_authority as _agent_art_direction_authority
 from . import agent_plan_input_bridge as _agent_plan_input_bridge
 from . import surface_advisory_authority as _surface_advisory_authority
 
+
+def _preserve_canonical_status(fn):
+    """Keep the established package/compiler status while exposing prompt readiness separately."""
+    def compiled(*args, **kwargs):
+        out=fn(*args, **kwargs)
+        model_status=out.get('status')
+        out['model_prompt_status']=model_status
+        card=out.get('design_card') or {}
+        if card.get('generation_blocking') or model_status=='AGENT_ART_DIRECTION_REQUIRED':
+            out['status']='AGENT_ART_DIRECTION_REQUIRED'
+        else:
+            out['status']='CANONICAL_PROMPT_COMPILED_AGENT_AUTHORITY'
+        return out
+    return compiled
+
+
 # Existing callers continue importing `prompt_compiler.compile_asset_prompt`. First project the
 # Agent-authored Art Direction into compatibility fields, then compile the existing machine/design
 # contracts, and finally replace the legacy execution-contract prose with a true model-facing prompt
-# plus separate Visible Copy and Production / Assembly Notes objects.
+# plus separate Visible Copy and Production / Assembly Notes objects. Package status remains backward
+# compatible; `model_prompt_status` carries the new production-readiness state.
 _agent_authority_prompt_compiler.compile_asset_prompt = _art_direction_projection.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
 _agent_authority_prompt_compiler.compile_asset_prompt = _model_native_prompt_contract.wrap_compile_asset_prompt(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
+_agent_authority_prompt_compiler.compile_asset_prompt = _preserve_canonical_status(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
 _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.compile_asset_prompt
