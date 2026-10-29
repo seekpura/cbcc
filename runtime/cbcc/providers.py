@@ -36,11 +36,12 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
     errors=[]
     if mode not in spec['modes']: errors.append('MODE_NOT_SUPPORTED_BY_PROVIDER')
     fidelity=asset.get('product_fidelity')
-    if fidelity=='LOCKED_PIXEL' and spec.get('locked_pixel') in {'NOT_APPLICABLE','REFERENCE_ONLY'}:
+    locked=str(fidelity or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
+    if locked and spec.get('locked_pixel') in {'NOT_APPLICABLE','REFERENCE_ONLY'}:
         errors.append('LOCKED_PIXEL_PROVIDER_MISMATCH')
     required_inputs=['asset_manifest','strategy','visual_spec','source_trace','layout_contract','surface_production_contract','design_card','canonical_prompt_contract','renderer_recipe']
-    real_product_mode=mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','VIDEO'}
-    source_binding_required=bool(real_product_mode or fidelity=='LOCKED_PIXEL')
+    real_product_mode=mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'}
+    source_binding_required=bool(real_product_mode or locked)
     if source_binding_required: required_inputs.extend(['source_product_assets','source_product_bindings'])
     if real_product_mode: required_inputs.extend(['photography_contract','shot_lighting_reasoning'])
     adapter=spec.get('adapter','FILE_HANDOFF')
@@ -55,7 +56,7 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
             'resolver_precedence':['PROVIDER_ASSET_HANDLE','PACKAGE_RELATIVE_PATH','LOCAL_FILE_PATH'],
             'integrity_key':'sha256',
             'required_binding_fields':['asset_id','locator','sha256','pixel_lock','allowed_transforms','identity_features'],
-            'locked_pixel_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_layer_operation','product_identity_preserved'] if fidelity=='LOCKED_PIXEL' else [],
+            'locked_pixel_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_layer_operation','product_identity_preserved'] if locked else [],
             'provider_asset_handle_lifecycle':{
                 'supported':True,
                 'structured_fields':['handle_id','provider','state','sha256','issued_at','verified_at','expires_at','supersedes_handle','generation'],

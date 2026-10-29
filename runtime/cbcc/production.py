@@ -17,7 +17,7 @@ def _read_json(path:Path, default=None):
 
 
 
-_REAL_PRODUCT_MODES={'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','VIDEO'}
+_REAL_PRODUCT_MODES={'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'}
 
 def _sha256_file(path:Path)->str:
     h=hashlib.sha256()
@@ -93,7 +93,7 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
     layout=_read_json(package_dir/'04_layout_contract.json',{})
     photo=_read_json(package_dir/'03_photography_contract.json',{})
     prompt_contract=_read_json(package_dir/'13_prompt_contract.json',{})
-    fidelity=str(manifest.get('product_fidelity') or 'REFERENCE_CONSTRAINED').upper()
+    fidelity=str(manifest.get('product_fidelity') or 'REFERENCE_GUIDED').upper()
     mode=str(manifest.get('production_mode') or '').upper()
     signature=manifest.get('visual_production_signature') or layout.get('visual_production_signature') or {}
     edit=manifest.get('editable_layer_contract') or layout.get('editable_layer_contract') or {}
@@ -101,20 +101,21 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
     source_ids=[x.get('asset_id') for x in source_bindings if x.get('asset_id')]
     source_by_id={str(x.get('asset_id')):x for x in manifest.get('source_product_assets') or [] if isinstance(x,dict) and x.get('asset_id')}
     sources=[source_by_id[str(aid)] for aid in source_ids if str(aid) in source_by_id]
-    real_product_required=(fidelity=='LOCKED_PIXEL' or mode in _REAL_PRODUCT_MODES) and mode not in {'AI_GENERATIVE','DOCUMENTATION'}
+    locked=fidelity in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
+    real_product_required=(locked or mode in _REAL_PRODUCT_MODES) and mode not in {'AI_GENERATIVE','DOCUMENTATION'}
     preflight_errors=[]
     if real_product_required and not sources:
         preflight_errors.append('REAL_PRODUCT_MASTER_NOT_BOUND')
     if real_product_required and not source_bindings:
         preflight_errors.append('REAL_PRODUCT_MASTER_NOT_RESOLVABLE_AT_HANDOFF')
-    if fidelity=='LOCKED_PIXEL' and source_bindings and not any(bool(x.get('pixel_lock')) for x in source_bindings):
+    if locked and source_bindings and not any(bool(x.get('pixel_lock')) for x in source_bindings):
         preflight_errors.append('LOCKED_PIXEL_MASTER_NOT_DECLARED')
-    if fidelity=='LOCKED_PIXEL' and mode=='AI_GENERATIVE':
+    if locked and mode=='AI_GENERATIVE':
         preflight_errors.append('LOCKED_PIXEL_GENERATIVE_CONFLICT')
     required_observations=['decision_answer_visible','surface_contract_met','copy_visual_alignment','visual_differentiation_preserved']
-    if mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','VIDEO'}:
+    if mode in _REAL_PRODUCT_MODES:
         required_observations.append('photography_cmf_alignment')
-    if fidelity=='LOCKED_PIXEL':
+    if locked:
         required_observations += ['product_identity_preserved','source_product_asset_ids_used','source_product_hashes_used','product_layer_operation']
     return {
         'version':'0.6.12-portable-provider-package-production-receipt',
@@ -128,7 +129,7 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
         'source_product_binding_errors':source_binding_errors,
         'source_binding_hash':stable_hash(source_bindings),
         'source_product_asset_ids':source_ids,
-        'locked_pixel_rule':('Use the exact supplied product master as an immutable pixel layer; preserve logo, packaging print, product color identity, geometry and proportions. Only contract-authorized placement/compositing transforms are permitted.' if fidelity=='LOCKED_PIXEL' else 'Preserve verified product identity and do not invent unsupported product detail.'),
+        'locked_pixel_rule':('Explicit locked-source mode: use the exact supplied master as an immutable pixel layer and permit only authorized transforms.' if locked else 'Reference-guided mode: source files guide the design/product subject; redraw/rerender/restyle/recompose is allowed. Keep verified product facts and approved claims honest.'),
         'visual_production_signature':signature,
         'surface_production_contracts':layout.get('surface_production_contracts') or [],
         'copy_visual_alignment':layout.get('copy_visual_alignment') or {'locked_visible_copy':layout.get('visible_copy') or {},'rule':'Visible copy must be visually attributable to the decision evidence shown.'},
@@ -148,7 +149,7 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
         'qa_target_contract':prompt_contract.get('qa_target_contract') or {},
         'required_result_observations':list(dict.fromkeys(required_observations)),
         'review_dimensions':[
-            {'dimension':'PRODUCT_FIDELITY','question':'Does the output preserve the exact product identity/master constraints?'},
+            {'dimension':'PRODUCT_REFERENCE_FIDELITY','question':'Does the output follow the selected reference/fidelity policy—reference-guided by default, exact source preservation only when explicitly locked?'},
             {'dimension':'DECISION_VISIBILITY','question':'Can a shopper recover the assigned decision answer from the actual output?'},
             {'dimension':'SURFACE_USABILITY','question':'Does the output work on the target surface rather than merely looking polished?'},
             {'dimension':'COPY_VISUAL_ALIGNMENT','question':'Does each locked copy line point to evidence visible in the frame?'},
@@ -180,7 +181,7 @@ def _quality_result_issues(row:dict[str,Any], result:dict[str,Any])->list[str]:
             elif str(qc.get('version') or '').startswith(('0.5.14','0.6.0','0.6.1','0.6.2','0.6.3','0.6.4','0.6.5','0.6.6')) and not evidence:
                 issues.append('QUALITY_EVIDENCE_MISSING:'+str(key))
     fidelity=str(qc.get('product_fidelity') or '').upper()
-    if fidelity=='LOCKED_PIXEL':
+    if fidelity in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}:
         identity_status,_identity_evidence=_quality_obs_state(obs.get('product_identity_preserved'))
         if identity_status not in {'PASS','PASSED','CONFIRMED','MET'}:
             issues.append('LOCKED_PIXEL_IDENTITY_NOT_CONFIRMED')

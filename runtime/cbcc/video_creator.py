@@ -32,7 +32,7 @@ def build_video_creator_plan(project_id:str, content_objects:list[dict[str,Any]]
             # Timing is dynamic by role; not a fixed 3-card visual template. Each beat has a production job.
             shots=[
               {'shot':'NATIVE_HOOK','seconds':round(dur*0.18,2),'job':f'Open on a concrete tension/action/question: {q}','visual':'Show the decision situation before explanatory copy; no generic title card.'},
-              {'shot':'PRODUCT_OR_ACTION_REVEAL','seconds':round(dur*0.24,2),'job':'Introduce the real product in the action/evidence relationship.','visual':source.get('visual_expression_variant') or source.get('visual_production_signature')},
+              {'shot':'PRODUCT_OR_ACTION_REVEAL','seconds':round(dur*0.24,2),'job':'Introduce the product/reference subject in the action/evidence relationship using the selected fidelity policy.','visual':source.get('visual_expression_variant') or source.get('visual_production_signature')},
               {'shot':'PROOF_DEMO','seconds':round(dur*0.34,2),'job':f'Make the decision answer visible: {proof}','visual':'Use mechanism, scale, fit, use or proof appropriate to the decision intent; do not substitute generic B-roll.'},
               {'shot':'BELIEF_CLOSE','seconds':round(dur*0.14,2),'job':f'Land the target belief: {source.get("belief_target") or proof}','visual':'Hold the evidence long enough to understand; locked copy labels what is visible.'},
               {'shot':'CTA_HANDOFF','seconds':round(dur*0.10,2),'job':'Hand off to the correct commerce action/surface.','visual':'CTA is subordinate to product truth and the resolved decision.'}
@@ -41,7 +41,7 @@ def build_video_creator_plan(project_id:str, content_objects:list[dict[str,Any]]
         creator_contract=None
         if family=='CREATOR_AFFILIATE':
             creator_contract={
-              'voice':'first-person natural demonstration, not corporate ad read','opening':'specific problem/use context in first seconds','product_handling':'realistic handling and scale; preserve pack identity','proof':'show, then explain; do not claim beyond approved evidence','cta':'native recommendation / shop action after proof','rights_fields':['creator_usage_rights','paid_usage_rights','whitelisting_spark_ads_authorization','usage_term','territory']
+              'voice':'first-person natural demonstration, not corporate ad read','opening':'specific problem/use context in first seconds','product_handling':'match the chosen creator/visual medium and product-reference policy; exact pack pixels only when explicitly locked','proof':'show, then explain; do not claim beyond approved evidence','cta':'native recommendation / shop action after proof','rights_fields':['creator_usage_rights','paid_usage_rights','whitelisting_spark_ads_authorization','usage_term','territory']
             }
         live_contract=None
         if family=='LIVE':
@@ -297,11 +297,13 @@ def enrich_video_plan_with_strategy(plan:dict[str,Any], strategy_authority:dict[
         render_thesis=_vrender_safe(v.get('creative_thesis'))
         render_inclusive=_vrender_safe(inclusive)
         render_culture=_vrender_safe((culture or {}).get('visual_implications') or [])
+        locked_source=any(bool(x.get('pixel_lock')) or str(x.get('fidelity_mode') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} for x in (source_product_assets or []) if isinstance(x,dict))
+        product_reference_rule=('Explicit locked-source mode: preserve the supplied product master as an immutable source layer; do not redraw that layer.' if locked_source else 'Reference-guided mode: supplied product/source files guide design and identity cues; redraw, rerender, stylize, illustrate or recompose as the selected direction requires. Do not present creative changes as verified product facts.')
         master={
           'creative_thesis':render_thesis,'camera':camera,'lighting':lighting,'cmf':cmf,
           'material_response':{'material':material.get('material'),'finish':material.get('finish'),'surface_behavior':material.get('surface_behavior'),'prelight_plan':material.get('prelight_plan'),'lighting_diagram':material.get('lighting_diagram'),'exposure_ratio_plan':material.get('exposure_ratio_plan'),'polarization_plan':material.get('polarization_plan'),'color_consistency_plan':material.get('color_consistency_plan')},
           'inclusive_photography':render_inclusive,'culture_visual':render_culture,
-          'product_identity':{'source_product_assets':list(source_product_assets or []),'rule':'Use supplied real product masters/references as identity authority. Do not redraw packaging, logo, printed copy, geometry, proportions or product color.'}
+          'product_identity':{'source_product_assets':list(source_product_assets or []),'mode':'LOCKED_SOURCE_COMPOSITE' if locked_source else 'REFERENCE_GUIDED','rule':product_reference_rule}
         }
         enriched=[]
         for shot in v.get('shots') or []:
@@ -319,7 +321,7 @@ def enrich_video_plan_with_strategy(plan:dict[str,Any], strategy_authority:dict[
           '', '[MASTER CAMERA / LIGHT / CMF]',
           f"Camera: {_vtxt(prompt_camera)}", f"Lighting: {_vtxt(prompt_lighting)}", f"CMF: {_vtxt(prompt_cmf)}", f"Material response: {_vtxt(prompt_material)}",
           f"Inclusive human photography: {_vtxt(prompt_inclusive)}", f"Cultural visual constraints: {_vtxt(master['culture_visual'])}",
-          '', '[PRODUCT IDENTITY]', master['product_identity']['rule'], 'Use the real product master/reference images supplied with this task as the sole visual identity authority.',
+          '', '[PRODUCT REFERENCE / FIDELITY]', master['product_identity']['rule'],
           '', '[SHOT PROGRAM]'
         ]
         for idx,s in enumerate(enriched,1):
@@ -327,13 +329,13 @@ def enrich_video_plan_with_strategy(plan:dict[str,Any], strategy_authority:dict[
         lines += ['', '[TEXT / AUDIO BOUNDARY]','Do not ask the video model to invent or retype packaging/final marketing copy. Keep subtitle/label safe zones clear; exact copy and subtitles are composited from the approved copy contract. Use only licensed/original/platform-commercial-use audio.', '', '[DO NOT GENERATE]','No unsupported efficacy, ingredients, tests, certifications, before/after, body results, package text, physical effects or generic B-roll that is unrelated to the decision job.']
         v['canonical_video_prompt_en']='\n'.join(lines)+'\n'
         v['canonical_video_prompt_cn']='\n'.join([
-          '【视频生成目标】',f"创意母命题：{_vtxt(_vcn(render_thesis))}",f"原生开场：{_vtxt(_vcn(v.get('hook')))}",'','【主摄影 / 灯光 / CMF】',f"摄影机：{_vtxt(_vcn(prompt_camera))}",f"灯光：{_vtxt(_vcn(prompt_lighting))}",f"CMF：{_vtxt(_vcn(prompt_cmf))}",f"材质响应：{_vtxt(_vcn(prompt_material))}",f"包容性人物摄影：{_vtxt(_vcn(prompt_inclusive))}",f"文化视觉约束：{_vtxt(_vcn(master['culture_visual']))}",'','【商品身份】',_vtxt(_vcn(master['product_identity']['rule'])),'使用本次随任务提供的真实商品母版 / 参考图作为唯一商品身份视觉依据。','','【分镜程序】'] + [line for idx,s in enumerate(enriched,1) for line in [f"镜头 {idx} · {_vcn(s.get('shot'))} · {s.get('seconds')}s",f"动作 / 任务：{_vtxt(_vcn(_vrender_safe(s.get('job'))))}",f"画面：{_vtxt(_vcn(_vrender_safe(s.get('visual'))))}",'连续性：继承上方主摄影 / 灯光 / CMF / 材质 / 包容性人物合同；仅根据本镜头任务改变必要的景别、运动和画面动作。']] + ['','【文字 / 音频边界】','不要让视频模型重写包装文字或最终营销文案；为字幕/标签预留安全区，精确文字从已批准 Copy 后期合成。仅使用原创、已授权或平台可商用音频。','','【禁止生成】','不得编造功效、成分、检测、认证、before/after、人体结果、包装文字、物理效果或与购买任务无关的通用 B-roll。'])+'\n'
+          '【视频生成目标】',f"创意母命题：{_vtxt(_vcn(render_thesis))}",f"原生开场：{_vtxt(_vcn(v.get('hook')))}",'','【主摄影 / 灯光 / CMF】',f"摄影机：{_vtxt(_vcn(prompt_camera))}",f"灯光：{_vtxt(_vcn(prompt_lighting))}",f"CMF：{_vtxt(_vcn(prompt_cmf))}",f"材质响应：{_vtxt(_vcn(prompt_material))}",f"包容性人物摄影：{_vtxt(_vcn(prompt_inclusive))}",f"文化视觉约束：{_vtxt(_vcn(master['culture_visual']))}",'','【产品参考 / 保真策略】',_vtxt(_vcn(master['product_identity']['rule'])),'','【分镜程序】'] + [line for idx,s in enumerate(enriched,1) for line in [f"镜头 {idx} · {_vcn(s.get('shot'))} · {s.get('seconds')}s",f"动作 / 任务：{_vtxt(_vcn(_vrender_safe(s.get('job'))))}",f"画面：{_vtxt(_vcn(_vrender_safe(s.get('visual'))))}",'连续性：继承上方主摄影 / 灯光 / CMF / 材质 / 包容性人物合同；仅根据本镜头任务改变必要的景别、运动和画面动作。']] + ['','【文字 / 音频边界】','不要让视频模型重写包装文字或最终营销文案；为字幕/标签预留安全区，精确文字从已批准 Copy 后期合成。仅使用原创、已授权或平台可商用音频。','','【禁止生成】','不得编造功效、成分、检测、认证、before/after、人体结果、包装文字、物理效果或与购买任务无关的通用 B-roll。'])+'\n'
         v['parameter_trace']=[
           {'parameter':'camera','source':'Strategy §5 asset/master photography','target':'visual_render_contract + every shot render_contract'},
           {'parameter':'lighting/CCT/ratio/prelight/polarization','source':'Strategy §5 material-lighting profile','target':'visual_render_contract + every shot render_contract'},
           {'parameter':'CMF/material/color consistency','source':'Strategy §5 CMF','target':'sequence continuity'},
           {'parameter':'inclusive photography/culture','source':'Strategy §3/5/8','target':'human shots'},
-          {'parameter':'product identity masters','source':'Product Truth / source assets','target':'all product shots'},
+          {'parameter':'product reference / fidelity policy','source':'Product Truth / source assets','target':'all product shots'},
         ]
         rows.append(v)
     out['assets']=rows; out['strategy_visual_binding']='BOUND_V065' if rows else 'NOT_REQUIRED'

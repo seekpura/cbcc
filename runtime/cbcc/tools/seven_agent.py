@@ -64,7 +64,11 @@ def product_image_tool(*, project_id:str, product_truth:dict[str,Any], product:d
     anchors=compile_creative_anchor_plan(council,creative_arch,pvi,cmf=cmf_contract)
     prompts=[]
     for a in creative_arch.get('assets',[]):
-        prompts.append({'asset_id':a.get('asset_id'),'prompt_contract':compile_asset_prompt(a,product,target,culture,language_contract,photography=photography,strategy_authority=strategy_authority,source_product_assets=source_product_assets)})
+        try:
+            pc=compile_asset_prompt(a,product,target,culture,language_contract,photography=photography,strategy_authority=strategy_authority,source_product_assets=source_product_assets)
+        except Exception as exc:
+            pc={'status':'OPTIONAL_PROMPT_NOT_READY','project_completion_blocking':False,'error':str(exc)}
+        prompts.append({'asset_id':a.get('asset_id'),'prompt_contract':pc})
     result={'product_visual_intelligence':pvi,'curation':curation,'creative_opportunity_universe':opp,'creative_council':council,'creative_anchor_plan':anchors,'inclusive_photography':inclusive,'dynamic_asset_architecture':creative_arch,'asset_prompt_contracts':prompts,'fixed_image_count':False,'principle':'资产数量来自购买问题/Surface/证据/信息增量；不复制参考项目固定9图。'}
     return _contract('04_PRODUCT_IMAGE',locals(),result,['PRODUCTION_PROVIDER','06_ADVERTISING_OPTIMIZATION','07_REVIEW_ANALYSIS'],'图像工具从商品视觉真源到逐资产生产合同完整闭环，而不是尺寸检查器。')
 
@@ -76,14 +80,14 @@ def product_video_tool(*, project_id:str, content_objects:list[dict[str,Any]], s
     if strategy_authority:
         plan=enrich_video_plan_with_strategy(plan,strategy_authority,source_product_assets=source_product_assets,culture=culture)
     else:
-        plan['strategy_visual_binding']='HOLD_STRATEGY_AUTHORITY_REQUIRED_FOR_FULL_RENDER_CONTRACT'
+        plan['strategy_visual_binding']='ADVISORY_STRATEGY_AUTHORITY_NOT_SUPPLIED'
     p=platform_context or {}
     for v in plan.get('assets',[]):
         v['cover_first_frame_contract']='First frame/cover must preserve product/category identity and one native hook; exact platform rule is 待查证 unless supplied in platform context.'
         v['subtitle_contract']={'locales':v.get('subtitle_locales'),'safe_area':'keep decision-critical product/action evidence unobstructed','native_review':'required for primary market copy'}
         v['music_rights_contract']='Original audio, licensed audio or platform commercial-use library only; unknown rights = HOLD/待查证.'
         v['voiceover_prompt']=f"Natural {v.get('voice_locale') or 'target-locale'} voice; communicate {v.get('shopper_question')} without exceeding approved claims."
-        v['ai_video_prompt']='Use the shot-by-shot visual jobs, real product identity contract and locked copy. Do not let the video model redraw packaging or invent proof.'
+        v['ai_video_prompt']='Use the shot-by-shot visual jobs and selected product-reference/fidelity policy. Source files are design references by default; redraw/rerender/stylization is allowed unless an explicit locked-source mode is selected. Never invent product facts or proof.'
         v['landing_handoff']=p.get('landing_handoff') or 'CTA → target PDP/Shop/Live/landing; offer and message must remain continuous.'
         v['attribution']=p.get('attribution') or 'Preserve campaign/ad/creator/video/landing IDs; use UTM where supported.'
     return _contract('05_PRODUCT_VIDEO',locals(),plan,['PRODUCTION_PROVIDER','06_ADVERTISING_OPTIMIZATION','07_REVIEW_ANALYSIS'],'视频工具覆盖脚本、分镜、AI视频提示、VO/字幕、封面、版权和落地归因，不是单纯时长计算。')

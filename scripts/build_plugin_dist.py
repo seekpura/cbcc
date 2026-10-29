@@ -18,7 +18,7 @@ EXCLUDE_PARTS = {'.git', '.github', '.pytest_cache', '__pycache__', 'dist', 'evi
 EXCLUDE_SUFFIXES = {'.pyc', '.pyo'}
 
 DEFAULT_PROMPTS = [
-    '基于当前对话、上传资料和必要的最新公开信息，完成当前商品的跨境电商策略、Listing、内容、视觉策展与逐资产中英文 Canonical Prompt。该请求属于 FULL 商品项目：必须执行九域决策深度合同、Prompt 参数消费审计，并物化完整中文优先 index.html + 可编辑源 + 逐资产包 + ZIP。九域是完整度合同，不是固定页面模板；不得用自定义短报告替代。 人类交付以中文为基础语言；Listing 字段标题中文在前，平台原始 key 仅作次级技术标识；所有英文/马来文/阿语等目标市场外文 Listing、内容与资产可见文案必须在同一对象提供中文释义/用途；英文/目标模型 Prompt 必须与中文 Canonical Prompt 成对。',
+    '基于当前对话、上传资料和必要的最新公开信息，完成当前商品的跨境电商策略、Listing、内容、视觉策展与逐资产中英文 Canonical Prompt。该请求属于 FULL 商品项目：必须执行九域决策深度合同、Prompt/生产参数连续性审计（生产准备度不阻断项目），并物化完整中文优先 index.html + 可编辑源 + 逐资产包 + ZIP。九域是完整度合同，不是固定页面模板；不得用自定义短报告替代。 人类交付以中文为基础语言；Listing 字段标题中文在前，平台原始 key 仅作次级技术标识；所有英文/马来文/阿语等目标市场外文 Listing、内容与资产可见文案必须在同一对象提供中文释义/用途；英文/目标模型 Prompt 必须与中文 Canonical Prompt 成对。',
     '只做当前 SKU 的目标市场/平台视觉资产策展和逐资产生产提示词，本轮不生成图片；先建立商品真源、购买决策、创意机会和动态 Surface，并确保摄影/CMF/构图参数进入最终 Prompt。',
     '审查当前营销策划或提示词，定位写了但未被生产链消费、同风格同布局、产品失真、平台不原生或文案与画面脱节的责任层，只修对应层。',
 ]
@@ -126,16 +126,22 @@ description: 用于跨境电商 Product Truth、动态研究、SKU/Offer、Listi
 ### Canonical Prompt 语义压缩 / 能力不压缩
 逐资产 Prompt 可以比旧版更短，但只允许删除重复话术、内部 ID/RACE/KPI、与当前资产无关的 toolbox 字段。凡是已经被上游选择且会改变最终像素、摄影、合成或后期结果的决定，必须进入 Canonical Prompt 或明确绑定的 deterministic production instruction，包括适用的构图、产品占比/留白、镜头/视角、灯光、CMF、色彩管理、人物/肤色曝光、反光板/柔光、Product Fidelity、锁定文案区域与 editable/frozen layers。
 
-每个激活资产完成前必须形成 **Prompt Consumption Audit**：`selected execution decisions → projected decisions → missing decisions`。missing 必须为 0 才能声称 Prompt 完成。人物/手/身体关系资产必须把包容性摄影 P0 变成可执行语言，不能只在总策划里出现。
+当当前任务需要 Prompt/生图/Provider 执行时，形成 **Prompt Consumption Audit**：`selected execution decisions → projected decisions → missing decisions`。它是生产准备度诊断，不是项目/资产完整度的全局阻断 Gate；missing 可以标记 `NEEDS_PROMPT_WORK`。人物/手/身体关系资产必须执行包容性表征；真实摄影路线再消费测光、Prelight、柔光等摄影参数。
 
 完整交付至少包含：
 - `index.html`：自包含、离线可打开、中文优先的 SaaS 式人类工作台；完整人类内容必须能在 HTML 中阅读。
 - `00_PROJECT_HUB.md` 与 `HUMAN_DELIVERY.json`；Listing 在当前范围时包含 `01_LISTING_UPLOAD_READY.md`。
 - `strategy/`：当前策略权威与可编辑源。
-- `asset_packages/`：逐资产独立包，保留中文 Canonical Prompt、英文/目标模型 Prompt、Design Card、Photography/CMF/Composition、Product Fidelity、Copy、Parameter Trace、QA/来源等当前资产实际需要的对象。
+- `asset_packages/`：逐资产独立对象包，至少保留中文人类设计卡、策略、视觉/版式、Copy、来源/QA 与当前实际需要的执行对象；Canonical Prompt、生图指导、摄影合同等属于可选生产附件，缺失或未就绪不得让资产本身变成不完整。
 - `DELIVERY_MANIFEST.json` 与最终 ZIP。
 
 若当前宿主能执行 CBCC Runtime，使用 `delivery_export`/`cbcc export`。若 Runtime 未连接但宿主具有原生文件或 Artifact 生成能力，必须使用宿主能力生成等价交付，不得因为 Runtime 未部署就退化成聊天报告。**源码被打包在 resources 中不等于交付已经发生。**
+
+## Product Reference / Production Authority
+- 用户提供的产品图/包装图/源文件默认作为**设计参考**，不是像素级锁定层；默认允许重绘、重渲染、3D、插画化、风格化、重新构图或合成，不默认强求摄影写实。
+- 只有用户/任务明确要求锁定原图/真实产品合成时才启用 `LOCKED_SOURCE_COMPOSITE / LOCKED_PIXEL`，且只约束对应生产子任务。
+- Prompt、生图方案、摄影/灯光/Prelight 是能力与生产准备度，不是项目或资产完整度的全局 Gate。
+- 七大第一类工具与其他已集成参考能力必须保持可调用、可消费、可追踪；按任务相关性激活，不变成固定七步流水线。
 
 ## 人类工作区合同
 - **中文是默认的人类交付基础语言**。策略、解释、WHY、风险、摄影策划、UI 与字段标题优先中文；用户明确要求其他交付语言时才覆盖。
