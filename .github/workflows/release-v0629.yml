@@ -89,6 +89,9 @@ jobs:
           grep -q 'HUMAN_LANGUAGE_AUDIT.json' runtime/cbcc/delivery_export.py
           grep -q 'FOREIGN_ASSET_COPY_WITHOUT_CN_COMPANION' runtime/cbcc/human_language_delivery.py
           grep -q 'FOREIGN_LISTING_COPY_WITHOUT_CN_COMPANION' runtime/cbcc/human_language_delivery.py
+          grep -q 'Listing 人类字段标题必须中文在前' scripts/build_plugin_dist.py
+          grep -q '所有英文/马来文/阿语等目标市场外文' scripts/build_plugin_dist.py
+          grep -q '宿主原生 Artifact 交付也必须执行同等检查' scripts/build_plugin_dist.py
 
       - name: Human delivery authority and workspace semantics
         env:
@@ -146,8 +149,10 @@ jobs:
           p=Path('dist/cross-border-commerce-creative-plugin-v0.6.29.zip')
           with zipfile.ZipFile(p) as z:
               names=set(z.namelist())
-              root='cross-border-commerce-creative/skills/cross-border-commerce-creative/resources/'
+              skill_root='cross-border-commerce-creative/skills/cross-border-commerce-creative/'
+              root=skill_root+'resources/'
               required=[
+                  skill_root+'SKILL.md',
                   root+'SKILL.md',
                   root+'references/FINAL_OUTPUT_CONTRACT.md',
                   root+'runtime/cbcc/delivery_export.py',
@@ -167,6 +172,7 @@ jobs:
               ]
               missing=[x for x in required if x not in names]
               assert not missing, missing
+              wrapper=z.read(skill_root+'SKILL.md').decode('utf-8')
               skill=z.read(root+'SKILL.md').decode('utf-8')
               final_contract=z.read(root+'references/FINAL_OUTPUT_CONTRACT.md').decode('utf-8')
               export=z.read(root+'runtime/cbcc/delivery_export.py').decode('utf-8')
@@ -175,6 +181,9 @@ jobs:
               assert 'FULL vs TASK_SCOPED Delivery Authority' in skill
               assert 'FULL Decision-Depth + Prompt Execution Continuity' in skill
               assert 'C 级证据不得形成硬宣称' in skill
+              assert 'Listing 人类字段标题必须中文在前' in wrapper
+              assert '任何英文/马来文/阿语等目标市场外文内容' in wrapper
+              assert '宿主原生 Artifact 交付也必须执行同等检查' in wrapper
               assert '人类语言交付 Gate' in final_contract
               assert 'HUMAN_LANGUAGE_AUDIT.json' in export
               assert 'FOREIGN_ASSET_COPY_WITHOUT_CN_COMPANION' in language
@@ -183,7 +192,7 @@ jobs:
               assert 'PROMPT_CONSUMPTION_AUDIT.json' in export
               assert '_prompt_consumption_audit' in prompt
               assert 'CANONICAL_PROMPT_COMPILED_EXECUTION_PRESERVING' in prompt
-          print('packaged delivery + FULL depth + prompt continuity + Chinese-base human language authority PASS')
+          print('packaged delivery + FULL depth + prompt continuity + Chinese-base host/runtime language authority PASS')
           PY
 
       - name: Write SHA256 sums
