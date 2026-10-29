@@ -1,0 +1,56 @@
+name: Apply v0.6.30 Release Metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0630-release-metadata.yml'
+      - 'scripts/apply_v0630_release_metadata.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-release-metadata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply v0.6.30 release metadata
+        run: python scripts/apply_v0630_release_metadata.py
+
+      - name: Verify migrated active metadata
+        run: |
+          test "$(cat VERSION)" = "0.6.30-agent-art-direction-authority"
+          grep -q '^version: 0.6.30-agent-art-direction-authority$' SKILL.md
+          grep -q "runtime_version']='0.6.30-agent-art-direction-authority'" runtime/cbcc/compiler.py
+          grep -q 'Agent Creative Authority' scripts/build_plugin_dist.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('prompts/registry.json').read_text(encoding='utf-8'))
+          assert d['version']=='0.6.30-agent-art-direction-authority'
+          text=Path('.github/workflows/release-v0629.yml').read_text(encoding='utf-8')
+          assert 'historical release acceptance (manual)' in text
+          head=text.split('permissions:',1)[0]
+          assert '  push:' not in head
+          assert 'workflow_dispatch:' in head
+          print('v0.6.30 active metadata migration PASS')
+          PY
+
+      - name: Commit release metadata when changed
+        run: |
+          if git diff --quiet; then
+            echo 'No release metadata change required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add VERSION SKILL.md runtime/cbcc/compiler.py prompts/registry.json scripts/build_plugin_dist.py .github/workflows/release-v0629.yml
+          git commit -m 'release: promote agent art direction authority to v0.6.30'
+          git push
