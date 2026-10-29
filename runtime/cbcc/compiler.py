@@ -93,7 +93,7 @@ def _normalize_source_product_assets(records, resolution_roots):
         requested_fidelity=str(r.get('fidelity_mode') or r.get('product_fidelity') or '').upper()
         exact_pixel=bool(r.get('exact_pixel_layer') is True or r.get('exact_pixel_composite') is True or requested_fidelity in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'})
         identity_lock=bool(r.get('pixel_lock',False) or r.get('lock_real_product',False) or requested_fidelity in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE'})
-        fidelity_mode='EXACT_PIXEL_COMPOSITE' if exact_pixel else ('REFERENCE_GUIDED_NATIVE_LOCK' if identity_lock or not requested_fidelity else requested_fidelity)
+        fidelity_mode='EXACT_PIXEL_COMPOSITE' if exact_pixel else ('REFERENCE_GUIDED_NATIVE_LOCK' if identity_lock else (requested_fidelity or 'REFERENCE_GUIDED'))
         if fidelity_mode in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}:
             fidelity_mode='REFERENCE_GUIDED_NATIVE_LOCK'
         out.append({
@@ -104,10 +104,10 @@ def _normalize_source_product_assets(records, resolution_roots):
             'sha256':actual_hash or declared_hash,
             'ingest_status':status,
             'pixel_lock':exact_pixel,
-            'identity_lock':identity_lock or not exact_pixel,
+            'identity_lock':bool(identity_lock or fidelity_mode=='REFERENCE_GUIDED_NATIVE_LOCK'),
             'fidelity_mode':fidelity_mode,
-            'source_usage':r.get('source_usage') or ('EXACT_PIXEL_SOURCE_LAYER' if exact_pixel else 'MODEL_REFERENCE_INPUT'),
-            'allowed_transforms':r.get('allowed_transforms') or (['PROPORTIONAL_SCALE','PLACEMENT','MASK_OR_CROP','COMPOSITE'] if exact_pixel else ['REFERENCE_INPUT','NATIVE_RENDER','CAMERA_MATCH','PERSPECTIVE_MATCH','LIGHTING_MATCH','DEPTH_MATCH']),
+            'source_usage':r.get('source_usage') or ('EXACT_PIXEL_SOURCE_LAYER' if exact_pixel else ('MODEL_REFERENCE_INPUT' if fidelity_mode=='REFERENCE_GUIDED_NATIVE_LOCK' else 'DESIGN_REFERENCE')),
+            'allowed_transforms':r.get('allowed_transforms') or (['PROPORTIONAL_SCALE','PLACEMENT','MASK_OR_CROP','COMPOSITE'] if exact_pixel else (['REFERENCE_INPUT','NATIVE_RENDER','CAMERA_MATCH','PERSPECTIVE_MATCH','LIGHTING_MATCH','DEPTH_MATCH'] if fidelity_mode=='REFERENCE_GUIDED_NATIVE_LOCK' else ['REFERENCE','REDRAW','RERENDER','RESTYLE','RECOMPOSE','PROPORTIONAL_SCALE','PLACEMENT','MASK_OR_CROP','COMPOSITE'])),
             'identity_features':r.get('identity_features') or ['package_geometry','package_proportions','logo','brand_wording','label_layout','recognizable_pack_print','product_color_identity','material_appearance'],
             'note':r.get('note'),
         })

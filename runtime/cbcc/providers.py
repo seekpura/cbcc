@@ -17,6 +17,8 @@ DEFAULT_PROVIDER_BY_MODE={
     'AI_REFERENCE_HUMAN_PRODUCT':'AI_IMAGE_PROVIDER',
     'AI_REFERENCE_PRODUCT':'AI_IMAGE_PROVIDER',
     'AI_REFERENCE_HUMAN_PRODUCT':'AI_IMAGE_PROVIDER',
+    'AI_REFERENCE_PRODUCT':'AI_IMAGE_PROVIDER',
+    'AI_REFERENCE_HUMAN_PRODUCT':'AI_IMAGE_PROVIDER',
     'GRAPHIC_DESIGN':'HUMAN_OR_DESIGN_PROVIDER',
     'THREE_D':'CG_3D_PROVIDER',
     'VIDEO':'VIDEO_PROVIDER',
@@ -44,7 +46,7 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
     fidelity=asset.get('product_fidelity')
     fidelity_u=str(fidelity or '').upper()
     exact_pixel=fidelity_u in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
-    native_reference=fidelity_u in {'REFERENCE_GUIDED','REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} or mode in {'AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'}
+    native_reference=fidelity_u in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} or mode in {'AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'}
     if exact_pixel and spec.get('locked_pixel') in {'NOT_APPLICABLE','REFERENCE_ONLY','REFERENCE_INPUT_SUPPORTED'}:
         errors.append('EXACT_PIXEL_PROVIDER_MISMATCH')
     required_inputs=['asset_manifest','strategy','visual_spec','source_trace','layout_contract','surface_production_contract','design_card','canonical_prompt_contract','renderer_recipe']

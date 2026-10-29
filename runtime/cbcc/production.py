@@ -103,7 +103,7 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
     source_by_id={str(x.get('asset_id')):x for x in manifest.get('source_product_assets') or [] if isinstance(x,dict) and x.get('asset_id')}
     sources=[source_by_id[str(aid)] for aid in source_ids if str(aid) in source_by_id]
     exact_pixel=fidelity in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
-    native_reference=fidelity in {'REFERENCE_GUIDED','REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} or mode in _NATIVE_REFERENCE_MODES
+    native_reference=fidelity in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} or mode in _NATIVE_REFERENCE_MODES
     real_product_required=(exact_pixel or native_reference or mode in _REAL_PRODUCT_MODES) and mode not in {'DOCUMENTATION'}
     preflight_errors=[]
     if real_product_required and not sources:
@@ -185,7 +185,7 @@ def _quality_result_issues(row:dict[str,Any], result:dict[str,Any])->list[str]:
                 issues.append('QUALITY_EVIDENCE_MISSING:'+str(key))
     fidelity=str(qc.get('product_fidelity') or '').upper()
     exact_pixel=fidelity in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
-    native_reference=fidelity in {'REFERENCE_GUIDED','REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
+    native_reference=fidelity in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
     if native_reference and not exact_pixel:
         identity_status,_identity_evidence=_quality_obs_state(obs.get('product_identity_preserved'))
         if identity_status not in {'PASS','PASSED','CONFIRMED','MET'}:

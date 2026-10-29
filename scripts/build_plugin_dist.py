@@ -113,6 +113,11 @@ FULL 视觉/视频资产必须由 Agent 完成可执行 Art Direction 并闭环�
 
 当 Product Presence 要求真实商品可见时，真实商品图默认作为强模型 Reference Input，使用 `REFERENCE_GUIDED_NATIVE_LOCK` 原生生成完整最终画面中的商品，并保持真实商品身份；`EXACT_PIXEL_COMPOSITE` 仅在用户明确要求源图像素层不可改变时启用。
 
+## Dynamic Asset Universe + Native Product Reference
+资产总量由购买决策、Surface、创意假设、测试与运营需求决定，不受平台 Gallery 槽位总数限制。Hero、卖点、广告、A+/PDP/详情、Store/Banner、Social/Creator、Video 等均可存在多方案；同一消费者问题和同一 Surface 也允许 H01/H02/H03 等显式 Variant，不得因为 question/surface/family 相同而合并。人类工作区区分上线候选、测试池、轮换池、广告、PDP/A+详情、归档与其他资产。
+
+当 Product Presence 要求真实商品可见时，真实商品图默认作为强模型 Reference Input，使用 `REFERENCE_GUIDED_NATIVE_LOCK` 原生生成完整最终画面中的商品，并保持真实商品身份；`EXACT_PIXEL_COMPOSITE` 仅在用户明确要求源图像素层不可改变时启用。
+
 ## Model-Native Prompt Contract
 逐资产生产必须分离 Model Prompt CN、Model Prompt EN、Visible Copy Block 与 Production / Assembly Notes。英文 Model Prompt 的执行说明保持英文，目标市场原文可准确保留，中文释义放在人类交付/Copy Block；不要把 deterministic typography、renderer layer、machine contract、audit/provenance 等 Runtime 工程词塞进模型 Prompt。文字由模型直接生成还是后期装配由 Agent/生产路线显式决定，不做全局默认。FULL 交付不得为缩短篇幅而压扁 Visual Master、内容矩阵或逐资产 Art Direction。
 
