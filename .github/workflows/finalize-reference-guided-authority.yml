@@ -1,0 +1,46 @@
+name: Finalize reference-guided authority and capability continuity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finalize-reference-guided-authority.yml'
+      - 'scripts/finalize_reference_guided_authority.py'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ github.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply final authority repair
+        run: python scripts/finalize_reference_guided_authority.py
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+      - name: Validate reference-guided + seven tools + broader capability continuity
+        env:
+          PYTHONPATH: runtime
+        run: |
+          python -m py_compile runtime/cbcc/providers.py runtime/cbcc/production.py runtime/cbcc/video_creator.py runtime/cbcc/tools/seven_agent.py scripts/build_plugin_dist.py
+          pytest -q \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
+            tests/test_reference_guided_video_provider_authority.py \
+            tests/test_v060_capability_complete_rebase.py \
+            tests/test_v0511_integration_quality_depth.py \
+            tests/test_capability_contracts.py
+          python tests/run_toolkit_smoke.py
+      - name: Commit final authority
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add SKILL.md scripts/build_plugin_dist.py runtime/cbcc/providers.py runtime/cbcc/production.py runtime/cbcc/video_creator.py runtime/cbcc/tools/seven_agent.py tests/test_reference_guided_video_provider_authority.py
+          git commit -m 'fix: make reference-guided production authority explicit and nonblocking'
+          git push origin HEAD:main
