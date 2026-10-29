@@ -59,9 +59,12 @@ def main() -> int:
     runtime = skill_root / 'resources' / 'runtime' / 'cbcc'
     required = {
         'commerce_decision_context.py': ['compile_commerce_decision_context', 'bind_asset_decision_lineage', 'source_artifact'],
+        'commercial_context_compatibility.py': ['market_price_bands', 'market_price_valleys', 'offer_bundle_discount_boundary'],
         'commercial_continuity_authority.py': ['wrap_compile_seven_agent_synthesis', 'wrap_compile_asset_prompt', 'COMMERCE DECISION CONTEXT'],
-        'commercial_intelligence_workspace.py': ['commercial-intelligence', '市场 / 区域 / 人群', '价格 / 经济模型 / Offer'],
-        'commercial_delivery_continuity.py': ['materialize_commerce_decision_context', 'wrap_build_delivery_html', 'data-route="commerce"'],
+        'commercial_continuity_bootstrap.py': ['MODEL_PROMPT_NEEDS_COMMERCIAL_DECISION_CONSUMPTION', 'generation_blocking', 'wrap_human_asset_design_card'],
+        'human_asset_commercial_projection.py': ['上游商业决策与血缘', '来源血缘', '摄影/灯光/CMF'],
+        'commercial_intelligence_workspace.py': ['commercial-intelligence', '市场 / 区域 / 人群', '价格 / 经济模型 / Offer', 'BE ROAS', 'Decision Lineage / Evidence'],
+        'commercial_delivery_continuity.py': ['materialize_commerce_decision_context', 'wrap_build_delivery_html', 'data-route="commerce"', '_install_commercial_continuity'],
         '__init__.py': ['commercial_continuity_authority', 'commercial_delivery_continuity', 'wrap_compile_seven_agent_synthesis'],
     }
     for name, needles in required.items():
