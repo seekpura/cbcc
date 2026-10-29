@@ -108,9 +108,9 @@ def _copy_render_mode(asset: Mapping[str, Any], art: Mapping[str, Any], copy_blo
         return str(explicit).upper()
     if not _meaningful(copy_block.get('target_market_copy')) and not _meaningful(copy_block.get('secondary_copy')):
         return 'NO_VISIBLE_COPY'
-    # Choosing whether exact copy is rendered by the model or composed later is a production decision.
-    # Runtime does not silently choose POST_COMPOSITE for every asset/provider.
-    return 'UNRESOLVED_AGENT_DECISION'
+    # v0.6.37: normal production choices are resolved autonomously. Integrated native
+    # rendering is the default for visible market copy; POST_COMPOSITE remains explicit-only.
+    return 'MODEL_RENDER'
 
 
 def _presence_text(card: Mapping[str, Any], language: str) -> str:

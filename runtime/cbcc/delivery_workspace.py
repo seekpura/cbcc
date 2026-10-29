@@ -5,6 +5,7 @@ import html
 import json
 
 from .delivery_html import build_delivery_html as _build_legacy_delivery_html
+from .operator_delivery_html import inject_operator_execution
 
 
 _OBJECT_WORKSPACE_CSS = r'''
@@ -121,6 +122,7 @@ def build_delivery_html(package_dir: Path, output: Path | None = None, title: st
     result = _build_legacy_delivery_html(package_dir, output, title=title)
     text = result.read_text(encoding='utf-8')
     text = _transform_to_object_workspace(text)
+    text = inject_operator_execution(text, package_dir)
     text = _inject_commercial_brain(text, package_dir)
     result.write_text(text, encoding='utf-8')
     return result

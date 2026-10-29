@@ -1,5 +1,5 @@
 {
-  "version": "0.6.32-production-parameter-closure",
+  "version": "0.6.37-commercial-operator-density",
   "prompts": [
     {
       "id": "PROMPT-MASTER-STRATEGY",
@@ -225,6 +225,21 @@
       "id": "PROMPT-SEVEN-TOOLS",
       "path": "seven_agent_orchestration.md",
       "purpose": "First-class closed-loop orchestration of Market/Product/Listing/Image/Video/Ads/Review tools."
+    },
+    {
+      "id": "PROMPT-COMMERCIAL-INTEGRATED-VISUAL",
+      "path": "commercial_visual_generation_authority.md",
+      "purpose": "Default integrated native commercial image authority: product/copy/layout/scene/evidence/photography/materials + output QA; restrictions are explicit exceptions."
+    },
+    {
+      "id": "PROMPT-COMMERCIAL-VIDEO",
+      "path": "commercial_video_generation_authority.md",
+      "purpose": "Dynamic commercial video narrative, shot/action/motion/copy/audio/cover/testing production authority without a fixed five-beat template."
+    },
+    {
+      "id": "PROMPT-OPERATOR-EXECUTION-DENSITY",
+      "path": "operator_execution_density.md",
+      "purpose": "Convert all first-class tool outputs into Chinese-first, directly executable operator objects and business release states."
     }
   ]
 }
