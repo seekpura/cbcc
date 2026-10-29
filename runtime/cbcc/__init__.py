@@ -12,6 +12,11 @@ image/video model prompt with those engineering contracts.
 v0.6.33 makes reference-guided native generation the normal real-product path: supplied real product
 images are strong model reference inputs and the product is rendered natively in the final image.
 Exact immutable-pixel compositing is an explicit special route only.
+
+v0.6.46 adds commercial decision continuity: real Market/Pricing/Audience/RACE/Listing/Ads/Review
+payloads must survive into relevant asset lineage, Creative Curation, Design Cards, model prompts and
+human delivery. Status/count summaries never substitute for real downstream consumption. Subject
+choice is per asset: person, animal, plant, object/product, environment, multi-subject or none are valid.
 """
 
 from . import prompt_compiler as _legacy_prompt_compiler
@@ -21,18 +26,25 @@ from . import model_native_prompt_audit_fix as _model_native_prompt_audit_fix
 from . import production_parameter_closure as _production_parameter_closure
 from . import reference_guided_native_authority as _reference_guided_native_authority
 from . import commercial_operator_density_authority as _commercial_operator_density_authority
+from . import commercial_continuity_authority as _commercial_continuity_authority
+from . import commercial_curation_lineage as _commercial_curation_lineage
+from . import subject_presence_authority as _subject_presence_authority
+from . import subject_agent_authority as _subject_agent_authority
 from . import human_delivery_art_direction_projection as _human_delivery_art_direction_projection
 from . import photographic_route_agent_authority as _photographic_route_agent_authority
 from . import art_direction_projection as _art_direction_projection
 from . import agent_autonomy as _agent_autonomy
 from . import creative as _creative
+from . import creative_opportunity as _creative_opportunity
 from . import surface_architecture as _surface_architecture
 from . import asset_architecture as _asset_architecture
 from . import agent_art_direction_authority as _agent_art_direction_authority
 from . import agent_plan_input_bridge as _agent_plan_input_bridge
 from . import portfolio_visual_authority as _portfolio_visual_authority
 from . import asset_universe_authority as _asset_universe_authority
+from . import asset_portfolio_taxonomy as _asset_portfolio_taxonomy
 from . import surface_advisory_authority as _surface_advisory_authority
+from .tools import seven_agent as _seven_agent
 
 # Photography is not a universal runtime default. It becomes active only when the Agent's per-asset
 # Art Direction selects photographic grammar / camera-light execution; then the strategy-level
@@ -96,14 +108,39 @@ _agent_authority_prompt_compiler.compile_asset_prompt = _reference_guided_native
 _agent_authority_prompt_compiler.compile_asset_prompt = _commercial_operator_density_authority.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
+_agent_authority_prompt_compiler.compile_asset_prompt = _commercial_continuity_authority.wrap_compile_asset_prompt(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
+_agent_authority_prompt_compiler.compile_asset_prompt = _subject_presence_authority.wrap_compile_asset_prompt(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
 _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.compile_asset_prompt
 
+# Seven-tool continuity must hand real business payloads to assets, not only status/count summaries.
+# The standalone image tool also receives the same wrapped prompt compiler as the full project compiler.
+_seven_agent.compile_asset_prompt = _legacy_prompt_compiler.compile_asset_prompt
+_seven_agent.compile_seven_agent_synthesis = _commercial_continuity_authority.wrap_compile_seven_agent_synthesis(
+    _seven_agent.compile_seven_agent_synthesis
+)
+
 # Explicit Agent-authored variants are an asset universe, not one platform-slot list. H01/H02/H03,
-# multiple benefit hypotheses, paid ads, A+/PDP modules, banners and rotation/test variants may coexist
-# even when they answer the same shopper question on the same surface. Platform slot capacity limits
-# only a simultaneous activation set; it never caps total asset candidates.
+# benefit/proof/scenario alternatives, paid ads, A+/PDP, seeding/social, creator/UGC, video, banners and
+# test/rotation pools may coexist. Platform capacity limits only a simultaneous activation set.
 _asset_architecture.build_asset_architecture = _asset_universe_authority.wrap_build_asset_architecture(
     _asset_architecture.build_asset_architecture
+)
+_asset_architecture.build_asset_architecture = _asset_portfolio_taxonomy.wrap_build_asset_architecture(
+    _asset_architecture.build_asset_architecture
+)
+
+# Commercial analysis must enter curation before it reaches the final prompt. Preserve current asset
+# decision origins/sources plus target/culture in Creative Opportunity and Creative Council, then carry
+# the same basis into per-asset Art Direction. This prevents style-only curation from severing analysis.
+_creative_opportunity.compile_creative_opportunity_universe = _commercial_curation_lineage.wrap_compile_creative_opportunity_universe(
+    _creative_opportunity.compile_creative_opportunity_universe
+)
+_creative.compile_creative_council = _commercial_curation_lineage.wrap_compile_creative_council(
+    _creative.compile_creative_council
 )
 
 # The compiler imports these symbols after package initialization, so the overrides below become the
@@ -115,6 +152,9 @@ _agent_autonomy.compile_agent_autonomy_plan = _agent_plan_input_bridge.wrap_comp
     _agent_autonomy.compile_agent_autonomy_plan
 )
 _agent_autonomy.compile_agent_autonomy_plan = _portfolio_visual_authority.wrap_compile_agent_autonomy_plan(
+    _agent_autonomy.compile_agent_autonomy_plan
+)
+_agent_autonomy.compile_agent_autonomy_plan = _subject_agent_authority.wrap_compile_agent_autonomy_plan(
     _agent_autonomy.compile_agent_autonomy_plan
 )
 _agent_autonomy.agent_creative_directions = _agent_art_direction_authority.wrap_agent_creative_directions(
@@ -144,3 +184,29 @@ _creative.apply_creative_system_to_assets = _agent_art_direction_authority.wrap_
 _creative.apply_creative_system_to_assets = _portfolio_visual_authority.wrap_apply_creative_system_to_assets(
     _creative.apply_creative_system_to_assets
 )
+_creative.apply_creative_system_to_assets = _commercial_curation_lineage.wrap_apply_creative_system_to_assets(
+    _creative.apply_creative_system_to_assets
+)
+_creative.apply_creative_system_to_assets = _subject_agent_authority.wrap_apply_creative_system_to_assets(
+    _creative.apply_creative_system_to_assets
+)
+
+# Human delivery receives the same structured commercial intelligence instead of relegating Market /
+# Pricing / Audience / RACE / Ads / Reviews to machine JSON archives. Keep it inside the existing
+# v0.6.36/v1 routed workspace rather than replacing the shell.
+from . import commercial_delivery_continuity as _commercial_delivery_continuity
+from . import delivery_workspace as _delivery_workspace
+_delivery_workspace.build_delivery_html = _commercial_delivery_continuity.wrap_build_delivery_html(
+    _delivery_workspace.build_delivery_html
+)
+from . import delivery_export as _delivery_export
+_delivery_export.build_delivery_html = _delivery_workspace.build_delivery_html
+_delivery_export.export_delivery_package = _commercial_delivery_continuity.wrap_export_delivery_package(
+    _delivery_export.export_delivery_package
+)
+
+# Install the release-level strictness layer after normal authority wiring so asset_compiler captures
+# the final prompt compiler and human Design Card projection. This also prevents future wrappers from
+# silently weakening commercial-continuity readiness.
+from . import commercial_continuity_bootstrap as _commercial_continuity_bootstrap
+_commercial_continuity_bootstrap.install()
