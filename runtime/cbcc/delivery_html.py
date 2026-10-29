@@ -516,12 +516,8 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
         effective_copy=visible_copy_block or copyc
         if effective_copy:
             views.append({'key':'copy','title':'可见文案','html':_human_kv([('目标市场可见文案',effective_copy.get('target_market_copy') if isinstance(effective_copy,dict) else effective_copy),('次级文案',effective_copy.get('secondary_copy') if isinstance(effective_copy,dict) else None),('中文释义 / 用途',effective_copy.get('delivery_translation_zh') if isinstance(effective_copy,dict) else None),('文字渲染 / 装配路线',production_notes.get('copy_render_mode')),('文案预算',(effective_copy.get('copy_budget') if isinstance(effective_copy,dict) else None) or info.get('copy_budget')),('字体方向',(effective_copy.get('typography_direction') if isinstance(effective_copy,dict) else None) or info.get('typography'))])})
-        if prompt_cn:
-            views.append({'key':'model-prompt-cn','title':'Model Prompt CN','html':'<div class="asset-file"><div class="file-label">直接给生成模型的中文提示词</div><pre><code>'+html.escape(prompt_cn)+'</code></pre></div>'})
-        if prompt_en:
-            views.append({'key':'model-prompt-en','title':'Model Prompt EN','html':'<div class="asset-file"><div class="file-label">直接给生成模型的英文提示词</div><pre><code>'+html.escape(prompt_en)+'</code></pre></div>'})
         if production_notes:
-            views.append({'key':'production-notes','title':'生产 / 装配说明','html':_human_kv([('文字渲染路线',production_notes.get('copy_render_mode')),('产品 Fidelity',production_notes.get('product_fidelity')),('产品出现方式',production_notes.get('product_presence')),('产品参考规则',production_notes.get('product_reference_rule')),('可编辑层',production_notes.get('editable_layers')),('冻结层',production_notes.get('frozen_layers')),('局部修订规则',production_notes.get('revision_rule')),('Provider / Route',production_notes.get('provider_route')),('装配原则',production_notes.get('assembly_principle'))])})
+            views.append({'key':'production','title':'生产 / 装配说明','html':_human_kv([('文字渲染路线',production_notes.get('copy_render_mode')),('产品 Fidelity',production_notes.get('product_fidelity')),('产品出现方式',production_notes.get('product_presence')),('产品参考规则',production_notes.get('product_reference_rule')),('可编辑层',production_notes.get('editable_layers')),('冻结层',production_notes.get('frozen_layers')),('局部修订规则',production_notes.get('revision_rule')),('Provider / Route',production_notes.get('provider_route')),('装配原则',production_notes.get('assembly_principle'))])})
     # Human-facing Markdown files remain useful, but machine YAML/JSON is never the default asset view.
     group_files={'strategy':[],'visual':[],'photo':[],'copy':[],'production':[],'trace':[]}
     for f in sorted(path.iterdir()):
@@ -551,7 +547,7 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
         else:
             views.append({'key':k,'title':labels[k],'html':''.join(group_files[k])})
     summary=' · '.join(str(x) for x in [surface,_intent_zh(intent),qzh if design else manifest.get('consumer_question')] if x)
-    return {'id':aid,'title':display_title,'original_title':original_title,'summary':summary,'prompt_cn':prompt_cn,'prompt_en':prompt_en,'views':views,'source_files':src,'surface':surface,'intent':intent,'asset_type':asset_type,'agent_view_order':design.get('workspace_view_order') or design.get('agent_view_order') or []}
+    return {'id':aid,'title':display_title,'original_title':original_title,'summary':summary,'prompt_cn':prompt_cn,'prompt_en':prompt_en,'model_prompt_status':prompt_contract.get('model_prompt_status'),'views':views,'source_files':src,'surface':surface,'intent':intent,'asset_type':asset_type,'agent_view_order':design.get('workspace_view_order') or design.get('agent_view_order') or []}
 
 
 def _legacy_asset(path:Path,package_dir:Path)->dict[str,Any]:
@@ -659,7 +655,7 @@ def _prompt_workspace(assets:list[dict[str,Any]])->str:
         selectors.append(f'<button class="prompt-asset-switch workspace-switch {"active" if i==0 else ""}" data-switch-group="{group}" data-view="{key}"><span>{html.escape(a["id"])}</span><b>{html.escape(a["title"])}</b></button>')
         cn=a.get('prompt_cn') or '中文规范生产提示词 待补。英文生成提示词不能作为唯一的人类交付。';en=a.get('prompt_en') or '英文生成提示词待补。'
         cid=f'{key}-cn';eid=f'{key}-en'
-        body=f'''<div class="prompt-workbench"><section class="prompt-primary"><div class="prompt-head"><div><span>中文生产说明</span><h3>中文规范生产提示词</h3></div><button class="copy-btn mini" data-copy="{cid}">复制中文</button></div><pre id="{cid}"><code>{html.escape(cn)}</code></pre></section><section class="prompt-secondary"><div class="prompt-head"><div><span>发送生成模型（按模型 / 生产策略）</span><h3>英文 / 目标模型提示词</h3></div><button class="copy-btn mini" data-copy="{eid}">复制生成提示词</button></div><pre id="{eid}"><code>{html.escape(en)}</code></pre></section></div><div class="language-note">规则：人类交付默认中文；英文提示词是生产执行载体，不替代中文说明。目标市场可见文案若非中文，也必须在资产文案区提供中文释义。</div>'''
+        body=f'''<div class="prompt-workbench"><section class="prompt-primary"><div class="prompt-head"><div><span>直接给生成模型</span><h3>Model Prompt CN｜中文模型提示词</h3></div><button class="copy-btn mini" data-copy="{cid}">复制中文 Prompt</button></div><pre id="{cid}"><code>{html.escape(cn)}</code></pre></section><section class="prompt-secondary"><div class="prompt-head"><div><span>Direct model input</span><h3>Model Prompt EN｜英文模型提示词</h3></div><button class="copy-btn mini" data-copy="{eid}">复制英文 Prompt</button></div><pre id="{eid}"><code>{html.escape(en)}</code></pre></section></div><div class="language-note">这里只展示模型输入。目标市场可见文案与中文释义在“可见文案”对象中管理；锁图、文字装配、可编辑层、Provider 与后期规则在“生产 / 装配说明”中管理，不混入 Model Prompt。</div>'''
         panels.append(f'<article class="prompt-asset-panel searchable workspace-panel {"active" if i==0 else ""}" data-switch-group="{group}" data-view="{key}"><div class="prompt-asset-meta"><b>{html.escape(a["title"])}</b><span>{html.escape(a["id"])}</span></div>{body}</article>')
     return f'<div class="prompt-lab" data-workspace-kind="prompt"><div class="prompt-selector">{"".join(selectors)}</div><div class="prompt-stage">{"".join(panels)}</div></div>'
 
@@ -689,7 +685,7 @@ def _asset_page(a:dict[str,Any])->str:
         'visual':('画面执行','VISUAL','查看当前资产实际采用的主体、关系、构图与信息层级。'),
         'photo':('摄影 / CMF','PHOTO · CMF','仅显示本资产真正需要的摄影、灯光、材质、CMF 或色彩执行参数。'),
         'copy':('文案','COPY','查看本资产实际承担的目标市场可见文案与中文说明。'),
-        'production':('生产说明','PRODUCTION','查看与本资产执行方式直接相关的生产备注。'),
+        'production':('生产 / 装配说明','PRODUCTION','查看锁图、文字装配、图层、Provider 与本资产执行方式直接相关的生产备注。'),
     }
     for key,(title,eyebrow,desc) in direct.items():
         view=by_key.get(key)
@@ -700,12 +696,12 @@ def _asset_page(a:dict[str,Any])->str:
         parts=[];aid=_slug(a['id'])
         if a.get('prompt_cn'):
             cid=f'asset-{aid}-prompt-cn'
-            parts.append(f'''<section class="prompt-primary"><div class="prompt-head"><div><span>人类生产说明</span><h3>中文规范生产提示词</h3></div><button class="copy-btn mini" data-copy="{cid}">复制中文</button></div><pre id="{cid}"><code>{html.escape(a['prompt_cn'])}</code></pre></section>''')
+            parts.append(f'''<section class="prompt-primary"><div class="prompt-head"><div><span>直接给生成模型</span><h3>Model Prompt CN｜中文模型提示词</h3></div><button class="copy-btn mini" data-copy="{cid}">复制中文 Prompt</button></div><pre id="{cid}"><code>{html.escape(a['prompt_cn'])}</code></pre></section>''')
         if a.get('prompt_en'):
             eid=f'asset-{aid}-prompt-en'
-            parts.append(f'''<section class="prompt-secondary"><div class="prompt-head"><div><span>发送生成模型</span><h3>英文 / 目标模型提示词</h3></div><button class="copy-btn mini" data-copy="{eid}">复制生成提示词</button></div><pre id="{eid}"><code>{html.escape(a['prompt_en'])}</code></pre></section>''')
-        body='<div class="asset-prompt-console"><div class="prompt-workbench">'+''.join(parts)+'</div><div class="language-note">只核对当前资产实际相关的决策、画面、摄影 / CMF、文案和保真约束。缺失或不相关的维度不应为了“字段完整”被补造；Prompt 是执行合同，不是独立创意来源。</div></div>'
-        add('prompt','Prompt 执行','EXECUTION','执行当前已编译的生产 Prompt；不补造无关参数。',body)
+            parts.append(f'''<section class="prompt-secondary"><div class="prompt-head"><div><span>Direct model input</span><h3>Model Prompt EN｜英文模型提示词</h3></div><button class="copy-btn mini" data-copy="{eid}">复制英文 Prompt</button></div><pre id="{eid}"><code>{html.escape(a['prompt_en'])}</code></pre></section>''')
+        body='<div class="asset-prompt-console"><div class="prompt-workbench">'+''.join(parts)+'</div><div class="language-note">Model Prompt 只承载当前资产真正需要进入生成模型的视觉、空间、摄影 / CMF、动态与文字行为。产品锁定、图层、文字装配、Provider、QA 与修订规则请到“生产 / 装配说明”查看；这些工程合同不进入模型提示词。</div></div>'
+        add('prompt','Model Prompt','MODEL INPUT','查看当前资产真正发送给图像 / 视频生成模型的 CN / EN 提示词。',body)
 
     # QA/trace is one recoverability lens: machine trace, source files and unknown legacy views all remain accessible.
     qa_parts=[]
@@ -756,8 +752,11 @@ def _asset_page(a:dict[str,Any])->str:
     sec=f'<div class="asset-original">{html.escape(str(a.get("original_title") or ""))}</div>' if a.get('original_title') and a.get('original_title')!=a.get('title') else ''
     chips=''.join(f'<span>{html.escape(str(_humanize_asset_text(x)))}</span>' for x in [a.get('asset_type'),a.get('surface'),a.get('intent')] if x)
     readiness=[]
-    if a.get('prompt_cn'): readiness.append('中文 Prompt 已就绪')
-    if a.get('prompt_en'): readiness.append('生成模型 Prompt 已就绪')
+    if a.get('model_prompt_status'):
+        readiness.append('Model Prompt：'+str(a.get('model_prompt_status')))
+    else:
+        if a.get('prompt_cn'): readiness.append('中文 Model Prompt 已生成')
+        if a.get('prompt_en'): readiness.append('英文 Model Prompt 已生成')
     if source_files: readiness.append(f'{len(source_files)} 个源文件可追溯')
     ready_html=''.join(f'<span>{html.escape(x)}</span>' for x in readiness) or '<span>等待当前资产所需合同补齐</span>'
     passport=f'''<div class="asset-passport"><div><span class="asset-passport-id">{html.escape(a['id'])}</span><div class="asset-passport-chips">{chips}</div></div><div class="asset-readiness">{ready_html}</div></div>'''
