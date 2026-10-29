@@ -1,0 +1,247 @@
+name: CBCC v0.6.30 Agent Art Direction Authority Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v0630.yml'
+      - 'VERSION'
+      - 'SKILL.md'
+      - 'CHANGELOG_V0630.md'
+      - 'runtime/cbcc/__init__.py'
+      - 'runtime/cbcc/compiler.py'
+      - 'runtime/cbcc/agent_art_direction_authority.py'
+      - 'runtime/cbcc/agent_authority_prompt_compiler.py'
+      - 'runtime/cbcc/art_direction_projection.py'
+      - 'runtime/cbcc/agent_plan_input_bridge.py'
+      - 'runtime/cbcc/surface_advisory_authority.py'
+      - 'knowledge/creative_direction_surface_prompt_system.md'
+      - 'knowledge/asset_portfolio_curation.md'
+      - 'prompts/registry.json'
+      - 'prompts/dynamic_asset_curation.md'
+      - 'prompts/creative_direction_surface_prompt_compiler.md'
+      - 'prompts/visual_photography_strategy.md'
+      - 'references/ASSET_COMPILER_SPEC.md'
+      - 'scripts/build_plugin_dist.py'
+      - 'scripts/build_dist.py'
+      - 'tests/test_v0630_agent_art_direction_authority.py'
+      - 'tests/test_v0630_surface_agent_authority.py'
+      - 'tests/test_v0630_agent_art_direction_e2e.py'
+      - 'tests/test_v0630_prompt_art_direction_projection.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-v0630:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install runtime and test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+
+      - name: Verify active version and Agent authority contract
+        run: |
+          test "$(cat VERSION)" = "0.6.30-agent-art-direction-authority"
+          grep -q '^version: 0.6.30-agent-art-direction-authority$' SKILL.md
+          grep -q 'Agent Creative Authority — highest current precedence' SKILL.md
+          grep -q 'validate → serialize → compile → trace → execute → package → test' SKILL.md
+          grep -q 'Surface 不是创意权威' SKILL.md
+          grep -q 'Prompt Compiler 是 compiler，不是 designer' SKILL.md
+          grep -q '不相关摄影字段不强制生成' scripts/build_plugin_dist.py
+          grep -q "runtime_version']='0.6.30-agent-art-direction-authority'" runtime/cbcc/compiler.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          registry=json.loads(Path('prompts/registry.json').read_text(encoding='utf-8'))
+          assert registry['version']=='0.6.30-agent-art-direction-authority'
+          rows={x['id']:x for x in registry['prompts']}
+          assert 'Agent-authored visual/art direction' in rows['PROMPT-VISUAL-PHOTO']['purpose']
+          assert 'Host-Agent dynamic portfolio curation' in rows['PROMPT-ASSET-CURATION']['purpose']
+          assert 'without inventing product/layout fallbacks' in rows['PROMPT-CREATIVE-SURFACE-CANONICAL']['purpose']
+          print('active authority metadata PASS')
+          PY
+
+      - name: Smoke validators
+        run: bash tests/run_smoke.sh
+
+      - name: v0.6.30 Agent Art Direction authority regressions
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0630_surface_agent_authority.py \
+            tests/test_v0630_agent_art_direction_e2e.py \
+            tests/test_v0630_prompt_art_direction_projection.py
+
+      - name: FULL depth and current-scope continuity
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_full_strategy_hard_contract.py \
+            tests/test_full_delivery_last_mile.py \
+            tests/test_v0624_strategy_asset_scope.py \
+            tests/test_v0625_decision_question_authority.py \
+            tests/test_v0627_current_scope_completion.py \
+            tests/test_v0628_agent_frontier_scope.py \
+            tests/test_v0629_final_stabilization.py
+
+      - name: Human-language and workspace continuity
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_human_language_delivery_contract.py \
+            tests/test_delivery_release_acceptance.py \
+            tests/test_v066_human_workspace_zh_first.py \
+            tests/test_v067_workspace_information_architecture.py
+
+      - name: Reference-guided and integrated capability continuity
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_prompt_execution_decision_preservation.py \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
+            tests/test_reference_guided_video_provider_authority.py \
+            tests/test_final_reference_guided_consistency.py \
+            tests/test_v060_capability_complete_rebase.py \
+            tests/test_v0511_integration_quality_depth.py \
+            tests/test_capability_contracts.py
+          python tests/run_toolkit_smoke.py
+
+      - name: Build installable Plugin and Skill archives
+        run: python scripts/build_plugin_dist.py --output-dir dist
+
+      - name: Build Runtime archive
+        run: python scripts/build_dist.py dist/cross-border-commerce-creative-runtime-v0.6.30.zip
+
+      - name: Verify release manifest and packaged Agent authority
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json, zipfile
+
+          dist=Path('dist')
+          manifest=json.loads((dist/'release_manifest.json').read_text(encoding='utf-8'))
+          assert manifest['version']=='0.6.30', manifest
+          assert manifest['source_version']=='0.6.30-agent-art-direction-authority', manifest
+          contract=manifest.get('delivery_contract') or {}
+          required_contract={
+              'complete_html_required':True,
+              'artifact_required_for_full_task':True,
+              'object_based_asset_workspace':True,
+              'chat_only_completion_forbidden':True,
+              'full_nine_domain_decision_depth_required':True,
+              'prompt_consumption_audit_required':True,
+              'prompt_consumption_blocks_project_completion':False,
+              'product_source_default_reference_guided':True,
+              'photorealism_default_required':False,
+              'seven_agent_capability_continuity_required':True,
+              'host_custom_short_report_cannot_substitute_full_delivery':True,
+          }
+          missing={k:v for k,v in required_contract.items() if contract.get(k) is not v}
+          assert not missing, {'delivery_contract_missing':missing,'actual':contract}
+
+          plugin=dist/'cross-border-commerce-creative-plugin-v0.6.30.zip'
+          skill=dist/'cross-border-commerce-creative-skill-v0.6.30.zip'
+          runtime=dist/'cross-border-commerce-creative-runtime-v0.6.30.zip'
+          assert plugin.exists() and skill.exists() and runtime.exists()
+
+          required=[
+              'runtime/cbcc/__init__.py',
+              'runtime/cbcc/agent_art_direction_authority.py',
+              'runtime/cbcc/agent_authority_prompt_compiler.py',
+              'runtime/cbcc/art_direction_projection.py',
+              'runtime/cbcc/agent_plan_input_bridge.py',
+              'runtime/cbcc/surface_advisory_authority.py',
+              'knowledge/creative_direction_surface_prompt_system.md',
+              'knowledge/asset_portfolio_curation.md',
+              'prompts/dynamic_asset_curation.md',
+              'prompts/creative_direction_surface_prompt_compiler.md',
+              'prompts/visual_photography_strategy.md',
+              'references/ASSET_COMPILER_SPEC.md',
+              'CHANGELOG_V0630.md',
+              'tests/test_v0630_agent_art_direction_authority.py',
+              'tests/test_v0630_surface_agent_authority.py',
+              'tests/test_v0630_agent_art_direction_e2e.py',
+              'tests/test_v0630_prompt_art_direction_projection.py',
+          ]
+          with zipfile.ZipFile(plugin) as z:
+              names=set(z.namelist())
+              skill_root='cross-border-commerce-creative/skills/cross-border-commerce-creative/'
+              root=skill_root+'resources/'
+              for rel in required:
+                  assert root+rel in names, rel
+              wrapper=z.read(skill_root+'SKILL.md').decode('utf-8')
+              authority=z.read(root+'SKILL.md').decode('utf-8')
+              init=z.read(root+'runtime/cbcc/__init__.py').decode('utf-8')
+              prompt=z.read(root+'runtime/cbcc/agent_authority_prompt_compiler.py').decode('utf-8')
+              surface=z.read(root+'runtime/cbcc/surface_advisory_authority.py').decode('utf-8')
+              assert '## Agent Creative Authority' in wrapper
+              assert 'Product Reference/Fidelity 不等于 Product Presence' in wrapper
+              assert 'Agent Creative Authority — highest current precedence' in authority
+              assert 'art_direction_projection' in init
+              assert 'AGENT_ART_DIRECTION_REQUIRED' in prompt
+              assert 'SURFACE_COMPATIBILITY_SUGGESTION_ONLY' in surface
+              assert '不相关摄影字段不强制生成' in z.read(root+'scripts/build_plugin_dist.py').decode('utf-8')
+          with zipfile.ZipFile(skill) as z:
+              names=set(z.namelist())
+              assert any(name.endswith('runtime/cbcc/agent_art_direction_authority.py') for name in names)
+              assert any(name.endswith('runtime/cbcc/art_direction_projection.py') for name in names)
+          print('v0.6.30 installable package authority continuity PASS')
+          PY
+
+      - name: Write SHA256 sums
+        run: |
+          cd dist
+          sha256sum *.zip > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbcc-v0.6.30-agent-art-direction-authority
+          path: |
+            dist/cross-border-commerce-creative-plugin-v0.6.30.zip
+            dist/cross-border-commerce-creative-skill-v0.6.30.zip
+            dist/cross-border-commerce-creative-runtime-v0.6.30.zip
+            dist/release_manifest.json
+            dist/SHA256SUMS.txt
+
+      - name: Publish or refresh GitHub Release v0.6.30
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.6.30 >/dev/null 2>&1; then
+            gh release upload v0.6.30 \
+              dist/cross-border-commerce-creative-plugin-v0.6.30.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.30.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.30.zip \
+              dist/release_manifest.json \
+              dist/SHA256SUMS.txt --clobber
+            gh release edit v0.6.30 --title 'CBCC v0.6.30 — Agent Art Direction Authority' --notes-file CHANGELOG_V0630.md
+          else
+            gh release create v0.6.30 \
+              dist/cross-border-commerce-creative-plugin-v0.6.30.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.30.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.30.zip \
+              dist/release_manifest.json \
+              dist/SHA256SUMS.txt \
+              --target "$GITHUB_SHA" \
+              --title 'CBCC v0.6.30 — Agent Art Direction Authority' \
+              --notes-file CHANGELOG_V0630.md
+          fi
