@@ -67,15 +67,15 @@ def _full_html_depth_check(html_text: str, full: bool) -> dict[str, Any]:
     if not full:
         return {'status':'NOT_REQUIRED_FOR_TASK_SCOPED','missing':[]}
     required=[
-        '信息完整度',
-        '产品真相与价值边界',
-        '市场 / 平台 / 人群 / 文化洞察',
-        '核心商业策略',
-        '视觉 / 摄影 / CMF / 资产策略',
-        '平台内容与 Surface 执行',
+        '信息完整度、待确认清单、假设与决策日志',
+        '产品真实事实审计与卖点分级表',
+        '平台 × 区域 × 人群 × 族裔文化洞察',
+        '营销框架与核心策略',
+        '视觉总策略与拍摄执行清单',
+        '分平台内容矩阵表',
         'RACE传播框架执行表',
         '族裔文化适配检查表',
-        'P0/P1/P2',
+        '合规、文化敏感与风险清单；评估指标与A/B测试建议；P0/P1/P2执行优先级与下一步需补充信息',
     ]
     missing=[x for x in required if x not in html_text]
     return {'status':'PASS' if not missing else 'INCOMPLETE','required_visible_objects':required,'missing':missing}
@@ -166,6 +166,60 @@ def _full_html_depth_check(html_text: str, full: bool) -> dict[str, Any]:
     return text
 
 
+def patch_delivery_html(text: str) -> str:
+    old="""    for i,(name,body) in enumerate(chunks):
+        n=str(name).strip()
+        if re.match(r'^1[.、\\s]',n):bucket='overview'
+        elif re.match(r'^2[.、\\s]',n):bucket='product'
+        elif re.match(r'^3[.、\\s]',n) or re.match(r'^8[.、\\s]',n):bucket='market'
+        elif re.match(r'^5[.、\\s]',n):bucket='visual'
+        elif re.match(r'^[67][.、\\s]',n):bucket='content'
+        elif re.match(r'^9[.、\\s]',n):bucket='risk'
+        else:bucket='strategy'
+        sub=_split_h3_body(body)
+        # Long strategy chapters become task pages. Short chapters remain one page.
+        if len(sub)>=2:
+            for j,(subname,subbody) in enumerate(sub):
+                title=_zh_heading(subname)
+                key=f'master-{i}-{j}-{_slug(subname)}'
+                out[bucket].append({'key':key,'title':title,'secondary':'','html':markdown_to_html(subbody),'source':str(path.relative_to(package_dir)).replace('\\\\','/')})
+        else:
+            key=f'master-{i}-{_slug(n)}'
+            out[bucket].append({'key':key,'title':_zh_heading(n),'secondary':'','html':markdown_to_html(body),'source':str(path.relative_to(package_dir)).replace('\\\\','/')})
+"""
+    new="""    for i,(name,body) in enumerate(chunks):
+        n=str(name).strip()
+        # FULL human headings deliberately have no numeric workflow prefix. Route by semantic domain so
+        # the SaaS workspace stays object-based while the nine-domain completion contract remains visible.
+        if re.match(r'^1[.、\\s]',n) or '信息完整度' in n:bucket='overview'
+        elif re.match(r'^2[.、\\s]',n) or '产品真实事实审计' in n or '产品真相与价值' in n:bucket='product'
+        elif re.match(r'^3[.、\\s]',n) or re.match(r'^8[.、\\s]',n) or '平台 × 区域 × 人群 × 族裔文化' in n or '族裔文化适配检查表' in n:bucket='market'
+        elif re.match(r'^5[.、\\s]',n) or '视觉总策略与拍摄执行清单' in n:bucket='visual'
+        elif re.match(r'^[67][.、\\s]',n) or '分平台内容矩阵表' in n or 'RACE传播框架执行表' in n:bucket='content'
+        elif re.match(r'^9[.、\\s]',n) or '合规、文化敏感与风险清单' in n:bucket='risk'
+        else:bucket='strategy'
+        domain_label=_zh_heading(n)
+        sub=_split_h3_body(body)
+        # Long chapters become task cards, but the parent decision domain is never discarded.
+        if len(sub)>=2:
+            for j,(subname,subbody) in enumerate(sub):
+                subtitle=_zh_heading(subname)
+                key=f'master-{i}-{j}-{_slug(subname)}'
+                banner=f'<div class="strategy-domain-label"><span>完整交付域</span><b>{html.escape(domain_label)}</b></div>'
+                title=domain_label if j==0 else subtitle
+                secondary=subtitle if j==0 else domain_label
+                out[bucket].append({'key':key,'title':title,'secondary':secondary,'html':banner+markdown_to_html(subbody),'source':str(path.relative_to(package_dir)).replace('\\\\','/')})
+        else:
+            key=f'master-{i}-{_slug(n)}'
+            out[bucket].append({'key':key,'title':domain_label,'secondary':'','html':markdown_to_html(body),'source':str(path.relative_to(package_dir)).replace('\\\\','/')})
+"""
+    if old in text:
+        return text.replace(old,new,1)
+    if 'FULL human headings deliberately have no numeric workflow prefix' in text:
+        return text
+    raise SystemExit('delivery_html master strategy routing anchor not found')
+
+
 def patch_skill(text: str) -> str:
     marker="""- 完整任务的完成态必须包含真实人类交付 Artifact（自包含 `index.html` + 可编辑源 + 逐资产包 + `DELIVERY_MANIFEST.json` + ZIP）；源码存在或聊天正文不构成 FULL 完成。
 
@@ -187,4 +241,5 @@ def patch_skill(text: str) -> str:
 
 patch('runtime/cbcc/asset_compiler.py',patch_asset_compiler)
 patch('runtime/cbcc/delivery_export.py',patch_delivery_export)
+patch('runtime/cbcc/delivery_html.py',patch_delivery_html)
 patch('SKILL.md',patch_skill)
