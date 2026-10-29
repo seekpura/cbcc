@@ -24,6 +24,9 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install test runner
+        run: python -m pip install --disable-pip-version-check pytest
+
       - name: Apply v0.6.37 authority migration
         run: |
           python scripts/apply_v0637_commercial_operator_density.py
