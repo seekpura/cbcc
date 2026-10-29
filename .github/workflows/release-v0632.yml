@@ -1,0 +1,170 @@
+name: CBCC v0.6.32 Production Parameter Closure Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v0632.yml'
+      - 'VERSION'
+      - 'SKILL.md'
+      - 'CHANGELOG_V0632.md'
+      - 'runtime/cbcc/production_parameter_closure.py'
+      - 'runtime/cbcc/portfolio_visual_authority.py'
+      - 'runtime/cbcc/delivery_html.py'
+      - 'runtime/cbcc/__init__.py'
+      - 'prompts/visual_photography_strategy.md'
+      - 'prompts/creative_direction_surface_prompt_compiler.md'
+      - 'scripts/build_plugin_dist.py'
+      - 'tests/test_v0632_production_parameter_closure.py'
+      - 'tests/test_v0632_portfolio_visual_authority.py'
+      - 'tests/test_v0632_human_art_direction_visibility.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-v0632:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .:runtime
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install runtime test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+
+      - name: Verify active v0.6.32 authority
+        run: |
+          test "$(cat VERSION)" = "0.6.32-production-parameter-closure"
+          grep -q '^version: 0.6.32-production-parameter-closure$' SKILL.md
+          grep -q 'Production Parameter Closure + Creative Depth Authority' SKILL.md
+          grep -q '恢复并提升 v0.6.6 的摄影执行深度' SKILL.md
+          grep -q '平台容量不是资产配额' SKILL.md
+          grep -q '设计同质化必须回 Agent 重做' SKILL.md
+
+      - name: Compile changed authority modules
+        run: |
+          python -m py_compile \
+            runtime/cbcc/production_parameter_closure.py \
+            runtime/cbcc/portfolio_visual_authority.py \
+            runtime/cbcc/delivery_html.py \
+            runtime/cbcc/__init__.py \
+            runtime/cbcc/model_native_prompt_contract.py \
+            runtime/cbcc/agent_authority_prompt_compiler.py
+
+      - name: v0.6.32 production depth and design-quality acceptance
+        run: |
+          pytest -q \
+            tests/test_v0632_production_parameter_closure.py \
+            tests/test_v0632_portfolio_visual_authority.py \
+            tests/test_v0632_human_art_direction_visibility.py
+
+      - name: Preserve model-native and Agent Art Direction authority
+        run: |
+          pytest -q \
+            tests/test_v0631_model_native_prompt_contract.py \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0630_surface_agent_authority.py \
+            tests/test_v0630_prompt_art_direction_projection.py \
+            tests/test_v0630_agent_art_direction_e2e.py
+
+      - name: One FULL and provider continuity check
+        run: |
+          pytest -q \
+            tests/test_full_delivery_last_mile.py \
+            tests/test_reference_guided_video_provider_authority.py
+
+      - name: Build installable Plugin and Skill archives
+        run: python scripts/build_plugin_dist.py --output-dir dist
+
+      - name: Build Runtime archive
+        run: python scripts/build_dist.py dist/cross-border-commerce-creative-runtime-v0.6.32.zip
+
+      - name: Verify packaged authority and execution depth
+        run: |
+          python - <<'PY'
+          import json, zipfile
+          from pathlib import Path
+          root=Path('dist')
+          plugin=root/'cross-border-commerce-creative-plugin-v0.6.32.zip'
+          skill=root/'cross-border-commerce-creative-skill-v0.6.32.zip'
+          runtime=root/'cross-border-commerce-creative-runtime-v0.6.32.zip'
+          for p in (plugin,skill,runtime):
+              assert p.exists() and p.stat().st_size > 10000, p
+          with zipfile.ZipFile(plugin) as z:
+              names=set(z.namelist())
+              base='cross-border-commerce-creative/skills/cross-border-commerce-creative/'
+              manifest=json.loads(z.read('cross-border-commerce-creative/plugin.json'))
+              assert manifest['version']=='0.6.32'
+              wrapper=z.read(base+'SKILL.md').decode('utf-8')
+              authority=z.read(base+'resources/SKILL.md').decode('utf-8')
+              visual=z.read(base+'resources/prompts/visual_photography_strategy.md').decode('utf-8')
+              compiler=z.read(base+'resources/prompts/creative_direction_surface_prompt_compiler.md').decode('utf-8')
+              for required in [
+                  base+'resources/runtime/cbcc/production_parameter_closure.py',
+                  base+'resources/runtime/cbcc/portfolio_visual_authority.py',
+                  base+'resources/runtime/cbcc/delivery_html.py',
+                  base+'resources/tests/test_v0632_production_parameter_closure.py',
+                  base+'resources/tests/test_v0632_portfolio_visual_authority.py',
+                  base+'resources/tests/test_v0632_human_art_direction_visibility.py',
+              ]:
+                  assert required in names, required
+              assert 'Production Parameter Closure + Creative Depth' in wrapper
+              assert 'Production Parameter Closure + Creative Depth Authority' in authority
+              assert 'v0.6.32 execution-depth authority' in visual
+              assert 'lossless production-parameter closure' in compiler
+          print('packaged v0.6.32 authority PASS')
+          PY
+
+      - name: Write SHA256 sums
+        run: |
+          cd dist
+          sha256sum \
+            cross-border-commerce-creative-plugin-v0.6.32.zip \
+            cross-border-commerce-creative-skill-v0.6.32.zip \
+            cross-border-commerce-creative-runtime-v0.6.32.zip \
+            release_manifest.json > SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbcc-v0.6.32-production-parameter-closure
+          path: |
+            dist/cross-border-commerce-creative-plugin-v0.6.32.zip
+            dist/cross-border-commerce-creative-skill-v0.6.32.zip
+            dist/cross-border-commerce-creative-runtime-v0.6.32.zip
+            dist/release_manifest.json
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish or refresh GitHub Release v0.6.32
+        run: |
+          if gh release view v0.6.32 >/dev/null 2>&1; then
+            gh release upload v0.6.32 \
+              dist/cross-border-commerce-creative-plugin-v0.6.32.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.32.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.32.zip \
+              dist/release_manifest.json dist/SHA256SUMS.txt --clobber
+            gh release edit v0.6.32 --title 'CBCC v0.6.32 — Production Parameter Closure + Creative Depth' --notes-file CHANGELOG_V0632.md --latest
+          else
+            gh release create v0.6.32 \
+              dist/cross-border-commerce-creative-plugin-v0.6.32.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.32.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.32.zip \
+              dist/release_manifest.json dist/SHA256SUMS.txt \
+              --target "$GITHUB_SHA" \
+              --title 'CBCC v0.6.32 — Production Parameter Closure + Creative Depth' \
+              --notes-file CHANGELOG_V0632.md --latest
+          fi
