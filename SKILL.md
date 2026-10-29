@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.29-final-stabilization
+version: 0.6.30-agent-art-direction-authority
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -32,7 +32,7 @@ Create a professional cross-border ecommerce plan **before** governance machiner
 
 ### FULL Decision-Depth + Prompt Execution Continuity — highest current precedence
 - **本节高于下面所有历史版本说明。** 任何 v0.6.21–v0.6.29 关于“框架可选 / scope 动态”的历史段落，只适用于 TASK_SCOPED；不得覆盖 FULL 的九域深度合同。
-- FULL 九域不是标题检查：每个域必须包含会改变商业/创意/生产决策的内容。产品层必须清楚区分 Fact / 真实卖点 / 可感知利益 / 情绪价值 / Claim Boundary / A-B-C 证据；区域与用户层必须回答平台×区域×人群×族裔文化 WHY、交叉性、语言/宗教/节庆/支付/物流/法规与禁忌/刻板印象；视觉层必须给可执行构图、HEX/对比、摄影、灯光、CMF、镜头、人物、平台规格与逐资产参数；内容层必须给平台执行字段、RACE、文化校验、CTA、指标、落地/归因；风险层必须给合规、A/B、P0/P1/P2、取舍、下一步与输出自检。
+- FULL 九域不是标题检查：每个域必须包含会改变商业/创意/生产决策的内容。产品层必须清楚区分 Fact / 真实卖点 / 可感知利益 / 情绪价值 / Claim Boundary / A-B-C 证据；区域与用户层必须回答平台×区域×人群×族裔文化 WHY、交叉性、语言/宗教/节庆/支付/物流/法规与禁忌/刻板印象；视觉层必须给可执行构图、HEX/对比、CMF/材质与平台规格；摄影、灯光、镜头、人物等只在当前视觉载体/生产路线相关时策划，并把已选参数贯穿到逐资产执行；内容层必须给平台执行字段、RACE、文化校验、CTA、指标、落地/归因；风险层必须给合规、A/B、P0/P1/P2、取舍、下一步与输出自检。
 - **深度不等于字数。** 允许删除重复解释、内部 ID、RACE/KPI 元数据和与当前资产无关的摄影 toolbox；禁止删除已有证据边界、区域/用户洞察、策略 WHY/取舍、生产参数或人类可执行动作。
 - Canonical Prompt 使用 **Semantic Compression, never Capability Compression**：当当前任务需要 Prompt / 生图 / Provider 执行时，已选且会改变该生产结果的参数应投影到 Prompt 或 deterministic production instruction，并记录 `prompt_consumption_audit`。**Prompt Consumption Audit 是生产质量诊断，不是项目或资产完整度的全局阻断 Gate**；`missing_decisions` 可以形成 `NEEDS_PROMPT_WORK`，但不能阻止策略、Listing、内容、视觉策展、资产设计卡或完整人类交付完成。
 - 人物/手部/身体关系资产必须执行包容性表征与 AI 偏见控制；**真实摄影路线**再把肤色测光、深肤色暗部保护、Prelight、reflector/bounce、diffusion 等转成拍摄参数。插画、3D、风格化生成等非真实摄影路线使用与该媒介匹配的表征控制，不强行套摄影参数。

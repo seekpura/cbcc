@@ -19,7 +19,7 @@ EXCLUDE_SUFFIXES = {'.pyc', '.pyo'}
 
 DEFAULT_PROMPTS = [
     '基于当前对话、上传资料和必要的最新公开信息，完成当前商品的跨境电商策略、Listing、内容、视觉策展与逐资产中英文 Canonical Prompt。该请求属于 FULL 商品项目：必须执行九域决策深度合同、Prompt/生产参数连续性审计（生产准备度不阻断项目），并物化完整中文优先 index.html + 可编辑源 + 逐资产包 + ZIP。九域是完整度合同，不是固定页面模板；不得用自定义短报告替代。 人类交付以中文为基础语言；Listing 字段标题中文在前，平台原始 key 仅作次级技术标识；所有英文/马来文/阿语等目标市场外文 Listing、内容与资产可见文案必须在同一对象提供中文释义/用途；英文/目标模型 Prompt 必须与中文 Canonical Prompt 成对。',
-    '只做当前 SKU 的目标市场/平台视觉资产策展和逐资产生产提示词，本轮不生成图片；先建立商品真源、购买决策、创意机会和动态 Surface，并确保摄影/CMF/构图参数进入最终 Prompt。',
+    '只做当前 SKU 的目标市场/平台视觉资产策展和逐资产生产提示词，本轮不生成图片；先建立商品真源、购买决策、创意机会和动态 Surface，由 Agent 逐资产决定视觉载体、产品是否出现、构图与相关执行参数；只把当前资产已选且会改变结果的构图/摄影/灯光/CMF等参数贯穿到最终 Prompt，不相关摄影字段不强制生成。',
     '审查当前营销策划或提示词，定位写了但未被生产链消费、同风格同布局、产品失真、平台不原生或文案与画面脱节的责任层，只修对应层。',
 ]
 
@@ -102,6 +102,9 @@ description: 用于跨境电商 Product Truth、动态研究、SKU/Offer、Listi
 ---
 # Cross-Border Commerce Creative v{version}
 
+## Agent Creative Authority
+商业策略、资产策展与视觉设计由宿主 Agent 主导；Runtime 只负责 validate / serialize / compile / trace / execute / package / test。逐资产必须由 Agent 决定视觉载体、产品是否出现及其角色、主体/动作/环境/道具、空间语法与相关时的摄影/灯光/CMF。缺失 Art Direction 时返回 Agent 补决策，不得自动补 packshot、centered hero、left-text/right-product 或其他模板。Product Reference/Fidelity 不等于 Product Presence。
+
 完整 Agent/Skill 权威位于 `resources/SKILL.md`。复杂任务开始前读取它；当前交付执行代码位于 `resources/runtime/cbcc/delivery_export.py` 与 `resources/runtime/cbcc/delivery_workspace.py`。
 
 ## 最终交付硬合同
@@ -115,7 +118,7 @@ description: 用于跨境电商 Product Truth、动态研究、SKU/Offer、Listi
 2. **产品真实事实审计与卖点分级**：Fact → 真实卖点 → 可感知利益 → 情绪价值 → 不可宣称/Claim Boundary → A/B/C证据等级 → 来源/发布边界。C不得成为硬宣称。
 3. **平台×区域×人群×族裔文化洞察**：回答为什么这个平台、区域、人群与文化语境；包含交叉性、语言/宗教/节庆/支付/物流/法规、包容性表征、禁忌/刻板印象与依据/假设。
 4. **营销框架与核心策略**：定位、价值主张、信息层级、STP+JTBD、4P/内容漏斗；FULL 中 RACE=Research→Action→Communication→Evaluation。每条重要策略给依据+取舍+执行+指标，不堆概念。
-5. **视觉总策略与拍摄执行**：风格/情绪板、构图、主辅背景文字色HEX及对比、CMF、灯光方向/CCT/光比/柔硬、镜头焦段、景别/机位、场景/道具、模特服化道、平台尺寸、镜头表；人物适用时执行肤色测光、深肤色暗部保护、反光板/柔光、发质/体型/年龄/残障与AI偏见控制。
+5. **视觉总策略与按需媒介/拍摄执行**：先由 Agent 确定视觉载体、产品 presence/role、构图、空间节奏、证据层级、主辅背景文字色HEX及对比、CMF/材质与平台尺寸；只有真实摄影/摄影式生成路线才继续策划灯光方向/CCT/光比/柔硬、镜头焦段、景别/机位、Prelight与镜头表；人物适用时执行肤色测光、深肤色暗部保护、反光板/柔光、发质/体型/年龄/残障与AI偏见控制。
 6. **分平台内容矩阵**：平台/人群/选题/钩子/脚本结构/视觉形式/CTA/指标/RACE阶段/文化与禁忌，同时包含尺寸、时长、封面首帧、字幕、音乐版权、流量机制、落地页与UTM/等价归因；未知标待查证。
 7. **RACE传播框架执行表**：Research / Action / Communication / Evaluation 四阶段，包含目标、关键动作、输出物、平台、文化校验、KPI、WHY。
 8. **族裔文化适配检查表**：文化适配点、包容性表征、刻板印象/禁忌、校验结果、修改动作、WHY。

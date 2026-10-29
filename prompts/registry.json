@@ -1,5 +1,5 @@
 {
-  "version": "0.6.1-hard-contract-html",
+  "version": "0.6.30-agent-art-direction-authority",
   "prompts": [
     {
       "id": "PROMPT-MASTER-STRATEGY",
@@ -34,7 +34,7 @@
     {
       "id": "PROMPT-VISUAL-PHOTO",
       "path": "visual_photography_strategy.md",
-      "purpose": "Visual and photography rationale."
+      "purpose": "Agent-authored visual/art direction; photography, lighting and CMF are consumed only when relevant to the selected carrier/production route."
     },
     {
       "id": "PROMPT-PLATFORM-MATRIX",
@@ -44,7 +44,7 @@
     {
       "id": "PROMPT-ASSET-CURATION",
       "path": "dynamic_asset_curation.md",
-      "purpose": "Dynamic asset reason-to-exist curation."
+      "purpose": "Host-Agent dynamic portfolio curation: asset existence/omission, visual carrier, product-presence rhythm and per-asset handoff."
     },
     {
       "id": "PROMPT-CULTURE",
@@ -219,7 +219,7 @@
     {
       "id": "PROMPT-CREATIVE-SURFACE-CANONICAL",
       "path": "creative_direction_surface_prompt_compiler.md",
-      "purpose": "Compile divergent creative directions, dynamic surface representation and per-asset Design Card into executable CN/EN canonical production prompts."
+      "purpose": "Consume Agent-authored direction and per-asset Art Direction into surface-native executable CN/EN prompts without inventing product/layout fallbacks."
     },
     {
       "id": "PROMPT-SEVEN-TOOLS",
