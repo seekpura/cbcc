@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import cbcc.delivery_workspace as delivery_workspace
 from cbcc.project_authored_html import project_authored_html
 
 
@@ -59,3 +62,21 @@ def test_project_authored_html_preserves_underlying_business_pages():
     assert 'data-route="visual"' in out
     assert 'data-route="assets"' in out
     assert '配方' in out
+
+
+def test_delivery_workspace_wires_project_authored_transform(tmp_path, monkeypatch):
+    package_dir = tmp_path / 'project'
+    package_dir.mkdir()
+    output = package_dir / 'index.html'
+
+    def fake_legacy(package_dir: Path, output: Path, title: str = 'CBCC Delivery') -> Path:
+        output.write_text(SAMPLE, encoding='utf-8')
+        return output
+
+    monkeypatch.setattr(delivery_workspace, '_build_legacy_delivery_html', fake_legacy)
+    result = delivery_workspace.build_delivery_html(package_dir, output)
+    out = result.read_text(encoding='utf-8')
+    assert 'cbcc-project-authored-workspace' in out
+    assert 'class="sidebar"' not in out
+    assert '<h2>项目地图</h2>' in out
+    assert out.count('class="route-link project-object-link') == 1
