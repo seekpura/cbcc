@@ -1,58 +1,73 @@
 # Final Output Contract — 人类交付权威
 
-## 1. HTML 是完整正式交付，不是能力目录
-`index.html` 必须是自包含、可直接使用的人类工作区。它既不能退化成长篇 Markdown 报告，也不能退化成固定导航 + 摘要卡 + 状态徽章的 dashboard。
+## 1. HTML 是完整正式交付，而且必须正常交互
+`index.html` 必须是自包含、可直接使用的离线人类工作区。它不是长篇 Markdown 报告、不是把所有模块按顺序摊在同一页、也不是只有摘要卡/状态徽章的 dashboard。
 
-**一级信息架构、页面数量、导航方式、首页、对象层级、交互模式和视觉结构都由当前项目作者化。** 生成器不得预设“工作台 / 产品事实 / 市场 / Listing / 策略 / 视觉 / 资产 / Prompt / 合规 / 来源”等固定菜单，也不得把内部七工具、九域、Runtime 模块或文件目录直接映射成人类导航。
+**FULL / 高密度项目的交互底座不得低于 v0.6.36：**
+- 当前项目真实存在的一级业务对象进入可切换路由；没有内容的对象不占页面；页数不固定；
+- 正常浏览时一次只显示一个一级工作面，不把 Product Truth / Market / Listing / Strategy / Content / Visual / Assets / Prompt / Risk / Sources 全部纵向摊开；
+- 模块内部可以有局部子视图 / Tabs / Lenses，一次聚焦当前主题；
+- 资产库负责选择资产，每个资产进入独立详情路由，再查看 Design Card、画面/版式、摄影/CMF、文案、Prompt、Production、QA 等相关视图；
+- 保留搜索、复制、对象切换、响应式导航和打印/PDF 投影；
+- 用户不需要跳出 HTML 或打开 MD/JSON/TXT 才能理解、复制或执行核心工作。
 
-先理解当前项目真正存在的商业对象、购买问题、运营动作、资产关系和信息密度，再决定最适合的界面。允许但不要求使用画布、对象桌面、组合页、矩阵、时间线、对比视图、Portfolio、Inspector、Drawer、Tab、Search、Filter、详情页、单页叙事或其他交互。**这些只是可选表现手段，不是模板。**
+“项目作者化”只决定**哪些真实对象存在、如何命名/排序/分组、模块内部如何组织、视觉主题和信息密度**；它不允许删除上述交互底座，也不允许把 FULL 项目重新压成一条长单页。稳定工作区骨架不是固定内容模板。
 
-完整性由“用户是否能在 HTML 内理解并执行当前项目”判断，不由页数、菜单数、卡片数或栏目齐全判断。
+## 2. FULL 深度只能增加，不能因 UI 重构被压缩
+FULL 项目的九域决策深度仍是完整度合同，不是九个固定页面。Product Truth、研究、平台×区域×人群×文化、策略、Listing、内容、Visual/Photography、Video、Asset Universe、逐资产生产对象、Economics/Offer、Ads、Review、Evidence/Risk 等按当前项目相关性完整保留。
 
-## 2. 内容完整，表现动态
-FULL 项目的 Product Truth、研究、策略、Listing、视觉/视频策展、逐资产生产对象、Economics/Offer、Ads/Review/Evidence 等能力按当前项目相关性保留完整内容，但它们不拥有固定页面权。
+运营执行台是**增量工作面**：可集中展示“现在做什么、直接使用什么对象、完成标准、看什么指标决定下一步”，但不能替代 Listing 最终文案、策略正文、视觉策展、逐资产详情、经济性或证据对象。
 
-同一对象可以在一个界面里融合多类信息，只要这样更符合真实使用。例如某个 Asset Inspector 可以同时呈现购买任务、证据、构图、文案、Prompt、生产和 QA；不要求拆成若干固定子页。反过来，复杂对象也可以拆成多个专用视图。由项目决定。
+摘要可以做入口，不能做正文替代。若信息对执行有价值，必须在 HTML 中可直接查看/展开/复制/进入完整对象。
 
-不得使用“摘要卡存在 = 完整内容存在”的替代逻辑。若某条信息对用户执行有实质价值，应在主工作区中可直接展开、查看、复制或操作；不能要求用户跳到目录中的 MD/JSON/TXT 才看到真正内容。
+## 3. Asset Universe 与平台上线槽位严格分离
+平台 `max_images=9`、`max_images=7`、`max_videos=1` 等只约束**一次同时上线的 Live / Activation Set**，绝不约束候选 Asset Universe 总量。
 
-## 3. 逐资产交付
-每个被当前项目激活的视觉/视频资产都必须在 HTML 中可进入完整生产对象，但**不规定统一详情页结构或字段顺序**。需要展示什么，由该资产的视觉载体、商业任务和生产路线决定。
+资产总量由购买决策、Surface、创意假设、测试与运营需求决定。允许并应在有独立价值时保留：
+- 多 Hero：H01 / H02 / H03…；
+- 同一卖点的不同视觉/证据假设：B01 / B02 / B03…；
+- Paid Ads 多 Hook / 构图 / 人群 / Offer 版本；
+- PDP / A+ / Detail / Longform；
+- Store / Banner；
+- Social / Creator / UGC；
+- Short Video / Live；
+- Test Pool / Rotation Pool / Campaign / Seasonal。
 
-当相关时，人类应能直接看到：购买任务与创意假设、Product Role、Design Card、目标市场可见文案及中文释义、Model Prompt CN、Model Prompt EN、Production / Assembly Notes、参考图/真源边界、摄影/灯光/CMF/材质、视频时序/声音、实际输出 QA 与最小修复路径。
+平台槽位只决定哪些候选进入当前 Live Set。**“最多 9 图”绝不能被解释为“只策划/只生产 9 个资产”。** 20、30、50 个候选都可以，只要每个有独立商业/创意假设与增量信息。
 
-Graphic / Illustration / Native Text / 3D 等非摄影资产不得为了统一模板被强制显示镜头、ISO、CCT 等无关字段。Photography/Video 资产则必须保留真正影响结果的执行参数。
+人类 HTML 应区分 `Asset Universe / Live Candidates / Test Pool / Rotation Pool / Paid Media / PDP-A+ Content / Archive` 等状态，让运营能看懂“现在上线什么”和“还有什么可测试/轮换”。
 
-## 4. Listing / 文案 / 本土化
-Listing 最终可发布字段需要在人类界面直接可读、可复制。字段标题默认中文优先，平台原始 key 可作为次级技术信息。
+## 4. 逐资产必须是完整商业生产对象
+每个激活资产必须能进入完整对象。按相关性直接可见：购买问题、Strategic Job、Creative Thesis、Product Presence / Role、Decisive Moment、subject/action/environment/props/evidence、composition/spatial geometry、scale/depth/occupancy/focal path/negative space、Visible Copy 与中文释义、CMF/material/color、相关 Camera/Lighting/Human 参数、Surface/Output、Model Prompt CN、Model Prompt EN、Production / Assembly Notes、Reference/Truth/Claim 边界、实际输出 QA、最小修复路径、与相邻资产的 Portfolio Delta。
 
-目标市场英语、马来语、阿语等消费者可见文案保留原文，并在同一对象提供中文释义/用途。搜索词可以解释搜索意图，不要求机械逐词翻译。
+Graphic / Illustration / Native Text / 3D 不强塞无关摄影字段；Photography / Video 必须保留真正改变结果的执行参数。
 
-## 5. 数字与状态完整性
-HTML 不得为了让页面显得“完整”而虚构价格、预算、ROAS、CVR、平台费、佣金、物流成本、认证、排名、销量或其他数字。
+真实商品需要出现时，真实商品图默认作为强 Reference Input 进入完整最终成图，保留商品身份；`EXACT_PIXEL_COMPOSITE` 仅在明确要求源图原像素层不可改变时使用。
 
-市场价格带可以作为研究证据或测试假设；只有明确输入与决策支持时才能成为 Pricing Decision。缺失成本/费率/CVR 保持 `MISSING_INPUT`。
+## 5. Listing / 文案 / 本土化
+Listing 最终可发布字段必须直接可读、可复制。人类字段标题中文优先，平台原始 key 作为次级技术标识。
 
-状态徽章、Gate、hash、Runtime Consumer、Provider receipt 等是次级运行信息。它们可以帮助审阅，但不能成为主要内容或取代商业判断、创意和最终文案。
+目标市场英语、马来语、阿语等消费者可见原文保留，并在同一对象给中文释义/用途。逐资产 Visible Copy 也遵循同一规则。
 
-## 6. 语言与源文件
-默认 `delivery_locale = zh-CN`，用户明确要求其他语言时覆盖。目标市场可见文案按目标语言保留；中文负责项目使用者的理解与执行。
+## 6. 商业能力连续性
+七大能力始终是一等能力：Market Research；Product Strategy（SKU + Pricing + Economics + Offer）；Listing Creative；Product Image；Product Video；Advertising Optimization；Review Analysis。按项目相关性激活，不是固定七步流水线，也不能因视觉/HTML升级被挤掉。
 
-MD / JSON / TXT / per-asset package 继续作为可编辑、机器、版本和审计真源，但不是人类理解项目的前置步骤。完整人类交付应能在 HTML 内完成主要理解、判断与操作。
+Pricing/Economics 只使用显式输入。缺少成本、平台费、履约、佣金、税、退款预留、CVR 等保持 `MISSING_INPUT`；不得为填 UI 虚构价格、预算、ROAS、CVR、费率、销量、认证或排名。
 
 ## 7. 视觉与交互质量
-HTML 自身也是设计交付。视觉系统应由当前商品、品牌、市场、CMF、信息密度和使用场景派生，而不是统一绿色后台、统一卡片网格或统一左侧栏。
+主题、CMF、密度和局部组件可由当前商品/品牌/市场派生；不要所有项目同一绿色、同一卡片风格、同一布局。但交互创新不能牺牲可用性：FULL 项目不能因为“作者化”失去路由、对象详情、搜索、复制或正常阅读层级。
 
-桌面、移动端、横版/竖版是否适配由真实目标决定。固定目标保持真实几何；需要 responsive 时再做多端重构。不要把横版内容硬塞成竖版预览，也不要为了“响应式”改变本来不应改变的设计关系。
+桌面/移动端按真实使用目标响应；固定几何目标保持真实几何。打印/PDF 是工作区投影，不反过来主导网页结构。
 
-## 8. 交付前自检
-交付前只问这些结果问题：
-- 当前项目的重要商业判断是否真正可见？
-- 最终 Listing / 文案是否真正可用？
-- Visual / Video 是否体现真实策展而非模板轮换？
-- 每个激活资产是否能进入足够深的生产对象？
-- 页面组织是否来自这个项目，而不是来自 CBCC 能力目录？
-- 用户是否需要跳出 HTML 才能找到真正内容？
-- 页面是否出现了为填 UI 而虚构的数字或状态？
+## 8. 交付前强制回归检查
+交付前至少确认：
+- 正常浏览时是否一次聚焦一个一级工作面，而不是全部内容一页纵向摊开；
+- Listing/策略/视觉/资产/运营等真实对象是否都能直接进入；
+- 资产库是否能进入独立资产详情与完整 Design Card / Prompt / Production；
+- 搜索、复制、子视图、响应式交互是否仍可用；
+- Asset Universe 是否独立于平台 Live Slot 容量，多 Hero / Paid / PDP / Social / Video 变体是否被错误截断；
+- 运营执行是否只是增量入口，而没有替代完整内容；
+- 是否出现虚构数字或把 MISSING_INPUT 当 0；
+- 是否要求用户去文件夹找真正正文。
 
-若答案暴露结构性问题，重新设计信息架构；不要继续在固定模板上加卡片。
+任一 P0 回归出现，都不能把交付标记为完成。
