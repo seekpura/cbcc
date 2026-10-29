@@ -68,7 +68,9 @@ def test_full_export_revalidates_depth_and_materializes_visible_audits(tmp_path:
     assert depth['mode']=='FULL'
     assert depth['status']=='PASS', depth
     assert depth['depth_contract']=='FULL_DECISION_DEPTH_V1'
-    assert prompt['status']=='PASS'
+    # Prompt/generation readiness remains visible for production work, but it is not a FULL-project gate.
+    assert prompt['status']=='READY', prompt
+    assert prompt['project_completion_blocking'] is False
     assert language['status']=='PASS', language
     for token in [
         '信息完整度、待确认清单、假设与决策日志',
@@ -85,12 +87,14 @@ def test_full_export_revalidates_depth_and_materializes_visible_audits(tmp_path:
     assert manifest['workspace_contract']['full_decision_depth']=='PASS'
     assert manifest['workspace_contract']['full_visible_objects']=='PASS'
     assert manifest['workspace_contract']['foreign_human_copy_has_chinese_companion'] is True
+    assert manifest['workspace_contract']['prompt_generation_readiness']=='READY'
+    assert manifest['workspace_contract']['prompt_generation_readiness_blocks_project_completion'] is False
     assert manifest['full_delivery_depth_audit']=='FULL_DELIVERY_DEPTH_AUDIT.json'
     assert manifest['prompt_consumption_audit']=='PROMPT_CONSUMPTION_AUDIT.json'
     assert manifest['human_language_audit']=='HUMAN_LANGUAGE_AUDIT.json'
 
 
-def test_plugin_wrapper_requires_full_depth_and_prompt_consumption_audit(tmp_path:Path):
+def test_plugin_wrapper_requires_full_depth_and_nonblocking_prompt_audit(tmp_path:Path):
     # The repair script is idempotent; CI applies it before this test, but running it here makes
     # the contract independently reproducible in local acceptance.
     subprocess.run([sys.executable,str(ROOT/'scripts/repair_plugin_full_depth_contract.py')],cwd=ROOT,check=True)
@@ -101,6 +105,8 @@ def test_plugin_wrapper_requires_full_depth_and_prompt_consumption_audit(tmp_pat
         '九域决策深度合同',
         'FULL 与 TASK_SCOPED 分权',
         'host_custom_short_report_cannot_substitute_full_delivery',
+        'prompt_consumption_blocks_project_completion',
+        'product_source_default_reference_guided',
     ]:
         assert token in source, token
 
@@ -110,4 +116,8 @@ def test_plugin_wrapper_requires_full_depth_and_prompt_consumption_audit(tmp_pat
     dc=release['delivery_contract']
     assert dc['full_nine_domain_decision_depth_required'] is True
     assert dc['prompt_consumption_audit_required'] is True
+    assert dc['prompt_consumption_blocks_project_completion'] is False
+    assert dc['product_source_default_reference_guided'] is True
+    assert dc['photorealism_default_required'] is False
+    assert dc['seven_agent_capability_continuity_required'] is True
     assert dc['host_custom_short_report_cannot_substitute_full_delivery'] is True
