@@ -44,7 +44,7 @@ _SCOPE_FIELDS: dict[str, set[str]] = {
     'RESEARCH': {
         'quote', 'excerpt', 'customer_voice', 'consumer_voice', 'consumer_quote', 'shopper_quote',
         'competitor_copy', 'competitor_title', 'competitor_description', 'category_label', 'segment_label',
-        'positioning', 'value_proposition', 'message', 'insight', 'insight_label', 'claim_copy',
+        'positioning', 'value_proposition', 'insight', 'insight_label', 'claim_copy',
     },
 }
 
@@ -100,7 +100,6 @@ def _same_object_companion(obj: dict[str, Any], key: str, foreign_field_count: i
         if isinstance(comp, dict):
             if _cn_value(comp.get(key)):
                 return True
-            # Support common normalized names without forcing one exact schema.
             for alias in (f'{key}_zh', f'{key}_cn', f'{key}_meaning', f'{key}_intent'):
                 if _cn_value(comp.get(alias)):
                     return True
@@ -112,7 +111,7 @@ def _foreign_human_fields(obj: dict[str, Any], allowed: set[str]) -> list[str]:
     for raw_key, value in obj.items():
         key = str(raw_key)
         low = key.casefold()
-        if low in _SKIP_KEYS or low in _COMPANION_CONTAINER_KEYS:
+        if low in _SKIP_KEYS or low in {x.casefold() for x in _COMPANION_CONTAINER_KEYS}:
             continue
         if any(low.endswith(s.casefold()) for s in _COMPANION_SUFFIXES):
             continue
@@ -138,7 +137,7 @@ def _audit_structured_copy(value: Any, scope: str, path: tuple[str, ...] = ()) -
                 })
         for key, child in value.items():
             low = str(key).casefold()
-            if low in _COMPANION_CONTAINER_KEYS or any(low.endswith(s.casefold()) for s in _COMPANION_SUFFIXES):
+            if low in {x.casefold() for x in _COMPANION_CONTAINER_KEYS} or any(low.endswith(s.casefold()) for s in _COMPANION_SUFFIXES):
                 continue
             issues.extend(_audit_structured_copy(child, scope, path + (str(key),)))
     elif isinstance(value, list):
@@ -207,6 +206,35 @@ def _audit_supporting_human_content(package_dir: Path) -> list[dict[str, Any]]:
     return issues
 
 
+def _asset_visible_copy_companion_present(package_dir: Path, asset_id: str) -> bool:
+    asset_dir = Path(package_dir) / 'asset_packages' / asset_id
+    # Modern formal package puts the human copy contract in 14_visible_copy_block.json; older packages
+    # may keep it in 04_layout_contract.json. Accept either when Chinese meaning is actually present.
+    for path in (asset_dir / '14_visible_copy_block.json', asset_dir / '04_layout_contract.json'):
+        data = _read_json(path)
+        candidates = [data]
+        if isinstance(data.get('visible_copy'), dict):
+            candidates.append(data.get('visible_copy'))
+        for obj in candidates:
+            if not isinstance(obj, dict):
+                continue
+            for key in ('delivery_translation_zh', 'delivery_translation', 'chinese_interpretation', 'zh', 'zh_cn', 'zh-CN', '中文释义'):
+                if _cn_value(obj.get(key)):
+                    return True
+    return False
+
+
+def _reconcile_base_asset_translation_issues(package_dir: Path, issues: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    reconciled: list[dict[str, Any]] = []
+    for issue in issues:
+        if issue.get('code') == 'FOREIGN_ASSET_COPY_WITHOUT_CN_COMPANION':
+            asset_id = str(issue.get('asset_id') or '')
+            if asset_id and _asset_visible_copy_companion_present(package_dir, asset_id):
+                continue
+        reconciled.append(issue)
+    return reconciled
+
+
 def audit_global_chinese_interpretation(
     package_dir: Path,
     center: dict[str, Any],
@@ -218,12 +246,17 @@ def audit_global_chinese_interpretation(
     it verifies completeness and blocks a false finished state.
     """
     base = deepcopy(base_audit or audit_human_language_delivery(package_dir, center))
-    issues = list(base.get('issues') or [])
+    issues = _reconcile_base_asset_translation_issues(package_dir, list(base.get('issues') or []))
     global_issues = _audit_preserved_listing(center) + _audit_supporting_human_content(package_dir)
     issues.extend(global_issues)
 
     base['issues'] = issues
     base['status'] = 'PASS' if not issues else 'INCOMPLETE'
+    # Keep sub-statuses consistent after reconciliation.
+    base['assets'] = dict(base.get('assets') or {})
+    remaining_asset_issues = [x for x in issues if str(x.get('scope') or '').startswith('ASSET')]
+    base['assets']['status'] = 'PASS' if not remaining_asset_issues else 'INCOMPLETE'
+    base['assets']['issue_count'] = len(remaining_asset_issues)
     base['global_human_content'] = {
         'status': 'PASS' if not global_issues else 'INCOMPLETE',
         'issue_count': len(global_issues),
