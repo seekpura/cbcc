@@ -10,6 +10,45 @@ The Prompt Compiler is a compiler, not the creative director. It preserves Agent
 
 Later layers may faithfully translate or technically adapt earlier decisions. They may not silently redesign them.
 
+## v0.6.32 lossless production-parameter closure — highest prompt precedence
+**Prompt compression may remove repeated words; it may not remove a selected value that changes pixels, timing, motion, composition, light, material response, source integration or output behavior.** If the Agent selected it because it matters to the result, the production chain must consume it.
+
+For every asset, build a `production_parameter_closure` from the authored Art Direction before calling the Model Prompt READY:
+- selected parameter/value;
+- why it matters to this asset;
+- route applicability;
+- projection target;
+- exact or semantically faithful consumption in Model Prompt / Visible Copy / Production Notes;
+- explicit N/A reason where appropriate;
+- unresolved/missing parameter requiring Agent completion.
+
+A Prompt Consumption Audit that proves only field names or broad categories is invalid. Concrete values such as `85mm`, `camera height 12 cm above product center`, `pitch -3°`, `working distance 1.2 m`, `f/8-equivalent deep label focus`, `key 45° camera-left through 120 cm diffusion at 1.1 m`, `negative fill camera-right`, `5200K / neutral WB`, `2:1 key-fill`, `protect white-pack highlights below clipping`, `#0B3B31`, `product envelope 68% frame height`, `copy-safe left 36%`, `final grade neutral-warm with restrained specular roll-off` are the evidence of closure when those values were selected upstream.
+
+### Photography execution depth
+When the selected carrier/route uses photographic grammar, the Agent must author a useful route-specific starting contract before Prompt compilation. Depending on the asset, this can include focal length/lens family, working distance, camera height/yaw/pitch/roll, shot size, focus plane, aperture/DOF, shutter/ISO for real capture or motion, key/fill/negative/rim geometry, modifier size/distance, CCT/WB, light ratio, exposure/shadow/highlight policy, reflection/polarization, Prelight, CMF/material response, color management and finishing look.
+
+The compiler must not replace a missing execution contract with `soft light`, `editorial`, `premium`, `85mm look`, or `warm white`. If a useful parameter is missing, expose `ART_DIRECTION_EXECUTION_DEPTH_REQUIRED` for Model Prompt readiness and return to the Agent. Wider project/strategy delivery may continue; the incomplete Prompt is the part that is not READY.
+
+### Locked-source composite / plate prompting
+A locked source product is not a reason to compile an empty-background prompt.
+
+If the final visual contains `LOCKED_PIXEL / LOCKED_SOURCE_COMPOSITE` product layers, the **generated plate prompt still describes the final composite system**:
+- product envelope / occupancy / relative placement;
+- depth relationship between real source layers;
+- receiving surface / contact point;
+- camera/perspective relationship the environment must match;
+- contact-shadow direction/density/softness;
+- reflection/specular receiving behavior where relevant;
+- ambient/key/fill direction and ratio;
+- CCT/WB / grade-match target;
+- foreground/occlusion relation where relevant;
+- copy/evidence safe areas around the final composition.
+
+The model is told not to render the locked product itself, but it must generate a plate designed **around the real final product geometry and light**. `warm ivory background + reserve space + no product` is not production-ready when the final geometry/light program is already known.
+
+### No lossy hand-authored Prompt override
+If `asset_art_direction.model_prompt_cn/en` is supplied manually, it does not bypass parameter closure. The compiler/audit still compares that Prompt against all selected generation-relevant values. A hand-written short Prompt that drops selected camera/light/composition/CMF/video parameters must be returned for revision.
+
 ## Four distinct production objects — never collapse them
 When production prompts are requested, every activated visual/video asset uses four distinct objects:
 
@@ -59,12 +98,12 @@ Do not force photography fields onto graphic, illustration, source/document or o
 Prefer natural positive-first generation language rather than schema dumps.
 
 ### Image / still
-`output/canvas → visual objective/style → carrier/scene → subject/action/product role → composition/layout/scale/focal path/negative space → evidence hierarchy → camera (if relevant) → light/material/CMF/color (if relevant) → human representation (if relevant) → exact copy behavior → finishing look → negative/truth constraints`
+`output/canvas → visual objective/style → carrier/scene → subject/action/product role → composition/layout/scale/focal path/negative space → evidence hierarchy → camera geometry/focus/exposure (if relevant) → light geometry/material/CMF/color (if relevant) → human representation (if relevant) → exact copy behavior → finishing look → truth constraints`
 
 ### Video
-`duration/aspect/platform → hook/decision objective → shot/beat progression → subject/product role → camera and motion → lighting/CMF → visible copy/CTA behavior → transition/audio rhythm → finishing look → truth/safety constraints`
+`duration/aspect/platform → hook/decision objective → shot/beat progression → subject/product role → camera/subject motion → frame rate/stabilization when relevant → lighting/CMF → visible copy/CTA behavior → transition/audio rhythm → finishing look → truth/safety constraints`
 
-The prompt should read like something an expert would actually give a current image/video generation model, not like a debug trace or JSON schema rendered into prose.
+The prompt should read like something an expert would actually give a current image/video generation model, not like a debug trace or JSON schema rendered into prose. Detailed execution does not mean dumping labels; write concrete values as natural visual instructions.
 
 ## Product presence rules
 - **No silent default to product subject.** Missing Product Presence is an upstream Art Direction gap.
@@ -78,6 +117,7 @@ The prompt should read like something an expert would actually give a current im
 - Copy budget constrains information density; it does not determine geometry.
 - Coherence comes from selected continuity tokens. Different decision jobs may and often should create materially different spatial structures.
 - Do not chase arbitrary novelty; differences must come from different information relationships, evidence, actions, subjects, scale or Surface behavior.
+- Platform maximum asset count is capacity, not a target. Do not activate every slot merely because it exists.
 
 ## Parameter Consumption Audit — concrete values, not field names
 Prompt readiness is proven by **actual selected values**. A row such as `surface size / composition / palette / camera` repeated in both Selected and Projected is not evidence.
@@ -95,7 +135,8 @@ Also validate:
 - exact visible-copy preservation in the correct object;
 - product-presence consistency between Art Direction, model prompt and layer plan;
 - selected photographic/video parameters only when relevant;
-- no fake readiness when bilingual creative semantics or copy-render route is unresolved.
+- locked-source plate/final-composite geometry closure;
+- no fake readiness when bilingual creative semantics, execution-depth parameters or copy-render route is unresolved.
 
 ## Human delivery depth / no silent compression
 Semantic compression may remove repeated explanation; it may **not** remove materially distinct strategy, visual, content or per-asset decisions.
@@ -103,9 +144,12 @@ Semantic compression may remove repeated explanation; it may **not** remove mate
 The human workspace must preserve:
 - the full project Visual Master / CMF / platform specification logic;
 - per-asset Art Direction with the concrete parameters that change pixels/behavior;
+- production-parameter closure and explicit N/A reasons;
 - content/platform execution matrices at their authored decision depth;
 - Model Prompt CN/EN separately from Visible Copy and Production Notes;
 - Prompt Consumption Audit as a diagnostic, not the dominant content of the delivery.
+
+The asset Inspector must not collapse the Design Card to a few fields such as `carrier / occupancy / composition / camera / lighting`. Show the authored decisive moment, subject/action/environment/props, spatial grammar, scale/depth, focal path, negative space, evidence hierarchy, CMF/material response, camera/focus/exposure, light geometry, copy zone, finishing look, video timing/motion and WHY when applicable.
 
 Do not let repeated Prompt boilerplate consume more information budget than the strategy/visual/content decisions that created it.
 
@@ -122,7 +166,7 @@ Do not let repeated Prompt boilerplate consume more information budget than the 
 - No internal strategy-state/gate chatter, IDs, RACE/KPI metadata, audit prose or runtime assembly implementation in the model prompt.
 
 ## Failure behavior
-If requested production reaches the compiler without a per-asset decision that materially affects pixels/behavior—especially visual carrier, product presence, composition hierarchy, subject, bilingual render semantics, copy-render mode or selected execution parameters—expose the missing Agent decision. Do not hide it with a product hero, generic left/right layout, generic photography recipe, mixed-language “English” prompt or universal post-composite text rule.
+If requested production reaches the compiler without a per-asset decision that materially affects pixels/behavior—especially visual carrier, product presence, composition hierarchy, subject, bilingual render semantics, copy-render mode or route-specific execution parameters—expose the missing Agent decision. Do not hide it with a product hero, generic left/right layout, generic photography recipe, mixed-language “English” prompt, empty-background plate or universal post-composite text rule.
 
 This is production readiness, not permission to erase strategy/Listing/curation work already completed.
 
