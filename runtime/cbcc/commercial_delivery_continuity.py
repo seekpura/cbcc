@@ -6,6 +6,8 @@ import json
 
 from .commerce_decision_context import compile_commerce_decision_context
 from .commercial_intelligence_workspace import render_commercial_intelligence_workspace, commercial_intelligence_css
+from .asset_portfolio_taxonomy import enrich_asset_portfolio_taxonomy, portfolio_taxonomy_summary
+from .asset_portfolio_workspace import render_asset_portfolio_workspace, asset_portfolio_css
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -19,6 +21,31 @@ def _read_json(path: Path) -> dict[str, Any]:
 def _write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+
+def _asset_portfolio(project: Path, target: dict[str, Any]) -> dict[str, Any]:
+    architecture = _read_json(project / 'artifacts' / 'asset_architecture.json')
+    assets = enrich_asset_portfolio_taxonomy(architecture.get('assets') or [])
+    summary = portfolio_taxonomy_summary(assets, target)
+    compact = []
+    for a in assets:
+        compact.append({
+            'asset_id': a.get('asset_id'),
+            'asset_family': a.get('asset_family'),
+            'surface': a.get('surface'),
+            'deployment_state': a.get('deployment_state'),
+            'variant_id': a.get('variant_id'),
+            'variant_cluster': a.get('variant_cluster'),
+            'test_hypothesis': a.get('test_hypothesis'),
+            'business_hypothesis': a.get('business_hypothesis'),
+            'decision_intent': a.get('decision_intent'),
+        })
+    return {
+        'summary': summary,
+        'assets': compact,
+        'commercial_curation_continuity': architecture.get('commercial_curation_continuity'),
+        'asset_universe': architecture.get('asset_universe'),
+    }
 
 
 def materialize_commerce_decision_context(project_dir: Path | str) -> dict[str, Any]:
@@ -39,6 +66,7 @@ def materialize_commerce_decision_context(project_dir: Path | str) -> dict[str, 
     context = compile_commerce_decision_context(
         domain=domain, strategy=strategy, culture=culture, target=target, decision_trace=decision_trace
     )
+    context['asset_portfolio'] = _asset_portfolio(project, target if isinstance(target, dict) else {})
     _write_json(artifacts / 'commerce_decision_context.json', context)
     _write_json(artifacts / 'strategy' / 'COMMERCE_DECISION_CONTEXT.json', context)
     return context
@@ -52,14 +80,19 @@ def compile_continuity_audit(project_dir: Path | str, context: dict[str, Any]) -
         for path in sorted(asset_root.glob('*/13_prompt_contract.json')):
             data = _read_json(path)
             continuity = data.get('commerce_decision_consumption_audit') or (data.get('prompt_consumption_audit') or {}).get('commerce_decision_continuity') or {}
+            subject = (data.get('design_card') or {}).get('subject_system') or {}
             assets.append({
                 'asset_id': path.parent.name,
                 'status': continuity.get('status') or 'MISSING_CONTINUITY_AUDIT',
                 'issues': continuity.get('issues') or [],
                 'bound_domains': continuity.get('bound_domains') or [],
                 'lineage_refs': continuity.get('lineage_refs') or [],
+                'subject_type': subject.get('subject_type'),
+                'subject_authority': subject.get('authority'),
             })
     gaps = [x for x in assets if x.get('status') not in {'PASS', 'NOT_BOUND'}]
+    portfolio = context.get('asset_portfolio') or {}
+    curation = portfolio.get('commercial_curation_continuity') or {}
     audit = {
         'status': 'PASS' if not gaps else 'INCOMPLETE',
         'context_status': context.get('status'),
@@ -67,7 +100,9 @@ def compile_continuity_audit(project_dir: Path | str, context: dict[str, Any]) -
         'asset_count': len(assets),
         'assets': assets,
         'gaps': gaps,
-        'rule': 'Commercial integration is proven by real downstream consumption, not by file presence or status/count summaries.',
+        'curation_continuity': curation,
+        'asset_portfolio_summary': portfolio.get('summary') or {},
+        'rule': 'Commercial integration is proven by real downstream consumption, not by file presence or status/count summaries. Platform activation capacity never caps the asset universe.',
     }
     _write_json(project / 'artifacts' / 'commercial_continuity_audit.json', audit)
     _write_json(project / 'artifacts' / 'strategy' / 'COMMERCIAL_CONTINUITY_AUDIT.json', audit)
@@ -84,12 +119,13 @@ def wrap_export_delivery_package(fn: Callable[..., dict[str, Any]]):
 
 def _commerce_page(context: dict[str, Any]) -> str:
     body = render_commercial_intelligence_workspace(context)
+    portfolio = render_asset_portfolio_workspace(context.get('asset_portfolio') or {})
     return (
         '<section class="page" data-route="commerce">'
         '<div class="page-head"><div><div class="kicker">COMMERCIAL INTELLIGENCE</div>'
         '<h1>商业洞察与决策血缘</h1>'
-        '<p>市场、区域、人群、价格经济、RACE、Listing、Ads、Reviews 与资产/Prompt 使用同一来源链；只显示当前项目真实存在的对象。</p>'
-        '</div></div>' + body + '</section>'
+        '<p>市场、区域、人群、价格经济、RACE、Listing、Ads、Reviews、资产策展与 Prompt 使用同一来源链；只显示当前项目真实存在的对象。</p>'
+        '</div></div>' + body + portfolio + '</section>'
     )
 
 
@@ -129,7 +165,7 @@ def wrap_build_delivery_html(fn: Callable[..., Path]):
         elif '</body>' in page:
             page = page.replace('</body>', route_page + '</body>', 1)
 
-        css = commercial_intelligence_css()
+        css = commercial_intelligence_css() + asset_portfolio_css()
         if '</style>' in page:
             page = page.replace('</style>', css + '</style>', 1)
         elif '</head>' in page:
