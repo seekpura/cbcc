@@ -69,9 +69,15 @@ def test_full_export_revalidates_depth_and_materializes_visible_audits(tmp_path:
     assert depth['depth_contract']=='FULL_DECISION_DEPTH_V1'
     assert prompt['status']=='PASS'
     for token in [
-        '信息完整度','产品真相与价值边界','市场 / 平台 / 人群 / 文化洞察','核心商业策略',
-        '视觉 / 摄影 / CMF / 资产策略','平台内容与 Surface 执行','RACE传播框架执行表',
-        '族裔文化适配检查表','P0/P1/P2'
+        '信息完整度、待确认清单、假设与决策日志',
+        '产品真实事实审计与卖点分级表',
+        '平台 × 区域 × 人群 × 族裔文化洞察',
+        '营销框架与核心策略',
+        '视觉总策略与拍摄执行清单',
+        '分平台内容矩阵表',
+        'RACE传播框架执行表',
+        '族裔文化适配检查表',
+        '合规、文化敏感与风险清单；评估指标与A/B测试建议；P0/P1/P2执行优先级与下一步需补充信息',
     ]:
         assert token in html, token
     assert manifest['workspace_contract']['full_decision_depth']=='PASS'
