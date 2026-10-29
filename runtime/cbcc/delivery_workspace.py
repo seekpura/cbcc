@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .delivery_html import build_delivery_html as _build_legacy_delivery_html
+from .project_authored_html import project_authored_html
 
 
 _OBJECT_WORKSPACE_CSS = r'''
@@ -51,16 +52,17 @@ def _transform_asset_compatibility(page: str) -> str:
 
 
 def build_delivery_html(package_dir: Path, output: Path | None = None, title: str = 'CBCC Delivery') -> Path:
-    """Build the human artifact without injecting a fixed operator dashboard or capability section.
+    """Build the human artifact as a project-authored object workspace.
 
-    Content authority stays with the underlying delivery renderer. This compatibility layer only
-    removes the obsolete asset phase-rail semantics. Project-level information architecture is an
-    Agent-authored design decision and must not be added here.
+    The legacy renderer remains the content authority so strategy/listing/asset depth is not lost.
+    Presentation is then rewritten away from the old capability sidebar and phase-rail grammar.
+    No operator dashboard or capability-proof section is injected at a fixed position.
     """
     package_dir = Path(package_dir)
     output = Path(output) if output else package_dir / 'index.html'
     result = _build_legacy_delivery_html(package_dir, output, title=title)
     text = result.read_text(encoding='utf-8')
     text = _transform_asset_compatibility(text)
+    text = project_authored_html(text)
     result.write_text(text, encoding='utf-8')
     return result
