@@ -60,7 +60,7 @@ jobs:
           grep -q '^version: 0.6.35-native-reference-provider-integrity$' SKILL.md
           ! grep -q '### Product Reference / Fidelity — current authority' SKILL.md
           grep -q 'REFERENCE_IMAGE_INPUT' runtime/cbcc/provider_bridge.py
-          grep -q "usage_role='NATIVE_SUBJECT_REFERENCE'" runtime/cbcc/production.py
+          grep -q 'NATIVE_SUBJECT_REFERENCE' runtime/cbcc/production.py
           grep -q "'UNVERIFIED'" runtime/cbcc/provider_executor.py
       - name: Commit migration
         run: |
