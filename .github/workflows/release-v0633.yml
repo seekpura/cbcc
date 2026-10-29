@@ -1,0 +1,188 @@
+name: CBCC v0.6.33 Reference-Guided Native Product + Dynamic Asset Universe Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v0633.yml'
+      - 'VERSION'
+      - 'SKILL.md'
+      - 'CHANGELOG_V0633.md'
+      - 'runtime/cbcc/reference_guided_native_authority.py'
+      - 'runtime/cbcc/asset_universe_authority.py'
+      - 'runtime/cbcc/asset_architecture.py'
+      - 'runtime/cbcc/compiler.py'
+      - 'runtime/cbcc/providers.py'
+      - 'runtime/cbcc/production.py'
+      - 'runtime/cbcc/asset_compiler.py'
+      - 'runtime/cbcc/delivery_html.py'
+      - 'runtime/cbcc/__init__.py'
+      - 'scripts/build_plugin_dist.py'
+      - 'tests/test_v0633_reference_guided_native_asset_universe.py'
+      - 'tests/test_v0633_asset_universe_workspace.py'
+      - 'tests/test_v0633_plugin_wrapper_authority.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release-v0633:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      PYTHONPATH: .:runtime
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install runtime test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+
+      - name: Verify active v0.6.33 authority
+        run: |
+          test "$(cat VERSION)" = "0.6.33-reference-guided-native-asset-universe"
+          grep -q '^version: 0.6.33-reference-guided-native-asset-universe$' SKILL.md
+          grep -q 'Reference-Guided Native Product + Dynamic Asset Universe Authority' SKILL.md
+          grep -q 'REFERENCE_GUIDED_NATIVE_LOCK' SKILL.md
+          grep -q 'EXACT_PIXEL_COMPOSITE' SKILL.md
+          grep -q '资产宇宙没有总数上限' SKILL.md
+          ! grep -q '生成可合成底片' scripts/build_plugin_dist.py
+
+      - name: Compile active authority modules
+        run: |
+          python -m py_compile \
+            runtime/cbcc/reference_guided_native_authority.py \
+            runtime/cbcc/asset_universe_authority.py \
+            runtime/cbcc/asset_architecture.py \
+            runtime/cbcc/compiler.py \
+            runtime/cbcc/providers.py \
+            runtime/cbcc/production.py \
+            runtime/cbcc/asset_compiler.py \
+            runtime/cbcc/delivery_html.py \
+            runtime/cbcc/__init__.py \
+            scripts/build_plugin_dist.py
+
+      - name: v0.6.33 native product, Asset Universe and workspace acceptance
+        run: |
+          pytest -q \
+            tests/test_v0633_reference_guided_native_asset_universe.py \
+            tests/test_v0633_asset_universe_workspace.py \
+            tests/test_v0633_plugin_wrapper_authority.py
+
+      - name: Preserve v0.6.32-v0.6.30 creative and prompt authority
+        run: |
+          pytest -q \
+            tests/test_v0632_production_parameter_closure.py \
+            tests/test_v0632_portfolio_visual_authority.py \
+            tests/test_v0632_human_art_direction_visibility.py \
+            tests/test_v0631_model_native_prompt_contract.py \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0630_surface_agent_authority.py \
+            tests/test_v0630_prompt_art_direction_projection.py \
+            tests/test_v0630_agent_art_direction_e2e.py
+
+      - name: FULL delivery and provider continuity
+        run: |
+          pytest -q \
+            tests/test_full_delivery_last_mile.py \
+            tests/test_reference_guided_video_provider_authority.py \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py
+
+      - name: Build installable Plugin and Skill archives
+        run: python scripts/build_plugin_dist.py --output-dir dist
+      - name: Build Runtime archive
+        run: python scripts/build_dist.py dist/cross-border-commerce-creative-runtime-v0.6.33.zip
+
+      - name: Verify packaged v0.6.33 authority and no composite-default regression
+        run: |
+          python - <<'PY'
+          import json, zipfile
+          from pathlib import Path
+          root=Path('dist')
+          plugin=root/'cross-border-commerce-creative-plugin-v0.6.33.zip'
+          skill=root/'cross-border-commerce-creative-skill-v0.6.33.zip'
+          runtime=root/'cross-border-commerce-creative-runtime-v0.6.33.zip'
+          for p in (plugin,skill,runtime):
+              assert p.exists() and p.stat().st_size > 10000, p
+          with zipfile.ZipFile(plugin) as z:
+              names=set(z.namelist())
+              base='cross-border-commerce-creative/skills/cross-border-commerce-creative/'
+              manifest=json.loads(z.read('cross-border-commerce-creative/plugin.json'))
+              assert manifest['version']=='0.6.33'
+              wrapper=z.read(base+'SKILL.md').decode('utf-8')
+              authority=z.read(base+'resources/SKILL.md').decode('utf-8')
+              defaults=json.dumps(manifest['extensions']['com.openai']['interface']['defaultPrompt'],ensure_ascii=False)
+              for required in [
+                  base+'resources/runtime/cbcc/reference_guided_native_authority.py',
+                  base+'resources/runtime/cbcc/asset_universe_authority.py',
+                  base+'resources/runtime/cbcc/asset_compiler.py',
+                  base+'resources/runtime/cbcc/delivery_html.py',
+                  base+'resources/tests/test_v0633_reference_guided_native_asset_universe.py',
+                  base+'resources/tests/test_v0633_asset_universe_workspace.py',
+              ]:
+                  assert required in names, required
+              assert 'REFERENCE_GUIDED_NATIVE_LOCK' in authority
+              assert '资产宇宙没有总数上限' in authority
+              assert 'Dynamic Asset Universe + Native Product Reference' in wrapper
+              assert 'EXACT_PIXEL_COMPOSITE' in wrapper
+              assert '强模型 Reference Input' in wrapper or '强模型输入' in wrapper
+              assert 'Hero/卖点/广告/A+/PDP/详情' in defaults
+              assert '生成可合成底片' not in wrapper
+              assert '生成可合成底片' not in defaults
+              native=z.read(base+'resources/runtime/cbcc/reference_guided_native_authority.py').decode('utf-8')
+              universe=z.read(base+'resources/runtime/cbcc/asset_universe_authority.py').decode('utf-8')
+              assert 'REFERENCE_GUIDED_NATIVE_GENERATION' in native
+              assert 'final_output_must_contain_generated_product' in native
+              assert "'fixed_total_asset_limit':False" in universe
+              assert 'Platform gallery capacity limits only the simultaneous live activation set' in universe
+          print('packaged v0.6.33 authority PASS')
+          PY
+
+      - name: Write SHA256 sums
+        run: |
+          cd dist
+          sha256sum \
+            cross-border-commerce-creative-plugin-v0.6.33.zip \
+            cross-border-commerce-creative-skill-v0.6.33.zip \
+            cross-border-commerce-creative-runtime-v0.6.33.zip \
+            release_manifest.json > SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbcc-v0.6.33-native-reference-asset-universe
+          path: |
+            dist/cross-border-commerce-creative-plugin-v0.6.33.zip
+            dist/cross-border-commerce-creative-skill-v0.6.33.zip
+            dist/cross-border-commerce-creative-runtime-v0.6.33.zip
+            dist/release_manifest.json
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish or refresh GitHub Release v0.6.33
+        run: |
+          if gh release view v0.6.33 >/dev/null 2>&1; then
+            gh release upload v0.6.33 \
+              dist/cross-border-commerce-creative-plugin-v0.6.33.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.33.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.33.zip \
+              dist/release_manifest.json dist/SHA256SUMS.txt --clobber
+            gh release edit v0.6.33 --title 'CBCC v0.6.33 — Reference-Guided Native Product + Dynamic Asset Universe' --notes-file CHANGELOG_V0633.md --latest
+          else
+            gh release create v0.6.33 \
+              dist/cross-border-commerce-creative-plugin-v0.6.33.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.33.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.33.zip \
+              dist/release_manifest.json dist/SHA256SUMS.txt \
+              --target "$GITHUB_SHA" \
+              --title 'CBCC v0.6.33 — Reference-Guided Native Product + Dynamic Asset Universe' \
+              --notes-file CHANGELOG_V0633.md --latest
+          fi
