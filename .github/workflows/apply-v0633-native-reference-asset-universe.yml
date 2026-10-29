@@ -11,10 +11,12 @@ on:
       - 'tests/test_v0633_reference_guided_native_asset_universe.py'
       - 'tests/test_v0633_asset_universe_workspace.py'
       - 'tests/test_v0633_plugin_wrapper_authority.py'
+      - 'tests/test_reference_guided_optional_prompt_and_capability_continuity.py'
       - 'scripts/apply_v0633_native_reference_asset_universe.py'
       - 'scripts/patch_v0633_native_reference_continuity.py'
       - 'scripts/patch_v0633_asset_universe_workspace.py'
       - 'scripts/patch_v0633_plugin_wrapper_authority.py'
+      - 'scripts/patch_v0633_reference_scope_semantics.py'
   workflow_dispatch:
 
 permissions:
@@ -33,12 +35,13 @@ jobs:
           python-version: '3.12'
       - name: Install runtime test dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
-      - name: Apply v0.6.33 migration, continuity, workspace and plugin-wrapper patches
+      - name: Apply v0.6.33 migration, continuity, workspace, wrapper and reference-scope patches
         run: |
           python scripts/apply_v0633_native_reference_asset_universe.py
           python scripts/patch_v0633_native_reference_continuity.py
           python scripts/patch_v0633_asset_universe_workspace.py
           python scripts/patch_v0633_plugin_wrapper_authority.py
+          python scripts/patch_v0633_reference_scope_semantics.py
       - name: Compile changed modules
         env:
           PYTHONPATH: .:runtime
@@ -62,6 +65,8 @@ jobs:
             tests/test_v0633_reference_guided_native_asset_universe.py \
             tests/test_v0633_asset_universe_workspace.py \
             tests/test_v0633_plugin_wrapper_authority.py \
+            tests/test_reference_guided_video_provider_authority.py \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
             tests/test_v0632_production_parameter_closure.py \
             tests/test_v0632_portfolio_visual_authority.py \
             tests/test_v0632_human_art_direction_visibility.py \
@@ -90,6 +95,7 @@ jobs:
             runtime/cbcc/providers.py runtime/cbcc/production.py runtime/cbcc/reference_guided_native_authority.py \
             runtime/cbcc/asset_compiler.py runtime/cbcc/delivery_html.py \
             tests/test_v0631_model_native_prompt_contract.py tests/test_v0632_production_parameter_closure.py \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
             scripts/build_plugin_dist.py
-          git commit -m 'release: align packaged native-reference Asset Universe authority in v0.6.33'
+          git commit -m 'fix: scope native reference binding without forcing reference-only assets'
           git push
