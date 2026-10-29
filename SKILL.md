@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.30-agent-art-direction-authority
+version: 0.6.31-model-native-prompt-integrity
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build

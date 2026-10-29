@@ -18,8 +18,8 @@ EXCLUDE_PARTS = {'.git', '.github', '.pytest_cache', '__pycache__', 'dist', 'evi
 EXCLUDE_SUFFIXES = {'.pyc', '.pyo'}
 
 DEFAULT_PROMPTS = [
-    '基于当前对话、上传资料和必要的最新公开信息，完成当前商品的跨境电商策略、Listing、内容、视觉策展与逐资产中英文 Canonical Prompt。该请求属于 FULL 商品项目：必须执行九域决策深度合同、Prompt/生产参数连续性审计（生产准备度不阻断项目），并物化完整中文优先 index.html + 可编辑源 + 逐资产包 + ZIP。九域是完整度合同，不是固定页面模板；不得用自定义短报告替代。 人类交付以中文为基础语言；Listing 字段标题中文在前，平台原始 key 仅作次级技术标识；所有英文/马来文/阿语等目标市场外文 Listing、内容与资产可见文案必须在同一对象提供中文释义/用途；英文/目标模型 Prompt 必须与中文 Canonical Prompt 成对。',
-    '只做当前 SKU 的目标市场/平台视觉资产策展和逐资产生产提示词，本轮不生成图片；先建立商品真源、购买决策、创意机会和动态 Surface，由 Agent 逐资产决定视觉载体、产品是否出现、构图与相关执行参数；只把当前资产已选且会改变结果的构图/摄影/灯光/CMF等参数贯穿到最终 Prompt，不相关摄影字段不强制生成。',
+    '基于当前对话、上传资料和必要的最新公开信息，完成当前商品的跨境电商策略、Listing、内容、视觉策展与逐资产生产对象。该请求属于 FULL 商品项目：必须执行九域决策深度合同、具体参数连续性审计（生产准备度不阻断项目），并物化完整中文优先 index.html + 可编辑源 + 逐资产包 + ZIP。九域是完整度合同，不是固定页面模板；不得用自定义短报告替代。人类交付以中文为基础语言；Listing 字段标题中文在前，平台原始 key 仅作次级技术标识；所有英文/马来文/阿语等目标市场外文 Listing、内容与资产可见文案必须在同一对象提供中文释义/用途。逐资产生产必须分离 Model Prompt CN、Model Prompt EN、Visible Copy Block 与 Production / Assembly Notes；英文 Model Prompt 的执行说明保持英文，目标市场原文可按实际可见 copy 保留。',
+    '只做当前 SKU 的目标市场/平台视觉资产策展和逐资产生产对象，本轮不生成图片；先建立商品真源、购买决策、创意机会和动态 Surface，由 Agent 逐资产决定视觉载体、产品是否出现、构图、空间关系、文字渲染路线与相关执行参数。把当前资产已选且会改变结果的具体构图/尺度/留白/摄影/灯光/CMF/人物/动态参数投影到正确对象：Model Prompt、Visible Copy Block 或 Production / Assembly Notes；不相关摄影字段不强制生成。',
     '审查当前营销策划或提示词，定位写了但未被生产链消费、同风格同布局、产品失真、平台不原生或文案与画面脱节的责任层，只修对应层。',
 ]
 
@@ -72,7 +72,7 @@ def plugin_manifest(version: str) -> dict:
                 'interface': {
                     'displayName': DISPLAY_NAME,
                     'shortDescription': '跨境电商策略、内容、创意与完整交付',
-                    'longDescription': '跨境电商 Commerce Agent：从 Product Truth、证据与平台约束出发，动态完成研究、SKU/Offer、策略、Listing、内容、视觉摄影、图片/视频资产、Canonical Prompt、生产、Review 与学习闭环。完整任务必须产出中文优先的人类交付 Artifact，包括自包含 HTML 工作台、逐资产包与 ZIP；不得以纯聊天文本替代最终交付。',
+                    'longDescription': '跨境电商 Commerce Agent：从 Product Truth、证据与平台约束出发，动态完成研究、SKU/Offer、策略、Listing、内容、视觉摄影、图片/视频资产、Model-Native Prompt、可见文案、生产装配说明、生产、Review 与学习闭环。完整任务必须产出中文优先的人类交付 Artifact，包括自包含 HTML 工作台、逐资产包与 ZIP；不得以纯聊天文本替代最终交付。',
                     'developerName': 'CBCC',
                     'category': 'Productivity',
                     'capabilities': ['Interactive'],
@@ -98,7 +98,7 @@ def compatibility_manifest(manifest: dict) -> dict:
 def skill_wrapper(version: str) -> str:
     return f'''---
 name: cross-border-commerce-creative
-description: 用于跨境电商 Product Truth、动态研究、SKU/Offer、Listing/Search、策略、内容、视觉摄影、图片/视频资产、逐资产中英文 Canonical Prompt、生产、Review、学习闭环与完整人类交付；默认中文，任务范围与资产结构动态决定。
+description: 用于跨境电商 Product Truth、动态研究、SKU/Offer、Listing/Search、策略、内容、视觉摄影、图片/视频资产、逐资产 Model Prompt CN/EN、Visible Copy、Production / Assembly Notes、生产、Review、学习闭环与完整人类交付；默认中文，任务范围与资产结构动态决定。
 ---
 # Cross-Border Commerce Creative v{version}
 

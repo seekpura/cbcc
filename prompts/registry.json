@@ -1,5 +1,5 @@
 {
-  "version": "0.6.30-agent-art-direction-authority",
+  "version": "0.6.31-model-native-prompt-integrity",
   "prompts": [
     {
       "id": "PROMPT-MASTER-STRATEGY",
@@ -34,7 +34,7 @@
     {
       "id": "PROMPT-VISUAL-PHOTO",
       "path": "visual_photography_strategy.md",
-      "purpose": "Agent-authored visual/art direction; photography, lighting and CMF are consumed only when relevant to the selected carrier/production route."
+      "purpose": "Agent-authored visual/art direction with carrier-aware photography, inclusive human execution and complete parameter continuity only when relevant."
     },
     {
       "id": "PROMPT-PLATFORM-MATRIX",
@@ -44,7 +44,7 @@
     {
       "id": "PROMPT-ASSET-CURATION",
       "path": "dynamic_asset_curation.md",
-      "purpose": "Host-Agent dynamic portfolio curation: asset existence/omission, visual carrier, product-presence rhythm and per-asset handoff."
+      "purpose": "Host-Agent dynamic portfolio curation: asset existence/omission, visual carrier, product-presence rhythm and per-asset Art Direction handoff."
     },
     {
       "id": "PROMPT-CULTURE",
@@ -219,7 +219,7 @@
     {
       "id": "PROMPT-CREATIVE-SURFACE-CANONICAL",
       "path": "creative_direction_surface_prompt_compiler.md",
-      "purpose": "Consume Agent-authored direction and per-asset Art Direction into surface-native executable CN/EN prompts without inventing product/layout fallbacks."
+      "purpose": "Compile Agent-authored Art Direction into separate Model Prompt CN/EN, Visible Copy Block and Production / Assembly Notes; audit concrete values without inventing layout/product defaults."
     },
     {
       "id": "PROMPT-SEVEN-TOOLS",
