@@ -40,6 +40,40 @@ def _text(value:Any)->str:
     return str(value).strip()
 
 
+def _localized_semantic_text(value:Any,language:str)->str:
+    """Select the matching semantic companion without leaking delivery-language prose.
+
+    Target-market visible copy is intentionally *not* passed through this function because a
+    Malay/Arabic/etc string belongs verbatim in both CN/EN model prompts. This selector is for
+    bilingual production semantics such as typography/art-direction dictionaries.
+    """
+    if isinstance(value,Mapping):
+        lang=str(language or '').upper()
+        preferred=(
+            ('en','EN','english','English','en-US','en-GB','en-MY')
+            if lang=='EN' else
+            ('cn','CN','zh','zh-CN','chinese','Chinese')
+        )
+        for key in preferred:
+            if _meaningful(value.get(key)):
+                return _text(value.get(key))
+        # Some production objects nest a bilingual phrase under a semantic field.
+        for key in ('direction','instruction','description','value','text'):
+            nested=value.get(key)
+            if isinstance(nested,Mapping):
+                picked=_localized_semantic_text(nested,language)
+                if picked: return picked
+            elif _meaningful(nested):
+                return _text(nested)
+        # If only one meaningful scalar exists, it is safe to use. Multiple unmatched language
+        # fields are intentionally not concatenated into a provider-facing prompt.
+        scalars=[v for v in value.values() if _meaningful(v) and not isinstance(v,(Mapping,list,tuple,set,frozenset))]
+        if len(scalars)==1:
+            return _text(scalars[0])
+        return ''
+    return _text(value)
+
+
 def _art(asset:Mapping[str,Any])->dict[str,Any]:
     raw=asset.get('asset_art_direction')
     return deepcopy(dict(raw)) if isinstance(raw,Mapping) else {}
@@ -99,17 +133,18 @@ def _integrated_copy_instruction(block:Mapping[str,Any],language:str,typography:
     primary=_text(block.get('target_market_copy'))
     secondary=_text(block.get('secondary_copy'))
     if not primary and not secondary: return ''
+    type_direction=_localized_semantic_text(typography,language) if _meaningful(typography) else ''
     if language=='CN':
         bits=['把批准的市场文案作为最终商业画面的一部分直接排版并清晰生成。']
         if primary: bits.append(f'主文案必须逐字准确出现一次："{primary}"。')
         if secondary: bits.append(f'次级文案必须准确呈现："{secondary}"。')
-        if _meaningful(typography): bits.append(f'排版方向：{_text(typography)}。')
+        if type_direction: bits.append(f'排版方向：{type_direction}。')
         bits.append('文字必须与商品、证据和留白共同构成同一视觉层级；移动端可读；不生成额外营销文字、水印或无关品牌。')
         return ''.join(bits)
     bits=['Render the approved market copy as an integrated part of the finished commercial image. ']
     if primary: bits.append(f'Render this exact primary copy once, verbatim: "{primary}". ')
     if secondary: bits.append(f'Render this exact secondary copy: "{secondary}". ')
-    if _meaningful(typography): bits.append(f'Typography direction: {_text(typography)}. ')
+    if type_direction: bits.append(f'Typography direction: {type_direction}. ')
     bits.append('Make the text mobile-legible and visually integrated with product, evidence and negative space; add no extra marketing copy, watermarks or unrelated brands.')
     return ''.join(bits)
 
