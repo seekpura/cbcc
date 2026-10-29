@@ -28,6 +28,7 @@ def test_project_authored_html_removes_pipeline_shell():
     assert 'project-object-dock' in out
     assert '<div class="nav-label">工作区</div>' not in out
     assert 'KIYUU K01 · 项目地图' in out
+    assert out.count('class="route-link project-object-link') == 1
     assert 'KIYUU K01 真源' in out
     assert 'ms-MY 上架稿' in out
     assert '资产宇宙 · 2' in out
