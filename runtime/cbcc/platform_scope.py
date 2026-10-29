@@ -9,6 +9,7 @@ _EXPLICIT_SOURCES = {
     'USER', 'USER_INPUT', 'REQUEST', 'CURRENT_REQUEST', 'SOURCE', 'SOURCE_FILE',
     'PROJECT_INPUT', 'EXPLICIT', 'CONFIRMED', 'VERIFIED',
 }
+_EXPLICIT_STATUSES = {'EXPLICIT', 'CONFIRMED', 'VERIFIED', 'USER_SELECTED', 'LOCKED'}
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -64,6 +65,19 @@ def _target_is_explicit(target_context: dict[str, Any]) -> bool:
     ]
     if any(value is True for value in flags):
         return True
+
+    statuses = [
+        target_context.get('status'), target_context.get('scope_status'),
+        target_context.get('platform_status'), target_context.get('market_status'), target_context.get('primary_locale_status'),
+        target.get('status') if isinstance(target, dict) else None,
+        target.get('scope_status') if isinstance(target, dict) else None,
+        target.get('platform_status') if isinstance(target, dict) else None,
+        target.get('market_status') if isinstance(target, dict) else None,
+        target.get('primary_locale_status') if isinstance(target, dict) else None,
+    ]
+    if any(str(value or '').strip().upper() in _EXPLICIT_STATUSES for value in statuses):
+        return True
+
     source = str(_first(
         target_context.get('source'), target_context.get('provenance'), target_context.get('scope_source'),
         target.get('source') if isinstance(target, dict) else None,
