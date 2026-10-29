@@ -20,15 +20,14 @@ jobs:
           token: ${{ github.token }}
       - name: Patch release authority
         run: python scripts/patch_release_reference_capability_guard.py
-      - name: Verify workflow source is parseable text
+      - name: Verify source contract patch
         run: |
-          grep -q 'Reference-guided production and reference-capability continuity' .github/workflows/release-v0629.yml
           grep -q 'prompt_consumption_blocks_project_completion' scripts/build_plugin_dist.py
           grep -q 'seven_agent_capability_continuity_required' scripts/build_plugin_dist.py
-      - name: Commit release guard
+      - name: Commit normal source authority
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .github/workflows/release-v0629.yml scripts/build_plugin_dist.py
-          git commit -m 'ci: guard reference-guided production and capability continuity'
+          git add scripts/build_plugin_dist.py
+          git commit -m 'fix: encode reference-guided capability contract in release manifest'
           git push origin HEAD:main
