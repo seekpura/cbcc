@@ -15,7 +15,8 @@ Exact immutable-pixel compositing is an explicit special route only.
 
 v0.6.46 adds commercial decision continuity: real Market/Pricing/Audience/RACE/Listing/Ads/Review
 payloads must survive into relevant asset lineage, Design Cards, model prompts and human delivery.
-Status/count summaries never substitute for real downstream consumption.
+Status/count summaries never substitute for real downstream consumption. Subject choice is per asset:
+person, animal, plant, object/product, environment, multi-subject or none are all valid.
 """
 
 from . import prompt_compiler as _legacy_prompt_compiler
@@ -26,6 +27,7 @@ from . import production_parameter_closure as _production_parameter_closure
 from . import reference_guided_native_authority as _reference_guided_native_authority
 from . import commercial_operator_density_authority as _commercial_operator_density_authority
 from . import commercial_continuity_authority as _commercial_continuity_authority
+from . import subject_presence_authority as _subject_presence_authority
 from . import human_delivery_art_direction_projection as _human_delivery_art_direction_projection
 from . import photographic_route_agent_authority as _photographic_route_agent_authority
 from . import art_direction_projection as _art_direction_projection
@@ -37,6 +39,7 @@ from . import agent_art_direction_authority as _agent_art_direction_authority
 from . import agent_plan_input_bridge as _agent_plan_input_bridge
 from . import portfolio_visual_authority as _portfolio_visual_authority
 from . import asset_universe_authority as _asset_universe_authority
+from . import asset_portfolio_taxonomy as _asset_portfolio_taxonomy
 from . import surface_advisory_authority as _surface_advisory_authority
 from .tools import seven_agent as _seven_agent
 
@@ -105,6 +108,9 @@ _agent_authority_prompt_compiler.compile_asset_prompt = _commercial_operator_den
 _agent_authority_prompt_compiler.compile_asset_prompt = _commercial_continuity_authority.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
+_agent_authority_prompt_compiler.compile_asset_prompt = _subject_presence_authority.wrap_compile_asset_prompt(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
 _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.compile_asset_prompt
 
 # Seven-tool continuity must hand real business payloads to assets, not only status/count summaries.
@@ -115,10 +121,12 @@ _seven_agent.compile_seven_agent_synthesis = _commercial_continuity_authority.wr
 )
 
 # Explicit Agent-authored variants are an asset universe, not one platform-slot list. H01/H02/H03,
-# multiple benefit hypotheses, paid ads, A+/PDP modules, banners and rotation/test variants may coexist
-# even when they answer the same shopper question on the same surface. Platform slot capacity limits
-# only a simultaneous activation set; it never caps total asset candidates.
+# benefit/proof/scenario alternatives, paid ads, A+/PDP, seeding/social, creator/UGC, video, banners and
+# test/rotation pools may coexist. Platform capacity limits only a simultaneous activation set.
 _asset_architecture.build_asset_architecture = _asset_universe_authority.wrap_build_asset_architecture(
+    _asset_architecture.build_asset_architecture
+)
+_asset_architecture.build_asset_architecture = _asset_portfolio_taxonomy.wrap_build_asset_architecture(
     _asset_architecture.build_asset_architecture
 )
 
@@ -174,3 +182,9 @@ _delivery_export.build_delivery_html = _delivery_workspace.build_delivery_html
 _delivery_export.export_delivery_package = _commercial_delivery_continuity.wrap_export_delivery_package(
     _delivery_export.export_delivery_package
 )
+
+# Install the release-level strictness layer after normal authority wiring so asset_compiler captures
+# the final prompt compiler and human Design Card projection. This also prevents future wrappers from
+# silently weakening commercial-continuity readiness.
+from . import commercial_continuity_bootstrap as _commercial_continuity_bootstrap
+_commercial_continuity_bootstrap.install()
