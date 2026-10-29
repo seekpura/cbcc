@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 
@@ -11,16 +10,30 @@ def main() -> None:
     ns['main']()
 
     path=Path('runtime/cbcc/delivery_html.py')
-    text=path.read_text(encoding='utf-8')
-    text2,n=re.subn(
-        r"\n        if prompt_cn:\s*\n        if prompt_en:\s*\n(        if production_notes:)",
-        r"\n\1",
-        text,
-        count=1,
-    )
-    if n!=1 and 'if prompt_cn:\n            \n        if prompt_en:' in text:
-        raise SystemExit('could not repair empty model-prompt branches')
-    path.write_text(text2,encoding='utf-8')
+    lines=path.read_text(encoding='utf-8').splitlines()
+    repaired=[]
+    i=0
+    removed=False
+    while i < len(lines):
+        if lines[i].strip()=='if prompt_cn:':
+            j=i+1
+            while j < len(lines) and not lines[j].strip():
+                j+=1
+            if j < len(lines) and lines[j].strip()=='if prompt_en:':
+                k=j+1
+                while k < len(lines) and not lines[k].strip():
+                    k+=1
+                if k < len(lines) and lines[k].strip()=='if production_notes:':
+                    # The UI migration intentionally removed the two duplicate prompt views. The
+                    # now-empty branches are removed while preserving the production-notes branch.
+                    i=k
+                    removed=True
+                    continue
+        repaired.append(lines[i])
+        i+=1
+    if not removed:
+        raise SystemExit('expected empty prompt_cn/prompt_en branches were not found after UI migration')
+    path.write_text('\n'.join(repaired)+'\n',encoding='utf-8')
     print('Applied prompt workspace UI and repaired duplicate-view branches.')
 
 
