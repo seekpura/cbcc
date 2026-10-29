@@ -29,6 +29,7 @@ def main() -> int:
     final_contract = (skill_root / 'resources' / 'references' / 'FINAL_OUTPUT_CONTRACT.md').read_text(encoding='utf-8')
     export = (skill_root / 'resources' / 'runtime' / 'cbcc' / 'delivery_export.py').read_text(encoding='utf-8')
     global_runtime = (skill_root / 'resources' / 'runtime' / 'cbcc' / 'global_chinese_interpretation.py').read_text(encoding='utf-8')
+    final_audit = (skill_root / 'resources' / 'runtime' / 'cbcc' / 'final_chinese_interpretation_audit.py').read_text(encoding='utf-8')
     ui_runtime = (skill_root / 'resources' / 'runtime' / 'cbcc' / 'chinese_interpretation_ui.py').read_text(encoding='utf-8')
 
     if len(host.encode('utf-8')) < 18000:
@@ -64,7 +65,7 @@ def main() -> int:
 
     must(export, [
         'normalize_global_chinese_interpretation',
-        'audit_global_chinese_interpretation',
+        'audit_final_chinese_interpretation',
         'render_upload_center_md_with_global_cn',
         'apply_chinese_interpretation_ui',
         'BLOCKED global Chinese interpretation contract failed',
@@ -78,6 +79,14 @@ def main() -> int:
         'delivery_translation_zh',
         'Runtime never machine-translates arbitrary copy',
     ], 'global_chinese_interpretation.py')
+    must(final_audit, [
+        'recursive',
+        'copy_center',
+        'localized_copy',
+        'preserved_listing_fields',
+        '_value_needs_cn',
+        'audit_final_chinese_interpretation',
+    ], 'final_chinese_interpretation_audit.py')
     must(ui_runtime, ['商品描述', '平台类目', '商品属性', '搜索词', 'heading-en'], 'chinese_interpretation_ui.py')
 
     prompts = manifest.get('extensions', {}).get('com.openai', {}).get('interface', {}).get('defaultPrompt') or []
