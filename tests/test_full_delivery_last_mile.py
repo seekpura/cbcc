@@ -28,13 +28,13 @@ def _request():
         'planning_only':True,
         'full_strategy':True,
         'product':{
-            'name':'Depth Contract Product','category':'beauty','net_content':'30ml',
-            'primary_conversion_proposition':'Evidence-bounded daily product value',
+            'name':'深度合同测试商品','category':'美妆','net_content':'30ml',
+            'primary_conversion_proposition':'以证据边界约束的日常产品价值',
             'formula':{'niacinamide':'1%'},
         },
         'claims':[
-            {'claim_id':'C1','claim':'Contains 1% niacinamide','evidence_grade':'B','status':'APPROVED','publication_status':'BOUNDED_SUPPORTED_CLAIM'},
-            {'claim_id':'C2','claim':'Feels lightweight','evidence_grade':'C','status':'PENDING'},
+            {'claim_id':'C1','claim':'含 1% 烟酰胺','evidence_grade':'B','status':'APPROVED','publication_status':'BOUNDED_SUPPORTED_CLAIM'},
+            {'claim_id':'C2','claim':'轻盈肤感','evidence_grade':'C','status':'PENDING'},
         ],
         'sources':[{'source_id':'SRC-PRODUCT','kind':'PRODUCT_TRUTH','source_type':'SUPPLIER_SPECIFICATION'}],
         'target':{
@@ -62,12 +62,14 @@ def test_full_export_revalidates_depth_and_materializes_visible_audits(tmp_path:
 
     depth=json.loads((out/'FULL_DELIVERY_DEPTH_AUDIT.json').read_text(encoding='utf-8'))
     prompt=json.loads((out/'PROMPT_CONSUMPTION_AUDIT.json').read_text(encoding='utf-8'))
+    language=json.loads((out/'HUMAN_LANGUAGE_AUDIT.json').read_text(encoding='utf-8'))
     html=(out/'index.html').read_text(encoding='utf-8')
 
     assert depth['mode']=='FULL'
     assert depth['status']=='PASS', depth
     assert depth['depth_contract']=='FULL_DECISION_DEPTH_V1'
     assert prompt['status']=='PASS'
+    assert language['status']=='PASS', language
     for token in [
         '信息完整度、待确认清单、假设与决策日志',
         '产品真实事实审计与卖点分级表',
@@ -82,8 +84,10 @@ def test_full_export_revalidates_depth_and_materializes_visible_audits(tmp_path:
         assert token in html, token
     assert manifest['workspace_contract']['full_decision_depth']=='PASS'
     assert manifest['workspace_contract']['full_visible_objects']=='PASS'
+    assert manifest['workspace_contract']['foreign_human_copy_has_chinese_companion'] is True
     assert manifest['full_delivery_depth_audit']=='FULL_DELIVERY_DEPTH_AUDIT.json'
     assert manifest['prompt_consumption_audit']=='PROMPT_CONSUMPTION_AUDIT.json'
+    assert manifest['human_language_audit']=='HUMAN_LANGUAGE_AUDIT.json'
 
 
 def test_plugin_wrapper_requires_full_depth_and_prompt_consumption_audit(tmp_path:Path):
