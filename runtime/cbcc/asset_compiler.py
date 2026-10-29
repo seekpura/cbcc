@@ -22,6 +22,9 @@ def _asset_strategy_markdown(asset:dict[str,Any], strategy:dict[str,Any], strate
         '# 资产策划与决策', '',
         f"- 资产：**{asset.get('asset_name') or asset.get('asset_id')}**",
         f"- Surface / Family：{asset.get('surface')} / {asset.get('family')}",
+        f"- 资产簇 / Variant：{asset.get('variant_cluster') or '—'} / {asset.get('variant_id') or '—'}",
+        f"- 部署状态：{asset.get('deployment_state') or 'LIVE_CANDIDATE'}",
+        f"- 测试假设：{asset.get('test_hypothesis') or asset.get('business_hypothesis') or '—'}",
         f"- 优先级：{asset.get('priority')}",
         f"- 消费者问题：**{asset.get('consumer_question')}**",
         f"- Decision Intent：{asset.get('decision_intent')}",
@@ -234,7 +237,7 @@ def compile_asset_packages(root:Path,assets:list[dict[str,Any]],product:dict[str
         if not asset.get('editable_layer_contract'):
             asset['editable_layer_contract']=_editable_layer_contract(asset.get('production_mode'),asset.get('product_fidelity'))
         d=base/asset['asset_id']; d.mkdir(parents=True,exist_ok=True)
-        manifest={k:asset.get(k) for k in ['asset_id','asset_name','asset_type','status','surface','family','consumer_question','decision_intent','decision_topic','merged_consumer_questions','strategic_job','surface_need','business_hypothesis','reason_to_exist','incremental_information','production_mode','product_fidelity','priority','dependencies','source_ids','claim_ids','listing_reference','success_metric','race_stage','information_assetization','product_presence','asset_art_direction','surface_copy_budget','surface_native_contract','creative_direction','visual_expression_variant','product_visual_intelligence','creative_anchor_plan','visual_production_signature','editable_layer_contract']}
+        manifest={k:asset.get(k) for k in ['asset_id','asset_name','asset_type','status','surface','family','variant_id','variant_cluster','deployment_state','testing_variant','test_hypothesis','activation_set_id','consumer_question','decision_intent','decision_topic','merged_consumer_questions','strategic_job','surface_need','business_hypothesis','reason_to_exist','incremental_information','production_mode','product_fidelity','priority','dependencies','source_ids','claim_ids','listing_reference','success_metric','race_stage','information_assetization','product_presence','asset_art_direction','surface_copy_budget','surface_native_contract','creative_direction','visual_expression_variant','product_visual_intelligence','creative_anchor_plan','visual_production_signature','editable_layer_contract']}
         manifest.update({'platform':target.get('platform_family'),'site':target.get('site'),'market':target.get('market'),'languages':language_contract.get('visible_copy_locales',[]),'source_product_assets':list(source_product_assets or [])})
         _write(d/'00_asset_manifest.yaml',yaml.safe_dump(manifest,allow_unicode=True,sort_keys=False))
         strategy_content_rows=[r for r in ((((strategy_authority or {}).get('sections',{}) or {}).get('06_platform_content_matrix',[])) or []) if r.get('asset_id')==asset.get('asset_id')]

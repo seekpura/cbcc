@@ -475,7 +475,7 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
     aid=path.name;manifest={};yamlp=path/'00_asset_manifest.yaml';design=_read_json(path/'12_design_card.json',{});prompt_contract=_read_json(path/'13_prompt_contract.json',{});visible_copy_block=_read_json(path/'14_visible_copy_block.json',{});production_notes=_read_json(path/'15_production_assembly_notes.json',{});closure=prompt_contract.get('production_parameter_closure') or {};art=design.get('agent_art_direction') or {}
     if yamlp.exists():
         raw=_read(yamlp)
-        for key in ['asset_name','surface','decision_intent','consumer_question','asset_type','production_mode']:
+        for key in ['asset_name','surface','decision_intent','consumer_question','asset_type','production_mode','variant_id','variant_cluster','deployment_state','test_hypothesis','activation_set_id']:
             m=re.search(rf'^{key}:\s*(.+)$',raw,flags=re.M)
             if m:manifest[key]=m.group(1).strip().strip('"\'')
     # Prefer structured Design Card fields over parsing YAML when available.
@@ -521,7 +521,7 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
         if effective_copy:
             views.append({'key':'copy','title':'可见文案','html':_human_kv([('目标市场可见文案',effective_copy.get('target_market_copy') if isinstance(effective_copy,dict) else effective_copy),('次级文案',effective_copy.get('secondary_copy') if isinstance(effective_copy,dict) else None),('中文释义 / 用途',effective_copy.get('delivery_translation_zh') if isinstance(effective_copy,dict) else None),('文字渲染 / 装配路线',production_notes.get('copy_render_mode')),('文案预算',(effective_copy.get('copy_budget') if isinstance(effective_copy,dict) else None) or info.get('copy_budget')),('字体方向',(effective_copy.get('typography_direction') if isinstance(effective_copy,dict) else None) or info.get('typography'))])})
         if production_notes or closure:
-            views.append({'key':'production','title':'生产 / 装配说明','html':_human_kv([('文字渲染路线',production_notes.get('copy_render_mode')),('产品 Fidelity',production_notes.get('product_fidelity')),('产品出现方式',production_notes.get('product_presence')),('产品参考规则',production_notes.get('product_reference_rule')),('可编辑层',production_notes.get('editable_layers')),('冻结层',production_notes.get('frozen_layers')),('局部修订规则',production_notes.get('revision_rule')),('Provider / Route',production_notes.get('provider_route')),('装配原则',production_notes.get('assembly_principle')),('参数闭环状态',closure.get('status')),('生产路线判定',closure.get('route')),('已选择且必须消费的执行参数',closure.get('selected_parameters')),('缺失执行参数',closure.get('missing_required_parameters')),('英文执行语义缺口',closure.get('english_render_semantics_missing_for')),('锁图复合底片闭环',closure.get('locked_source_final_composite_instruction'))])})
+            views.append({'key':'production','title':'生产 / 装配说明','html':_human_kv([('文字渲染路线',production_notes.get('copy_render_mode')),('产品 Fidelity',production_notes.get('product_fidelity')),('商品参考生成方式',production_notes.get('product_reference_generation_mode')),('真实商品 Reference Input',production_notes.get('reference_input_required')),('最终商品必须原生生成',production_notes.get('final_output_must_contain_generated_product')),('产品出现方式',production_notes.get('product_presence')),('产品参考规则',production_notes.get('product_reference_rule')),('可编辑层',production_notes.get('editable_layers')),('冻结层',production_notes.get('frozen_layers')),('局部修订规则',production_notes.get('revision_rule')),('Provider / Route',production_notes.get('provider_route')),('装配原则',production_notes.get('assembly_principle')),('参数闭环状态',closure.get('status')),('生产路线判定',closure.get('route')),('已选择且必须消费的执行参数',closure.get('selected_parameters')),('缺失执行参数',closure.get('missing_required_parameters')),('英文执行语义缺口',closure.get('english_render_semantics_missing_for')),('锁图复合底片闭环',closure.get('locked_source_final_composite_instruction'))])})
     # Human-facing Markdown files remain useful, but machine YAML/JSON is never the default asset view.
     group_files={'strategy':[],'visual':[],'photo':[],'copy':[],'production':[],'trace':[]}
     for f in sorted(path.iterdir()):
@@ -551,7 +551,7 @@ def _formal_asset_dir(path:Path,package_dir:Path)->dict[str,Any]:
         else:
             views.append({'key':k,'title':labels[k],'html':''.join(group_files[k])})
     summary=' · '.join(str(x) for x in [surface,_intent_zh(intent),qzh if design else manifest.get('consumer_question')] if x)
-    return {'id':aid,'title':display_title,'original_title':original_title,'summary':summary,'prompt_cn':prompt_cn,'prompt_en':prompt_en,'model_prompt_status':prompt_contract.get('model_prompt_status'),'views':views,'source_files':src,'surface':surface,'intent':intent,'asset_type':asset_type,'agent_view_order':design.get('workspace_view_order') or design.get('agent_view_order') or []}
+    return {'id':aid,'title':display_title,'original_title':original_title,'summary':summary,'prompt_cn':prompt_cn,'prompt_en':prompt_en,'model_prompt_status':prompt_contract.get('model_prompt_status'),'views':views,'source_files':src,'surface':surface,'intent':intent,'asset_type':asset_type,'variant_id':design.get('variant_id') or manifest.get('variant_id'),'variant_cluster':design.get('variant_cluster') or manifest.get('variant_cluster'),'deployment_state':design.get('deployment_state') or manifest.get('deployment_state'),'test_hypothesis':design.get('test_hypothesis') or manifest.get('test_hypothesis'),'activation_set_id':design.get('activation_set_id') or manifest.get('activation_set_id'),'agent_view_order':design.get('workspace_view_order') or design.get('agent_view_order') or []}
 
 
 def _legacy_asset(path:Path,package_dir:Path)->dict[str,Any]:
@@ -647,9 +647,39 @@ def _listing_workspace(center:dict[str,Any])->str:
 def _asset_card(a:dict[str,Any])->str:
     orig=a.get('original_title') or ''
     sec=f'<small>{html.escape(orig)}</small>' if orig and orig!=a.get('title') else ''
-    chips=''.join(f'<span>{html.escape(str(_humanize_asset_text(x)))}</span>' for x in [a.get('asset_type'),a.get('surface'),a.get('intent')] if x)
-    return f'''<a class="asset-card searchable route-link" href="#asset/{html.escape(a['id'])}" data-route="asset/{html.escape(a['id'])}"><div class="asset-top"><b>{html.escape(a['id'])}</b><div class="asset-chips">{chips}</div></div><h3>{html.escape(a['title'])}</h3>{sec}<p>{html.escape(a.get('summary') or '打开查看完整资产工作区')}</p><span class="asset-open">进入资产工作区 →</span></a>'''
+    chips=''.join(f'<span>{html.escape(str(_humanize_asset_text(x)))}</span>' for x in [a.get('asset_type'),a.get('surface'),a.get('variant_cluster'),a.get('variant_id'),a.get('deployment_state'),a.get('intent')] if x)
+    hypothesis=f'<p><strong>测试 / 创意假设：</strong>{html.escape(str(a.get("test_hypothesis")))}</p>' if a.get('test_hypothesis') else ''
+    return f'''<a class="asset-card searchable route-link" href="#asset/{html.escape(a['id'])}" data-route="asset/{html.escape(a['id'])}"><div class="asset-top"><b>{html.escape(a['id'])}</b><div class="asset-chips">{chips}</div></div><h3>{html.escape(a['title'])}</h3>{sec}<p>{html.escape(a.get('summary') or '打开查看完整资产工作区')}</p>{hypothesis}<span class="asset-open">进入资产工作区 →</span></a>'''
 
+
+def _asset_universe_cards(assets:list[dict[str,Any]])->str:
+    if not assets:
+        return '<div class="empty">暂无资产。</div>'
+    groups=[
+      ('LIVE_CANDIDATE','当前上线候选','可进入当前平台 activation set；平台槽位只限制这里同时上线数量。'),
+      ('TEST_POOL','测试池','用于 A/B、Hero 方向、卖点、构图、人群与文案假设测试；不受当前平台槽位总数限制。'),
+      ('ROTATION_POOL','轮换池','已生产、可按周期或数据表现替换上线的资产。'),
+      ('PAID_MEDIA','广告资产','Paid Ads / Retargeting / Hook 等广告创意资产。'),
+      ('PDP_CONTENT','PDP / A+ / 详情','A+、详情模块、长图、说明/证据/FAQ 等丰富内容。'),
+      ('ARCHIVE','归档','暂不激活但保留用于复盘、复用或历史对照的资产。'),
+      ('OTHER','其他资产','Store、Banner、Social、Creator、Video 等按实际 Surface 使用的资产。'),
+    ]
+    buckets={k:[] for k,_,_ in groups}
+    for a in assets:
+        state=str(a.get('deployment_state') or '').upper()
+        if state not in buckets:
+            surface=str(a.get('surface') or '').upper()
+            if surface=='PAID_AD': state='PAID_MEDIA'
+            elif surface in {'A_PLUS','LONGFORM'}: state='PDP_CONTENT'
+            elif surface in {'STORE_BANNER','SOCIAL_CONTENT','CREATOR','SHORT_VIDEO','PDP_VIDEO','LIVE'}: state='OTHER'
+            else: state='LIVE_CANDIDATE'
+        buckets[state].append(a)
+    out=[]
+    for key,title,desc in groups:
+        rows=buckets[key]
+        if not rows: continue
+        out.append(f'<section class="panel asset-universe-group"><div class="page-head"><div><span class="kicker">ASSET UNIVERSE · {html.escape(key)}</span><h2>{html.escape(title)} · {len(rows)}</h2><p>{html.escape(desc)}</p></div></div><div class="asset-grid">'+''.join(_asset_card(a) for a in rows)+'</div></section>')
+    return ''.join(out)
 
 def _prompt_workspace(assets:list[dict[str,Any]])->str:
     if not assets:return '<div class="empty">暂无可执行提示词。</div>'
@@ -754,7 +784,7 @@ def _asset_page(a:dict[str,Any])->str:
         stage.append(f'''<section class="asset-stage asset-stage-{_slug(s['key'])} workspace-panel searchable {active}" data-switch-group="{group}" data-view="{view}"><header class="asset-stage-head"><div><span>{html.escape(s['eyebrow'])}</span><h2>{html.escape(s['title'])}</h2><p>{html.escape(s['description'])}</p></div></header><div class="asset-stage-body">{s['body']}</div></section>''')
 
     sec=f'<div class="asset-original">{html.escape(str(a.get("original_title") or ""))}</div>' if a.get('original_title') and a.get('original_title')!=a.get('title') else ''
-    chips=''.join(f'<span>{html.escape(str(_humanize_asset_text(x)))}</span>' for x in [a.get('asset_type'),a.get('surface'),a.get('intent')] if x)
+    chips=''.join(f'<span>{html.escape(str(_humanize_asset_text(x)))}</span>' for x in [a.get('asset_type'),a.get('surface'),a.get('variant_cluster'),a.get('variant_id'),a.get('deployment_state'),a.get('intent')] if x)
     readiness=[]
     if a.get('model_prompt_status'):
         readiness.append('Model Prompt：'+str(a.get('model_prompt_status')))
@@ -832,7 +862,7 @@ def build_delivery_html(package_dir:Path,output:Path|None=None,title:str='CBCC D
     risk_ws=_module_workspace(risk_views,'risk','本项目没有风险内容。')
     overview_ws=_module_workspace(master_views['overview'],'overview-decision','本项目没有信息完整度 / 假设 / 决策日志。')
     listing_ws=_listing_workspace(center)
-    asset_cards=''.join(_asset_card(a) for a in assets) or '<div class="empty">暂无资产。</div>'
+    asset_cards=_asset_universe_cards(assets)
     prompt_ws=_prompt_workspace(assets)
 
     budget=[0];media=[];source_files=[]

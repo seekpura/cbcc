@@ -143,6 +143,8 @@ def apply_reference_guided_native_authority(bundle:Mapping[str,Any], asset:Mappi
     closure['exact_pixel_composite_explicit_only']=True
     if visible and not exact:
         closure['locked_source_final_composite_instruction']=False
+    if visible and not exact:
+        closure['locked_source_final_composite_instruction']=False
     if visible and not exact and not sources:
         missing=list(closure.get('missing_required_parameters') or [])
         if 'real_product_reference_input' not in missing:
