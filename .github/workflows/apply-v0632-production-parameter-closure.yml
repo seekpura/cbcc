@@ -8,6 +8,8 @@ on:
       - 'runtime/cbcc/portfolio_visual_authority.py'
       - 'runtime/cbcc/__init__.py'
       - 'tests/test_v0632_portfolio_visual_authority.py'
+      - 'tests/test_v0632_human_art_direction_visibility.py'
+      - 'scripts/patch_v0632_human_art_direction_visibility.py'
       - 'scripts/apply_v0632_production_parameter_closure.py'
       - 'scripts/patch_v0632_closure_language_and_status.py'
       - 'scripts/patch_v0631_prompt_fixture_for_v0632.py'
@@ -43,25 +45,28 @@ jobs:
           python scripts/patch_v0631_prompt_fixture_for_v0632.py
           python scripts/patch_v0632_graphic_test_diagnostics.py
           python scripts/patch_v0632_route_value_detection.py
+          python scripts/patch_v0632_human_art_direction_visibility.py
 
-      - name: Compile production and portfolio authority
+      - name: Compile production, portfolio and human-delivery authority
         env:
           PYTHONPATH: .:runtime
         run: |
           python -m py_compile \
             runtime/cbcc/production_parameter_closure.py \
             runtime/cbcc/portfolio_visual_authority.py \
+            runtime/cbcc/delivery_html.py \
             runtime/cbcc/__init__.py \
             runtime/cbcc/model_native_prompt_contract.py \
             runtime/cbcc/agent_authority_prompt_compiler.py
 
-      - name: Targeted prompt, portfolio and Agent-authority regression
+      - name: Targeted prompt, portfolio, human-workspace and Agent-authority regression
         env:
           PYTHONPATH: .:runtime
         run: |
           pytest -q \
             tests/test_v0632_production_parameter_closure.py \
             tests/test_v0632_portfolio_visual_authority.py \
+            tests/test_v0632_human_art_direction_visibility.py \
             tests/test_v0631_model_native_prompt_contract.py \
             tests/test_v0630_agent_art_direction_authority.py \
             tests/test_v0630_prompt_art_direction_projection.py
@@ -81,7 +86,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add \
             VERSION SKILL.md runtime/cbcc/compiler.py prompts/registry.json scripts/build_plugin_dist.py \
-            runtime/cbcc/production_parameter_closure.py \
+            runtime/cbcc/production_parameter_closure.py runtime/cbcc/delivery_html.py \
             tests/test_v0631_model_native_prompt_contract.py tests/test_v0632_production_parameter_closure.py
           git commit -m 'release: promote production-parameter closure to v0.6.32'
           git push
