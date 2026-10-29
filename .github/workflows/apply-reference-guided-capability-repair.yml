@@ -36,6 +36,6 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add runtime/cbcc/compiler.py runtime/cbcc/asset_architecture.py runtime/cbcc/prompt_compiler.py runtime/cbcc/asset_compiler.py runtime/cbcc/delivery_export.py runtime/cbcc/tools/seven_agent.py tests/test_reference_guided_optional_prompt_and_capability_continuity.py
+          git add runtime/cbcc/compiler.py runtime/cbcc/asset_architecture.py runtime/cbcc/prompt_compiler.py runtime/cbcc/asset_compiler.py runtime/cbcc/delivery_export.py runtime/cbcc/tools/seven_agent.py tests/test_reference_guided_optional_prompt_and_capability_continuity.py tests/test_v060_capability_complete_rebase.py
           git commit -m 'fix: make product assets reference-guided and restore capability continuity'
           git push origin HEAD:main
