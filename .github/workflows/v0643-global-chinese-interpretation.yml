@@ -1,0 +1,41 @@
+name: v0.6.43 Global Chinese Interpretation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'runtime/cbcc/**'
+      - 'prompts/global_chinese_interpretation_authority.md'
+      - 'references/FINAL_OUTPUT_CONTRACT.md'
+      - 'tests/test_v0643_global_chinese_interpretation.py'
+      - 'scripts/build_plugin_dist_v0643.py'
+      - 'scripts/check_v0643_global_chinese_interpretation.py'
+      - 'VERSION'
+  workflow_dispatch:
+
+jobs:
+  global-chinese-interpretation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile runtime and release scripts
+        run: python -m compileall -q runtime/cbcc scripts/build_plugin_dist_v0643.py scripts/check_v0643_global_chinese_interpretation.py
+      - name: Run v0.6.43 and interaction regressions
+        env:
+          PYTHONPATH: runtime
+        run: python -m pytest -q tests/test_v0643_global_chinese_interpretation.py tests/test_v0642_regression_recovery.py tests/test_v0639_project_authored_html.py
+      - name: Keep commercial prompt-density guard
+        run: python scripts/check_commercial_prompt_density.py
+      - name: Build v0.6.43 installable package
+        run: python -m scripts.build_plugin_dist_v0643 --output-dir dist_v0643
+      - name: Unpack actual installable plugin archive
+        run: |
+          rm -rf dist_v0643/unpacked
+          mkdir -p dist_v0643/unpacked
+          unzip -q dist_v0643/cross-border-commerce-creative-plugin-v0.6.43.zip -d dist_v0643/unpacked
+          test -f dist_v0643/unpacked/cross-border-commerce-creative/plugin.json
+      - name: Check packaged global Chinese interpretation authority
+        run: python scripts/check_v0643_global_chinese_interpretation.py dist_v0643/unpacked/cross-border-commerce-creative
