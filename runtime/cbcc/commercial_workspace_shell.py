@@ -8,10 +8,10 @@ import re
 WORKSPACE_SHELL_VERSION = 'cbcc-commercial-v1'
 
 _SHELL_CSS = r'''
-.cbcc-commandbar{position:sticky;top:0;z-index:90;display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 14px;background:rgba(248,249,247,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--line,#dde3df);font-size:11px}
+.cbcc-commandbar{position:relative;z-index:5;display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 14px;background:rgba(248,249,247,.98);border-bottom:1px solid var(--line,#dde3df);font-size:11px}
 .cbcc-commandbar-main{display:flex;align-items:center;gap:10px;min-width:0}.cbcc-commandbar-brand{font-weight:750;letter-spacing:.02em;white-space:nowrap}.cbcc-commandbar-state{display:flex;gap:7px;flex-wrap:wrap;min-width:0}.cbcc-state-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border:1px solid var(--line,#dde3df);border-radius:999px;background:#fff;white-space:nowrap}.cbcc-state-chip b{font-size:9px;color:var(--muted,#6a746f);font-weight:650}.cbcc-shell-meta{font-size:9px;color:var(--muted,#6a746f);white-space:nowrap}.cbcc-shell-note{display:none}
 @media(max-width:760px){.cbcc-commandbar{align-items:flex-start}.cbcc-commandbar-main{display:block}.cbcc-commandbar-state{margin-top:6px}.cbcc-shell-meta{display:none}}
-@media print{.cbcc-commandbar{position:static;backdrop-filter:none}.cbcc-shell-meta{display:none}}
+@media print{.cbcc-commandbar{position:static}.cbcc-shell-meta{display:none}}
 '''
 
 
@@ -35,8 +35,9 @@ def apply_commercial_workspace_shell(page: str, scope: dict[str, Any], language_
     """Apply the frozen v1 commercial shell without replacing project-authored content.
 
     v1 is an interaction floor, not a fixed page taxonomy: existing project routes/subviews/assets remain
-    authoritative. Future releases may add objects or polish components but must not replace this shell
-    without an explicit shell-version change.
+    authoritative. The command bar stays in normal document flow so the mature sidebar/topbar sticky
+    offsets are untouched. Future releases may add objects or polish components but must not replace
+    this shell without an explicit shell-version change.
     """
     if f'data-workspace-shell="{WORKSPACE_SHELL_VERSION}"' in page:
         return page
@@ -63,7 +64,6 @@ def apply_commercial_workspace_shell(page: str, scope: dict[str, Any], language_
         page = re.sub(r'<body(\s[^>]*)?>', lambda m: (
             '<body' + (m.group(1) or '') + f' data-workspace-shell="{WORKSPACE_SHELL_VERSION}">'
         ), page, count=1)
-        body_end = page.find('>') + 1 if page.startswith('<body') else -1
         body_match = re.search(r'<body[^>]*>', page)
         if body_match:
             page = page[:body_match.end()] + commandbar + page[body_match.end():]
