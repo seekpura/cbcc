@@ -10,11 +10,6 @@ on:
       - 'tests/test_v0632_portfolio_visual_authority.py'
       - 'tests/test_v0632_human_art_direction_visibility.py'
       - 'scripts/patch_v0632_human_art_direction_visibility.py'
-      - 'scripts/apply_v0632_production_parameter_closure.py'
-      - 'scripts/patch_v0632_closure_language_and_status.py'
-      - 'scripts/patch_v0631_prompt_fixture_for_v0632.py'
-      - 'scripts/patch_v0632_graphic_test_diagnostics.py'
-      - 'scripts/patch_v0632_route_value_detection.py'
   workflow_dispatch:
 
 permissions:
@@ -38,14 +33,13 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
 
-      - name: Apply v0.6.32 authority metadata and closure fixes
+      - name: Apply human Art Direction visibility patch if needed
         run: |
-          python scripts/apply_v0632_production_parameter_closure.py
-          python scripts/patch_v0632_closure_language_and_status.py
-          python scripts/patch_v0631_prompt_fixture_for_v0632.py
-          python scripts/patch_v0632_graphic_test_diagnostics.py
-          python scripts/patch_v0632_route_value_detection.py
-          python scripts/patch_v0632_human_art_direction_visibility.py
+          if grep -q '参数闭环状态' runtime/cbcc/delivery_html.py; then
+            echo 'Human closure projection already applied.'
+          else
+            python scripts/patch_v0632_human_art_direction_visibility.py
+          fi
 
       - name: Compile production, portfolio and human-delivery authority
         env:
@@ -76,17 +70,14 @@ jobs:
           test "$(cat VERSION)" = "0.6.32-production-parameter-closure"
           grep -q '^version: 0.6.32-production-parameter-closure$' SKILL.md
 
-      - name: Commit applied authority
+      - name: Commit human-delivery patch if applied
         run: |
           if git diff --quiet; then
-            echo 'No migration diff to commit.'
+            echo 'No patch diff to commit.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add \
-            VERSION SKILL.md runtime/cbcc/compiler.py prompts/registry.json scripts/build_plugin_dist.py \
-            runtime/cbcc/production_parameter_closure.py runtime/cbcc/delivery_html.py \
-            tests/test_v0631_model_native_prompt_contract.py tests/test_v0632_production_parameter_closure.py
-          git commit -m 'release: promote production-parameter closure to v0.6.32'
+          git add runtime/cbcc/delivery_html.py
+          git commit -m 'feat: expose full v0.6.32 Art Direction and parameter closure in HTML'
           git push
