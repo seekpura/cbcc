@@ -1,34 +1,29 @@
-# Host-Native FULL Delivery Anti-Regression Authority
+# Project-authored HTML Delivery Authority
 
-The host-native/Skills-only execution path is a real production path. Runtime absence must never cause a FULL commerce project to collapse into a custom mini-dashboard or summary report.
+Host-native / Skills-only is a real production path. FULL preserves full commercial depth, but it does **not** prescribe a fixed human interface.
 
-## Reject these regressions
-- fixed global navigation/page lists created from capability names rather than current project objects;
-- fixed 7/8/9-page shells or 01→02→03 workflows;
-- three-card summaries presented as the full strategy;
-- status badges presented as evidence of completed content;
-- complete Design Cards / Model Prompts / Production Notes hidden only in filesystem folders;
-- one generic card component reused for Strategy, Listing, Visual, Video, Economics, Ads, Review and Evidence;
-- unsupported sample prices/budgets/ROAS/fees inserted to make a UI look complete;
-- one fixed video first-frame/choreography presented as the whole video opportunity space;
-- visual galleries that show only asset role/copy/render-route while omitting the actual Art Direction and production parameters;
-- “operator-first” interpreted as “operator-only summary”.
+## Core authority
+The information architecture of `index.html` is a design output of the current project. Do not convert capability names, nine decision domains, seven tools, Runtime modules, Gate sets or file folders into default pages or menus.
 
-## Required host-native parity
-For a FULL project, the host must expose the same commercial objects expected from the canonical system: decision-dense strategy; Product Truth/value/evidence; platform/region/audience/culture; Listing final copy; visual master and dynamic asset universe; per-asset full Design Card; Model Prompt CN/EN + Visible Copy Block + Production/Assembly Notes; video variants/shot programs when relevant; Pricing/Economics/Offer only from explicit inputs; ads/review/measurement when active; source/risk/claim boundaries; and executable operator actions.
+There is no mandatory sidebar, homepage, dashboard, page count, card grid, tab set, asset-detail sequence, Launch Board or 01→02→03 workflow. Reconstruct the project's actual business objects, shopper decisions, active surfaces, asset relationships, release state and operator jobs first; then author the most useful interface.
 
-The primary artifact must let a human understand and operate the project without opening source directories. Files remain editable/machine authorities, not hidden substitutes for the human delivery.
+## Preserve depth without templating
+FULL commercial decisions, final Listing copy, Visual/Video curation, per-asset production objects, Economics/Offer, Ads/Review/Evidence and risk boundaries remain available when relevant. They do not own fixed page positions.
 
-## Workspace architecture
-Derive primary routes from actual project objects and active operator jobs. Different domains may use different UI mechanisms. The nine FULL decision domains are coverage/depth requirements, never a fixed navigation template.
+A summary can exist if useful, but it never substitutes for the underlying work. The primary artifact must not send the user to filesystem folders to find the substantive Design Card, Model Prompt CN/EN, Visible Copy or Production Notes.
 
-`运营执行台` may summarize urgent work and release state, but each summary must lead to the full object. It cannot replace strategy, Listing, visual, video, economics, ads, review or evidence depth.
+Do not force every asset to use one detail schema. Show only the fields and production depth that matter to that asset's carrier and route.
 
 ## Numeric integrity
-Only publish or test a price when its source/decision status is explicit. Market price bands may create a hypothesis; missing cost/rate/CVR remains MISSING_INPUT. Never invent RM/USD/AED price options merely to populate a page.
+Never invent prices, budgets, ROAS, CVR, fees, commission, cost, certification, rank or other numeric business values to make a UI look complete. Missing economics remain `MISSING_INPUT`; market price evidence can support hypotheses but does not become an approved price by itself.
 
-## Asset visibility
-Each active asset must expose inside the human artifact: shopper job; creative thesis; product role; decisive moment; subject/action/environment/props/evidence; composition/spatial geometry; scale/depth/occupancy/focal path/negative space; exact visible copy + Chinese interpretation; CMF/material/color; camera/light parameters when relevant; human/culture execution when relevant; output/surface behavior; separated CN/EN Model Prompts, Visible Copy and Production Notes; QA/repair; and portfolio delta.
+## Reject template inheritance
+Reject an artifact if:
+- its primary navigation is essentially the CBCC capability taxonomy;
+- every domain uses the same card grid;
+- the homepage is mostly status badges/KPIs rather than project-specific judgment;
+- asset pages are summaries that point to folders for the real work;
+- video is reduced to one universal chronology;
+- the shell could be reused for another product by mostly swapping copy/data.
 
-## Release acceptance
-A release is not acceptable if the packaged host Skill is materially thinner than the canonical authority, if the canonical resource Skill is replaced by a summary shell, or if a realistic FULL fixture can pass while emitting a shallow fixed dashboard.
+When this happens, re-author the information architecture from the project's semantics instead of adding more components to the existing shell.
