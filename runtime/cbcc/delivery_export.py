@@ -9,7 +9,13 @@ import zipfile
 
 from .delivery_workspace import build_delivery_html
 from .human_delivery import compile_upload_center, render_upload_center_md, build_project_hub_md
-from .human_language_delivery import normalize_upload_center, audit_human_language_delivery
+from .human_language_delivery import normalize_upload_center
+from .global_chinese_interpretation import (
+    normalize_global_chinese_interpretation,
+    render_upload_center_md_with_global_cn,
+)
+from .final_chinese_interpretation_audit import audit_final_chinese_interpretation
+from .chinese_interpretation_ui import apply_chinese_interpretation_ui
 from .delivery_contract import validate_strategy_delivery
 
 
@@ -127,9 +133,8 @@ def _resolve_output(project: Path, output: Path) -> tuple[Path, Path]:
 def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
     """Materialize the actual CBCC human delivery, not merely a machine manifest.
 
-    Output always includes a complete directory and a ZIP. The directory contains a self-contained
-    offline index.html, Chinese-first human hub, Listing workspace when relevant, editable strategy
-    sources, preserved per-asset packages and machine/supporting authorities.
+    Output always includes a complete directory and a ZIP. Every human-facing foreign-language
+    commerce string must carry a Chinese interpretation/use companion before the delivery can be READY.
     """
     project = Path(project_dir)
     package_dir, zip_path = _resolve_output(project, Path(output))
@@ -159,8 +164,6 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
 
     asset_root = project / 'artifacts/asset_packages'
     prompt_audit=_prompt_consumption_summary(asset_root)
-    # Prompt/generation-plan readiness is deliberately non-blocking for FULL human delivery.
-    # It is a production-quality diagnostic; only a separately requested prompt-ready/provider-execution task may treat it as a local gate.
     if asset_root.exists():
         shutil.copytree(asset_root, package_dir / 'asset_packages')
 
@@ -178,18 +181,19 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         if src.exists() and src.is_file():
             shutil.copy2(src, support / src.name)
 
-    center = normalize_upload_center(compile_upload_center(project))
+    center = normalize_global_chinese_interpretation(normalize_upload_center(compile_upload_center(project)))
     (package_dir / 'HUMAN_DELIVERY.json').write_text(
         json.dumps(center, ensure_ascii=False, indent=2), encoding='utf-8'
     )
     (package_dir / '01_LISTING_UPLOAD_READY.md').write_text(
-        render_upload_center_md(center), encoding='utf-8'
+        render_upload_center_md_with_global_cn(center, render_upload_center_md), encoding='utf-8'
     )
     (package_dir / '00_PROJECT_HUB.md').write_text(
         build_project_hub_md(center), encoding='utf-8'
     )
 
-    build_delivery_html(package_dir, package_dir / 'index.html', title=f'{project.name} · CBCC Delivery')
+    html_path = build_delivery_html(package_dir, package_dir / 'index.html', title=f'{project.name} · CBCC Delivery')
+    html_path.write_text(apply_chinese_interpretation_ui(html_path.read_text(encoding='utf-8')), encoding='utf-8')
 
     for rel, dest in _EXTRA_DIRS:
         src = project / rel
@@ -201,13 +205,13 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         suffix = 'listing_final_copy' if listing_final.is_dir() else f'listing_final_copy{listing_final.suffix}'
         _copy_file_or_dir(listing_final, package_dir / suffix)
 
-    language_audit = audit_human_language_delivery(package_dir, center)
+    language_audit = audit_final_chinese_interpretation(package_dir, center)
     (package_dir / 'HUMAN_LANGUAGE_AUDIT.json').write_text(
         json.dumps(language_audit, ensure_ascii=False, indent=2), encoding='utf-8'
     )
     if language_audit.get('status') != 'PASS':
         raise RuntimeError(
-            'BLOCKED human language delivery contract failed: '
+            'BLOCKED global Chinese interpretation contract failed: '
             + json.dumps(language_audit.get('issues') or [], ensure_ascii=False)
         )
 
@@ -244,6 +248,7 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
             'complete_human_html': bool(html_text.strip()),
             'chinese_first': '默认中文交付' in html_text or '交付语言' in html_text,
             'foreign_human_copy_has_chinese_companion': language_audit.get('status') == 'PASS',
+            'global_human_foreign_content_has_chinese_companion': (language_audit.get('global_human_content') or {}).get('final_status') == 'PASS',
             'listing_human_field_titles_chinese_first': (language_audit.get('listing') or {}).get('status') == 'PASS',
             'asset_foreign_visible_copy_has_chinese_companion': (language_audit.get('assets') or {}).get('status') == 'PASS',
             'object_based_asset_workspace': 'data-workspace-kind="asset-object"' in html_text or not asset_root.exists(),

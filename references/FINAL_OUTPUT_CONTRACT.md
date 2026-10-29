@@ -44,10 +44,24 @@ Graphic / Illustration / Native Text / 3D 不强塞无关摄影字段；Photogra
 
 真实商品需要出现时，真实商品图默认作为强 Reference Input 进入完整最终成图，保留商品身份；`EXACT_PIXEL_COMPOSITE` 仅在明确要求源图原像素层不可改变时使用。
 
-## 5. Listing / 文案 / 本土化
-Listing 最终可发布字段必须直接可读、可复制。人类字段标题中文优先，平台原始 key 作为次级技术标识。
+## 5. 全局中文释义合同
+人类交付默认中文。**凡运营人员在正式人类交付中需要读懂的外文内容，都必须保留原文，并在同一对象提供中文释义 / 用途。** 中文释义是完成对象的一部分，不是可选元数据。
 
-目标市场英语、马来语、阿语等消费者可见原文保留，并在同一对象给中文释义/用途。逐资产 Visible Copy 也遵循同一规则。
+覆盖范围包括但不限于：
+- Listing / 上架：类目 / 分类 / 类目路径、标题、卖点、描述、属性、变体名称和值、包装内含物、使用说明、搜索词 / 后台关键词、FAQ、平台字段值；
+- Visual / Assets：目标市场 Visible Copy、标题、证据文案、CTA、Caption；
+- Video / Creator：Hook、首帧文字、屏显、字幕、对话、VO / Script、封面文字、CTA；
+- Ads：Hook、Headline、Primary Text / Body、Caption、Creator Script、Offer Copy、CTA、Landing Message；
+- Review / CS / Return：在工作区展示的外文评论、客服原话、投诉、退货原因、消费者原话；
+- Research / Strategy：在主工作区直接展示的消费者原话、竞品文案、品类 / Segment 标签、Positioning / Value Proposition 或证据摘录。
+
+Listing 人类字段标题必须中文在前；`description / category / attributes` 等平台原始 key 只能作为次级技术标识。搜索词的中文 companion 可以解释**搜索意图 / 用途**，无需机械逐词直译。外文评论/竞品原文必须保留，中文负责解释其语义与决策信号。
+
+SKU、GTIN/EAN/UPC、URL/URI、HEX、INCI、型号 / 部件号、HS Code、品牌专名等技术标识或官方专名可保留原值，不要求硬翻译；但字段名称、作用和操作说明仍应中文优先。
+
+`Model Prompt EN` 可以保留英文执行语言，但必须与 `Model Prompt CN` 成对，并明确它属于模型执行输入而不是唯一的人类说明。
+
+**`待补中文释义`、空白中文 companion、外文-only 人类内容都不是 FULL 完成态。** Agent 必须在最终交付前补齐；Runtime 负责审计并 BLOCK 缺失项，不能为了过 Gate 自动编造机器翻译。
 
 ## 6. 商业能力连续性
 七大能力始终是一等能力：Market Research；Product Strategy（SKU + Pricing + Economics + Offer）；Listing Creative；Product Image；Product Video；Advertising Optimization；Review Analysis。按项目相关性激活，不是固定七步流水线，也不能因视觉/HTML升级被挤掉。
@@ -67,6 +81,9 @@ Pricing/Economics 只使用显式输入。缺少成本、平台费、履约、�
 - 搜索、复制、子视图、响应式交互是否仍可用；
 - Asset Universe 是否独立于平台 Live Slot 容量，多 Hero / Paid / PDP / Social / Video 变体是否被错误截断；
 - 运营执行是否只是增量入口，而没有替代完整内容；
+- 上架类目、描述、属性、搜索词、FAQ 等所有可见外文是否同对象有中文释义；
+- 资产 Visible Copy、视频、广告、评论原话、研究摘录中的可见外文是否同对象有中文释义 / 用途；
+- 是否仍出现 `待补中文释义` 却被标为 READY / 完成；
 - 是否出现虚构数字或把 MISSING_INPUT 当 0；
 - 是否要求用户去文件夹找真正正文。
 
