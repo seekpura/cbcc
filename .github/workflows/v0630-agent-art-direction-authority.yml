@@ -8,7 +8,10 @@ on:
       - 'runtime/cbcc/__init__.py'
       - 'runtime/cbcc/agent_art_direction_authority.py'
       - 'runtime/cbcc/agent_authority_prompt_compiler.py'
+      - 'runtime/cbcc/agent_plan_input_bridge.py'
+      - 'runtime/cbcc/surface_advisory_authority.py'
       - 'tests/test_v0630_agent_art_direction_authority.py'
+      - 'tests/test_v0630_surface_agent_authority.py'
       - 'prompts/dynamic_asset_curation.md'
       - 'prompts/creative_direction_surface_prompt_compiler.md'
       - 'prompts/visual_photography_strategy.md'
@@ -41,12 +44,17 @@ jobs:
           python -m py_compile \
             runtime/cbcc/__init__.py \
             runtime/cbcc/agent_art_direction_authority.py \
-            runtime/cbcc/agent_authority_prompt_compiler.py
+            runtime/cbcc/agent_authority_prompt_compiler.py \
+            runtime/cbcc/agent_plan_input_bridge.py \
+            runtime/cbcc/surface_advisory_authority.py
 
       - name: Agent Art Direction authority regression
         env:
           PYTHONPATH: runtime
-        run: pytest -q tests/test_v0630_agent_art_direction_authority.py
+        run: |
+          pytest -q \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0630_surface_agent_authority.py
 
       - name: Existing prompt and current-scope regressions
         env:
