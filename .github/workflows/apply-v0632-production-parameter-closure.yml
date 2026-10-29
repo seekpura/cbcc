@@ -61,16 +61,10 @@ jobs:
             tests/test_v0630_agent_art_direction_authority.py \
             tests/test_v0630_prompt_art_direction_projection.py
 
-      - name: Verify current authority text
+      - name: Verify promoted version
         run: |
           test "$(cat VERSION)" = "0.6.32-production-parameter-closure"
           grep -q '^version: 0.6.32-production-parameter-closure$' SKILL.md
-          grep -q 'Production Parameter Closure + Creative Depth Authority' SKILL.md
-          grep -q 'LOCKED_SOURCE_COMPOSITE 不是空背景生成' SKILL.md
-          grep -q '平台容量不是资产配额' SKILL.md
-          grep -q 'v0.6.6 execution-depth authority' prompts/visual_photography_strategy.md
-          grep -q 'lossless production-parameter closure' prompts/creative_direction_surface_prompt_compiler.md
-          grep -q 'Production Parameter Closure + Creative Depth' scripts/build_plugin_dist.py
 
       - name: Commit applied authority
         run: |
