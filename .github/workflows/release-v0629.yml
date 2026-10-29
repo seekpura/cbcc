@@ -19,8 +19,13 @@ on:
       - 'runtime/cbcc/prompt_compiler.py'
       - 'runtime/cbcc/asset_compiler.py'
       - 'runtime/cbcc/creative.py'
+      - 'runtime/cbcc/providers.py'
+      - 'runtime/cbcc/production.py'
+      - 'runtime/cbcc/video_creator.py'
+      - 'runtime/cbcc/tools/seven_agent.py'
       - 'runtime/cbcc/cli.py'
       - 'references/FINAL_OUTPUT_CONTRACT.md'
+      - 'references/capability_ledger.yaml'
       - 'tests/test_delivery_release_acceptance.py'
       - 'tests/test_human_language_delivery_contract.py'
       - 'tests/test_full_strategy_hard_contract.py'
@@ -30,6 +35,12 @@ on:
       - 'tests/test_v0625_decision_question_authority.py'
       - 'tests/test_v066_human_workspace_zh_first.py'
       - 'tests/test_v067_workspace_information_architecture.py'
+      - 'tests/test_reference_guided_optional_prompt_and_capability_continuity.py'
+      - 'tests/test_reference_guided_video_provider_authority.py'
+      - 'tests/test_v060_capability_complete_rebase.py'
+      - 'tests/test_v0511_integration_quality_depth.py'
+      - 'tests/test_capability_contracts.py'
+      - 'tests/run_toolkit_smoke.py'
       - 'README.md'
       - 'INSTALL.md'
       - 'requirements-runtime.txt'
@@ -111,6 +122,24 @@ jobs:
             tests/test_v0628_agent_frontier_scope.py \
             tests/test_v0629_final_stabilization.py
 
+      - name: Reference-guided production and reference-capability continuity
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
+            tests/test_reference_guided_video_provider_authority.py \
+            tests/test_v060_capability_complete_rebase.py \
+            tests/test_v0511_integration_quality_depth.py \
+            tests/test_capability_contracts.py
+          python tests/run_toolkit_smoke.py
+          grep -q 'Product Reference / Fidelity — current authority' SKILL.md
+          grep -q 'Prompt Consumption Audit 是生产质量诊断，不是项目或资产完整度的全局阻断 Gate' SKILL.md
+          grep -q '七大第一类工具' SKILL.md
+          grep -q 'compile_seven_agent_synthesis' runtime/cbcc/tools/seven_agent.py
+          grep -q 'OPTIONAL_PRODUCTION_FILES' runtime/cbcc/asset_compiler.py
+          grep -q "project_completion_blocking':False" runtime/cbcc/delivery_export.py
+
       - name: Build Plugin and Skill archives
         run: python scripts/build_plugin_dist.py --output-dir dist
 
@@ -134,11 +163,15 @@ jobs:
               'chat_only_completion_forbidden':True,
               'full_nine_domain_decision_depth_required':True,
               'prompt_consumption_audit_required':True,
+              'prompt_consumption_blocks_project_completion':False,
+              'product_source_default_reference_guided':True,
+              'photorealism_default_required':False,
+              'seven_agent_capability_continuity_required':True,
               'host_custom_short_report_cannot_substitute_full_delivery':True,
           }
           missing={k:v for k,v in required.items() if c.get(k) is not v}
           assert not missing, {'missing_delivery_contract_flags':missing,'actual':c}
-          print('release + FULL depth + prompt consumption contract PASS')
+          print('release + FULL depth + reference-guided nonblocking production + capability continuity contract PASS')
           PY
 
       - name: Verify packaged source contains real delivery and FULL authority
@@ -163,12 +196,21 @@ jobs:
                   root+'runtime/cbcc/strategy_depth.py',
                   root+'runtime/cbcc/prompt_compiler.py',
                   root+'runtime/cbcc/asset_compiler.py',
+                  root+'runtime/cbcc/providers.py',
+                  root+'runtime/cbcc/production.py',
+                  root+'runtime/cbcc/video_creator.py',
+                  root+'runtime/cbcc/tools/seven_agent.py',
                   root+'builders/project_delivery_builder.py',
                   root+'tests/test_delivery_release_acceptance.py',
                   root+'tests/test_human_language_delivery_contract.py',
                   root+'tests/test_full_strategy_hard_contract.py',
                   root+'tests/test_full_delivery_last_mile.py',
                   root+'tests/test_prompt_execution_decision_preservation.py',
+                  root+'tests/test_reference_guided_optional_prompt_and_capability_continuity.py',
+                  root+'tests/test_reference_guided_video_provider_authority.py',
+                  root+'tests/test_v060_capability_complete_rebase.py',
+                  root+'tests/test_v0511_integration_quality_depth.py',
+                  root+'tests/test_capability_contracts.py',
               ]
               missing=[x for x in required if x not in names]
               assert not missing, missing
@@ -178,21 +220,32 @@ jobs:
               export=z.read(root+'runtime/cbcc/delivery_export.py').decode('utf-8')
               language=z.read(root+'runtime/cbcc/human_language_delivery.py').decode('utf-8')
               prompt=z.read(root+'runtime/cbcc/prompt_compiler.py').decode('utf-8')
+              asset_compiler=z.read(root+'runtime/cbcc/asset_compiler.py').decode('utf-8')
+              production=z.read(root+'runtime/cbcc/production.py').decode('utf-8')
+              seven=z.read(root+'runtime/cbcc/tools/seven_agent.py').decode('utf-8')
               assert 'FULL vs TASK_SCOPED Delivery Authority' in skill
               assert 'FULL Decision-Depth + Prompt Execution Continuity' in skill
+              assert 'Product Reference / Fidelity — current authority' in skill
               assert 'C 级证据不得形成硬宣称' in skill
               assert 'Listing 人类字段标题必须中文在前' in wrapper
               assert '任何英文/马来文/阿语等目标市场外文内容' in wrapper
               assert '宿主原生 Artifact 交付也必须执行同等检查' in wrapper
+              assert 'Product Reference / Production Authority' in wrapper
+              assert 'Prompt、生图方案、摄影/灯光/Prelight 是能力与生产准备度，不是项目或资产完整度的全局 Gate' in wrapper
               assert '人类语言交付 Gate' in final_contract
               assert 'HUMAN_LANGUAGE_AUDIT.json' in export
               assert 'FOREIGN_ASSET_COPY_WITHOUT_CN_COMPANION' in language
               assert 'FOREIGN_LISTING_COPY_WITHOUT_CN_COMPANION' in language
               assert 'FULL_DELIVERY_DEPTH_AUDIT.json' in export
               assert 'PROMPT_CONSUMPTION_AUDIT.json' in export
+              assert "project_completion_blocking':False" in export
               assert '_prompt_consumption_audit' in prompt
               assert 'CANONICAL_PROMPT_COMPILED_EXECUTION_PRESERVING' in prompt
-          print('packaged delivery + FULL depth + prompt continuity + Chinese-base host/runtime language authority PASS')
+              assert 'REFERENCE_GUIDED' in prompt
+              assert 'OPTIONAL_PRODUCTION_FILES' in asset_compiler
+              assert "_REAL_PRODUCT_MODES={'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'}" in production
+              assert 'compile_seven_agent_synthesis' in seven
+          print('packaged delivery + Chinese language + reference-guided nonblocking production + reference capability continuity PASS')
           PY
 
       - name: Write SHA256 sums
@@ -204,7 +257,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cbcc-v0.6.29-full-depth-prompt-language-repair
+          name: cbcc-v0.6.29-reference-guided-capability-repair
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
