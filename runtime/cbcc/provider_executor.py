@@ -259,7 +259,7 @@ def _layer_manifest(job: dict[str, Any], collected: dict[str, Any]) -> list[dict
     if isinstance(supplied, list) and supplied:
         return supplied
     fidelity = str((job.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()
-    if fidelity != 'LOCKED_PIXEL':
+    if fidelity not in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}:
         return []
     rows = []
     for index, binding in enumerate(job.get('source_product_bindings') or []):

@@ -1,10 +1,19 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.35-native-reference-provider-integrity
+version: 0.6.36-seven-tool-capability-continuity
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
+
+## Seven First-Class Commerce Tools + Pricing/Economics Integrity — highest current precedence
+- **七大工具是一等能力，不是文档目录，也不是固定七步流水线。** `01 Market Research / 02 Product Strategy / 03 Listing Creative / 04 Product Image / 05 Product Video / 06 Advertising Optimization / 07 Review Analysis` 必须持续可用；项目按相关性激活，但任何一次视觉/Prompt升级不得把商业能力挤出顶层权威。
+- 每个工具的 release acceptance 必须证明 `Runtime 入口 → 真实 Consumer → 业务产物 → index.html 人类交付 → Plugin 顶层激活`；仅文件存在、import 成功或测试函数存在不算保留。
+- **Product Strategy 必须包含 Pricing/Economics/Offer。** 至少物化 `SKU Roles / Price Bands / Price Valleys / Price×Configuration Matrix / Unit Economics / Contribution Waterfall / Contribution Margin / Break-even CPA / Break-even CPC / Break-even ROAS / Offer-Bundle-Discount Boundary / Pricing Decision + WHY`。
+- **经济计算只允许显式输入。** 缺失的成本、平台费、履约、联盟佣金、税、退款预留、CVR、费率基数等保持 `MISSING_INPUT`；显式 0 可以参与计算，但“没填”绝不能自动当 0。Break-even CPC 只有在 click→order CVR 明确提供时才计算。
+- 市场价格带/价格洼地是证据，不是自动定价建议。Runtime 可以计算与验证边界，但 **Pricing Decision + WHY、SKU 角色、Offer 取舍仍由 Agent 作者化**。
+- Pricing/Economics 必须真正向下游消费：Listing 获得选定价格/Offer及边界但不得把价格强塞进所有字段；Ads 获得 Break-even CPA/CPC/ROAS 并与真实投放表现比较；Image/Video 仅在购买决策需要时消费 Offer/经济上下文，不得因此让所有资产出现价格。
+- 七工具与视觉生产是并列一等能力：v0.6.30–v0.6.35 的 Agent Art Direction、Model-Native Prompt、Production Parameter Closure、Asset Universe、多 Hero、Reference-Guided Native Generation 全部继续有效。
 
 ## Reference-Guided Native Product + Dynamic Asset Universe Authority — highest current precedence
 - **“锁真实商品”默认不是后期合成。** 真实商品图作为生成模型的强参考输入，最终商品必须在完整最终画面中原生生成并真实可见；同时锁定包装几何/比例、泵头/滴管/瓶盖结构、Logo、品牌文字、标签版式与可辨识印刷、主色和材质身份。模型可以为匹配已作者化的机位/透视/灯光/景深/场景做原生重建，但不得把商品改成另一个包装版本。

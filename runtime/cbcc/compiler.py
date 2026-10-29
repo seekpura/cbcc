@@ -50,6 +50,8 @@ from .strategy_authority import build_master_strategy, materialize_strategy, app
 from .strategy_sources import compile_strategy_reasoning_context
 from .claim_authority import compile_claim_authority
 from .evidence_reconciliation import compile_market_evidence_fit_contract
+from .pricing_economics_authority import compile_pricing_economics_authority
+from .seven_tool_continuity import compile_seven_tool_continuity
 from .io import load_tabular, apply_field_map
 
 DEFAULT_FAMILIES=['LISTING','SEARCH','OFFER_PROMOTION','VISUAL','RICH_CONTENT','VIDEO','CREATOR_AFFILIATE','LIVE','PAID','SOCIAL','STORE','CX','LIFECYCLE','MEASUREMENT','COMPLIANCE']
@@ -239,6 +241,11 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
         else:
             domain['economics']={'currency':econ_input.get('currency',t.get('currency','USD')),'status':'INSUFFICIENT_DATA','missing':['price','costs']}
     ed=domain['economics']; ecp=_write(p/'artifacts/offer_economics.json',ed); st.set_gate('OFFER_ECONOMICS','READY_REVIEW',[ecp],ed)
+    pricing_economics=compile_pricing_economics_authority(request,domain.get('market'),domain.get('economics'))
+    domain['pricing_economics_authority']=pricing_economics
+    if isinstance(domain.get('economics'),dict):
+        domain['economics']['pricing_economics_authority']=pricing_economics
+    _write(p/'artifacts/pricing_economics_authority.json',pricing_economics)
     if request.get('ad_rows'):
         domain['ads']=analyze_ad_portfolio(request.get('ad_rows') or [], econ_input.get('price'), econ_input.get('costs'), request.get('ad_thresholds')); _write(p/'artifacts/ad_analysis.json',domain['ads'])
     elif request.get('ad_analysis'):
@@ -416,6 +423,14 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     paid_campaigns=compile_paid_campaign_architecture(request.get('project_id','project'),tc,architecture.get('assets') or [],truth,domain.get('economics'),domain.get('ads'),request.get('paid_campaigns'),objects)
     _write(p/'artifacts/paid_campaign_architecture.json',paid_campaigns)
     seven_agent_synthesis=compile_seven_agent_synthesis(domain=domain,architecture=architecture,video_plan=video_plan,paid_campaigns=paid_campaigns,source_product_assets=source_product_assets)
+    seven_tool_continuity=compile_seven_tool_continuity(
+        domain=domain,architecture=architecture,video_plan=video_plan,paid_campaigns=paid_campaigns,
+        pricing_economics=domain.get('pricing_economics_authority'))
+    seven_agent_synthesis['v0636_continuity']=seven_tool_continuity
+    seven_agent_synthesis['capabilities']=seven_tool_continuity.get('capabilities') or seven_agent_synthesis.get('capabilities') or []
+    seven_agent_synthesis['all_seven_first_class']=seven_tool_continuity.get('all_seven_first_class')
+    seven_agent_synthesis['pricing_economics_integrity']=seven_tool_continuity.get('pricing_economics_integrity')
+    _write(p/'artifacts/seven_tool_continuity.json',seven_tool_continuity)
     architecture['commerce_capability_inputs']=seven_agent_synthesis.get('asset_inputs') or {}
     for _asset in architecture.get('assets') or []:
         _asset['commerce_context']=seven_agent_synthesis.get('asset_inputs') or {}
@@ -430,6 +445,15 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     cop=_write(p/'artifacts/compliance_report.json',compliance)
 
     # Knowledge / ontology / prompt authorities are compiled into a project-specific reasoning context.
+    pricing_consumers=(domain.get('pricing_economics_authority') or {}).get('downstream_consumers') or {}
+    if domain.get('listing'):
+        domain['listing']['pricing_offer_context']=pricing_consumers.get('listing_creative') or {}
+        _write(p/'artifacts/listing_pricing_offer_context.json',domain['listing']['pricing_offer_context'])
+    if domain.get('ads'):
+        domain['ads']['pricing_economics_context']=pricing_consumers.get('advertising_optimization') or {}
+        _write(p/'artifacts/ads_pricing_economics_context.json',domain['ads']['pricing_economics_context'])
+    _write(p/'artifacts/product_strategy_pricing_context.json',pricing_consumers.get('product_strategy') or {})
+
     strategy_context=compile_strategy_reasoning_context(request)
     _write(p/'artifacts/strategy_reasoning_context.json',strategy_context)
 

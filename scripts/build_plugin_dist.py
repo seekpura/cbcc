@@ -18,6 +18,7 @@ EXCLUDE_PARTS = {'.git', '.github', '.pytest_cache', '__pycache__', 'dist', 'evi
 EXCLUDE_SUFFIXES = {'.pyc', '.pyo'}
 
 DEFAULT_PROMPTS = [
+    '七大工具按一等能力执行并保持连续性：Market Research → Product Strategy（含 SKU / Pricing / Economics / Offer）→ Listing Creative → Product Image → Product Video → Advertising Optimization → Review Analysis。项目按相关性激活，不得因视觉任务而降级商业能力。Pricing/Economics 必须使用显式输入物化 Price Bands / Price Valleys / Price×Configuration / Contribution Waterfall / Margin / Break-even CPA-CPC-ROAS / Offer Boundary / Pricing Decision + WHY；缺失成本、费率或 CVR 保持 MISSING_INPUT，不得默认 0。每个工具都要进入 Runtime consumer、业务产物和中文 index.html。',
     '基于当前对话、上传资料和必要的最新公开信息，完成当前商品的跨境电商策略、Listing、内容、视觉策展与逐资产生产对象。该请求属于 FULL 商品项目：必须执行九域决策深度合同、具体参数连续性审计（生产准备度不阻断项目），并物化完整中文优先 index.html + 可编辑源 + 逐资产包 + ZIP。九域是完整度合同，不是固定页面模板；不得用自定义短报告替代。人类交付以中文为基础语言；Listing 字段标题中文在前，平台原始 key 仅作次级技术标识；所有英文/马来文/阿语等目标市场外文 Listing、内容与资产可见文案必须在同一对象提供中文释义/用途。逐资产生产必须分离 Model Prompt CN、Model Prompt EN、Visible Copy Block 与 Production / Assembly Notes；英文 Model Prompt 的执行说明保持英文，目标市场原文可按实际可见 copy 保留。 FULL 视觉资产必须先完成 Production Parameter Closure：所有已选且会改变生成结果的构图/相对位置/尺度/占画/焦点路径/负空间/摄影/灯光/CMF/材质/人物/视频参数都要被 Model Prompt 实际消费。真实商品需要出现在画面时，将真实商品图作为强模型 Reference Input 原生生成完整最终成图并锁定商品身份；只有明确要求原始源图像素层一丝不动时才使用 EXACT_PIXEL_COMPOSITE。',
     '只做当前 SKU 的目标市场/平台视觉资产策展和逐资产生产对象，本轮不生成图片；建立不受平台槽位总数限制的资产宇宙，Hero/卖点/广告/A+/PDP/详情/店铺/社媒/视频均可有多方案与测试轮换池；平台最多9图/7图仅约束同时上线集合。真实商品默认以参考图作为强模型输入原生生成完整成图并锁定产品身份，只有明确要求原始像素层不变时才使用 EXACT_PIXEL_COMPOSITE。先建立商品真源、购买决策、创意机会和动态 Surface，由 Agent 逐资产决定视觉载体、产品是否出现、构图、空间关系、文字渲染路线与相关执行参数。把当前资产已选且会改变结果的具体构图/相对位置/尺度/占画/焦点路径/留白/摄影机几何/对焦景深/灯光几何/CCT-WB/光比/阴影高光/反射偏振/Prelight/CMF材质/色彩管理/finishing/人物/动态参数投影到正确对象；摄影式路线恢复0.6.6可执行参数深度，缺值时不要把Prompt标READY。',
     '审查当前营销策划或提示词，定位写了但未被生产链消费、同风格同布局、产品失真、平台不原生或文案与画面脱节的责任层，只修对应层。',
@@ -101,6 +102,9 @@ name: cross-border-commerce-creative
 description: 用于跨境电商 Product Truth、动态研究、SKU/Offer、Listing/Search、策略、内容、视觉摄影、图片/视频资产、逐资产 Model Prompt CN/EN、Visible Copy、Production / Assembly Notes、生产、Review、学习闭环与完整人类交付；默认中文，任务范围与资产结构动态决定。
 ---
 # Cross-Border Commerce Creative v{version}
+
+## Seven First-Class Commerce Tools
+七大工具始终是一等能力：Market Research；Product Strategy（SKU + Pricing + Economics + Offer）；Listing Creative；Product Image；Product Video；Advertising Optimization；Review Analysis。按项目相关性激活，不是固定流水线。Pricing/Economics 只使用显式输入，必须向 Listing/Ads/Strategy 真实投影；缺值保持 MISSING_INPUT。视觉/视频能力与商业能力并列，不能互相挤掉。
 
 ## Agent Creative Authority
 商业策略、资产策展与视觉设计由宿主 Agent 主导；Runtime 只负责 validate / serialize / compile / trace / execute / package / test。逐资产必须由 Agent 决定视觉载体、产品是否出现及其角色、主体/动作/环境/道具、空间语法与相关时的摄影/灯光/CMF。缺失 Art Direction 时返回 Agent 补决策，不得自动补 packshot、centered hero、left-text/right-product 或其他模板。Product Reference/Fidelity 不等于 Product Presence。
