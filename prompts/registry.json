@@ -1,5 +1,5 @@
 {
-  "version": "0.6.31-model-native-prompt-integrity",
+  "version": "0.6.32-production-parameter-closure",
   "prompts": [
     {
       "id": "PROMPT-MASTER-STRATEGY",
@@ -34,7 +34,7 @@
     {
       "id": "PROMPT-VISUAL-PHOTO",
       "path": "visual_photography_strategy.md",
-      "purpose": "Agent-authored visual/art direction with carrier-aware photography, inclusive human execution and complete parameter continuity only when relevant."
+      "purpose": "Agent-authored portfolio/per-asset visual, photography and CMF strategy with v0.6.6 execution-depth parameters, locked-source composite scene integration and anti-homogenization review."
     },
     {
       "id": "PROMPT-PLATFORM-MATRIX",
@@ -219,7 +219,7 @@
     {
       "id": "PROMPT-CREATIVE-SURFACE-CANONICAL",
       "path": "creative_direction_surface_prompt_compiler.md",
-      "purpose": "Compile Agent-authored Art Direction into separate Model Prompt CN/EN, Visible Copy Block and Production / Assembly Notes; audit concrete values without inventing layout/product defaults."
+      "purpose": "Compile Agent Art Direction into lossless Model Prompt CN/EN + Visible Copy + Production Notes with concrete production-parameter closure; missing useful execution values are not READY."
     },
     {
       "id": "PROMPT-SEVEN-TOOLS",

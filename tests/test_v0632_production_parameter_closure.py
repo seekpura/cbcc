@@ -136,7 +136,8 @@ def test_non_photographic_information_asset_does_not_get_fake_camera_requirement
         },
     }
     out=_compile(asset)
-    assert out['model_prompt_status']=='MODEL_NATIVE_PROMPT_PARAMETER_CLOSED'
     closure=out['production_parameter_closure']
+    diag=(closure['route'], closure['required_groups'], closure['missing_required_parameters'], closure['english_render_semantics_missing_for'])
+    assert out['model_prompt_status']=='MODEL_NATIVE_PROMPT_PARAMETER_CLOSED', diag
     assert closure['route']['photographic'] is False
     assert not any(x in closure['required_groups'] for x in ('camera_geometry','focus_exposure','lighting_geometry'))

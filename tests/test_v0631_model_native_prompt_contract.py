@@ -27,8 +27,11 @@ def _asset():
             'product_occupancy':'28% canvas height',
             'evidence_hierarchy':{'cn':'平衡→配方→产品身份。','en':'balance → formula evidence → product identity'},
             'camera_or_view':'eye-level front / subtle 5-degree three-quarter view','focal_length_mm':'85mm full-frame equivalent',
-            'focus_dof':'label plane sharp; moderate depth of field',
-            'lighting':{'key':'large soft key 45 degrees front-side-above','fill':'white bounce','negative_fill':'narrow negative fill','cct':'5000K','exposure_ratio_plan':'2:1'},
+            'lens_family':'short telephoto product lens','working_distance':'1.0 m','camera_height':'8 cm above product-center height',
+            'yaw_pitch_roll':{'yaw':'5 degrees','pitch':'-2 degrees','roll':'0 degrees'},'shot_size':'tight product portrait',
+            'focus_plane':'front label plane','focus_dof':'f/8-equivalent label-sharp moderate depth of field',
+            'lighting':{'key':'large 100 cm soft key 45 degrees front-side-above at 1.0 m','fill':'white bounce at half-key intensity','negative_fill':'narrow negative fill camera-right','cct':'5000K','white_balance':'5000K neutral WB','exposure_ratio_plan':'2:1','shadow_policy':'soft restrained contact shadow','highlight_policy':'protect white-pack highlights below clipping'},
+            'prelight':'test frame to tune label highlight and pump reflection','color_management':'sRGB with neutral product-white match',
             'cmf':{'material':'matte flexible tube + transparent pump','surface_behavior':'controlled transparent-pump highlight'},
             'palette_hex':['#F6F4EE','#0B3B32','#DCE7E0','#1C2D29'],
             'copy_zone':{'cn':'左侧主信息区。','en':'Main typography zone on the left.'},
@@ -49,7 +52,7 @@ def _compile(asset):
 def test_model_prompt_is_pure_and_parameter_complete_while_package_status_stays_compatible():
     out=_compile(_asset())
     assert out['status']=='CANONICAL_PROMPT_COMPILED_AGENT_AUTHORITY'
-    assert out['model_prompt_status']=='MODEL_NATIVE_PROMPT_READY'
+    assert out['model_prompt_status']=='MODEL_NATIVE_PROMPT_PARAMETER_CLOSED'
     en=out['model_prompt_en']
     assert not re.search(r'[\u3400-\u9fff]',en)
     for forbidden in ['deterministic','renderer recipe','renderer layer','machine contract','post-layout','prompt consumption audit']:

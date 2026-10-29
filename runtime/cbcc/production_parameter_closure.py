@@ -38,6 +38,30 @@ def _blob(v: Any) -> str:
         return str(v).casefold()
 
 
+def _lang_value(v: Any, language: str) -> Any:
+    """Project a bilingual authored value into one prompt language without losing neutral structure."""
+    if not _meaningful(v):
+        return None
+    if isinstance(v, Mapping):
+        keys=('en','EN','en-US','en-GB') if language=='EN' else ('cn','CN','zh','zh-CN')
+        for key in keys:
+            if _meaningful(v.get(key)):
+                return v.get(key)
+        # A mapping without language keys is an execution structure (angles, ratios, geometry, etc.).
+        return {k:_lang_value(x,language) for k,x in v.items() if _meaningful(_lang_value(x,language))}
+    if isinstance(v, (list, tuple, set, frozenset)):
+        rows=[_lang_value(x,language) for x in v]
+        return [x for x in rows if _meaningful(x)]
+    text=str(v).strip()
+    if language=='EN' and _CJK_RE.search(text):
+        return None
+    return v
+
+
+def _lang_txt(v: Any, language: str) -> str:
+    return _txt(_lang_value(v,language))
+
+
 def _art(asset: Mapping[str, Any], card: Mapping[str, Any]) -> dict[str, Any]:
     raw = asset.get('asset_art_direction')
     if not isinstance(raw, Mapping):
@@ -63,13 +87,15 @@ def _pick(art: Mapping[str, Any], keys: tuple[str, ...], groups: tuple[str, ...]
 
 
 def _route_flags(asset: Mapping[str, Any], card: Mapping[str, Any], art: Mapping[str, Any]) -> tuple[bool, bool, bool]:
-    text = _blob({
-        'asset_type': asset.get('asset_type'),
-        'production_mode': asset.get('production_mode'),
-        'carrier': art.get('visual_carrier') or card.get('visual_carrier') or (card.get('information_assetization') or {}).get('representation'),
-        'camera': art.get('camera_or_view'),
-        'lighting': art.get('lighting'),
-    })
+    # Search authored values only. Field names such as `camera`/`lighting` must never make
+    # a graphic/illustration asset look photographic just because the schema has those slots.
+    text = _blob([
+        asset.get('asset_type'),
+        asset.get('production_mode'),
+        art.get('visual_carrier') or card.get('visual_carrier') or (card.get('information_assetization') or {}).get('representation'),
+        art.get('camera_or_view'),
+        art.get('lighting'),
+    ])
     source_only = any(x in text for x in ('source_view','source-only','native_text','document','全源图'))
     video = str(asset.get('asset_type') or '').upper() == 'VIDEO' or any(x in text for x in _VIDEO_HINTS)
     photo = (not source_only) and (any(x in text for x in _PHOTO_HINTS) or any(_meaningful(art.get(k)) for k in ('focal_length_mm','lens_family','camera_position','lighting','prelight')))
@@ -202,12 +228,10 @@ def _append_selected(prompt: str, params: Mapping[str, Any], language: str) -> t
     for key,value in params.items():
         if key.startswith('_') or not _meaningful(value):
             continue
-        raw=_txt(value)
+        raw=_lang_txt(value,language)
         if not raw:
             continue
         if raw in out:
-            continue
-        if language=='EN' and _CJK_RE.search(raw):
             continue
         label=label_cn.get(key,key) if language=='CN' else label_en.get(key,key)
         sentence=(f'{label}：{raw}。' if language=='CN' else f'{label.capitalize()}: {raw}.')
@@ -227,14 +251,11 @@ def _locked_composite_instruction(asset: Mapping[str, Any], card: Mapping[str, A
     fidelity=str((card.get('product_identity') or {}).get('product_fidelity') or asset.get('product_fidelity') or '').upper()
     if fidelity not in _LOCKED_FIDELITY:
         return ''
-    occ=_txt(params.get('product_occupancy') or presence.get('scale_relationship'))
-    geom=_txt(params.get('layout_geometry') or params.get('composition_grammar'))
-    depth=_txt(params.get('scale_depth'))
-    camera='; '.join(_txt(params.get(k)) for k in ('focal_length','working_distance','camera_height','yaw_pitch_roll') if _meaningful(params.get(k)))
-    light='; '.join(_txt(params.get(k)) for k in ('key_light','fill_light','negative_fill','cct','light_ratio','shadow_policy','highlight_policy','reflection_control') if _meaningful(params.get(k)))
-    values=' '.join(x for x in (occ,geom,depth,camera,light) if x)
-    if language=='EN' and _CJK_RE.search(values):
-        return ''
+    occ=_lang_txt(params.get('product_occupancy') or presence.get('scale_relationship'),language)
+    geom=_lang_txt(params.get('layout_geometry') or params.get('composition_grammar'),language)
+    depth=_lang_txt(params.get('scale_depth'),language)
+    camera='; '.join(_lang_txt(params.get(k),language) for k in ('focal_length','working_distance','camera_height','yaw_pitch_roll') if _meaningful(_lang_txt(params.get(k),language)))
+    light='; '.join(_lang_txt(params.get(k),language) for k in ('key_light','fill_light','negative_fill','cct','light_ratio','shadow_policy','highlight_policy','reflection_control') if _meaningful(_lang_txt(params.get(k),language)))
     if language=='CN':
         return ('以最终合成画面而不是空背景为目标生成环境底片：为真实锁定商品保留准确的空间包络'
                 + (f'（占画/尺度：{occ}）' if occ else '')
@@ -273,7 +294,13 @@ def apply_production_parameter_closure(bundle: Mapping[str, Any], asset: Mapping
         en=en.rstrip()+'\n'+comp_en+'\n'
 
     selected={k:v for k,v in params.items() if not k.startswith('_')}
-    missing_bilingual=[k for k,v in selected.items() if _CJK_RE.search(_txt(v)) and _txt(v) not in en]
+    missing_bilingual=[]
+    for k,v in selected.items():
+        raw=_txt(v)
+        en_value=_lang_txt(v,'EN')
+        # Only genuinely Chinese-only authored semantics are missing. A {cn,en} mapping is complete.
+        if _CJK_RE.search(raw) and not en_value:
+            missing_bilingual.append(k)
     out['model_prompt_cn']=cn
     out['prompt_cn']=cn
     out['model_prompt_en']=en
@@ -311,7 +338,12 @@ def apply_production_parameter_closure(bundle: Mapping[str, Any], asset: Mapping
     notes['final_composite_geometry']=deepcopy({k:selected.get(k) for k in ('composition_grammar','layout_geometry','scale_depth','product_occupancy','focal_path','negative_space') if _meaningful(selected.get(k))})
     out['production_assembly_notes']=notes
 
-    if closure['model_generation_blocking']:
+    prior_status=str(out.get('model_prompt_status') or '')
+    specific_prior={'BILINGUAL_RENDER_SEMANTICS_REQUIRED','COPY_RENDER_MODE_REQUIRED','AGENT_ART_DIRECTION_REQUIRED'}
+    if prior_status in specific_prior:
+        # Preserve the more precise upstream readiness reason; closure details remain visible alongside it.
+        out['model_prompt_status']=prior_status
+    elif closure['model_generation_blocking']:
         out['model_prompt_status']='ART_DIRECTION_EXECUTION_DEPTH_REQUIRED'
     else:
         out['model_prompt_status']='MODEL_NATIVE_PROMPT_PARAMETER_CLOSED'
