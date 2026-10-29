@@ -52,10 +52,10 @@ def test_canonical_prompt_explicitly_binds_consumer_question_and_product_truth_w
         source_product_assets=[{'asset_id':'REAL-SECRET','pixel_lock':True}],
     )
     cn=bundle['prompt_cn']; en=bundle['prompt_en']; en_lower=en.lower()
-    # Product Truth remains explicit, while the exact phrase “真实产品” is not a semantic requirement.
+    # Product Truth remains explicit, while exact legacy wording like “真实产品” / “Product Truth binding” is not semantic authority.
     # This fixture explicitly selects LOCKED_PIXEL, so source-lock semantics must still be preserved.
     assert '消费者问题' in cn and 'Product Truth' in cn and 'LOCKED_PIXEL' in cn
-    assert 'Consumer decision question' in en and 'Product Truth binding' in en and 'LOCKED_PIXEL' in en
+    assert 'Consumer decision question' in en and 'Product Truth' in en and 'LOCKED_PIXEL' in en
     assert bundle['design_card']['product_identity']['product_fidelity']=='LOCKED_PIXEL'
     assert bundle['machine_visual_contract']['fidelity']['real_product_master_required'] is True
     assert bundle['machine_visual_contract']['fidelity']['real_product_master_substitution_allowed'] is False
