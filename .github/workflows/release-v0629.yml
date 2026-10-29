@@ -40,6 +40,7 @@ on:
       - 'tests/test_v067_workspace_information_architecture.py'
       - 'tests/test_reference_guided_optional_prompt_and_capability_continuity.py'
       - 'tests/test_reference_guided_video_provider_authority.py'
+      - 'tests/test_final_reference_guided_consistency.py'
       - 'tests/test_v060_capability_complete_rebase.py'
       - 'tests/test_v0511_integration_quality_depth.py'
       - 'tests/test_capability_contracts.py'
@@ -132,6 +133,7 @@ jobs:
           pytest -q \
             tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
             tests/test_reference_guided_video_provider_authority.py \
+            tests/test_final_reference_guided_consistency.py \
             tests/test_v060_capability_complete_rebase.py \
             tests/test_v0511_integration_quality_depth.py \
             tests/test_capability_contracts.py
@@ -142,6 +144,9 @@ jobs:
           grep -q 'compile_seven_agent_synthesis' runtime/cbcc/tools/seven_agent.py
           grep -q 'OPTIONAL_PRODUCTION_FILES' runtime/cbcc/asset_compiler.py
           grep -q "project_completion_blocking':False" runtime/cbcc/delivery_export.py
+          grep -q 'photographic_route=bool' runtime/cbcc/prompt_compiler.py
+          grep -q "real_product_master_substitution_allowed':not bool" runtime/cbcc/production.py
+          ! grep -q 'Prompt Consumption Audit 的 `missing decisions = 0`' scripts/build_plugin_dist.py
 
       - name: Build Plugin and Skill archives
         run: python scripts/build_plugin_dist.py --output-dir dist
@@ -191,6 +196,7 @@ jobs:
                   skill_root+'SKILL.md',
                   root+'SKILL.md',
                   root+'references/FINAL_OUTPUT_CONTRACT.md',
+                  root+'runtime/cbcc/compiler.py',
                   root+'runtime/cbcc/delivery_export.py',
                   root+'runtime/cbcc/delivery_workspace.py',
                   root+'runtime/cbcc/delivery_html.py',
@@ -211,6 +217,7 @@ jobs:
                   root+'tests/test_prompt_execution_decision_preservation.py',
                   root+'tests/test_reference_guided_optional_prompt_and_capability_continuity.py',
                   root+'tests/test_reference_guided_video_provider_authority.py',
+                  root+'tests/test_final_reference_guided_consistency.py',
                   root+'tests/test_v060_capability_complete_rebase.py',
                   root+'tests/test_v0511_integration_quality_depth.py',
                   root+'tests/test_capability_contracts.py',
@@ -220,11 +227,13 @@ jobs:
               wrapper=z.read(skill_root+'SKILL.md').decode('utf-8')
               skill=z.read(root+'SKILL.md').decode('utf-8')
               final_contract=z.read(root+'references/FINAL_OUTPUT_CONTRACT.md').decode('utf-8')
+              compiler=z.read(root+'runtime/cbcc/compiler.py').decode('utf-8')
               export=z.read(root+'runtime/cbcc/delivery_export.py').decode('utf-8')
               language=z.read(root+'runtime/cbcc/human_language_delivery.py').decode('utf-8')
               prompt=z.read(root+'runtime/cbcc/prompt_compiler.py').decode('utf-8')
               asset_compiler=z.read(root+'runtime/cbcc/asset_compiler.py').decode('utf-8')
               production=z.read(root+'runtime/cbcc/production.py').decode('utf-8')
+              video=z.read(root+'runtime/cbcc/video_creator.py').decode('utf-8')
               seven=z.read(root+'runtime/cbcc/tools/seven_agent.py').decode('utf-8')
               assert 'FULL vs TASK_SCOPED Delivery Authority' in skill
               assert 'FULL Decision-Depth + Prompt Execution Continuity' in skill
@@ -235,7 +244,10 @@ jobs:
               assert '宿主原生 Artifact 交付也必须执行同等检查' in wrapper
               assert 'Product Reference / Production Authority' in wrapper
               assert 'Prompt、生图方案、摄影/灯光/Prelight 是能力与生产准备度，不是项目或资产完整度的全局 Gate' in wrapper
+              assert 'Prompt Consumption Audit 的 `missing decisions = 0`' not in wrapper
+              assert 'missing decisions` 形成 `NEEDS_PROMPT_WORK`' in wrapper
               assert '人类语言交付 Gate' in final_contract
+              assert "product_fidelity=request.get('product_fidelity','REFERENCE_GUIDED')" in compiler
               assert 'HUMAN_LANGUAGE_AUDIT.json' in export
               assert 'FOREIGN_ASSET_COPY_WITHOUT_CN_COMPANION' in language
               assert 'FOREIGN_LISTING_COPY_WITHOUT_CN_COMPANION' in language
@@ -245,10 +257,13 @@ jobs:
               assert '_prompt_consumption_audit' in prompt
               assert 'CANONICAL_PROMPT_COMPILED_EXECUTION_PRESERVING' in prompt
               assert 'REFERENCE_GUIDED' in prompt
+              assert 'photographic_route=bool' in prompt
               assert 'OPTIONAL_PRODUCTION_FILES' in asset_compiler
               assert "_REAL_PRODUCT_MODES={'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'}" in production
+              assert "real_product_master_substitution_allowed':not bool(quality.get('real_product_master_required'))" in production
+              assert '参考设计模式：产品/源文件用于指导设计' in video
               assert 'compile_seven_agent_synthesis' in seven
-          print('packaged delivery + Chinese language + reference-guided nonblocking production + reference capability continuity PASS')
+          print('packaged delivery + Chinese language + final reference-guided nonblocking production + reference capability continuity PASS')
           PY
 
       - name: Write SHA256 sums
