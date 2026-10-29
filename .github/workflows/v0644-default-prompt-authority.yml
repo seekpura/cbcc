@@ -1,0 +1,37 @@
+name: v0.6.44 Default Prompt Authority
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/build_plugin_dist_v0644.py'
+      - 'scripts/check_v0644_default_prompt_authority.py'
+      - 'prompts/default_prompt_authority_boundary.md'
+      - 'tests/test_v0644_default_prompt_authority.py'
+      - 'VERSION'
+  workflow_dispatch:
+
+jobs:
+  default-prompt-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile release code
+        run: python -m compileall -q scripts/build_plugin_dist_v0644.py scripts/check_v0644_default_prompt_authority.py
+      - name: Run focused authority regressions
+        env:
+          PYTHONPATH: runtime:.
+        run: python -m pytest -q tests/test_v0644_default_prompt_authority.py tests/test_v0643_global_chinese_interpretation.py tests/test_v0642_regression_recovery.py
+      - name: Build v0.6.44 installable package
+        run: python -m scripts.build_plugin_dist_v0644 --output-dir dist_v0644
+      - name: Unpack actual plugin archive
+        run: |
+          rm -rf dist_v0644/unpacked
+          mkdir -p dist_v0644/unpacked
+          unzip -q dist_v0644/cross-border-commerce-creative-plugin-v0.6.44.zip -d dist_v0644/unpacked
+          test -f dist_v0644/unpacked/cross-border-commerce-creative/plugin.json
+      - name: Guard authority source and manifest
+        run: python scripts/check_v0644_default_prompt_authority.py dist_v0644/unpacked/cross-border-commerce-creative
