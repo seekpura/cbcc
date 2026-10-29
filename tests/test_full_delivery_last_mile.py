@@ -87,7 +87,8 @@ def test_full_export_revalidates_depth_and_materializes_visible_audits(tmp_path:
     assert manifest['workspace_contract']['full_decision_depth']=='PASS'
     assert manifest['workspace_contract']['full_visible_objects']=='PASS'
     assert manifest['workspace_contract']['foreign_human_copy_has_chinese_companion'] is True
-    assert manifest['workspace_contract']['prompt_generation_readiness']=='READY'
+    # This fixture explicitly disables asset compilation; absence of assets is scope, not incompleteness.
+    assert manifest['workspace_contract']['prompt_generation_readiness']=='NO_ASSETS'
     assert manifest['workspace_contract']['prompt_generation_readiness_blocks_project_completion'] is False
     assert manifest['full_delivery_depth_audit']=='FULL_DELIVERY_DEPTH_AUDIT.json'
     assert manifest['prompt_consumption_audit']=='PROMPT_CONSUMPTION_AUDIT.json'
