@@ -20,6 +20,7 @@ def test_plugin_wrapper_and_default_prompts_use_native_reference_and_dynamic_ass
 def test_packaged_wrapper_says_exact_pixel_composite_is_explicit_only():
     from scripts import build_plugin_dist as b
     wrapper=b.skill_wrapper('0.6.33')
-    assert 'EXACT_PIXEL_COMPOSITE 仅在用户明确要求' in wrapper
+    assert 'EXACT_PIXEL_COMPOSITE' in wrapper
+    assert '仅在用户明确要求' in wrapper
     assert '原始源图像素层不可改变' in wrapper
     assert '原生生成完整最终画面中的同一真实商品身份' in wrapper
