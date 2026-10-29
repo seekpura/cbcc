@@ -12,9 +12,9 @@ from .human_delivery import compile_upload_center, render_upload_center_md, buil
 from .human_language_delivery import normalize_upload_center
 from .global_chinese_interpretation import (
     normalize_global_chinese_interpretation,
-    audit_global_chinese_interpretation,
     render_upload_center_md_with_global_cn,
 )
+from .final_chinese_interpretation_audit import audit_final_chinese_interpretation
 from .chinese_interpretation_ui import apply_chinese_interpretation_ui
 from .delivery_contract import validate_strategy_delivery
 
@@ -205,7 +205,7 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         suffix = 'listing_final_copy' if listing_final.is_dir() else f'listing_final_copy{listing_final.suffix}'
         _copy_file_or_dir(listing_final, package_dir / suffix)
 
-    language_audit = audit_global_chinese_interpretation(package_dir, center)
+    language_audit = audit_final_chinese_interpretation(package_dir, center)
     (package_dir / 'HUMAN_LANGUAGE_AUDIT.json').write_text(
         json.dumps(language_audit, ensure_ascii=False, indent=2), encoding='utf-8'
     )
@@ -248,7 +248,7 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
             'complete_human_html': bool(html_text.strip()),
             'chinese_first': '默认中文交付' in html_text or '交付语言' in html_text,
             'foreign_human_copy_has_chinese_companion': language_audit.get('status') == 'PASS',
-            'global_human_foreign_content_has_chinese_companion': (language_audit.get('global_human_content') or {}).get('status') == 'PASS',
+            'global_human_foreign_content_has_chinese_companion': (language_audit.get('global_human_content') or {}).get('final_status') == 'PASS',
             'listing_human_field_titles_chinese_first': (language_audit.get('listing') or {}).get('status') == 'PASS',
             'asset_foreign_visible_copy_has_chinese_companion': (language_audit.get('assets') or {}).get('status') == 'PASS',
             'object_based_asset_workspace': 'data-workspace-kind="asset-object"' in html_text or not asset_root.exists(),
