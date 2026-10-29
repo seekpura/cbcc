@@ -2,12 +2,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 from typing import Any, Mapping
-import json
 import re
 
 
 _INTEGRATED_COPY_MODES={'MODEL_RENDER','HYBRID'}
-_EXPLICIT_POST_MODES={'POST_COMPOSITE'}
 _HARD_INPUT_STATUSES={
     'REAL_PRODUCT_REFERENCE_INPUT_REQUIRED',
     'COMPLIANCE_INPUT_REQUIRED',
@@ -34,7 +32,6 @@ def _text(value:Any)->str:
     if value in (None,'',[],{}): return ''
     if isinstance(value,str): return value.strip()
     if isinstance(value,Mapping):
-        # Prefer market-facing values over delivery translations / metadata.
         for key in ('target_market_copy','target_copy','copy','text','headline','primary','value'):
             if _meaningful(value.get(key)): return _text(value.get(key))
         return '; '.join(f'{k}: {_text(v)}' for k,v in value.items() if _meaningful(v))
@@ -63,11 +60,7 @@ def _copy_block(out:Mapping[str,Any],asset:Mapping[str,Any])->dict[str,Any]:
 
 
 def resolve_copy_render_mode(asset:Mapping[str,Any],out:Mapping[str,Any])->tuple[str,str]:
-    """Resolve normal copy rendering autonomously; post-composite is explicit-only.
-
-    v0.6.37 policy: visible market copy defaults to integrated native model rendering when no
-    explicit route was authored. The operator is not asked to choose an implementation mode.
-    """
+    """Resolve normal copy rendering autonomously; post-composite is explicit-only."""
     art=_art(asset)
     explicit=_first(art,'copy_render_mode','text_render_mode','visible_copy_render_mode')
     if not explicit:
@@ -92,7 +85,6 @@ def _strip_legacy_text_suppression(text:str)->str:
     )
     out=text
     for row in replacements: out=out.replace(row,'')
-    # Remove legacy phrases even when punctuation/spacing was changed slightly.
     patterns=(
         r'Exact approved text is composed deterministically after generation\.?',
         r'generate no marketing text inside the image\.?',
@@ -154,16 +146,21 @@ def apply_commercial_operator_density_authority(bundle:Mapping[str,Any],asset:Ma
     art=_art(asset)
     typography=_first(art,'typography','typography_direction') or ((out.get('design_card') or {}).get('information_design') or {}).get('typography')
 
-    cn=_strip_legacy_text_suppression(str(out.get('model_prompt_cn') or out.get('prompt_cn') or ''))
-    en=_strip_legacy_text_suppression(str(out.get('model_prompt_en') or out.get('prompt_en') or ''))
+    raw_cn=str(out.get('model_prompt_cn') or out.get('prompt_cn') or '')
+    raw_en=str(out.get('model_prompt_en') or out.get('prompt_en') or '')
+    # Only integrated modes erase historical no-text instructions. An explicitly selected
+    # POST_COMPOSITE route keeps its deliberate no-text/typography-zone instruction intact.
     if copy_mode in _INTEGRATED_COPY_MODES:
+        cn=_strip_legacy_text_suppression(raw_cn)
+        en=_strip_legacy_text_suppression(raw_en)
         cn_instruction=_integrated_copy_instruction(copy_block,'CN',typography)
         en_instruction=_integrated_copy_instruction(copy_block,'EN',typography)
         primary=_text(copy_block.get('target_market_copy'))
-        if cn_instruction and primary not in cn: cn=(cn.rstrip()+'\n'+cn_instruction).strip()
-        elif cn_instruction and '直接排版' not in cn: cn=(cn.rstrip()+'\n'+cn_instruction).strip()
-        if en_instruction and primary not in en: en=(en.rstrip()+'\n'+en_instruction).strip()
-        elif en_instruction and 'integrated part of the finished commercial image' not in en: en=(en.rstrip()+'\n'+en_instruction).strip()
+        if cn_instruction and (primary not in cn or '直接排版' not in cn): cn=(cn.rstrip()+'\n'+cn_instruction).strip()
+        if en_instruction and (primary not in en or 'integrated part of the finished commercial image' not in en): en=(en.rstrip()+'\n'+en_instruction).strip()
+    else:
+        cn=raw_cn.strip()
+        en=raw_en.strip()
     out['model_prompt_cn']=out['prompt_cn']=cn+'\n' if cn else ''
     out['model_prompt_en']=out['prompt_en']=en+'\n' if en else ''
     out['visible_copy_block']=copy_block
