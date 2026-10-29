@@ -12,26 +12,30 @@ def test_source_product_assets_are_reference_guided_by_default(tmp_path):
     src=tmp_path/'p.png'; src.write_bytes(b'product-reference')
     rows=_normalize_source_product_assets([{'path':str(src)}],[tmp_path])
     assert rows[0]['pixel_lock'] is False
+    assert rows[0]['identity_lock'] is False
     assert rows[0]['fidelity_mode']=='REFERENCE_GUIDED'
     assert rows[0]['source_usage']=='DESIGN_REFERENCE'
     assert 'RERENDER' in rows[0]['allowed_transforms']
 
 
-def test_explicit_locked_source_mode_is_preserved(tmp_path):
+def test_legacy_pixel_lock_means_native_identity_lock_not_exact_pixel_composite(tmp_path):
     src=tmp_path/'p.png'; src.write_bytes(b'product-reference')
     rows=_normalize_source_product_assets([{'path':str(src),'pixel_lock':True}],[tmp_path])
-    assert rows[0]['pixel_lock'] is True
-    assert rows[0]['fidelity_mode']=='LOCKED_SOURCE_COMPOSITE'
-    assert rows[0]['source_usage']=='IMMUTABLE_SOURCE_LAYER'
+    assert rows[0]['pixel_lock'] is False
+    assert rows[0]['identity_lock'] is True
+    assert rows[0]['fidelity_mode']=='REFERENCE_GUIDED_NATIVE_LOCK'
+    assert rows[0]['source_usage']=='MODEL_REFERENCE_INPUT'
+    assert 'NATIVE_RENDER' in rows[0]['allowed_transforms']
 
 
-def test_dynamic_asset_defaults_reference_guided_not_pixel_locked():
+def test_dynamic_gallery_asset_defaults_native_reference_lock_not_pixel_layer():
     target={'target_id':'T','surfaces':['GALLERY']}
     objects=[{'family':'VISUAL','surface':'GALLERY','curation_job':'Resolve identity','source_ids':[],'claim_ids':[]}]
     arch=build_asset_architecture('P',target,['What is this product?'],objects)
     assert arch['assets']
-    assert arch['assets'][0]['product_fidelity']=='REFERENCE_GUIDED'
-    edit=_editable_layer_contract('GRAPHIC_DESIGN','REFERENCE_GUIDED')
+    assert arch['assets'][0]['product_fidelity']=='REFERENCE_GUIDED_NATIVE_LOCK'
+    assert arch['assets'][0]['production_mode']=='AI_REFERENCE_PRODUCT'
+    edit=_editable_layer_contract('AI_REFERENCE_PRODUCT','REFERENCE_GUIDED_NATIVE_LOCK')
     assert 'product_master_pixels' not in edit['frozen_layers']
     assert 'verified_product_facts' in edit['frozen_layers']
 
