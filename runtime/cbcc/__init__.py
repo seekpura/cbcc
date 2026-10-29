@@ -29,6 +29,7 @@ from . import commercial_operator_density_authority as _commercial_operator_dens
 from . import commercial_continuity_authority as _commercial_continuity_authority
 from . import commercial_curation_lineage as _commercial_curation_lineage
 from . import subject_presence_authority as _subject_presence_authority
+from . import subject_agent_authority as _subject_agent_authority
 from . import human_delivery_art_direction_projection as _human_delivery_art_direction_projection
 from . import photographic_route_agent_authority as _photographic_route_agent_authority
 from . import art_direction_projection as _art_direction_projection
@@ -153,6 +154,9 @@ _agent_autonomy.compile_agent_autonomy_plan = _agent_plan_input_bridge.wrap_comp
 _agent_autonomy.compile_agent_autonomy_plan = _portfolio_visual_authority.wrap_compile_agent_autonomy_plan(
     _agent_autonomy.compile_agent_autonomy_plan
 )
+_agent_autonomy.compile_agent_autonomy_plan = _subject_agent_authority.wrap_compile_agent_autonomy_plan(
+    _agent_autonomy.compile_agent_autonomy_plan
+)
 _agent_autonomy.agent_creative_directions = _agent_art_direction_authority.wrap_agent_creative_directions(
     _agent_autonomy.agent_creative_directions
 )
@@ -181,6 +185,9 @@ _creative.apply_creative_system_to_assets = _portfolio_visual_authority.wrap_app
     _creative.apply_creative_system_to_assets
 )
 _creative.apply_creative_system_to_assets = _commercial_curation_lineage.wrap_apply_creative_system_to_assets(
+    _creative.apply_creative_system_to_assets
+)
+_creative.apply_creative_system_to_assets = _subject_agent_authority.wrap_apply_creative_system_to_assets(
     _creative.apply_creative_system_to_assets
 )
 
