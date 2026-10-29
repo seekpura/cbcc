@@ -20,6 +20,7 @@ from . import model_native_prompt_contract as _model_native_prompt_contract
 from . import model_native_prompt_audit_fix as _model_native_prompt_audit_fix
 from . import production_parameter_closure as _production_parameter_closure
 from . import reference_guided_native_authority as _reference_guided_native_authority
+from . import commercial_operator_density_authority as _commercial_operator_density_authority
 from . import human_delivery_art_direction_projection as _human_delivery_art_direction_projection
 from . import photographic_route_agent_authority as _photographic_route_agent_authority
 from . import art_direction_projection as _art_direction_projection
@@ -90,6 +91,9 @@ _agent_authority_prompt_compiler.compile_asset_prompt = _production_parameter_cl
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
 _agent_authority_prompt_compiler.compile_asset_prompt = _reference_guided_native_authority.wrap_compile_asset_prompt(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
+_agent_authority_prompt_compiler.compile_asset_prompt = _commercial_operator_density_authority.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
 _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.compile_asset_prompt

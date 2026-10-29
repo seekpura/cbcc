@@ -52,6 +52,7 @@ from .claim_authority import compile_claim_authority
 from .evidence_reconciliation import compile_market_evidence_fit_contract
 from .pricing_economics_authority import compile_pricing_economics_authority
 from .seven_tool_continuity import compile_seven_tool_continuity
+from .operator_execution_board import build_operator_execution_board
 from .io import load_tabular, apply_field_map
 
 DEFAULT_FAMILIES=['LISTING','SEARCH','OFFER_PROMOTION','VISUAL','RICH_CONTENT','VIDEO','CREATOR_AFFILIATE','LIVE','PAID','SOCIAL','STORE','CX','LIFECYCLE','MEASUREMENT','COMPLIANCE']
@@ -515,6 +516,13 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     )
     agent_next_action=augment_agent_next_action(agent_next_action,question_authority)
     _write(p/'artifacts/agent_next_action.json',agent_next_action)
+
+    operator_execution_board=build_operator_execution_board(
+        request=request,domain=domain,strategy=strategy,architecture=architecture,video_plan=video_plan,
+        paid_campaigns=paid_campaigns,agent_next_action=agent_next_action,compliance=compliance,
+        asset_compile=asset_compile,production_run=production_run,
+    )
+    _write(p/'artifacts/operator_execution_board.json',operator_execution_board)
 
     def _capability_row(name,input_active,input_status,consumers,downstream_ok=True):
         status='INTEGRATED_ACTIVE' if input_active and downstream_ok else ('INTEGRATED_INACTIVE_NO_PROJECT_INPUT' if not input_active else 'INTEGRATION_GAP')

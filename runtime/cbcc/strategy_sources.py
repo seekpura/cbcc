@@ -89,10 +89,11 @@ def compile_strategy_reasoning_context(request: dict[str, Any]) -> dict[str, Any
     root=_root(); domains=_active_domains(request)
     preg=_load_json(root/'prompts/registry.json',{'prompts':[]}); kreg=_load_json(root/'knowledge/registry.json',{'documents':[]}); onto=_load_json(root/'ontology/commerce_ontology.json',{})
 
-    wanted_prompts={'PROMPT-MASTER-STRATEGY','PROMPT-SKU-OFFER','PROMPT-POSITIONING','PROMPT-VISUAL-PHOTO','PROMPT-PLATFORM-MATRIX','PROMPT-ASSET-CURATION','PROMPT-CULTURE','PROMPT-CREATIVE-SURFACE-CANONICAL'}
+    wanted_prompts={'PROMPT-MASTER-STRATEGY','PROMPT-SKU-OFFER','PROMPT-POSITIONING','PROMPT-VISUAL-PHOTO','PROMPT-PLATFORM-MATRIX','PROMPT-ASSET-CURATION','PROMPT-CULTURE','PROMPT-CREATIVE-SURFACE-CANONICAL','PROMPT-SEVEN-TOOLS','PROMPT-COMMERCIAL-INTEGRATED-VISUAL','PROMPT-OPERATOR-EXECUTION-DENSITY'}
     if 'market' in domains: wanted_prompts.add('PROMPT-MARKET-STRATEGY')
     if 'listing' in domains: wanted_prompts.add('PROMPT-LISTING')
     if 'measurement' in domains: wanted_prompts.add('PROMPT-MEASUREMENT')
+    if request.get('video_jobs') or any(str(x).upper() in {'VIDEO','PDP_VIDEO','CREATOR','LIVE','SOCIAL_CONTENT'} for x in ((request.get('target') or {}).get('surfaces') or [])): wanted_prompts.add('PROMPT-COMMERCIAL-VIDEO')
     if request.get('claims'): wanted_prompts.add('PROMPT-TRUTH-VALUE')
     if 'economics' in domains: wanted_prompts.add('PROMPT-ECONOMICS')
     if 'feedback' in domains: wanted_prompts.add('PROMPT-FEEDBACK')

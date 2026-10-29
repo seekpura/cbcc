@@ -10,6 +10,63 @@ def _asset_for_video(assets:list[dict[str,Any]]|None, family:str, surface:str, i
     return rows[index % len(rows)] if rows else None
 
 
+
+def _decision_derived_fallback_shots(j:dict[str,Any], source:dict[str,Any], q:str, proof:Any, dur:float, family:str)->tuple[list[dict[str,Any]],str]:
+    """Graceful fallback only. Prefer explicit Agent-authored video_jobs/shots.
+
+    Unlike the legacy universal five-beat template, this fallback selects a narrative carrier from
+    the actual decision job and source asset. It is deliberately simple and records its source.
+    """
+    carrier=str(j.get('narrative_carrier') or source.get('visual_carrier') or (source.get('asset_art_direction') or {}).get('visual_carrier') or '').upper()
+    blob=' '.join(str(x or '') for x in [q,proof,source.get('decision_intent'),source.get('strategic_job'),source.get('reason_to_exist')]).lower()
+    if family=='CREATOR_AFFILIATE' or 'CREATOR' in carrier or 'POV' in carrier:
+        weights=[.25,.38,.25,.12]; narrative='CREATOR_CONTEXT_DEMO'
+        specs=[
+          ('CREATOR_CONTEXT','Open inside the real use/problem context; the creator is already doing something, not presenting a title card.'),
+          ('CREATOR_DEMO','Show the product/action relationship in first person and make the relevant mechanism/use visible.'),
+          ('CREATOR_PROOF_OR_OBJECTION',f'Answer the decisive question with supported evidence: {proof}'),
+          ('NATIVE_HANDOFF','Close naturally into the relevant shop/next action without resetting into a corporate packshot.')
+        ]
+    elif any(k in blob for k in ['size','fit','compatib','dimension','capacity','scale']):
+        weights=[.18,.42,.25,.15]; narrative='FIT_SCALE_PROOF'
+        specs=[
+          ('DECISION_QUESTION',f'Make the fit/scale question immediately visible: {q}'),
+          ('MEASURED_PROOF',f'Show the truthful size/fit/compatibility relationship: {proof}'),
+          ('USE_CONTEXT','Show the product in the relevant real context so the proof can be judged.'),
+          ('DECISION_CLOSE','Hold the resolved fit/scale answer and hand off to the correct commerce action.')
+        ]
+    elif any(k in blob for k in ['package','contents','receive','included','unbox','trust']):
+        weights=[.2,.36,.29,.15]; narrative='PACKAGE_TRUST'
+        specs=[
+          ('ARRIVAL_CONTEXT','Open on what the shopper actually receives.'),
+          ('CONTENTS_REVEAL','Reveal verified package contents/packaging clearly and without invented accessories.'),
+          ('DETAIL_TRUST',f'Hold the decisive packaging/detail proof: {proof}'),
+          ('EXPECTATION_CLOSE','Close on the accurate purchase expectation and next action.')
+        ]
+    elif any(k in blob for k in ['texture','material','feel','fabric','gel','liquid','finish']):
+        weights=[.2,.4,.27,.13]; narrative='TACTILE_MATERIAL'
+        specs=[
+          ('TACTILE_OPEN','Open on the material/texture behavior itself, using motion and light that make it judgeable.'),
+          ('MATERIAL_PROOF',f'Make the supported material/use property visible: {proof}'),
+          ('PRODUCT_CONTEXT','Connect the tactile evidence back to the product and real use context.'),
+          ('BELIEF_HOLD','Hold the resolved material belief long enough to understand, then hand off.')
+        ]
+    else:
+        weights=[.23,.37,.27,.13]; narrative='DECISION_SPECIFIC'
+        specs=[
+          ('DECISION_OPEN',f'Open on the concrete shopper tension/question: {q}'),
+          ('VISIBLE_ANSWER',f'Make the supported decision answer visible through the most relevant action/evidence: {proof}'),
+          ('PRODUCT_OR_USE_CONTEXT','Connect the evidence to the product/use context; product presence follows the authored asset role rather than a mandatory packshot.'),
+          ('DECISION_HANDOFF','Hold the resolved belief and move into the relevant commerce action.')
+        ]
+    shots=[]
+    used=0.0
+    for idx,(shot,job) in enumerate(specs):
+        seconds=round(dur*weights[idx],2) if idx<len(specs)-1 else round(dur-used,2)
+        used+=seconds
+        shots.append({'shot':shot,'seconds':seconds,'job':job,'visual':'Author scene/action/camera/copy/audio from this decision job; do not substitute generic B-roll.'})
+    return shots,narrative
+
 def build_video_creator_plan(project_id:str, content_objects:list[dict[str,Any]], shopper_questions:list[str], language_contract:dict[str,Any], video_jobs:list[dict[str,Any]]|None=None, *, assets:list[dict[str,Any]]|None=None, creative_council:dict[str,Any]|None=None)->dict[str,Any]:
     jobs=list(video_jobs or [])
     if not jobs:
@@ -26,18 +83,11 @@ def build_video_creator_plan(project_id:str, content_objects:list[dict[str,Any]]
         q=j.get('shopper_question') or source.get('consumer_question') or 'What should the shopper understand?'
         decision=source.get('decision_intent') or j.get('decision_intent') or 'DECISION_SUPPORT'
         proof=source.get('incremental_information') or source.get('belief_target') or j.get('proof') or 'approved product-specific evidence'
-        if j.get('shots'):
-            shots=j['shots']
-        else:
-            # Timing is dynamic by role; not a fixed 3-card visual template. Each beat has a production job.
-            shots=[
-              {'shot':'NATIVE_HOOK','seconds':round(dur*0.18,2),'job':f'Open on a concrete tension/action/question: {q}','visual':'Show the decision situation before explanatory copy; no generic title card.'},
-              {'shot':'PRODUCT_OR_ACTION_REVEAL','seconds':round(dur*0.24,2),'job':'Introduce the product/reference subject in the action/evidence relationship using the selected fidelity policy.','visual':source.get('visual_expression_variant') or source.get('visual_production_signature')},
-              {'shot':'PROOF_DEMO','seconds':round(dur*0.34,2),'job':f'Make the decision answer visible: {proof}','visual':'Use mechanism, scale, fit, use or proof appropriate to the decision intent; do not substitute generic B-roll.'},
-              {'shot':'BELIEF_CLOSE','seconds':round(dur*0.14,2),'job':f'Land the target belief: {source.get("belief_target") or proof}','visual':'Hold the evidence long enough to understand; locked copy labels what is visible.'},
-              {'shot':'CTA_HANDOFF','seconds':round(dur*0.10,2),'job':'Hand off to the correct commerce action/surface.','visual':'CTA is subordinate to product truth and the resolved decision.'}
-            ]
         family=j.get('family','VIDEO')
+        if j.get('shots'):
+            shots=j['shots']; narrative_source='EXPLICIT_AGENT_VIDEO_JOB'; narrative_carrier=j.get('narrative_carrier') or 'AGENT_AUTHORED'
+        else:
+            shots,narrative_carrier=_decision_derived_fallback_shots(j,source,q,proof,dur,family); narrative_source='DECISION_DERIVED_RUNTIME_FALLBACK'
         creator_contract=None
         if family=='CREATOR_AFFILIATE':
             creator_contract={
@@ -49,7 +99,7 @@ def build_video_creator_plan(project_id:str, content_objects:list[dict[str,Any]]
         rows.append({
             'video_id':vid,'family':family,'surface':j.get('surface','PDP_VIDEO'),'objective':j.get('objective'),'shopper_question':q,'decision_intent':decision,
             'creative_direction_id':source.get('creative_direction',{}).get('direction_id') or selected.get('direction_id'),'creative_thesis':source.get('creative_direction',{}).get('creative_thesis') or selected.get('creative_thesis'),
-            'hook':j.get('hook') or q,'duration_seconds':dur,'timing':timing(shots,dur),'shots':shots,
+            'hook':j.get('hook') or q,'duration_seconds':dur,'timing':timing(shots,dur),'shots':shots,'narrative_carrier':narrative_carrier,'narrative_source':narrative_source,'fixed_five_beat_template':False,
             'voice_locale':j.get('voice_locale') or language_contract.get('primary_locale'),'subtitle_locales':j.get('subtitle_locales') or language_contract.get('script_subtitle_locales',[]) or language_contract.get('visible_copy_locales',[]),
             'voiceover_style':j.get('voiceover_style') or ('creator-native conversational' if family=='CREATOR_AFFILIATE' else 'product-decision concise'),
             'on_screen_text_rule':'Use only locked approved copy; subtitles/labels must not cover decision-critical product/action evidence.','cta':j.get('cta'),'claim_ids':j.get('claim_ids',[]) or source.get('claim_ids',[]),'source_ids':j.get('source_ids',[]) or source.get('source_ids',[]),

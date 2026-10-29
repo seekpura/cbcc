@@ -1,10 +1,20 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.36-seven-tool-capability-continuity
+version: 0.6.37-commercial-operator-density
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
+
+## Autonomous Integrated Render + Operator Density Authority — highest current precedence
+- **默认一体出图。** 对最终商业视觉，宿主 Agent 默认拥有完整制作权：商品、目标市场文字、排版、场景、人物、道具、证据图形、摄影/灯光/CMF、材质和 finishing 可以在同一次完整生成中共同完成。`POST_COMPOSITE / EXACT_PIXEL_COMPOSITE / NO_VISIBLE_COPY / PRODUCT_ABSENT` 都是按资产目的选择的专业路线，不是全局默认。
+- **限制是例外。** 只有用户明确锁定、Product Truth/Claim/合规/平台硬规则、明确 exact-pixel/post-composite 路线或真实 Provider 能力限制，才形成硬限制。不得因历史工作流默认写入“不要生成文字 / 不要生成商品 / 只做背景 / 必须留文字区 / 商品必须后期贴入”。
+- **正常专业选择由 Agent 自主闭环。** Product Presence、copy-render route、visual carrier、构图、Camera/Lighting/CMF、Hook、测试变体等只要已有足够上下文，就由 Agent 直接决定并执行，不得变成运营人员的技术门禁。只有会迫使事实虚构、违规发布、错误花钱或 Provider 无法执行的缺口才允许 `NEEDS_HARD_INPUT / HOLD_COMPLIANCE / STOP_ECONOMICS`。
+- **商业 Prompt 必须达到 production brief 密度。** 当相关时至少消费 commerce objective、creative thesis、product role/reference、decisive scene、composition geometry、integrated typography、evidence representation、camera/perspective、lighting、CMF/material response、color/grade、human/culture、surface behavior、truth boundary、variant hypothesis。禁止用 `premium/editorial/clean/soft light` 等空泛词替代设计。
+- **视频同样由 Agent 作者化。** 不允许把所有视频固定成 hook→reveal→proof→close→CTA 五段模板；Narrative carrier、first-frame、product timing、creator/human、shot/action、camera/motion、copy/VO/subtitle、sound、cover、landing handoff 与测试差异按真实 shopper tension 和商业假设动态决定。
+- **Provider 完成不等于视觉完成。** 最终成图/成片必须检查商品身份、文字准确与可读、第一眼商业答案、构图/裁切、材质物理、人体/手部交互、时间连续性、声音/字幕、伪影、证据/Claim真实性、品牌连续性、与相邻测试资产的差异、平台可用性；失败后走最小局部修复/重新生成/换 reference/换 provider。
+- **运营交付是主界面。** 每个一等工具必须最终给出“做什么、在哪做、用什么最终对象、为什么、什么不动、做到什么算完成、看什么数决定下一步”。Runtime/Consumer/Trace 属于二级 Inspector；不能让运营拿到的主要内容是 Gate、状态码和模块证明。
+- 权威 Prompt：`prompts/commercial_visual_generation_authority.md`、`prompts/commercial_video_generation_authority.md`、`prompts/operator_execution_density.md`。
 
 ## Seven First-Class Commerce Tools + Pricing/Economics Integrity — highest current precedence
 - **七大工具是一等能力，不是文档目录，也不是固定七步流水线。** `01 Market Research / 02 Product Strategy / 03 Listing Creative / 04 Product Image / 05 Product Video / 06 Advertising Optimization / 07 Review Analysis` 必须持续可用；项目按相关性激活，但任何一次视觉/Prompt升级不得把商业能力挤出顶层权威。

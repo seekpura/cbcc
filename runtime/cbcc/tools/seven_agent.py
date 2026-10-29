@@ -15,7 +15,7 @@ from ..asset_architecture import build_asset_architecture
 from ..prompt_compiler import compile_asset_prompt
 from ..video_creator import build_video_creator_plan, enrich_video_plan_with_strategy
 
-TOOL_CONTRACT_VERSION='0.6.6'
+TOOL_CONTRACT_VERSION='0.6.37'
 
 
 def _contract(name:str, inputs:dict[str,Any], result:dict[str,Any], downstream:list[str], why:str)->dict[str,Any]:
