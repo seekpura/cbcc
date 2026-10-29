@@ -1,0 +1,73 @@
+name: Apply v0.6.35 native-reference provider integrity
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0635-native-reference-provider-integrity.yml'
+      - 'scripts/apply_v0635_native_reference_provider_integrity.py'
+      - 'tests/test_v0635_native_reference_provider_integrity.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-v0635:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONPATH: .:runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+      - name: Apply v0.6.35 migration
+        run: python scripts/apply_v0635_native_reference_provider_integrity.py
+      - name: Compile provider integrity modules
+        run: |
+          python -m py_compile \
+            runtime/cbcc/providers.py \
+            runtime/cbcc/production.py \
+            runtime/cbcc/provider_portability.py \
+            runtime/cbcc/provider_executor.py \
+            runtime/cbcc/provider_bridge.py
+      - name: v0.6.35 native-reference provider acceptance
+        run: |
+          pytest -q \
+            tests/test_v0635_native_reference_provider_integrity.py \
+            tests/test_v0634_native_reference_authority_cleanup.py \
+            tests/test_v0633_reference_guided_native_asset_universe.py \
+            tests/test_v0633_asset_universe_workspace.py \
+            tests/test_v0633_plugin_wrapper_authority.py \
+            tests/test_reference_guided_video_provider_authority.py \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
+            tests/test_v0632_production_parameter_closure.py \
+            tests/test_v0631_model_native_prompt_contract.py \
+            tests/test_v0630_agent_art_direction_authority.py
+      - name: Verify promoted authority
+        run: |
+          test "$(cat VERSION)" = "0.6.35-native-reference-provider-integrity"
+          grep -q '^version: 0.6.35-native-reference-provider-integrity$' SKILL.md
+          ! grep -q '### Product Reference / Fidelity — current authority' SKILL.md
+          grep -q 'REFERENCE_IMAGE_INPUT' runtime/cbcc/provider_bridge.py
+          grep -q "'usage_role':'NATIVE_SUBJECT_REFERENCE'\|usage_role='NATIVE_SUBJECT_REFERENCE'" runtime/cbcc/production.py
+          grep -q "'UNVERIFIED'" runtime/cbcc/provider_executor.py
+      - name: Commit migration
+        run: |
+          if git diff --quiet; then
+            echo 'No migration diff to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add VERSION SKILL.md \
+            runtime/cbcc/providers.py runtime/cbcc/production.py runtime/cbcc/provider_portability.py \
+            runtime/cbcc/provider_executor.py runtime/cbcc/provider_bridge.py
+          git commit -m 'release: promote native-reference provider integrity to v0.6.35'
+          git push
