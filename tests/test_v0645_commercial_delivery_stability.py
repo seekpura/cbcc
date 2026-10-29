@@ -44,6 +44,18 @@ def test_explicit_current_request_platform_and_market_win(tmp_path: Path):
     assert scope['platform_status'] == 'EXPLICIT'
 
 
+def test_explicit_target_context_status_is_accepted(tmp_path: Path):
+    _write_json(tmp_path / 'meta/request.json', {'goal': '完成商品项目'})
+    _write_json(tmp_path / 'artifacts/target_context.json', {
+        'platform_status': 'EXPLICIT',
+        'target': {'platform': 'Amazon', 'market': 'US', 'locale': 'en-US'},
+    })
+    scope = resolve_platform_scope(tmp_path)
+    assert scope['platform'] == 'Amazon'
+    assert scope['market'] == 'US'
+    assert scope['primary_locale'] == 'en-US'
+
+
 def test_language_plan_non_china_non_english_is_english_primary_chinese():
     plan = build_language_delivery_plan({'platform': 'Shopee', 'market': 'MY', 'primary_locale': 'ms-MY'})
     assert plan['mode'] == 'EN_PLATFORM_PRIMARY_CN'
@@ -80,6 +92,16 @@ def test_language_audit_requires_english_and_platform_primary_for_non_china():
     assert any(x['locale'].startswith('en') and x['field'] == 'title' for x in audit['missing'])
 
 
+def test_language_audit_accepts_generic_locale_alias_for_platform_primary():
+    plan = build_language_delivery_plan({'platform': 'Shopee', 'market': 'MY', 'primary_locale': 'ms-MY'})
+    center = {'localized_copy': [
+        {'locale': 'en', 'field': 'title', 'value': 'Daily Gel', 'delivery_translation': '日常凝胶'},
+        {'locale': 'ms', 'field': 'title', 'value': 'Gel Harian', 'delivery_translation': '日常凝胶'},
+    ]}
+    audit = audit_language_delivery(center, plan)
+    assert audit['status'] == 'PASS'
+
+
 def test_source_truth_media_is_copied_for_self_contained_html(tmp_path: Path):
     project = tmp_path / 'project'
     package = tmp_path / 'package'
@@ -94,6 +116,9 @@ def test_source_truth_media_is_copied_for_self_contained_html(tmp_path: Path):
     copied = package / result['items'][0]['package_path']
     assert copied.exists()
     assert copied.read_bytes() == image.read_bytes()
+    status = (package / 'sources/SOURCE_TRUTH_STATUS.md').read_text(encoding='utf-8')
+    assert '已加载真源' in status
+    assert 'product.png' in status
 
 
 def test_missing_source_truth_media_is_explicit_not_silent(tmp_path: Path):
@@ -106,6 +131,9 @@ def test_missing_source_truth_media_is_explicit_not_silent(tmp_path: Path):
     assert result['status'] == 'INCOMPLETE'
     assert result['missing_count'] == 1
     assert result['items'][0]['status'] == 'MISSING_FILE'
+    status = (package / 'sources/SOURCE_TRUTH_STATUS.md').read_text(encoding='utf-8')
+    assert '真源文件缺失 / 未绑定' in status
+    assert 'uploads/missing.png' in status
 
 
 def test_commercial_workspace_shell_is_stable_and_route_based():
@@ -116,5 +144,7 @@ def test_commercial_workspace_shell_is_stable_and_route_based():
     assert '平台待指定' in out
     assert '市场待指定' in out
     assert '一次只显示一个一级工作面' in out
+    assert '.cbcc-commandbar{position:relative' in out
+    assert 'position:sticky;top:0' not in out
     assert 'Malaysia' not in out
     assert 'TikTok Shop' not in out
