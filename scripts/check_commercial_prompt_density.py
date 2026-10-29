@@ -13,7 +13,7 @@ CONTRACTS={
     'prompts/market_strategy_interpretation.md':(4500,['Required reasoning contract','Search demand','Opportunity map']),
     'prompts/product_sku_offer_strategy.md':(3000,['Required SKU decision card','Shared growth budget','Offer design']),
     'prompts/positioning_message_architecture.md':(3500,['Positioning decision','Message hierarchy','Cognitive Budget']),
-    'prompts/listing_conversion_architecture.md':(3500,['Search intent architecture','Field jobs','Objection handling','Decision-question preservation']),
+    'prompts/listing_conversion_architecture.md':(3500,['Search intent architecture','Field jobs','Objection handling','Live decision-question coverage']),
     'prompts/dynamic_asset_curation.md':(6500,['Portfolio curation pass','Product Presence Decision','Per-asset Art Direction contract','Portfolio review']),
     'prompts/visual_photography_strategy.md':(9000,['Portfolio Art Direction','Per-asset Visual Design','Lighting geometry','Shot / Asset Design list']),
     'prompts/commercial_visual_generation_authority.md':(8500,['Commerce objective','Integrated visible copy','Output QA','Repair routing']),
