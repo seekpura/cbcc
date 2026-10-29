@@ -1,0 +1,76 @@
+name: Apply v0.6.32 production-parameter closure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0632-production-parameter-closure.yml'
+      - 'scripts/apply_v0632_production_parameter_closure.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-v0632:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+
+      - name: Apply v0.6.32 authority metadata
+        run: python scripts/apply_v0632_production_parameter_closure.py
+
+      - name: Compile production-parameter closure
+        env:
+          PYTHONPATH: .:runtime
+        run: |
+          python -m py_compile \
+            runtime/cbcc/production_parameter_closure.py \
+            runtime/cbcc/__init__.py \
+            runtime/cbcc/model_native_prompt_contract.py \
+            runtime/cbcc/agent_authority_prompt_compiler.py
+
+      - name: Targeted prompt and Agent-authority regression
+        env:
+          PYTHONPATH: .:runtime
+        run: |
+          pytest -q \
+            tests/test_v0632_production_parameter_closure.py \
+            tests/test_v0631_model_native_prompt_contract.py \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0630_prompt_art_direction_projection.py
+
+      - name: Verify current authority text
+        run: |
+          test "$(cat VERSION)" = "0.6.32-production-parameter-closure"
+          grep -q '^version: 0.6.32-production-parameter-closure$' SKILL.md
+          grep -q 'Production Parameter Closure + Creative Depth Authority' SKILL.md
+          grep -q 'LOCKED_SOURCE_COMPOSITE 不是空背景生成' SKILL.md
+          grep -q '平台容量不是资产配额' SKILL.md
+          grep -q 'v0.6.6 execution-depth authority' prompts/visual_photography_strategy.md
+          grep -q 'lossless production-parameter closure' prompts/creative_direction_surface_prompt_compiler.md
+          grep -q 'Production Parameter Closure + Creative Depth' scripts/build_plugin_dist.py
+
+      - name: Commit applied authority
+        run: |
+          if git diff --quiet; then
+            echo 'No migration diff to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add VERSION SKILL.md runtime/cbcc/compiler.py prompts/registry.json scripts/build_plugin_dist.py
+          git commit -m 'release: promote production-parameter closure to v0.6.32'
+          git push
