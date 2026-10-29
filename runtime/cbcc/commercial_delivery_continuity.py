@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Callable
-import html
 import json
 
 from .commerce_decision_context import compile_commerce_decision_context
@@ -138,3 +137,10 @@ def wrap_build_delivery_html(fn: Callable[..., Path]):
         result.write_text(page, encoding='utf-8')
         return result
     return built
+
+
+# This module is imported as the final human-delivery layer from runtime.cbcc.__init__. Install the
+# strict compatibility/bootstrap here so mature Pricing field names, false-READY prevention and the
+# human asset commercial lineage projection are always active without replacing the existing authority stack.
+from .commercial_continuity_bootstrap import install as _install_commercial_continuity
+_install_commercial_continuity()
