@@ -1,12 +1,20 @@
 from __future__ import annotations
 
+_INSTALLED = False
+
 
 def install() -> None:
-    """Install final v0.6.46 compatibility/strictness patches after the normal authority stack.
+    """Install final v0.6.46 compatibility/strictness patches exactly once.
 
     Kept in one bootstrap so future versions have one explicit place to verify that mature pricing field
-    names, prompt status and human asset cards remain connected.
+    names, prompt status and human asset cards remain connected. Multiple import paths may call this
+    function, therefore installation is deliberately idempotent.
     """
+    global _INSTALLED
+    if _INSTALLED:
+        return
+    _INSTALLED = True
+
     from . import commerce_decision_context as context_module
     from . import commercial_context_compatibility as compatibility
     from . import commercial_continuity_authority as continuity_authority
@@ -41,6 +49,9 @@ def install() -> None:
     from . import asset_compiler
     asset_compiler.compile_asset_prompt = strict_prompt_compile
     from . import human_asset_commercial_projection
-    asset_compiler._human_asset_design_card_markdown = human_asset_commercial_projection.wrap_human_asset_design_card(
-        asset_compiler._human_asset_design_card_markdown
-    )
+    if not getattr(asset_compiler._human_asset_design_card_markdown, '_cbcc_v0646_commercial_projection', False):
+        wrapped = human_asset_commercial_projection.wrap_human_asset_design_card(
+            asset_compiler._human_asset_design_card_markdown
+        )
+        setattr(wrapped, '_cbcc_v0646_commercial_projection', True)
+        asset_compiler._human_asset_design_card_markdown = wrapped
