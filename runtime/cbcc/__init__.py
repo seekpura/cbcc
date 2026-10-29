@@ -10,7 +10,10 @@ from . import prompt_compiler as _legacy_prompt_compiler
 from . import agent_authority_prompt_compiler as _agent_authority_prompt_compiler
 from . import agent_autonomy as _agent_autonomy
 from . import creative as _creative
+from . import surface_architecture as _surface_architecture
 from . import agent_art_direction_authority as _agent_art_direction_authority
+from . import agent_plan_input_bridge as _agent_plan_input_bridge
+from . import surface_advisory_authority as _surface_advisory_authority
 
 # Existing callers continue importing `prompt_compiler.compile_asset_prompt`, but production now
 # consumes the Agent-authority implementation. It will not infer visible product presence from the
@@ -22,12 +25,25 @@ _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.
 _agent_autonomy.compile_agent_autonomy_plan = _agent_art_direction_authority.wrap_compile_agent_autonomy_plan(
     _agent_autonomy.compile_agent_autonomy_plan
 )
+# Normalize convenient host-Agent locations into the canonical creative_exploration contract.
+_agent_autonomy.compile_agent_autonomy_plan = _agent_plan_input_bridge.wrap_compile_agent_autonomy_plan(
+    _agent_autonomy.compile_agent_autonomy_plan
+)
 _agent_autonomy.agent_creative_directions = _agent_art_direction_authority.wrap_agent_creative_directions(
     _agent_autonomy.agent_creative_directions
 )
 _agent_autonomy.compile_agent_next_action = _agent_art_direction_authority.wrap_compile_agent_next_action(
     _agent_autonomy.compile_agent_next_action
 )
+
+# Surface architecture can still provide compatibility suggestions for representation and product
+# usefulness, but those suggestions are explicitly non-authoritative for generation.
+_surface_architecture.compile_surface_architecture = _surface_advisory_authority.wrap_compile_surface_architecture(
+    _surface_architecture.compile_surface_architecture
+)
+
+# Final creative assignment consumes the Agent-authored per-asset Art Direction. In Agent-authority
+# mode, missing decisions are returned to the Agent and deterministic layout/product fallbacks are disabled.
 _creative.apply_creative_system_to_assets = _agent_art_direction_authority.wrap_apply_creative_system_to_assets(
     _creative
 )
