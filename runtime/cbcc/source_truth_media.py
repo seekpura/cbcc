@@ -79,6 +79,48 @@ def _common_source_files(project: Path) -> list[Path]:
     return found
 
 
+def _write_human_status(package: Path, result: dict[str, Any]) -> None:
+    source_dir = package / 'sources'
+    source_dir.mkdir(parents=True, exist_ok=True)
+    copied = [x for x in result.get('items') or [] if x.get('status') == 'COPIED']
+    missing = [x for x in result.get('items') or [] if x.get('status') == 'MISSING_FILE']
+    lines = ['# 产品真源媒体状态', '']
+    if copied:
+        lines.extend([
+            '## 已加载真源',
+            '',
+            f'已将 **{len(copied)}** 个真实商品/包装源图物化到当前交付包。`index.html` 会以内嵌媒体方式读取这些文件，单独打开 HTML 不依赖原项目目录。',
+            '',
+        ])
+        for item in copied:
+            lines.append(f'- `{item.get("package_path")}` · {item.get("bytes", 0):,} bytes')
+        lines.append('')
+    if missing:
+        lines.extend([
+            '## 真源文件缺失 / 未绑定',
+            '',
+            '以下声明的真源文件在导出时不可解析。当前交付不得用空白图片或替代图伪装为已加载；需要重新绑定真实源文件后再进入生产。',
+            '',
+        ])
+        for item in missing:
+            lines.append(f'- `{item.get("source_path")}`')
+        lines.append('')
+    if not copied and not missing:
+        lines.extend([
+            '## 当前未声明可携带真源图',
+            '',
+            '当前项目没有解析到可物化的真实商品/包装源图。若本任务依赖真实商品身份，请先绑定源图。',
+            '',
+        ])
+    lines.extend([
+        '## 交付规则',
+        '',
+        '- 真源图用于事实、商品身份与生产参考；它不强制每个创意资产都出现商品。',
+        '- 创意资产是否出现商品继续由逐资产购买决策与策展决定。',
+    ])
+    (source_dir / 'SOURCE_TRUTH_STATUS.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+
+
 def materialize_source_truth_media(project_dir: Path | str, package_dir: Path | str) -> dict[str, Any]:
     """Copy product-truth source images into the delivery before HTML compilation.
 
@@ -153,9 +195,11 @@ def materialize_source_truth_media(project_dir: Path | str, package_dir: Path | 
         'copied_count': copied_count,
         'missing_count': missing_count,
         'items': items,
+        'human_status_file': 'sources/SOURCE_TRUTH_STATUS.md',
         'html_policy': 'COPIED_SOURCE_IMAGES_MUST_BE_EMBEDDED_BY_HTML_RENDERER; MISSING_FILES_MUST_BE_SHOWN_AS_EXPLICIT_OPERATOR_STATE.',
     }
     (package / 'SOURCE_TRUTH_MEDIA_AUDIT.json').write_text(
         json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8'
     )
+    _write_human_status(package, result)
     return result
