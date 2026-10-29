@@ -13,6 +13,7 @@ pollute the image/video model prompt with those engineering contracts.
 from . import prompt_compiler as _legacy_prompt_compiler
 from . import agent_authority_prompt_compiler as _agent_authority_prompt_compiler
 from . import model_native_prompt_contract as _model_native_prompt_contract
+from . import model_native_prompt_audit_fix as _model_native_prompt_audit_fix
 from . import art_direction_projection as _art_direction_projection
 from . import agent_autonomy as _agent_autonomy
 from . import creative as _creative
@@ -47,13 +48,16 @@ def _preserve_canonical_status(fn):
 
 # Existing callers continue importing `prompt_compiler.compile_asset_prompt`. First project the
 # Agent-authored Art Direction into compatibility fields, then compile the existing machine/design
-# contracts, and finally replace the legacy execution-contract prose with a true model-facing prompt
-# plus separate Visible Copy and Production / Assembly Notes objects. Package status remains backward
-# compatible; `model_prompt_status` carries the new production-readiness state.
+# contracts, replace legacy execution-contract prose with a true model-facing prompt plus separate
+# Visible Copy / Production Notes, and finally audit each concrete value in its correct language/object.
+# Package status remains backward compatible; `model_prompt_status` carries production readiness.
 _agent_authority_prompt_compiler.compile_asset_prompt = _art_direction_projection.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
 _agent_authority_prompt_compiler.compile_asset_prompt = _model_native_prompt_contract.wrap_compile_asset_prompt(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
+_agent_authority_prompt_compiler.compile_asset_prompt = _model_native_prompt_audit_fix.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
 _agent_authority_prompt_compiler.compile_asset_prompt = _preserve_canonical_status(
