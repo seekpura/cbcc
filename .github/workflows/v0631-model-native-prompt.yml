@@ -8,6 +8,7 @@ on:
       - 'prompts/**'
       - 'SKILL.md'
       - 'tests/test_v0631_model_native_prompt_contract.py'
+      - 'tests/test_v0631_human_delivery_output.py'
       - '.github/workflows/v0631-model-native-prompt.yml'
   workflow_dispatch:
 
@@ -27,20 +28,29 @@ jobs:
           python-version: '3.12'
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
-      - name: Compile prompt authority modules
+      - name: Compile prompt and human-delivery authority modules
         env:
           PYTHONPATH: .:runtime
         run: |
           python -m py_compile \
             runtime/cbcc/__init__.py \
             runtime/cbcc/model_native_prompt_contract.py \
+            runtime/cbcc/model_native_prompt_audit_fix.py \
+            runtime/cbcc/human_delivery_art_direction_projection.py \
             runtime/cbcc/agent_authority_prompt_compiler.py \
             runtime/cbcc/art_direction_projection.py \
-            runtime/cbcc/agent_art_direction_authority.py
+            runtime/cbcc/agent_art_direction_authority.py \
+            runtime/cbcc/asset_compiler.py \
+            runtime/cbcc/delivery_html.py \
+            runtime/cbcc/delivery_contract.py
       - name: Model-native prompt regressions
         env:
           PYTHONPATH: .:runtime
         run: pytest -q tests/test_v0631_model_native_prompt_contract.py
+      - name: Output-level human delivery regressions
+        env:
+          PYTHONPATH: .:runtime
+        run: pytest -q tests/test_v0631_human_delivery_output.py
       - name: Preserve v0.6.30 Agent authority regressions
         env:
           PYTHONPATH: .:runtime
