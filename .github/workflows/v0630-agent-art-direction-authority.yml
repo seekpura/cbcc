@@ -9,11 +9,13 @@ on:
       - 'runtime/cbcc/__init__.py'
       - 'runtime/cbcc/agent_art_direction_authority.py'
       - 'runtime/cbcc/agent_authority_prompt_compiler.py'
+      - 'runtime/cbcc/art_direction_projection.py'
       - 'runtime/cbcc/agent_plan_input_bridge.py'
       - 'runtime/cbcc/surface_advisory_authority.py'
       - 'tests/test_v0630_agent_art_direction_authority.py'
       - 'tests/test_v0630_surface_agent_authority.py'
       - 'tests/test_v0630_agent_art_direction_e2e.py'
+      - 'tests/test_v0630_prompt_art_direction_projection.py'
       - 'knowledge/creative_direction_surface_prompt_system.md'
       - 'knowledge/asset_portfolio_curation.md'
       - 'prompts/dynamic_asset_curation.md'
@@ -50,6 +52,7 @@ jobs:
             runtime/cbcc/__init__.py \
             runtime/cbcc/agent_art_direction_authority.py \
             runtime/cbcc/agent_authority_prompt_compiler.py \
+            runtime/cbcc/art_direction_projection.py \
             runtime/cbcc/agent_plan_input_bridge.py \
             runtime/cbcc/surface_advisory_authority.py
 
@@ -60,7 +63,8 @@ jobs:
           pytest -q \
             tests/test_v0630_agent_art_direction_authority.py \
             tests/test_v0630_surface_agent_authority.py \
-            tests/test_v0630_agent_art_direction_e2e.py
+            tests/test_v0630_agent_art_direction_e2e.py \
+            tests/test_v0630_prompt_art_direction_projection.py
 
       - name: Existing prompt and current-scope regressions
         env:
@@ -89,11 +93,13 @@ jobs:
               'runtime/cbcc/__init__.py',
               'runtime/cbcc/agent_art_direction_authority.py',
               'runtime/cbcc/agent_authority_prompt_compiler.py',
+              'runtime/cbcc/art_direction_projection.py',
               'runtime/cbcc/agent_plan_input_bridge.py',
               'runtime/cbcc/surface_advisory_authority.py',
               'tests/test_v0630_agent_art_direction_authority.py',
               'tests/test_v0630_surface_agent_authority.py',
               'tests/test_v0630_agent_art_direction_e2e.py',
+              'tests/test_v0630_prompt_art_direction_projection.py',
               'knowledge/creative_direction_surface_prompt_system.md',
               'knowledge/asset_portfolio_curation.md',
           ]
@@ -111,9 +117,11 @@ jobs:
               init=z.read(resource_root+'runtime/cbcc/__init__.py').decode('utf-8')
               assert 'surface_advisory_authority' in init
               assert 'agent_authority_prompt_compiler' in init
+              assert 'art_direction_projection' in init
           with zipfile.ZipFile(skills[-1]) as z:
               names=set(z.namelist())
               assert any(name.endswith('/SKILL.md') or name=='SKILL.md' for name in names)
               assert any(name.endswith('runtime/cbcc/agent_art_direction_authority.py') for name in names)
+              assert any(name.endswith('runtime/cbcc/art_direction_projection.py') for name in names)
           print('packaged Agent Creative Authority continuity PASS')
           PY
