@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/apply-reference-guided-capability-repair.yml'
       - 'scripts/repair_reference_guided_assets_and_capability_continuity.py'
+      - 'scripts/run_reference_guided_repair.py'
 
 permissions:
   contents: write
@@ -22,7 +23,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Apply repair
-        run: python scripts/repair_reference_guided_assets_and_capability_continuity.py
+        run: python scripts/run_reference_guided_repair.py
       - name: Install test dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
       - name: Targeted regression
