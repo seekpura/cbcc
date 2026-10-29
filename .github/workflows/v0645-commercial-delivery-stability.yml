@@ -1,0 +1,40 @@
+name: v0.6.45 Commercial Delivery Stability
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'runtime/cbcc/platform_scope.py'
+      - 'runtime/cbcc/delivery_language_matrix.py'
+      - 'runtime/cbcc/source_truth_media.py'
+      - 'runtime/cbcc/commercial_workspace_shell.py'
+      - 'runtime/cbcc/delivery_export.py'
+      - 'prompts/commercial_delivery_stability_authority.md'
+      - 'tests/test_v0645_commercial_delivery_stability.py'
+      - 'scripts/build_plugin_dist_v0645.py'
+      - 'scripts/check_v0645_commercial_delivery_stability.py'
+      - 'VERSION'
+  workflow_dispatch:
+
+jobs:
+  delivery-stability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile changed runtime and release code
+        run: python -m compileall -q runtime/cbcc/platform_scope.py runtime/cbcc/delivery_language_matrix.py runtime/cbcc/source_truth_media.py runtime/cbcc/commercial_workspace_shell.py runtime/cbcc/delivery_export.py scripts/build_plugin_dist_v0645.py scripts/check_v0645_commercial_delivery_stability.py
+      - name: Run focused regressions
+        env:
+          PYTHONPATH: .
+        run: python -m pytest -q tests/test_v0645_commercial_delivery_stability.py tests/test_v0644_default_prompt_authority.py tests/test_v0643_global_chinese_interpretation.py tests/test_v0642_regression_recovery.py
+      - name: Build installable package
+        run: python -m scripts.build_plugin_dist_v0645 --output-dir dist_v0645
+      - name: Unpack and guard actual plugin archive
+        run: |
+          rm -rf dist_v0645/unpacked
+          mkdir -p dist_v0645/unpacked
+          unzip -q dist_v0645/cross-border-commerce-creative-plugin-v0.6.45.zip -d dist_v0645/unpacked
+          python scripts/check_v0645_commercial_delivery_stability.py dist_v0645/unpacked/cross-border-commerce-creative
