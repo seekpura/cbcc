@@ -90,7 +90,14 @@ def _derived_photo_contract(asset: dict[str, Any], strategy_authority: dict[str,
     reasoning=_asset_reasoning(strategy_authority,asset.get('asset_id'))
     capture_mode=str(explicit.get('capture_mode') or reasoning.get('capture_mode') or asset.get('capture_mode') or '').upper() or None
     human_applicable=_asset_human_applicable(asset)
-    inherit_global=bool(explicit.get('inherit_strategy_photography') or reasoning.get('inherit_strategy_photography') or bool(reasoning) or capture_mode=='REAL_PHOTO' or human_applicable)
+    production_mode=str(asset.get('production_mode') or '').upper()
+    photographic_route=bool(
+        capture_mode=='REAL_PHOTO'
+        or production_mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'}
+        or explicit.get('photographic_route')
+        or reasoning.get('photographic_route')
+    )
+    inherit_global=bool(explicit.get('inherit_strategy_photography') or reasoning.get('inherit_strategy_photography') or bool(reasoning) or photographic_route)
 
     camera={}
     if inherit_global and isinstance(visual.get('camera'),dict): camera.update(visual.get('camera') or {})
@@ -140,12 +147,19 @@ def _derived_photo_contract(asset: dict[str, Any], strategy_authority: dict[str,
 
     inclusive=explicit.get('inclusive_photography') or reasoning.get('inclusive_photography') or {}
     if inherit_global and not inclusive: inclusive=visual.get('inclusive_photography') or {}
-    if human_applicable:
-        # Human representation/exposure is P0 when people appear. Missing per-asset wiring must not
-        # make the final Prompt silently lose skin-tone, reflector/diffusion or AI-bias execution.
+    if human_applicable and photographic_route:
+        # Real / photographic routes consume metering, reflector/diffusion and exposure controls.
         inclusive=_merge(_inclusive_human_defaults(), inclusive if isinstance(inclusive,dict) else {'representation_principle':inclusive})
-    repeatable=bool(explicit.get('repeatable_capture') or reasoning.get('repeatable_capture'))
-    prelight_required=bool(explicit.get('prelight_required')) if 'prelight_required' in explicit else bool(capture_mode=='REAL_PHOTO' and (repeatable or lighting.get('prelight_plan')))
+    elif human_applicable:
+        # Illustration/3D/stylized generation keeps representation and bias controls without pretending a camera/prelight exists.
+        representation_defaults={
+            'body_age_disability':'Represent body type, age and disability naturally when relevant; do not erase task-relevant variation.',
+            'ai_bias_controls':'No default whitening, youthifying, slimming, hair-texture homogenization or tokenistic/inspirational framing.',
+            'representation_principle':'People exist to perform the real shopper/use task. Identity changes representation choices only when supported; it is not a shortcut to behavior.',
+        }
+        inclusive=_merge(representation_defaults, inclusive if isinstance(inclusive,dict) else {'representation_principle':inclusive})
+    repeatable=bool(explicit.get('repeatable_capture') or reasoning.get('repeatable_capture')) if photographic_route else False
+    prelight_required=(bool(explicit.get('prelight_required')) if 'prelight_required' in explicit else bool(capture_mode=='REAL_PHOTO' and (repeatable or lighting.get('prelight_plan')))) if photographic_route else False
 
     base={
         'status':'ASSET_RELEVANCE_DERIVED_EXECUTION_CONTRACT',
@@ -434,6 +448,9 @@ def _cn_phrase(value:Any)->Any:
       'Evidence Relationship / Causal Proof × Category Convention Reframing':'证据关系 / 因果证明 × 品类惯例重构',
       'Current-product mechanism synthesis: HUMAN_CONTEXT + INFORMATION_DESIGN. Coherence comes from Product Truth/CMF/type tokens; composition is rebuilt per decision job.':'当前产品机制：真实人物/使用语境 + 信息设计。用商品真源、CMF 与字体系统维持一致性；每张资产按自己的购买问题重新构图，不继承上一张版式。',
       'Use the supplied real-product master as the product subject':'以用户提供的真实商品母版作为商品主体',
+        'Use supplied product/source files as design references for the product subject; redraw/rerender is allowed unless an explicit locked-source mode is selected':'使用已提供的产品/源文件作为设计参考；除非显式选择锁定源图模式，否则允许重绘与重新渲染。',
+        'Reference-guided mode: supplied product/source files guide design and identity cues; redraw, rerender, stylize, illustrate or recompose as the selected direction requires. Do not present creative changes as verified product facts.':'参考设计模式：已提供的产品/源文件用于指导设计与必要的身份线索；可按已选方向重绘、重渲染、风格化、插画化或重新构图。不得把创作性变化当成已验证商品事实。',
+        'Explicit locked-source mode: preserve the supplied product master as an immutable source layer; do not redraw that layer.':'显式锁定源图模式：已提供的产品母图作为不可修改的源图层保留，不得重绘该图层。',
       'decision-critical context/evidence':'与购买决策直接相关的语境 / 证据',
       'Resolve the named shopper decision with one clearly visible information relationship.':'用一个清晰可见的信息关系解决当前购买问题。',
       'Make product identity and the primary proposition recoverable at first scan.':'让消费者第一眼识别商品身份与第一购买理由。',

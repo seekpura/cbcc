@@ -68,7 +68,7 @@ def _sha256_file(path:Path)->str:
 
 
 def _normalize_source_product_assets(records, resolution_roots):
-    """Bind exact real-product masters to production without copying or pretending missing files exist."""
+    """Bind supplied product/source files as design references by default; exact immutable-source semantics are explicit-only."""
     out=[]
     roots=[Path(x) for x in resolution_roots if x]
     for i,raw in enumerate(records or []):
@@ -170,7 +170,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     ce={'entities':[entity.to_dict()]}; cp=_write(p/'artifacts/commerce_entity.json',ce); st.set_gate('COMMERCE_ENTITY','READY_REVIEW',[cp],ce)
 
     foundation_roles=required_foundation_roles(request.get('foundation_needs',{}))
-    foundation={'dynamic':True,'roles':[FoundationAssetRecord(f'FND-{i+1:02d}',role,product_fidelity=request.get('product_fidelity','REFERENCE_CONSTRAINED')).to_dict() for i,role in enumerate(foundation_roles)]}
+    foundation={'dynamic':True,'roles':[FoundationAssetRecord(f'FND-{i+1:02d}',role,product_fidelity=request.get('product_fidelity','REFERENCE_GUIDED')).to_dict() for i,role in enumerate(foundation_roles)]}
     _write(p/'artifacts/foundation_plan.json',foundation)
     source_product_assets=_normalize_source_product_assets(request.get('source_product_assets'),[Path(request.get('source_asset_root')) if request.get('source_asset_root') else None,Path(packs_dir),Path.cwd()])
     _write(p/'artifacts/source_product_assets.json',{'status':'SOURCE_PRODUCT_ASSETS_BOUND' if source_product_assets else 'NOT_SUPPLIED','assets':source_product_assets,'count':len(source_product_assets),'principle':'Source files are design/product references by default. Pixel-level preservation is explicit-only (LOCKED_SOURCE_COMPOSITE/LOCKED_PIXEL). Reference-guided work may redraw, rerender, restyle or recompose while keeping verified product facts and selected identity cues honest.'})

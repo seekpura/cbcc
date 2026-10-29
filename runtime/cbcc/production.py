@@ -265,7 +265,7 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]], remo
             local.append('PACKAGE_HASH_MISMATCH')
         binding=contract_row.get('production_contract_binding') or {}
         fidelity=str((contract_row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()
-        if (fidelity=='LOCKED_PIXEL' and r.get('production_contract_ack') is not True) or ('production_contract_ack' in r and not r.get('production_contract_ack')):
+        if (fidelity in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} and r.get('production_contract_ack') is not True) or ('production_contract_ack' in r and not r.get('production_contract_ack')):
             local.append('PRODUCTION_CONTRACT_NOT_ACKNOWLEDGED')
         if r.get('layout_contract_hash') and r.get('layout_contract_hash') != binding.get('layout_contract_hash'):
             local.append('LAYOUT_CONTRACT_HASH_MISMATCH')
@@ -275,7 +275,7 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]], remo
             local.append('PROMPT_CONTRACT_HASH_MISMATCH')
         qc=contract_row.get('production_quality_contract') or {}
         expected_source_binding_hash=qc.get('source_binding_hash')
-        if str(qc.get('product_fidelity') or '').upper()=='LOCKED_PIXEL':
+        if str(qc.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}:
             if not r.get('source_binding_hash') or r.get('source_binding_hash')!=expected_source_binding_hash:
                 local.append('SOURCE_BINDING_HASH_MISMATCH')
         edit=qc.get('editable_layer_contract') or {}
@@ -393,12 +393,12 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
             'revision_scope':row.get('revision_scope'),
             'execution_policy':{
                 'replanning_allowed':False,'one_asset_one_output':True,'return_same_package_hash':True,
-                'contract_binding_must_not_change':True,'real_product_master_substitution_allowed':False,
+                'contract_binding_must_not_change':True,'real_product_master_substitution_allowed':not bool(quality.get('real_product_master_required')),
                 'portable_job_required':True,'host_absolute_paths_are_not_execution_locators':True,
             },
             'production_receipt_contract':receipt_contract,
             'result_contract':{
-                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations','production_receipt'] + (['source_binding_hash','production_contract_ack'] if str(quality.get('product_fidelity') or '').upper()=='LOCKED_PIXEL' else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
+                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations','production_receipt'] + (['source_binding_hash','production_contract_ack'] if str(quality.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
                 'qa_required':['product','fact','claim','visual','culture','platform'],
                 'quality_observations_required':quality.get('required_result_observations',[]),
                 'optional':['changed_fields','changed_layers','provider_metadata','production_contract_ack','source_binding_hash','layout_contract_hash','photography_contract_hash','prompt_contract_hash']

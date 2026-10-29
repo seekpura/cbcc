@@ -159,7 +159,7 @@ description: 用于跨境电商 Product Truth、动态研究、SKU/Offer、Listi
 - 从用户目标、Product Truth、证据、目标市场/平台与当前交付范围开始，由 Agent 动态发现信息缺口并决定研究、内容、Surface、资产与创意方向。
 - **FULL 与 TASK_SCOPED 分权**：FULL 执行上面的九域深度合同与 RACE 四阶段；TASK_SCOPED 局部任务才按当前目标动态选择框架/域。两者都不规定固定图片数、方向数、页面模板或摄影字段配额。
 - 不把固定 9 图/12 图、固定方向数、通用页面流水线当作创意/商业权威；但不得用“动态”作为删除 FULL 已要求能力的理由。
-- 商品身份、包装、材质、颜色、结构与可见事实必须 source-bound；Claim、Compliance、平台当前证据、Review 与 Completion 按 `resources/SKILL.md` 和 Runtime 合同执行。
+- 商品规格、成分、功能、认证、Claim 与其他已验证事实必须 source-bound；产品图、包装图和源文件默认是设计参考，可按已选创意方向重绘/重渲染/风格化，除非当前子任务显式锁定源图。Claim、Compliance、平台当前证据、Review 与 Completion 按 `resources/SKILL.md` 和 Runtime 合同执行。
 - 摄影、灯光、CMF、构图、色彩管理、商品保真、可编辑/冻结层若已参与策划并与当前资产相关，必须一路投影到该资产的 Design Card、Parameter Trace 与 Canonical Prompt；不能只存在于策划文字里。
 - Product Name、Asset ID、RACE/KPI 等内部管理元数据不得污染最终生成模型 Prompt，除非它们本身就是消费者可见内容或执行必需事实。
 
@@ -168,7 +168,7 @@ description: 用于跨境电商 Product Truth、动态研究、SKU/Offer、Listi
 1. `index.html` 实际存在且可读；
 2. HTML 为中文优先且不是报告式长页/流水线；
 3. 当前范围的策略、Listing、内容、视觉与资产对象完整进入交付；
-4. 每个资产的中英文 Prompt 与其实际策划参数连续，Prompt Consumption Audit 的 `missing decisions = 0`；
+4. 若当前任务需要 Prompt / 生图 / Provider 执行，则显示 Prompt Consumption Audit 作为生产准备度；`missing decisions` 形成 `NEEDS_PROMPT_WORK`，但不得阻止资产、策略或项目人类交付完成；
 5. FULL HTML 可见包含九域决策对象，卖点/区域/人群/文化/视觉摄影/内容矩阵/RACE/风险等达到 decision-depth，不是几句摘要；
 6. ZIP 中包含 HTML、Manifest、可编辑源和逐资产包。
 

@@ -124,7 +124,7 @@ Create a professional cross-border ecommerce plan **before** governance machiner
 - 详细变更见 `CHANGELOG_V0622.md`。
 
 ## v0.6.21 Commerce Agent Autonomy — 当前主权威
-- **冻结事实与硬边界，Agent 自主决定完成路径。** Product Truth、用户明确锁定、平台/法规硬约束、Claim 证据、真实商品身份/LOCKED PIXEL、目标输出技术规格属于不可擅自改写的边界；研究范围、策略路径、内容范围、资产数量、创意机制、方向数量、构图/摄影/CMF、生产路线和迭代深度属于 Agent 决策。
+- **冻结事实与硬边界，Agent 自主决定完成路径。** Product Truth、用户明确锁定、平台/法规硬约束、Claim 证据、目标输出技术规格属于不可擅自改写的边界；只有显式锁定源图时，源图像素/对应身份层才成为生产硬边界。研究范围、策略路径、内容范围、资产数量、创意机制、方向数量、构图/摄影/CMF、生产路线和迭代深度属于 Agent 决策。
 - 宿主 Agent 应优先自行形成 `agent_plan` / `agent_decisions`，而不是让 Runtime 的兼容 heuristics 代替智能判断。Plan 可以按当前任务只声明真正需要的 research/content/creative/framework/iteration 决策，不要求填写固定表单。
 - Research 以**信息增益是否仍会改变重要商业决策**作为继续/停止条件；禁止为了固定来源数、竞品数、关键词数、页面数或“研究完整度”机械扩写。
 - Content/Asset 由真实消费者问题、目标 Surface、商业任务、证据与生产需求派生；不存在默认 7 图/9 图、固定 Hero/Proof/How-to 套餐、固定内容家族配额。
