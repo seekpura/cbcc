@@ -160,3 +160,17 @@ _creative.apply_creative_system_to_assets = _agent_art_direction_authority.wrap_
 _creative.apply_creative_system_to_assets = _portfolio_visual_authority.wrap_apply_creative_system_to_assets(
     _creative.apply_creative_system_to_assets
 )
+
+# Human delivery receives the same structured commercial intelligence instead of relegating Market /
+# Pricing / Audience / RACE / Ads / Reviews to machine JSON archives. Keep it inside the existing
+# v0.6.36/v1 routed workspace rather than replacing the shell.
+from . import commercial_delivery_continuity as _commercial_delivery_continuity
+from . import delivery_workspace as _delivery_workspace
+_delivery_workspace.build_delivery_html = _commercial_delivery_continuity.wrap_build_delivery_html(
+    _delivery_workspace.build_delivery_html
+)
+from . import delivery_export as _delivery_export
+_delivery_export.build_delivery_html = _delivery_workspace.build_delivery_html
+_delivery_export.export_delivery_package = _commercial_delivery_continuity.wrap_export_delivery_package(
+    _delivery_export.export_delivery_package
+)
