@@ -1,14 +1,8 @@
-from scripts import build_plugin_dist as base
 from scripts import build_plugin_dist_v0644 as v0644
 
 
 def test_manifest_omits_default_prompt_when_no_invocation_prompt_is_needed():
-    old = list(base.DEFAULT_PROMPTS)
-    try:
-        base.DEFAULT_PROMPTS = []
-        manifest = base.plugin_manifest('0.6.44')
-    finally:
-        base.DEFAULT_PROMPTS = old
+    manifest = v0644.plugin_manifest('0.6.44')
     interface = manifest['extensions']['com.openai']['interface']
     assert 'defaultPrompt' not in interface
 
