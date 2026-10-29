@@ -9,8 +9,10 @@ on:
       - 'runtime/cbcc/asset_universe_authority.py'
       - 'runtime/cbcc/__init__.py'
       - 'tests/test_v0633_reference_guided_native_asset_universe.py'
+      - 'tests/test_v0633_asset_universe_workspace.py'
       - 'scripts/apply_v0633_native_reference_asset_universe.py'
       - 'scripts/patch_v0633_native_reference_continuity.py'
+      - 'scripts/patch_v0633_asset_universe_workspace.py'
   workflow_dispatch:
 
 permissions:
@@ -29,10 +31,11 @@ jobs:
           python-version: '3.12'
       - name: Install runtime test dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
-      - name: Apply v0.6.33 migration and continuity patches
+      - name: Apply v0.6.33 migration, continuity and human-workspace patches
         run: |
           python scripts/apply_v0633_native_reference_asset_universe.py
           python scripts/patch_v0633_native_reference_continuity.py
+          python scripts/patch_v0633_asset_universe_workspace.py
       - name: Compile changed modules
         env:
           PYTHONPATH: .:runtime
@@ -43,6 +46,8 @@ jobs:
             runtime/cbcc/__init__.py \
             runtime/cbcc/compiler.py \
             runtime/cbcc/asset_architecture.py \
+            runtime/cbcc/asset_compiler.py \
+            runtime/cbcc/delivery_html.py \
             runtime/cbcc/providers.py \
             runtime/cbcc/production.py
       - name: v0.6.33 acceptance
@@ -51,6 +56,7 @@ jobs:
         run: |
           pytest -q \
             tests/test_v0633_reference_guided_native_asset_universe.py \
+            tests/test_v0633_asset_universe_workspace.py \
             tests/test_v0632_production_parameter_closure.py \
             tests/test_v0632_portfolio_visual_authority.py \
             tests/test_v0632_human_art_direction_visibility.py \
@@ -63,6 +69,8 @@ jobs:
           grep -q '^version: 0.6.33-reference-guided-native-asset-universe$' SKILL.md
           grep -q 'REFERENCE_GUIDED_NATIVE_LOCK' SKILL.md
           grep -q '平台.*9图.*activation set' SKILL.md
+          grep -q '当前上线候选' runtime/cbcc/delivery_html.py
+          grep -q '最终商品必须原生生成' runtime/cbcc/delivery_html.py
       - name: Commit migration
         run: |
           if git diff --quiet; then
@@ -74,7 +82,8 @@ jobs:
           git add VERSION SKILL.md \
             runtime/cbcc/compiler.py runtime/cbcc/asset_architecture.py runtime/cbcc/product_visual_intelligence.py \
             runtime/cbcc/providers.py runtime/cbcc/production.py runtime/cbcc/reference_guided_native_authority.py \
+            runtime/cbcc/asset_compiler.py runtime/cbcc/delivery_html.py \
             tests/test_v0631_model_native_prompt_contract.py tests/test_v0632_production_parameter_closure.py \
             scripts/build_plugin_dist.py
-          git commit -m 'release: promote native reference generation and dynamic asset universe to v0.6.33'
+          git commit -m 'release: expose native-reference Asset Universe in v0.6.33 human workspace'
           git push
