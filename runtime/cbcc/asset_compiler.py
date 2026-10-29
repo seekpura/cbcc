@@ -70,7 +70,16 @@ def _human_asset_design_card_markdown(asset:dict[str,Any], prompt_bundle:dict[st
         f"- **相比其他资产新增的信息**：{task.get('incremental_information') or asset.get('incremental_information') or '—'}",
         '', '## 2. 画面与摄影执行','',
         f"- **视觉任务**：{card.get('visual_objective') or asset.get('strategic_job') or '—'}",
-        f"- **构图语法**：{_cn_phrase(cam.get('composition_grammar')) or '—'}",
+        f"- **完整逐资产 Art Direction**：{asset.get('asset_art_direction') or '—'}",
+        f"- **视觉载体**：{(asset.get('asset_art_direction') or {}).get('visual_carrier') or '—'}",
+        f"- **Product Presence / Role**：{(asset.get('asset_art_direction') or {}).get('product_presence') or card.get('product_presence') or '—'}",
+        f"- **Decisive Moment**：{(asset.get('asset_art_direction') or {}).get('decisive_moment') or '—'}",
+        f"- **Subject / Action / Environment / Props**：{ {k:(asset.get('asset_art_direction') or {}).get(k) for k in ('subject','action','environment','props') if (asset.get('asset_art_direction') or {}).get(k)} or '—'}",
+        f"- **构图语法**：{_cn_phrase(cam.get('composition_grammar')) or (asset.get('asset_art_direction') or {}).get('composition_grammar') or '—'}",
+        f"- **空间节奏 / 几何**：{(asset.get('asset_art_direction') or {}).get('spatial_rhythm') or '—'} / {(asset.get('asset_art_direction') or {}).get('layout_geometry') or (asset.get('asset_art_direction') or {}).get('relative_placement') or '—'}",
+        f"- **尺度 / 纵深 / 占画**：{(asset.get('asset_art_direction') or {}).get('scale_depth') or '—'} / {(asset.get('asset_art_direction') or {}).get('product_occupancy') or '—'}",
+        f"- **焦点路径 / 留白**：{(asset.get('asset_art_direction') or {}).get('focal_path') or '—'} / {(asset.get('asset_art_direction') or {}).get('negative_space') or '—'}",
+        f"- **证据层级**：{(asset.get('asset_art_direction') or {}).get('evidence_hierarchy') or (asset.get('asset_art_direction') or {}).get('evidence_plane') or '—'}",
         f"- **机位 / 视角**：{_cn_phrase(cam.get('camera_or_view')) or '—'}",
         f"- **焦段**：{cam.get('focal_length_mm') or '—'}",
         f"- **光圈 / 景深**：{cam.get('aperture_dof_intent') or '—'}",
@@ -89,13 +98,20 @@ def _human_asset_design_card_markdown(asset:dict[str,Any], prompt_bundle:dict[st
         f"- **目标市场可见语言**：{language_contract.get('primary_locale') or '按目标市场策划'}",
         f"- **目标市场原文**：{target_copy if target_copy not in ({},None,'') else '当前资产无锁定可见文案 / 待补'}",
         f"- **中文释义 / 用途**：{zh_copy or ('当前资产无外语可见文案' if target_copy in ({},None,'') else '待补中文释义；不得把未解释的外语作为人类主交付层')}",
-        '', '## 4. 生产提示词（可选生产辅助，不阻断资产交付）','',
-        '### 中文规范生产提示词','',
-        '```text', prompt_bundle.get('prompt_cn') or '', '```','',
-        '### 英文 / 生成模型执行提示词','',
-        '> 仅用于需要英文执行语言的生成模型；中文生产说明是人类主交付。','',
-        '```text', prompt_bundle.get('prompt_en') or '', '```','',
-        '## 5. 成功与承接','',
+        '', '## 4. 模型生成提示词（Model-facing）','',
+        '### Model Prompt CN｜中文生成提示词','',
+        '> 这是直接给图像/视频生成模型的视觉执行语言，不承载 Runtime/装配合同。','',
+        '```text', prompt_bundle.get('model_prompt_cn') or prompt_bundle.get('prompt_cn') or '', '```','',
+        '### Model Prompt EN｜英文生成提示词','',
+        '> 英文执行说明必须保持英文；目标市场原文可作为准确可见 copy 保留，中文释义放在 Visible Copy Block。','',
+        '```text', prompt_bundle.get('model_prompt_en') or prompt_bundle.get('prompt_en') or '', '```','',
+        '### Visible Copy Block｜准确文案与中文释义','',
+        '```json', _jdump(prompt_bundle.get('visible_copy_block') or {}), '```','',
+        '### Production / Assembly Notes｜生产与装配说明','',
+        '> 锁图、产品参考角色、文字渲染路线、可编辑/冻结层、Provider 与后期装配规则在此管理，不污染 Model Prompt。','',
+        '```json', _jdump(prompt_bundle.get('production_assembly_notes') or {}), '```','',
+        f"- **Model Prompt Readiness**：{prompt_bundle.get('model_prompt_status') or (prompt_bundle.get('prompt_consumption_audit') or {}).get('status') or '—'}",
+        '', '## 5. 成功与承接','',
         f"- **成功指标**：{task.get('success_metric') or asset.get('success_metric') or '按当前展示位置的真实任务选择指标'}",
         f"- **下一资产 / 下一动作承接**：{task.get('handoff') or asset.get('handoff') or '—'}",
     ]
@@ -139,7 +155,7 @@ def compile_asset_packages(root:Path,assets:list[dict[str,Any]],product:dict[str
         if not asset.get('editable_layer_contract'):
             asset['editable_layer_contract']=_editable_layer_contract(asset.get('production_mode'),asset.get('product_fidelity'))
         d=base/asset['asset_id']; d.mkdir(parents=True,exist_ok=True)
-        manifest={k:asset.get(k) for k in ['asset_id','asset_name','asset_type','status','surface','family','consumer_question','decision_intent','decision_topic','merged_consumer_questions','strategic_job','surface_need','business_hypothesis','reason_to_exist','incremental_information','production_mode','product_fidelity','priority','dependencies','source_ids','claim_ids','listing_reference','success_metric','race_stage','information_assetization','product_presence','surface_copy_budget','surface_native_contract','creative_direction','visual_expression_variant','product_visual_intelligence','creative_anchor_plan','visual_production_signature','editable_layer_contract']}
+        manifest={k:asset.get(k) for k in ['asset_id','asset_name','asset_type','status','surface','family','consumer_question','decision_intent','decision_topic','merged_consumer_questions','strategic_job','surface_need','business_hypothesis','reason_to_exist','incremental_information','production_mode','product_fidelity','priority','dependencies','source_ids','claim_ids','listing_reference','success_metric','race_stage','information_assetization','product_presence','asset_art_direction','surface_copy_budget','surface_native_contract','creative_direction','visual_expression_variant','product_visual_intelligence','creative_anchor_plan','visual_production_signature','editable_layer_contract']}
         manifest.update({'platform':target.get('platform_family'),'site':target.get('site'),'market':target.get('market'),'languages':language_contract.get('visible_copy_locales',[]),'source_product_assets':list(source_product_assets or [])})
         _write(d/'00_asset_manifest.yaml',yaml.safe_dump(manifest,allow_unicode=True,sort_keys=False))
         strategy_content_rows=[r for r in ((((strategy_authority or {}).get('sections',{}) or {}).get('06_platform_content_matrix',[])) or []) if r.get('asset_id')==asset.get('asset_id')]
@@ -147,7 +163,7 @@ def compile_asset_packages(root:Path,assets:list[dict[str,Any]],product:dict[str
         strategy={k:asset.get(k) for k in ['consumer_question','decision_intent','merged_consumer_questions','purchase_barrier','belief_target','strategic_job','surface_need','business_hypothesis','journey_stage','entry_state','exit_state','race_stage','reason_to_exist','incremental_information','handoff','success_metric']}
         _write(d/'01_strategy.md',_asset_strategy_markdown(asset,strategy,strategy_authority))
         asset_photo_reasoning=next((r for r in (((strategy_authority or {}).get('sections',{}).get('05_visual_photography_strategy',{}) or {}).get('asset_parameter_reasoning',[]) or []) if r.get('asset_id')==asset.get('asset_id')),None)
-        visual={'creative_brief':asset.get('creative_brief',{}),'approved_visual_elements':asset.get('approved_visual_elements',[]),'precision_boundaries':asset.get('precision_boundaries',[]),'culture_implications':culture.get('visual_implications',[]),'locale_profiles':locale_profiles.get('profiles',[]),'asset_photography_reasoning':asset_photo_reasoning,'visual_production_signature':asset.get('visual_production_signature',{}),'editable_layer_contract':asset.get('editable_layer_contract',{}),'source_product_assets':list(source_product_assets or [])}
+        visual={'asset_art_direction':asset.get('asset_art_direction',{}),'creative_brief':asset.get('creative_brief',{}),'approved_visual_elements':asset.get('approved_visual_elements',[]),'precision_boundaries':asset.get('precision_boundaries',[]),'culture_implications':culture.get('visual_implications',[]),'locale_profiles':locale_profiles.get('profiles',[]),'asset_photography_reasoning':asset_photo_reasoning,'visual_production_signature':asset.get('visual_production_signature',{}),'editable_layer_contract':asset.get('editable_layer_contract',{}),'source_product_assets':list(source_product_assets or [])}
         _write(d/'02_visual_spec.md',_visual_spec_markdown(asset,visual,strategy_authority))
         if asset.get('asset_type')=='IMAGE' and photography:
             photography_contract={**photography,'asset_reasoning':asset_photo_reasoning}
@@ -179,7 +195,9 @@ def compile_asset_packages(root:Path,assets:list[dict[str,Any]],product:dict[str
         _write(d/'05_prompt_CN.txt',prompt_bundle['prompt_cn'])
         _write(d/'06_prompt_EN.txt',prompt_bundle['prompt_en'])
         _write(d/'12_design_card.json',_jdump(prompt_bundle['design_card']))
-        _write(d/'13_prompt_contract.json',_jdump({'status':prompt_bundle.get('status'),'project_completion_blocking':False,'design_card':prompt_bundle.get('design_card') or {},'canonical_prompt_cn':prompt_bundle.get('prompt_cn') or '','canonical_prompt_en':prompt_bundle.get('prompt_en') or '','deterministic_copy_overlay':prompt_bundle.get('deterministic_copy_overlay') or {},'parameter_trace':prompt_bundle.get('parameter_trace') or [],'prompt_consumption_audit':prompt_bundle.get('prompt_consumption_audit') or {},'machine_visual_contract':prompt_bundle.get('machine_visual_contract') or {},'renderer_recipe':prompt_bundle.get('renderer_recipe') or {},'qa_target_contract':prompt_bundle.get('qa_target_contract') or {}}))
+        _write(d/'14_visible_copy_block.json',_jdump(prompt_bundle.get('visible_copy_block') or {'raw':asset.get('visible_copy') or {}}))
+        _write(d/'15_production_assembly_notes.json',_jdump(prompt_bundle.get('production_assembly_notes') or {}))
+        _write(d/'13_prompt_contract.json',_jdump({'status':prompt_bundle.get('status'),'model_prompt_status':prompt_bundle.get('model_prompt_status'),'project_completion_blocking':False,'design_card':prompt_bundle.get('design_card') or {},'model_prompt_cn':prompt_bundle.get('model_prompt_cn') or prompt_bundle.get('prompt_cn') or '','model_prompt_en':prompt_bundle.get('model_prompt_en') or prompt_bundle.get('prompt_en') or '','canonical_prompt_cn':prompt_bundle.get('prompt_cn') or '','canonical_prompt_en':prompt_bundle.get('prompt_en') or '','visible_copy_block':prompt_bundle.get('visible_copy_block') or {},'production_assembly_notes':prompt_bundle.get('production_assembly_notes') or {},'legacy_copy_overlay':prompt_bundle.get('deterministic_copy_overlay') or {},'parameter_trace':prompt_bundle.get('parameter_trace') or [],'prompt_consumption_audit':prompt_bundle.get('prompt_consumption_audit') or {},'machine_visual_contract':prompt_bundle.get('machine_visual_contract') or {},'renderer_recipe':prompt_bundle.get('renderer_recipe') or {},'qa_target_contract':prompt_bundle.get('qa_target_contract') or {}}))
         signature=asset.get('visual_production_signature') or {}
         edit_contract=asset.get('editable_layer_contract') or {}
         fidelity_line=('Explicit locked-source mode: use the supplied master as an immutable product layer.' if str(asset.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} else 'Reference-guided mode: source files guide the design; redraw/rerender/restyle/recompose is allowed. Keep verified facts/claims honest; pixel matching and photorealism are not required.')
@@ -238,13 +256,13 @@ def compile_asset_packages(root:Path,assets:list[dict[str,Any]],product:dict[str
         else:
             _write(d/'11_strategy_authority_trace.json',_jdump({'strategy_status':'NOT_SUPPLIED','asset_id':asset.get('asset_id'),'consumer_question':asset.get('consumer_question'),'reason_to_exist':asset.get('reason_to_exist'),'surface_need':asset.get('surface_need'),'business_hypothesis':asset.get('business_hypothesis'),'trace_scope':'PRESERVED_PACKAGE_SLOT; compile with Strategy Authority to populate upstream decision trace.'}))
         index.append({'asset_id':asset['asset_id'],'path':str(d),'status':asset.get('status'),'production_mode':asset.get('production_mode'),'provider':route.get('provider'),'legacy_package_preserved':True})
-    _write(base/'ASSET_PACKAGE_INDEX.json',_jdump({'assets':index,'count':len(index),'legacy_alpha6_package_preserved':True,'legacy_package_preserved':True,'required_legacy_files':REQUIRED_ASSET_FILES,'additive_capability_files':['00_HUMAN_DESIGN_CARD_CN.md','12_design_card.json','13_prompt_contract.json']}))
+    _write(base/'ASSET_PACKAGE_INDEX.json',_jdump({'assets':index,'count':len(index),'legacy_alpha6_package_preserved':True,'legacy_package_preserved':True,'required_legacy_files':REQUIRED_ASSET_FILES,'additive_capability_files':['00_HUMAN_DESIGN_CARD_CN.md','12_design_card.json','13_prompt_contract.json','14_visible_copy_block.json','15_production_assembly_notes.json']}))
     return {'status':'COMPILED','asset_count':len(index),'index':index}
 
 
 REQUIRED_ASSET_FILES=[
     '00_asset_manifest.yaml','00_HUMAN_DESIGN_CARD_CN.md','01_strategy.md','02_visual_spec.md','03_photography_contract.json','04_layout_contract.json',
-    '08_copy.md','09_production_notes.md','10_source_trace.md','11_strategy_authority_trace.json','12_design_card.json'
+    '08_copy.md','09_production_notes.md','10_source_trace.md','11_strategy_authority_trace.json','12_design_card.json','14_visible_copy_block.json','15_production_assembly_notes.json'
 ]
 OPTIONAL_PRODUCTION_FILES=['05_prompt_CN.txt','06_prompt_EN.txt','07_generation_guidance.txt','13_prompt_contract.json']
 _INTERNAL_PROMPT_TOKENS=['authority_hash','READY_REVIEW','INVALIDATED','claim_ids','source_ids','project_state','revision']

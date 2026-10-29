@@ -23,6 +23,16 @@ Create a professional cross-border ecommerce plan **before** governance machiner
 - Prompt Compiler 是 compiler，不是 designer。唯一允许的链路是 `Product Truth + Commerce Strategy → Agent Portfolio Curation → Creative Direction → Per-Asset Art Direction → Canonical Prompt → Renderer/Provider → Agent Review/Revision`。Prompt 只能压缩和投影已经选定、会改变生产结果的参数，不能反向发明设计。
 - 人类交付仍默认中文优先；目标市场可见文案可使用当地语言，但在人类工作区/资产说明中必须有合适的中文释义与用途说明。九域是 FULL 的决策深度合同，不是固定页面、固定资产、固定 UI 或固定视觉模板。
 
+
+## Model-Native Prompt + Human Depth Authority — highest current precedence
+- **模型 Prompt、可见文案、生产装配说明是三个不同责任层。** 逐资产生产对象必须至少区分：`Model Prompt CN`、`Model Prompt EN`、`Visible Copy Block`、`Production / Assembly Notes`。`prompt_cn / prompt_en` 只能作为 Model Prompt 的兼容别名，不得再承载 renderer layer、machine contract、deterministic typography、provider transport、audit log 等工程合同。
+- **英文生成提示词必须是英文执行语言。** 马来文/阿语等目标市场原文可作为准确可见 copy 出现在引号内；中文释义、中文消费者问题、中文 Art Direction 说明不得混入 EN Model Prompt。若上游只有中文创意语义，Agent 应补写英文 render semantics；Runtime 标记 `BILINGUAL_RENDER_SEMANTICS_REQUIRED`，不得把混合语言文本伪装成英文 Prompt。
+- **文字是否由生成模型直接渲染不是 Runtime 全局默认。** 当资产有可见文案时，由 Agent/生产路线根据模型能力与资产目标显式选择 `MODEL_RENDER / POST_COMPOSITE / HYBRID`；无可见文案使用 `NO_VISIBLE_COPY`。缺少该决定时标记 `COPY_RENDER_MODE_REQUIRED`。禁止把所有资产统一写成“deterministic post-layout text”。
+- **生图 Prompt 必须像真实模型 Prompt，而不是把 Design Card/JSON 改写成英文段落。** Still 顺序优先为 `输出规格 → 视觉目标/风格 → 场景/载体 → 主体/动作/产品角色 → 构图/相对位置/尺度/焦点路径/留白 → 证据层级 → 摄影机(相关时) → 灯光/材质/CMF/色彩(相关时) → 人物(相关时) → 文案行为 → finishing look → truth/negative constraints`；Video 另消费 duration/beat/shot/motion/transition/audio/CTA hold。
+- **参数连续性必须核对具体值，不核对字段名。** Prompt Consumption Audit 要从每个 selected decision 的实际值追到 `MODEL_PROMPT / VISIBLE_COPY_BLOCK / PRODUCTION_NOTES`。`surface size / composition / palette / camera` 这种字段名在 Selected/Projected 两边重复不构成 PASS。
+- **FULL 人类交付禁止“上游缩水、下游 Prompt 膨胀”。** Semantic Compression 只能去重复，不能删除会改变商业/创意/生产结果的独立决策。Visual Master、CMF、平台规格、内容矩阵、每张资产完整 Art Direction 与参数 WHY 必须保留真实深度；Prompt Lab 只展示执行对象，不得用重复的全局 boilerplate 占据主要信息预算。
+- 每张视觉/视频资产的人类设计卡应可见：visual carrier、product presence/role、decisive moment、subject/action/environment/props、composition/spatial rhythm/layout geometry、scale/depth、product occupancy、focal path、negative space、evidence hierarchy、copy zone/hierarchy、palette/CMF/material、camera/lens/focus（相关时）、lighting/CCT/ratio/reflection/prelight（相关时）、human/casting（相关时）、output spec/post look，以及 Video 的 timing/shot/motion（相关时）。不相关字段标 N/A，而不是删除整个设计层。
+
 ## FULL vs TASK_SCOPED Delivery Authority — current precedence
 - **FULL Commerce Project / FULL Strategy / End-to-End 商品项目**：当用户明确要求完整商品策略、完整跨境电商项目、端到端交付，或请求同时覆盖 Product Truth + Strategy + Listing/Content + Visual/Asset/Prompt 等完整链路时，执行本 Skill 的 FULL 硬合同。FULL 必须物化 9 个决策域：信息完整度/假设日志、产品事实与 A/B/C 证据、平台×区域×人群×族裔文化洞察、营销核心策略、视觉/摄影/CMF、分平台内容矩阵、RACE 执行表、族裔文化适配检查表、合规/风险/评估/P0-P1-P2。RACE=Research → Action → Communication → Evaluation 作为传播流程骨架；STP+JTBD 定策略，AIDA/FABE 定内容结构，4P/Funnel 定转化。C 级证据不得形成硬宣称。
 - **TASK_SCOPED 局部任务**：当用户只要求 Listing、单个资产、Prompt、视觉审查、局部研究、某个 Surface 或其他窄范围时，继续使用 v0.6.21–0.6.29 的动态 Scope / Decision Authority；不为了“系统会这些能力”强塞 9 个域、RACE、固定框架、固定资产数或未来工作。
@@ -34,7 +44,7 @@ Create a professional cross-border ecommerce plan **before** governance machiner
 - **本节高于下面所有历史版本说明。** 任何 v0.6.21–v0.6.29 关于“框架可选 / scope 动态”的历史段落，只适用于 TASK_SCOPED；不得覆盖 FULL 的九域深度合同。
 - FULL 九域不是标题检查：每个域必须包含会改变商业/创意/生产决策的内容。产品层必须清楚区分 Fact / 真实卖点 / 可感知利益 / 情绪价值 / Claim Boundary / A-B-C 证据；区域与用户层必须回答平台×区域×人群×族裔文化 WHY、交叉性、语言/宗教/节庆/支付/物流/法规与禁忌/刻板印象；视觉层必须给可执行构图、HEX/对比、CMF/材质与平台规格；摄影、灯光、镜头、人物等只在当前视觉载体/生产路线相关时策划，并把已选参数贯穿到逐资产执行；内容层必须给平台执行字段、RACE、文化校验、CTA、指标、落地/归因；风险层必须给合规、A/B、P0/P1/P2、取舍、下一步与输出自检。
 - **深度不等于字数。** 允许删除重复解释、内部 ID、RACE/KPI 元数据和与当前资产无关的摄影 toolbox；禁止删除已有证据边界、区域/用户洞察、策略 WHY/取舍、生产参数或人类可执行动作。
-- Canonical Prompt 使用 **Semantic Compression, never Capability Compression**：当当前任务需要 Prompt / 生图 / Provider 执行时，已选且会改变该生产结果的参数应投影到 Prompt 或 deterministic production instruction，并记录 `prompt_consumption_audit`。**Prompt Consumption Audit 是生产质量诊断，不是项目或资产完整度的全局阻断 Gate**；`missing_decisions` 可以形成 `NEEDS_PROMPT_WORK`，但不能阻止策略、Listing、内容、视觉策展、资产设计卡或完整人类交付完成。
+- Canonical Prompt 使用 **Semantic Compression, never Capability Compression**：当当前任务需要 Prompt / 生图 / Provider 执行时，已选且会改变该生产结果的参数应投影到 Model Prompt、Visible Copy Block 或 Production / Assembly Notes，并记录 `prompt_consumption_audit`。**Prompt Consumption Audit 是生产质量诊断，不是项目或资产完整度的全局阻断 Gate**；`missing_decisions` 可以形成 `NEEDS_PROMPT_WORK`，但不能阻止策略、Listing、内容、视觉策展、资产设计卡或完整人类交付完成。
 - 人物/手部/身体关系资产必须执行包容性表征与 AI 偏见控制；**真实摄影路线**再把肤色测光、深肤色暗部保护、Prelight、reflector/bounce、diffusion 等转成拍摄参数。插画、3D、风格化生成等非真实摄影路线使用与该媒介匹配的表征控制，不强行套摄影参数。
 - FULL 最终导出必须重新运行当前 `delivery_contract.validate_strategy_delivery()`，并把 `FULL_DELIVERY_DEPTH_AUDIT.json`、`PROMPT_CONSUMPTION_AUDIT.json` 写入交付包。后者是可见的生产准备度审计但 `project_completion_blocking=false`。`index.html` 必须直接可见九域核心对象；宿主自写的一套更短报告不能替代它。
 

@@ -105,6 +105,9 @@ description: 用于跨境电商 Product Truth、动态研究、SKU/Offer、Listi
 ## Agent Creative Authority
 商业策略、资产策展与视觉设计由宿主 Agent 主导；Runtime 只负责 validate / serialize / compile / trace / execute / package / test。逐资产必须由 Agent 决定视觉载体、产品是否出现及其角色、主体/动作/环境/道具、空间语法与相关时的摄影/灯光/CMF。缺失 Art Direction 时返回 Agent 补决策，不得自动补 packshot、centered hero、left-text/right-product 或其他模板。Product Reference/Fidelity 不等于 Product Presence。
 
+## Model-Native Prompt Contract
+逐资产生产必须分离 Model Prompt CN、Model Prompt EN、Visible Copy Block 与 Production / Assembly Notes。英文 Model Prompt 的执行说明保持英文，目标市场原文可准确保留，中文释义放在人类交付/Copy Block；不要把 deterministic typography、renderer layer、machine contract、audit/provenance 等 Runtime 工程词塞进模型 Prompt。文字由模型直接生成还是后期装配由 Agent/生产路线显式决定，不做全局默认。FULL 交付不得为缩短篇幅而压扁 Visual Master、内容矩阵或逐资产 Art Direction。
+
 完整 Agent/Skill 权威位于 `resources/SKILL.md`。复杂任务开始前读取它；当前交付执行代码位于 `resources/runtime/cbcc/delivery_export.py` 与 `resources/runtime/cbcc/delivery_workspace.py`。
 
 ## 最终交付硬合同
