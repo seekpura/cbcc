@@ -2,7 +2,9 @@
 
 The final `index.html` is a human product interface for the current commerce project, not a visualization of CBCC's internal capability catalog and not a workflow diagram.
 
-- First screen = project object map, not a sequence of steps.
+- Do not turn the anti-pipeline fix into a new fixed dashboard/card-grid template.
+- The persistent shell carries project identity plus neutral access to current project objects; it does not expose the capability catalog as permanent navigation.
+- A SaaS-style searchable object switcher/drawer is the deterministic fallback when Runtime needs neutral navigation. Host-native Agent authoring may choose another project-appropriate interface.
 - Current priority / next action is separate from information architecture.
 - Permanent navigation must not mirror Product / Market / Listing / Strategy / Content / Visual / Assets / Prompt / Risk / Sources.
 - No fixed page count and no 01→02→03 implication unless the actual business object is genuinely ordered.
