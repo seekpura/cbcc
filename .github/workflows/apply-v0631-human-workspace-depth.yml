@@ -1,0 +1,67 @@
+name: Apply v0.6.31 Human Workspace Depth
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0631-human-workspace-depth.yml'
+      - 'scripts/apply_v0631_human_workspace_depth.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-depth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+      - name: Apply human workspace depth migration
+        run: python scripts/apply_v0631_human_workspace_depth.py
+      - name: Compile changed modules
+        env:
+          PYTHONPATH: .:runtime
+        run: |
+          python -m py_compile \
+            runtime/cbcc/asset_compiler.py \
+            runtime/cbcc/delivery_html.py \
+            runtime/cbcc/delivery_contract.py \
+            runtime/cbcc/human_delivery_art_direction_projection.py
+      - name: Preserve prompt and Agent authority regressions
+        env:
+          PYTHONPATH: .:runtime
+        run: |
+          pytest -q tests/test_v0631_model_native_prompt_contract.py
+          pytest -q \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0630_surface_agent_authority.py \
+            tests/test_v0630_agent_art_direction_e2e.py \
+            tests/test_v0630_prompt_art_direction_projection.py
+      - name: Verify depth/display migration
+        run: |
+          grep -q '视觉 / Art Direction 执行合同' runtime/cbcc/asset_compiler.py
+          grep -q 'Model Prompt EN' runtime/cbcc/delivery_html.py
+          grep -q '文字渲染 / 装配路线' runtime/cbcc/delivery_html.py
+          ! grep -q "('确定性排版规则'" runtime/cbcc/delivery_html.py
+          grep -q 'FULL_DECISION_DEPTH_V2_CARRIER_AWARE_NO_SILENT_COMPRESSION' runtime/cbcc/delivery_contract.py
+      - name: Commit applied depth migration
+        run: |
+          if git diff --quiet; then
+            echo 'No depth changes required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add runtime/cbcc/asset_compiler.py runtime/cbcc/delivery_html.py runtime/cbcc/delivery_contract.py
+          git commit -m 'fix: render full art direction and carrier-aware FULL depth'
+          git push
