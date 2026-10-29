@@ -1,7 +1,7 @@
 # Default Prompt Is Not Authority — v0.6.44
 
 ## Highest-precedence authority-source boundary
-`defaultPrompt` is not a business-policy layer and must not duplicate CBCC product rules. Fixed product behavior belongs in the Host Skill and Canonical Skill, with detailed contracts in canonical prompts/references/runtime tests.
+`defaultPrompt` is not a business-policy layer and must not duplicate CBCC product rules. **所有固定业务规则必须集成进 Host Skill / Canonical Skill，不得再复制到 manifest prompt。** Detailed contracts live in canonical prompts/references/runtime tests.
 
 From v0.6.44 onward, the plugin manifest MUST NOT carry business rules in `defaultPrompt`. The preferred release form omits `defaultPrompt` entirely. Selecting/invoking the plugin is sufficient to load the current Host Skill / Canonical Skill authority.
 
