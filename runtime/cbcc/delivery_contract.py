@@ -158,10 +158,28 @@ def validate_strategy_delivery(strategy: dict[str, Any]) -> dict[str, Any]:
         if positioning and not _present(positioning.get('why')):
             _depth_issue(issues, 'FULL_POSITIONING_WHY_MISSING', REQUIRED_SECTIONS[3])
 
-        # 05 — visual strategy must be executable and asset-specific, not adjectives.
-        for k in ['palette_hex','composition','lighting_framework','camera','lens','color_management','casting','platform_dimensions','shot_list','asset_parameter_reasoning','photography_rationale']:
+        # 05 — visual strategy must preserve decision depth without forcing every carrier into photography.
+        for k in ['palette_hex','composition','color_management','platform_dimensions','asset_parameter_reasoning']:
             if not _present(vis.get(k)):
                 _depth_issue(issues, 'FULL_VISUAL_EXECUTION_DEPTH_MISSING', REQUIRED_SECTIONS[4], field=k)
+        asset_reasoning=vis.get('asset_parameter_reasoning') or []
+        if not isinstance(asset_reasoning,list) or not asset_reasoning:
+            _depth_issue(issues, 'FULL_ASSET_ART_DIRECTION_REASONING_MISSING', REQUIRED_SECTIONS[4])
+        else:
+            for i,row in enumerate(asset_reasoning):
+                if not isinstance(row,dict):
+                    _depth_issue(issues, 'FULL_ASSET_ART_DIRECTION_REASONING_INVALID', REQUIRED_SECTIONS[4], row=i)
+                    continue
+                if not _present(row.get('asset_id')):
+                    _depth_issue(issues, 'FULL_ASSET_ART_DIRECTION_ID_MISSING', REQUIRED_SECTIONS[4], row=i)
+                decision_values=[row.get(k) for k in ['composition','composition_grammar','visual_carrier','camera','lighting','cmf','palette_hex','surface','product_presence','parameters','why','rationale']]
+                if not any(_present(v) for v in decision_values):
+                    _depth_issue(issues, 'FULL_ASSET_ART_DIRECTION_REASONING_SHALLOW', REQUIRED_SECTIONS[4], row=i)
+        photo_selected=any(_present(vis.get(k)) for k in ['photography_execution','photography_rationale','camera','lens','shot_list']) or str(vis.get('production_route') or '').upper() in {'PHOTOGRAPHY','REAL_PHOTO','PHOTO_CAPTURE'}
+        if photo_selected:
+            for k in ['lighting_framework','camera','lens','photography_rationale']:
+                if not _present(vis.get(k)):
+                    _depth_issue(issues, 'FULL_PHOTOGRAPHY_ROUTE_DEPTH_MISSING', REQUIRED_SECTIONS[4], field=k)
         if _present(vis.get('casting')) and not _present(vis.get('inclusive_photography')):
             _depth_issue(issues, 'FULL_INCLUSIVE_PHOTOGRAPHY_MISSING', REQUIRED_SECTIONS[4])
 
@@ -208,5 +226,5 @@ def validate_strategy_delivery(strategy: dict[str, Any]) -> dict[str, Any]:
         'required_sections':REQUIRED_SECTIONS,
         'evidence_levels':EVIDENCE_LEVELS,
         'race_stages':RACE_STAGES,
-        'depth_contract':'FULL_DECISION_DEPTH_V1',
+        'depth_contract':'FULL_DECISION_DEPTH_V2_CARRIER_AWARE_NO_SILENT_COMPRESSION',
     }

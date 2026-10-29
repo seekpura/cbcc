@@ -120,23 +120,102 @@ def _human_asset_design_card_markdown(asset:dict[str,Any], prompt_bundle:dict[st
 
 def _visual_spec_markdown(asset:dict[str,Any], visual:dict[str,Any], strategy_authority:dict[str,Any]|None=None)->str:
     master=(strategy_authority or {}).get('sections',{}).get('05_visual_photography_strategy',{})
+    art=asset.get('asset_art_direction') or {}
     brief=asset.get('creative_brief') or {}
-    lines=[
-        '# 视觉执行合同','',
-        f"- 商业任务：{asset.get('strategic_job')}",
-        f"- 产品Fidelity：**{asset.get('product_fidelity')}**",
-        f"- 生产方式：{asset.get('production_mode')}",
-        f"- 构图：{brief.get('composition') or master.get('composition')}",
-        f"- 灯光：{brief.get('lighting') or master.get('lighting_framework')}",
-        f"- 色彩 / CMF：{brief.get('color') or master.get('cmf') or master.get('palette_hex')}",
-        f"- 文化/人物执行：{visual.get('culture_implications')}",
-        f"- 可使用视觉元素：{visual.get('approved_visual_elements')}",
-        f"- 精确边界：{visual.get('precision_boundaries')}",
-        '', '## 为什么这张资产必须存在',
-        f"这张资产不是为了补图位，而是为了回答：**{asset.get('consumer_question')}**。画面层级、产品占比、人物/道具/场景和文案都应围绕该问题服务；不能因为风格好看而增加无关信息。",
-        '', '## 机器可读合同','```json',_jdump(visual),'```',
+    presence=art.get('product_presence') or asset.get('product_presence') or {}
+
+    def fmt(value:Any)->str:
+        if value in (None,'',[],{}): return '—'
+        if isinstance(value,dict):
+            for key in ('cn','zh','zh-CN','CN'):
+                if value.get(key) not in (None,'',[],{}): return str(value.get(key))
+            return _jdump(value)
+        if isinstance(value,list): return '；'.join(str(x) for x in value)
+        return str(value)
+
+    rows=[
+        ('商业任务',asset.get('strategic_job')),
+        ('消费者问题',asset.get('consumer_question')),
+        ('视觉载体',art.get('visual_carrier') or asset.get('information_assetization',{}).get('representation')),
+        ('创意核心',art.get('creative_thesis') or art.get('thesis')),
+        ('视觉语言',art.get('visual_language') or art.get('image_language') or art.get('style')),
+        ('关键瞬间',art.get('decisive_moment')),
+        ('产品出现 / 角色',presence),
+        ('主体',art.get('subject')),
+        ('动作',art.get('action') or art.get('decisive_action')),
+        ('环境',art.get('environment')),
+        ('道具',art.get('props') or art.get('scene_props')),
+        ('人物 / Casting',art.get('human_context') or art.get('people') or art.get('casting')),
+        ('构图语法',art.get('composition_grammar') or art.get('composition') or art.get('spatial_grammar') or brief.get('composition') or master.get('composition')),
+        ('空间节奏',art.get('spatial_rhythm') or art.get('space_rhythm')),
+        ('相对位置 / 几何',art.get('layout_geometry') or art.get('relative_placement') or art.get('placement_relationships')),
+        ('尺度 / 纵深',art.get('scale_depth') or art.get('scale_relationships') or art.get('depth_program')),
+        ('产品占画',art.get('product_occupancy') or art.get('product_frame_ratio') or art.get('product_scale_percent')),
+        ('焦点路径',art.get('focal_path')),
+        ('负空间',art.get('negative_space') or art.get('copy_negative_space')),
+        ('证据层级',art.get('evidence_hierarchy') or art.get('proof_mechanism') or art.get('evidence_plane')),
+        ('文字安全区',art.get('copy_zone') or art.get('text_zone') or art.get('safe_zone')),
+        ('字体 / 信息层级',art.get('typography')),
+        ('输出规格',art.get('output_spec') or art.get('canvas') or art.get('format_spec')),
+        ('完成质感 / Post Look',art.get('post_look') or art.get('grade') or art.get('finishing_look')),
+        ('商品 Fidelity',asset.get('product_fidelity')),
+        ('生产方式',asset.get('production_mode')),
     ]
-    return '\n'.join(lines)+'\n'
+    lines=['# 视觉 / Art Direction 执行合同','', '## 资产级完整视觉决策','']
+    for label,value in rows:
+        if value not in (None,'',[],{}): lines.append(f'- **{label}**：{fmt(value)}')
+
+    photo_rows=[
+        ('机位 / 视角',art.get('camera_or_view') or art.get('preferred_view') or art.get('view')),
+        ('焦段 / 镜头',art.get('focal_length_mm') or art.get('lens')),
+        ('镜头家族',art.get('lens_family')),
+        ('透视 / 投影',art.get('perspective') or art.get('projection')),
+        ('机位参数',art.get('camera_position')),
+        ('对焦 / 景深',art.get('focus_dof')),
+        ('灯光',art.get('lighting') or art.get('lighting_program') or brief.get('lighting') or master.get('lighting_framework')),
+        ('Prelight',art.get('prelight') or art.get('prelight_plan')),
+        ('CMF',art.get('cmf') or art.get('material_program') or brief.get('color') or master.get('cmf')),
+        ('材质响应',art.get('material_response') or art.get('surface_behavior')),
+        ('Palette / HEX',art.get('palette_hex') or art.get('palette') or art.get('color_world') or master.get('palette_hex')),
+        ('色彩管理',art.get('color_management') or master.get('color_management')),
+    ]
+    if any(v not in (None,'',[],{}) for _,v in photo_rows):
+        lines += ['', '## 摄影 / 灯光 / CMF（仅当前路线相关时）','']
+        for label,value in photo_rows:
+            if value not in (None,'',[],{}): lines.append(f'- **{label}**：{fmt(value)}')
+
+    video_rows=[
+        ('时长 / 节奏',art.get('motion_timing') or art.get('timing') or art.get('duration') or art.get('shot_timing')),
+        ('镜头顺序',art.get('shot_sequence') or art.get('shot_plan') or art.get('storyboard')),
+        ('镜头运动',art.get('camera_motion') or art.get('motion_program')),
+        ('转场 / 音频',art.get('transition_audio') or art.get('transitions') or art.get('audio_direction')),
+    ]
+    if str(asset.get('asset_type') or '').upper()=='VIDEO' or any(v not in (None,'',[],{}) for _,v in video_rows):
+        lines += ['', '## 动态执行（Video 相关时）','']
+        for label,value in video_rows:
+            if value not in (None,'',[],{}): lines.append(f'- **{label}**：{fmt(value)}')
+
+    why_rows=[
+        ('视觉载体 WHY',art.get('visual_carrier_why')),
+        ('构图 WHY',art.get('composition_why')),
+        ('产品出现 WHY',art.get('product_presence_why') or (presence.get('presence_why') if isinstance(presence,dict) else None)),
+        ('摄影 / 媒介 WHY',art.get('media_route_why') or art.get('photography_why')),
+    ]
+    if any(v not in (None,'',[],{}) for _,v in why_rows):
+        lines += ['', '## 为什么这样设计','']
+        for label,value in why_rows:
+            if value not in (None,'',[],{}): lines.append(f'- **{label}**：{fmt(value)}')
+
+    lines += [
+        '', '## 文化、事实与执行边界','',
+        f"- **文化 / 人物执行**：{fmt(visual.get('culture_implications'))}",
+        f"- **允许进入画面的视觉元素**：{fmt(visual.get('approved_visual_elements'))}",
+        f"- **精确边界**：{fmt(visual.get('precision_boundaries'))}",
+        '', '## 为什么这张资产必须存在','',
+        f"这张资产用于回答：**{asset.get('consumer_question') or '当前购买决策问题'}**。产品是否出现、信息关系、构图、人物/道具/场景与可见文案都应服务这个购买判断，而不是为了补图位或复用模板。",
+        '', '## 完整 Agent Art Direction 原始对象（可编辑源）','```json',_jdump(art),'```',
+    ]
+    return '\n'.join(str(x) for x in lines)+'\n'
 
 def compile_asset_packages(root:Path,assets:list[dict[str,Any]],product:dict[str,Any],target:dict[str,Any],culture:dict[str,Any],language_contract:dict[str,Any],locale_profiles:dict[str,Any],photography:dict[str,Any]|None=None,provider_preferences:dict[str,Any]|None=None,strategy_authority:dict[str,Any]|None=None,source_product_assets:list[dict[str,Any]]|None=None)->dict[str,Any]:
     base=Path(root); index=[]
