@@ -86,15 +86,20 @@ def build_language_delivery_plan(scope: dict[str, Any]) -> dict[str, Any]:
 
 
 def _locale_matches(actual: str, required: str) -> bool:
-    a = _norm(actual).lower()
-    r = _norm(required).lower()
+    a = _norm(actual).lower().replace('_', '-')
+    r = _norm(required).lower().replace('_', '-')
     if not a or not r:
         return False
     if r == 'en':
         return a == 'en' or a.startswith('en-')
     if r == 'zh-cn':
         return a in {'zh', 'zh-cn', 'zh-hans', 'cn'}
-    return a == r
+    if a == r:
+        return True
+    a_base = a.split('-', 1)[0]
+    r_base = r.split('-', 1)[0]
+    # `ms` and `ms-MY` (or `th`/`th-TH`) are the same authored language layer.
+    return a_base == r_base and ('-' not in a or '-' not in r)
 
 
 def audit_language_delivery(center: dict[str, Any], plan: dict[str, Any]) -> dict[str, Any]:
