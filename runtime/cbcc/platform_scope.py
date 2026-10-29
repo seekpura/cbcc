@@ -119,5 +119,5 @@ def resolve_platform_scope(project_dir: Path | str) -> dict[str, Any]:
         'platform_source': platform_source,
         'market_source': market_source,
         'primary_locale_source': locale_source,
-        'rule': '当前请求/明确项目输入优先；未明确的平台、市场或主语言保持 UNSPECIFIED。禁止从历史项目、示例、platform_compile 或自动默认值继承 TikTok/Malaysia 等上下文。',
+        'rule': '当前请求/明确项目输入优先；未明确的平台、市场或主语言保持 UNSPECIFIED。禁止从历史项目、示例、编译缓存或自动默认值继承任何平台/市场上下文。',
     }
