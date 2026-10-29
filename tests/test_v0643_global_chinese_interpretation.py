@@ -110,6 +110,30 @@ def test_same_object_cn_companions_make_global_human_copy_pass(tmp_path):
     assert audit['global_human_content']['status'] == 'PASS'
 
 
+def test_formal_asset_delivery_translation_zh_reconciles_legacy_asset_audit(tmp_path):
+    asset_dir = tmp_path / 'asset_packages' / 'A01'
+    _write(asset_dir / '14_visible_copy_block.json', {
+        'target_market_copy': 'LIGHTWEIGHT DAILY GEL',
+        'delivery_translation_zh': '轻盈日用凝胶',
+    })
+    base_audit = {
+        'status': 'INCOMPLETE',
+        'issues': [{
+            'scope': 'ASSET_VISIBLE_COPY',
+            'asset_id': 'A01',
+            'path': 'target_market_copy',
+            'code': 'FOREIGN_ASSET_COPY_WITHOUT_CN_COMPANION',
+            'value': 'LIGHTWEIGHT DAILY GEL',
+        }],
+        'assets': {'status': 'INCOMPLETE', 'issue_count': 1},
+        'listing': {'status': 'PASS', 'issue_count': 0},
+    }
+    audit = audit_global_chinese_interpretation(tmp_path, _normalize(_base_center(False)), base_audit=base_audit)
+    assert audit['status'] == 'PASS'
+    assert audit['assets']['status'] == 'PASS'
+    assert not audit['issues']
+
+
 def test_technical_identifiers_do_not_require_literal_translation(tmp_path):
     center = _base_center(True)
     center['copy_center'] = [
