@@ -20,6 +20,7 @@ from .delivery_contract import validate_strategy_delivery
 from .platform_scope import resolve_platform_scope
 from .delivery_language_matrix import build_language_delivery_plan, audit_language_delivery
 from .source_truth_media import materialize_source_truth_media
+from .commercial_workspace_shell import apply_commercial_workspace_shell, WORKSPACE_SHELL_VERSION
 
 
 _SUPPORT_FILES = [
@@ -135,7 +136,6 @@ def _resolve_output(project: Path, output: Path) -> tuple[Path, Path]:
 
 def _apply_explicit_scope(center: dict[str, Any], scope: dict[str, Any], language_plan: dict[str, Any]) -> dict[str, Any]:
     target = dict(center.get('target') or {})
-    # Never let compiler/example defaults survive into human delivery when the current project did not explicitly select them.
     target['platform'] = scope.get('platform')
     target['market'] = scope.get('market')
     target['site'] = scope.get('site')
@@ -226,9 +226,6 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         build_project_hub_md(center), encoding='utf-8'
     )
 
-    # When Listing is active and the platform primary language is known, a missing authored English/
-    # primary-language layer is a real delivery defect. Unknown platform scope stays explicitly pending
-    # rather than being silently guessed or blocking the whole project artifact.
     if (center.get('task_scope') or {}).get('listing_active') and language_plan.get('platform_primary_status') == 'RESOLVED' and language_matrix_audit.get('status') == 'INCOMPLETE':
         raise RuntimeError(
             'BLOCKED delivery language matrix incomplete: '
@@ -236,7 +233,9 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         )
 
     html_path = build_delivery_html(package_dir, package_dir / 'index.html', title=f'{project.name} · CBCC Delivery')
-    html_path.write_text(apply_chinese_interpretation_ui(html_path.read_text(encoding='utf-8')), encoding='utf-8')
+    rendered_html = apply_chinese_interpretation_ui(html_path.read_text(encoding='utf-8'))
+    rendered_html = apply_commercial_workspace_shell(rendered_html, scope, language_plan)
+    html_path.write_text(rendered_html, encoding='utf-8')
 
     for rel, dest in _EXTRA_DIRS:
         src = project / rel
@@ -291,7 +290,7 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         'asset_package_preserved': asset_root.exists(),
         'supporting_analysis': 'supporting_analysis/',
         'workspace_contract': {
-            'shell_version': 'cbcc-commercial-v1',
+            'shell_version': WORKSPACE_SHELL_VERSION,
             'complete_human_html': bool(html_text.strip()),
             'chinese_first': '默认中文交付' in html_text or '交付语言' in html_text or '中文释义' in html_text,
             'explicit_platform_scope_only': scope.get('platform_status') in {'EXPLICIT','UNSPECIFIED'},
