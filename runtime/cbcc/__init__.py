@@ -12,6 +12,10 @@ image/video model prompt with those engineering contracts.
 v0.6.33 makes reference-guided native generation the normal real-product path: supplied real product
 images are strong model reference inputs and the product is rendered natively in the final image.
 Exact immutable-pixel compositing is an explicit special route only.
+
+v0.6.46 adds commercial decision continuity: real Market/Pricing/Audience/RACE/Listing/Ads/Review
+payloads must survive into relevant asset lineage, Design Cards, model prompts and human delivery.
+Status/count summaries never substitute for real downstream consumption.
 """
 
 from . import prompt_compiler as _legacy_prompt_compiler
@@ -21,6 +25,7 @@ from . import model_native_prompt_audit_fix as _model_native_prompt_audit_fix
 from . import production_parameter_closure as _production_parameter_closure
 from . import reference_guided_native_authority as _reference_guided_native_authority
 from . import commercial_operator_density_authority as _commercial_operator_density_authority
+from . import commercial_continuity_authority as _commercial_continuity_authority
 from . import human_delivery_art_direction_projection as _human_delivery_art_direction_projection
 from . import photographic_route_agent_authority as _photographic_route_agent_authority
 from . import art_direction_projection as _art_direction_projection
@@ -33,6 +38,7 @@ from . import agent_plan_input_bridge as _agent_plan_input_bridge
 from . import portfolio_visual_authority as _portfolio_visual_authority
 from . import asset_universe_authority as _asset_universe_authority
 from . import surface_advisory_authority as _surface_advisory_authority
+from .tools import seven_agent as _seven_agent
 
 # Photography is not a universal runtime default. It becomes active only when the Agent's per-asset
 # Art Direction selects photographic grammar / camera-light execution; then the strategy-level
@@ -96,7 +102,17 @@ _agent_authority_prompt_compiler.compile_asset_prompt = _reference_guided_native
 _agent_authority_prompt_compiler.compile_asset_prompt = _commercial_operator_density_authority.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
+_agent_authority_prompt_compiler.compile_asset_prompt = _commercial_continuity_authority.wrap_compile_asset_prompt(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
 _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.compile_asset_prompt
+
+# Seven-tool continuity must hand real business payloads to assets, not only status/count summaries.
+# The standalone image tool also receives the same wrapped prompt compiler as the full project compiler.
+_seven_agent.compile_asset_prompt = _legacy_prompt_compiler.compile_asset_prompt
+_seven_agent.compile_seven_agent_synthesis = _commercial_continuity_authority.wrap_compile_seven_agent_synthesis(
+    _seven_agent.compile_seven_agent_synthesis
+)
 
 # Explicit Agent-authored variants are an asset universe, not one platform-slot list. H01/H02/H03,
 # multiple benefit hypotheses, paid ads, A+/PDP modules, banners and rotation/test variants may coexist
