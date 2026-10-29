@@ -97,5 +97,28 @@ if 'FULL core strategy must expose message hierarchy' not in text:
         raise SystemExit('v0.6.24 FULL projection anchor not found')
     text=text.replace(anchor,insert,1)
 
+# FULL keeps the user's explicit nine-domain human contract visible. This is a content-completeness
+# authority, not a fixed page/layout template; TASK_SCOPED still renders only relevant domains.
+old_headings="""    heading_names={
+      '1':'信息完整度 / 假设 / 决策','2':'产品真相与价值边界','3':'市场 / 平台 / 人群 / 文化洞察',
+      '4':'核心商业策略','5':'视觉 / 摄影 / CMF / 资产策略','6':'平台内容与 Surface 执行',
+      '7':'RACE传播框架执行表','8':'族裔文化适配检查表','9':'合规、文化敏感、风险、评估与 P0/P1/P2 下一步'}
+"""
+new_headings="""    heading_names={
+      '1':'信息完整度、待确认清单、假设与决策日志',
+      '2':'产品真实事实审计与卖点分级表',
+      '3':'平台 × 区域 × 人群 × 族裔文化洞察',
+      '4':'营销框架与核心策略',
+      '5':'视觉总策略与拍摄执行清单',
+      '6':'分平台内容矩阵表',
+      '7':'RACE传播框架执行表',
+      '8':'族裔文化适配检查表',
+      '9':'合规、文化敏感与风险清单；评估指标与A/B测试建议；P0/P1/P2执行优先级与下一步需补充信息'}
+"""
+if old_headings in text:
+    text=text.replace(old_headings,new_headings,1)
+elif "'2':'产品真实事实审计与卖点分级表'" not in text:
+    raise SystemExit('FULL heading_names anchor not found')
+
 P.write_text(text,encoding='utf-8')
 print('FULL strategy decision-depth repair applied')
