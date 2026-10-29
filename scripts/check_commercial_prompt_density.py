@@ -2,14 +2,20 @@
 from __future__ import annotations
 
 from pathlib import Path
-import sys
 
 ROOT=Path(__file__).resolve().parents[1]
 
-# This is intentionally not a blanket "longer is better" rule. These files are first-class
-# commercial authoring authorities. Adapter/checkpoint prompts may remain concise. The floors
-# prevent a senior-operator playbook from silently regressing back into a few-line policy stub.
+# Not a blanket "longer is better" rule. These files are first-class commercial authoring
+# authorities. Adapter/checkpoint prompts may remain concise. The floors prevent a senior
+# strategy/creative/operator playbook from silently regressing back into a few-line policy stub.
 CONTRACTS={
+    'prompts/master_strategy_authoring.md':(5000,['Framework policy','Required strategic outcomes','Operator closure','Stop rule']),
+    'prompts/market_strategy_interpretation.md':(4500,['Required reasoning contract','Search demand','Opportunity map']),
+    'prompts/product_sku_offer_strategy.md':(3000,['Required SKU decision card','Shared growth budget','Offer design']),
+    'prompts/positioning_message_architecture.md':(3500,['Positioning decision','Message hierarchy','Cognitive Budget']),
+    'prompts/listing_conversion_architecture.md':(3500,['Search intent architecture','Field jobs','Objection handling','Decision-question preservation']),
+    'prompts/dynamic_asset_curation.md':(6500,['Portfolio curation pass','Product Presence Decision','Per-asset Art Direction contract','Portfolio review']),
+    'prompts/visual_photography_strategy.md':(9000,['Portfolio Art Direction','Per-asset Visual Design','Lighting geometry','Shot / Asset Design list']),
     'prompts/commercial_visual_generation_authority.md':(8500,['Commerce objective','Integrated visible copy','Output QA','Repair routing']),
     'prompts/commercial_video_generation_authority.md':(6000,['Narrative carriers','Shot object','Output QA','Variant / creative-testing system']),
     'prompts/advertising_diagnosis.md':(5000,['Causal diagnosis order','Creative decomposition','Operator action queue','Creative test queue']),
