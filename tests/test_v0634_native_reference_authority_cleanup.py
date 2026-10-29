@@ -21,5 +21,8 @@ def test_packaged_wrapper_has_one_dynamic_asset_universe_authority_and_no_ambigu
     assert 'LOCKED_SOURCE_COMPOSITE 仍必须围绕最终商品' not in wrapper
 
 
-def test_version_is_v0634_cleanup():
-    assert (ROOT/'VERSION').read_text(encoding='utf-8').strip()=='0.6.34-native-reference-authority-cleanup'
+def test_current_version_preserves_v0634_or_later_cleanup_authority():
+    raw=(ROOT/'VERSION').read_text(encoding='utf-8').strip()
+    sem=raw.split('-',1)[0]
+    parts=tuple(int(x) for x in sem.split('.'))
+    assert parts >= (0,6,34)
