@@ -32,9 +32,9 @@ def _value_needs_cn(value: Any, field: str | None = None) -> bool:
     if field and str(field).casefold() in _IDENTIFIER_FIELDS:
         return False
     if isinstance(value, dict):
-        return any(_value_needs_cn(v, None) for v in value.values())
+        return any(_value_needs_cn(v, str(k)) for k, v in value.items())
     if isinstance(value, (list, tuple, set)):
-        return any(_value_needs_cn(v, None) for v in value)
+        return any(_value_needs_cn(v, field) for v in value)
     return _needs_cn_companion(value, field)
 
 
