@@ -50,6 +50,18 @@ def _project(tmp_path: Path) -> Path:
         'asset_type: IMAGE\n',
     )
     _write(
+        asset / '00_HUMAN_DESIGN_CARD_CN.md',
+        '# 资产人类设计卡（中文）\n\n'
+        '## 为什么这张资产存在\n'
+        '用于帮助马来西亚 TikTok Shop 消费者快速确认商品身份、规格与真实包装关系。\n\n'
+        '## 目标市场内容与中文释义\n'
+        '- 当前资产不放置额外目标市场可见文案；商品包装上的原始文字保持真实商品像素。\n'
+        '- 如后续加入英文或马来文标题、CTA、说明，必须在同一资产对象提供中文释义。\n\n'
+        '## 画面执行\n'
+        '- 暖白电商背景；商品为视觉主角；包装文字、比例与颜色保持 source-bound。\n'
+        '- 采用商品主导构图与受控柔光高光，输出 sRGB。\n',
+    )
+    _write(
         asset / '12_design_card.json',
         json.dumps({
             'asset_name': 'KIYUU K01 Hero',
@@ -110,6 +122,8 @@ def test_project_delivery_builder_materializes_real_human_delivery(tmp_path: Pat
     assert manifest['status'] == 'DELIVERY_READY'
     assert manifest['workspace_contract']['complete_human_html'] is True
     assert manifest['workspace_contract']['chinese_first'] is True
+    assert manifest['workspace_contract']['foreign_human_copy_has_chinese_companion'] is True
+    assert manifest['workspace_contract']['asset_foreign_visible_copy_has_chinese_companion'] is True
     assert manifest['workspace_contract']['object_based_asset_workspace'] is True
     assert manifest['workspace_contract']['obsolete_phase_rail_absent'] is True
     assert manifest['asset_package_preserved'] is True
@@ -118,6 +132,8 @@ def test_project_delivery_builder_materializes_real_human_delivery(tmp_path: Pat
         names = set(zf.namelist())
         prefix = f'{project.name}_DELIVERY/'
         assert prefix + 'index.html' in names
+        assert prefix + 'HUMAN_LANGUAGE_AUDIT.json' in names
+        assert prefix + 'asset_packages/LST-01/00_HUMAN_DESIGN_CARD_CN.md' in names
         assert prefix + 'asset_packages/LST-01/05_prompt_CN.txt' in names
         assert prefix + 'asset_packages/LST-01/06_prompt_EN.txt' in names
         assert prefix + 'DELIVERY_MANIFEST.json' in names
