@@ -306,23 +306,29 @@ def _master_strategy_views(path:Path,package_dir:Path)->dict[str,list[dict[str,s
     _,chunks=_split_h2(_read(path))
     for i,(name,body) in enumerate(chunks):
         n=str(name).strip()
-        if re.match(r'^1[.、\s]',n):bucket='overview'
-        elif re.match(r'^2[.、\s]',n):bucket='product'
-        elif re.match(r'^3[.、\s]',n) or re.match(r'^8[.、\s]',n):bucket='market'
-        elif re.match(r'^5[.、\s]',n):bucket='visual'
-        elif re.match(r'^[67][.、\s]',n):bucket='content'
-        elif re.match(r'^9[.、\s]',n):bucket='risk'
+        # FULL human headings deliberately have no numeric workflow prefix. Route by semantic domain so
+        # the SaaS workspace stays object-based while the nine-domain completion contract remains visible.
+        if re.match(r'^1[.、\s]',n) or '信息完整度' in n:bucket='overview'
+        elif re.match(r'^2[.、\s]',n) or '产品真实事实审计' in n or '产品真相与价值' in n:bucket='product'
+        elif re.match(r'^3[.、\s]',n) or re.match(r'^8[.、\s]',n) or '平台 × 区域 × 人群 × 族裔文化' in n or '族裔文化适配检查表' in n:bucket='market'
+        elif re.match(r'^5[.、\s]',n) or '视觉总策略与拍摄执行清单' in n:bucket='visual'
+        elif re.match(r'^[67][.、\s]',n) or '分平台内容矩阵表' in n or 'RACE传播框架执行表' in n:bucket='content'
+        elif re.match(r'^9[.、\s]',n) or '合规、文化敏感与风险清单' in n:bucket='risk'
         else:bucket='strategy'
+        domain_label=_zh_heading(n)
         sub=_split_h3_body(body)
-        # Long strategy chapters become task pages. Short chapters remain one page.
+        # Long chapters become task cards, but the parent decision domain is never discarded.
         if len(sub)>=2:
             for j,(subname,subbody) in enumerate(sub):
-                title=_zh_heading(subname)
+                subtitle=_zh_heading(subname)
                 key=f'master-{i}-{j}-{_slug(subname)}'
-                out[bucket].append({'key':key,'title':title,'secondary':'','html':markdown_to_html(subbody),'source':str(path.relative_to(package_dir)).replace('\\','/')})
+                banner=f'<div class="strategy-domain-label"><span>完整交付域</span><b>{html.escape(domain_label)}</b></div>'
+                title=domain_label if j==0 else subtitle
+                secondary=subtitle if j==0 else domain_label
+                out[bucket].append({'key':key,'title':title,'secondary':secondary,'html':banner+markdown_to_html(subbody),'source':str(path.relative_to(package_dir)).replace('\\','/')})
         else:
             key=f'master-{i}-{_slug(n)}'
-            out[bucket].append({'key':key,'title':_zh_heading(n),'secondary':'','html':markdown_to_html(body),'source':str(path.relative_to(package_dir)).replace('\\','/')})
+            out[bucket].append({'key':key,'title':domain_label,'secondary':'','html':markdown_to_html(body),'source':str(path.relative_to(package_dir)).replace('\\','/')})
     return out
 
 
@@ -814,6 +820,7 @@ def build_delivery_html(package_dir:Path,output:Path|None=None,title:str='CBCC D
     content_ws=_content_workspace(content_views)
     visual_ws=_visual_workspace(visual_views)
     risk_ws=_module_workspace(risk_views,'risk','本项目没有风险内容。')
+    overview_ws=_module_workspace(master_views['overview'],'overview-decision','本项目没有信息完整度 / 假设 / 决策日志。')
     listing_ws=_listing_workspace(center)
     asset_cards=''.join(_asset_card(a) for a in assets) or '<div class="empty">暂无资产。</div>'
     prompt_ws=_prompt_workspace(assets)
@@ -909,8 +916,13 @@ def build_delivery_html(package_dir:Path,output:Path|None=None,title:str='CBCC D
     next_items=''.join(f'<li><b>{html.escape(str(x.get("action") or "下一步"))}</b><span>{html.escape(str(x.get("reason") or ""))}</span></li>' for x in next_frontier)
     if not next_items: next_items='<li><b>当前范围可停止</b><span>没有检测到必须继续推进的固定步骤；由 Agent / 用户决定是否扩展目标。</span></li>'
 
+    overview_decision_html=(
+        '<div class="panel full-overview-domain"><div class="kicker">FULL 决策域</div><h2>信息完整度、待确认清单、假设与决策日志</h2>'
+        + overview_ws + '</div>'
+    ) if master_views['overview'] else ''
+
     page_parts=[]
-    page_parts.append(f'''<section class="page" data-route="overview"><div class="page-head"><div><div class="kicker">电商工作区</div><h1>{html.escape(product_name)}</h1>{f'<div class="heading-en project-original">{html.escape(product_name_secondary)}</div>' if product_name_secondary else ''}<p>工作台只显示当前项目真实存在的业务对象和 Agent 识别到的下一步，不按固定报告目录展开。</p></div></div>{f'<div class="stats">{stats_html}</div>' if stats_html else ''}<div class="panel"><h2>当前可以做什么？</h2><div class="command-grid">{commands}</div></div><div class="panel agent-frontier"><h2>Agent 决策前沿</h2><p><b>建议：</b>{html.escape(next_status)}</p><ul>{next_items}</ul></div><div class="panel"><h2>项目语言</h2><p><b>交付语言：</b>{html.escape(str(delivery_locale))}（默认中文，除非用户明确要求其他语言）</p><p><b>目标市场语言：</b>{html.escape(str(target_locale))}。目标语言上架文案 / 资产文案保留原文，同时显示中文释义或用途说明。</p></div></section>''')
+    page_parts.append(f'''<section class="page" data-route="overview"><div class="page-head"><div><div class="kicker">电商工作区</div><h1>{html.escape(product_name)}</h1>{f'<div class="heading-en project-original">{html.escape(product_name_secondary)}</div>' if product_name_secondary else ''}<p>工作台只显示当前项目真实存在的业务对象和 Agent 识别到的下一步，不按固定报告目录展开。</p></div></div>{f'<div class="stats">{stats_html}</div>' if stats_html else ''}{overview_decision_html}<div class="panel"><h2>当前可以做什么？</h2><div class="command-grid">{commands}</div></div><div class="panel agent-frontier"><h2>Agent 决策前沿</h2><p><b>建议：</b>{html.escape(next_status)}</p><ul>{next_items}</ul></div><div class="panel"><h2>项目语言</h2><p><b>交付语言：</b>{html.escape(str(delivery_locale))}（默认中文，除非用户明确要求其他语言）</p><p><b>目标市场语言：</b>{html.escape(str(target_locale))}。目标语言上架文案 / 资产文案保留原文，同时显示中文释义或用途说明。</p></div></section>''')
     if availability.get('product'): page_parts.append(f'''<section class="page" data-route="product"><div class="page-head"><div><div class="kicker">商品真源 / 证据</div><h1>产品事实与证据</h1><p>只呈现当前项目实际存在的事实、证据与缺口主题。</p></div></div>{product_ws}</section>''')
     if availability.get('market'): page_parts.append(f'''<section class="page" data-route="market"><div class="page-head"><div><div class="kicker">目标市场语境</div><h1>市场、平台、人群与文化</h1><p>研究主题来自当前决策缺口；没有固定竞品数、报告章节数或研究配额。</p></div></div>{market_ws}</section>''')
     if availability.get('listing'): page_parts.append(f'''<section class="page" data-route="listing"><div class="page-head"><div><div class="kicker">上架工作室</div><h1>上架资料中心</h1><p>只呈现当前上架任务涉及的字段；目标市场文案保留目标语言，并提供中文释义 / 用途。</p></div></div>{listing_ws}</section>''')

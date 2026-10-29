@@ -9,6 +9,7 @@ import zipfile
 
 from .delivery_workspace import build_delivery_html
 from .human_delivery import compile_upload_center, render_upload_center_md, build_project_hub_md
+from .delivery_contract import validate_strategy_delivery
 
 
 _SUPPORT_FILES = [
@@ -56,6 +57,57 @@ def _copy_file_or_dir(src: Path, dst: Path) -> None:
         shutil.copy2(src, dst)
 
 
+def _read_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        data=json.loads(path.read_text(encoding='utf-8'))
+        return data if isinstance(data,dict) else {}
+    except Exception:
+        return {}
+
+
+def _prompt_consumption_summary(asset_root: Path) -> dict[str, Any]:
+    rows=[]
+    if asset_root.exists():
+        for contract in sorted(asset_root.glob('*/13_prompt_contract.json')):
+            data=_read_json(contract)
+            audit=data.get('prompt_consumption_audit') or {}
+            asset_id=contract.parent.name
+            rows.append({
+                'asset_id':asset_id,
+                'status':audit.get('status') or 'MISSING',
+                'missing_decisions':audit.get('missing_decisions') or (['PROMPT_CONSUMPTION_AUDIT_MISSING'] if not audit else []),
+                'checks':audit.get('checks') or [],
+            })
+    missing=[r for r in rows if r.get('status')!='PASS' or r.get('missing_decisions')]
+    return {
+        'status':'PASS' if not missing else 'INCOMPLETE',
+        'asset_count':len(rows),
+        'assets':rows,
+        'missing_assets':[r.get('asset_id') for r in missing],
+        'principle':'Semantic compression may remove repetition or irrelevant toolbox fields, never a selected execution decision that changes pixels, capture, composite or deterministic post-production.',
+    }
+
+
+def _full_html_depth_check(html_text: str, full: bool) -> dict[str, Any]:
+    if not full:
+        return {'status':'NOT_REQUIRED_FOR_TASK_SCOPED','missing':[]}
+    required=[
+        '信息完整度、待确认清单、假设与决策日志',
+        '产品真实事实审计与卖点分级表',
+        '平台 × 区域 × 人群 × 族裔文化洞察',
+        '营销框架与核心策略',
+        '视觉总策略与拍摄执行清单',
+        '分平台内容矩阵表',
+        'RACE传播框架执行表',
+        '族裔文化适配检查表',
+        '合规、文化敏感与风险清单；评估指标与A/B测试建议；P0/P1/P2执行优先级与下一步需补充信息',
+    ]
+    missing=[x for x in required if x not in html_text]
+    return {'status':'PASS' if not missing else 'INCOMPLETE','required_visible_objects':required,'missing':missing}
+
+
 def _resolve_output(project: Path, output: Path) -> tuple[Path, Path]:
     output = Path(output)
     if output.suffix.lower() == '.zip':
@@ -88,6 +140,12 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
     if missing:
         raise FileNotFoundError('BLOCKED missing strategy authority: ' + ', '.join(missing))
 
+    strategy_authority=_read_json(project / 'artifacts/strategy/strategy_authority.json')
+    depth_audit=validate_strategy_delivery(strategy_authority)
+    full=depth_audit.get('mode')=='FULL'
+    if full and depth_audit.get('status')!='PASS':
+        raise RuntimeError('BLOCKED FULL delivery depth contract failed: ' + json.dumps(depth_audit.get('issues') or [], ensure_ascii=False))
+
     if package_dir.exists():
         shutil.rmtree(package_dir)
     package_dir.mkdir(parents=True, exist_ok=True)
@@ -98,8 +156,18 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
     shutil.copytree(project / 'artifacts/strategy', package_dir / 'strategy')
 
     asset_root = project / 'artifacts/asset_packages'
+    prompt_audit=_prompt_consumption_summary(asset_root)
+    if full and asset_root.exists() and prompt_audit.get('status')!='PASS':
+        raise RuntimeError('BLOCKED FULL prompt consumption audit failed for assets: ' + ', '.join(prompt_audit.get('missing_assets') or []))
     if asset_root.exists():
         shutil.copytree(asset_root, package_dir / 'asset_packages')
+
+    (package_dir / 'FULL_DELIVERY_DEPTH_AUDIT.json').write_text(
+        json.dumps(depth_audit, ensure_ascii=False, indent=2), encoding='utf-8'
+    )
+    (package_dir / 'PROMPT_CONSUMPTION_AUDIT.json').write_text(
+        json.dumps(prompt_audit, ensure_ascii=False, indent=2), encoding='utf-8'
+    )
 
     support = package_dir / 'supporting_analysis'
     support.mkdir(exist_ok=True)
@@ -141,6 +209,9 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
             })
 
     html_text = (package_dir / 'index.html').read_text(encoding='utf-8')
+    html_depth=_full_html_depth_check(html_text,full)
+    if full and html_depth.get('status')!='PASS':
+        raise RuntimeError('BLOCKED FULL HTML visible depth objects missing: ' + ', '.join(html_depth.get('missing') or []))
     manifest = {
         'status': 'DELIVERY_READY',
         'project': project.name,
@@ -150,6 +221,8 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         'project_hub': '00_PROJECT_HUB.md',
         'listing_upload_ready': '01_LISTING_UPLOAD_READY.md',
         'human_delivery_contract': 'HUMAN_DELIVERY.json',
+        'full_delivery_depth_audit': 'FULL_DELIVERY_DEPTH_AUDIT.json',
+        'prompt_consumption_audit': 'PROMPT_CONSUMPTION_AUDIT.json',
         'strategy_authority': 'strategy/MASTER_STRATEGY_CN.md',
         'strategy_decision_index': 'strategy/STRATEGY_DECISION_INDEX.json',
         'asset_package_preserved': asset_root.exists(),
@@ -159,6 +232,9 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
             'chinese_first': '默认中文交付' in html_text or '交付语言' in html_text,
             'object_based_asset_workspace': 'data-workspace-kind="asset-object"' in html_text or not asset_root.exists(),
             'obsolete_phase_rail_absent': 'asset-production-rail' not in html_text and 'asset-phase' not in html_text,
+            'full_decision_depth': depth_audit.get('status') if full else 'NOT_REQUIRED_FOR_TASK_SCOPED',
+            'full_visible_objects': html_depth.get('status'),
+            'prompt_execution_continuity': prompt_audit.get('status') if asset_root.exists() else 'NO_ASSETS',
         },
         'files': files,
     }

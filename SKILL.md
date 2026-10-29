@@ -17,6 +17,14 @@ Create a professional cross-border ecommerce plan **before** governance machiner
 - FULL 与 TASK_SCOPED 都必须保持 Product Truth、Claim/Compliance、证据、Photography/CMF、Product Fidelity、Prompt、Review/Revision/Hash lineage；动态化不得通过删除既有能力换取简洁。
 - 完整任务的完成态必须包含真实人类交付 Artifact（自包含 `index.html` + 可编辑源 + 逐资产包 + `DELIVERY_MANIFEST.json` + ZIP）；源码存在或聊天正文不构成 FULL 完成。
 
+### FULL Decision-Depth + Prompt Execution Continuity — highest current precedence
+- **本节高于下面所有历史版本说明。** 任何 v0.6.21–v0.6.29 关于“框架可选 / scope 动态”的历史段落，只适用于 TASK_SCOPED；不得覆盖 FULL 的九域深度合同。
+- FULL 九域不是标题检查：每个域必须包含会改变商业/创意/生产决策的内容。产品层必须清楚区分 Fact / 真实卖点 / 可感知利益 / 情绪价值 / Claim Boundary / A-B-C 证据；区域与用户层必须回答平台×区域×人群×族裔文化 WHY、交叉性、语言/宗教/节庆/支付/物流/法规与禁忌/刻板印象；视觉层必须给可执行构图、HEX/对比、摄影、灯光、CMF、镜头、人物、平台规格与逐资产参数；内容层必须给平台执行字段、RACE、文化校验、CTA、指标、落地/归因；风险层必须给合规、A/B、P0/P1/P2、取舍、下一步与输出自检。
+- **深度不等于字数。** 允许删除重复解释、内部 ID、RACE/KPI 元数据和与当前资产无关的摄影 toolbox；禁止删除已有证据边界、区域/用户洞察、策略 WHY/取舍、生产参数或人类可执行动作。
+- Canonical Prompt 使用 **Semantic Compression, never Capability Compression**：凡已经选定且会改变像素、摄影、合成或确定性后期的参数，必须进入 Prompt 或明确的 deterministic production instruction。每个激活资产必须输出 `prompt_consumption_audit`，`missing_decisions` 必须为空后才可完成。
+- 人物/手部/身体关系一旦进入资产，包容性摄影即为 P0：肤色测光、深肤色暗部保护、按 Prelight 决定的曝光补偿、neutral/white reflector 或 bounce、large soft diffusion、真实发质、体型/年龄/残障自然呈现和 AI 偏见控制必须变成执行语言；不能只留在总策划。
+- FULL 最终导出必须重新运行当前 `delivery_contract.validate_strategy_delivery()`，并把 `FULL_DELIVERY_DEPTH_AUDIT.json`、`PROMPT_CONSUMPTION_AUDIT.json` 写入交付包。`index.html` 必须直接可见九域核心对象；宿主自写的一套更短报告不能替代它。
+
 ## v0.6.29 Final Stabilization — 当前主权威
 - 本版不新增架构，专门清理 baseline 中确认存在的真实业务断链；Commerce Agent 自主权、动态 Scope、Completion 与 blocking/advisory frontier 保持不变。
 - Final Copy 数字等价审计现在把“字段显式绑定的已批准 Claim 数字”视为字段级 numeric authority；未绑定数字继续阻断。Claim 的真实证据等级与发布资格仍由 Claim Authority 单独决定，不能用 `APPROVED` 标签绕过证据边界。
