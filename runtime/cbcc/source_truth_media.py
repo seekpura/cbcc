@@ -49,7 +49,6 @@ def _walk_paths(value: Any, out: list[str]) -> None:
 
 
 def _resolve_candidate(project: Path, raw: str) -> Path | None:
-    # data/http/connector references are not silently downloaded by the exporter.
     low = raw.casefold()
     if low.startswith(('http://', 'https://', 'data:', 'plugin://', 'file://')):
         return None
@@ -122,14 +121,9 @@ def _write_human_status(package: Path, result: dict[str, Any]) -> None:
 
 
 def materialize_source_truth_media(project_dir: Path | str, package_dir: Path | str) -> dict[str, Any]:
-    """Copy product-truth source images into the delivery before HTML compilation.
-
-    The HTML renderer embeds package images as data URIs, so copying the real source image into
-    `sources/` restores a self-contained HTML path. Missing references are surfaced explicitly rather
-    than rendered as an empty/broken image card.
-    """
     project = Path(project_dir)
     package = Path(package_dir)
+    package.mkdir(parents=True, exist_ok=True)
     contract_path = project / 'artifacts/source_product_assets.json'
     contract = _read_json(contract_path)
 
@@ -149,7 +143,6 @@ def materialize_source_truth_media(project_dir: Path | str, package_dir: Path | 
             candidates.append(resolved)
             seen.add(key)
 
-    # Older projects may have physical source folders but a sparse/legacy JSON contract.
     for path in _common_source_files(project):
         key = str(path)
         if key not in seen:
