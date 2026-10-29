@@ -74,11 +74,13 @@ def test_chinese_only_semantics_are_not_mislabeled_as_english_ready():
     assert 'composition' in out['prompt_consumption_audit']['missing_decisions']
 
 
-def test_copy_render_route_is_agent_decision_not_global_post_composite_default():
+def test_missing_copy_render_route_autoresolves_to_integrated_model_render_in_v0637():
     asset=_asset(); asset['asset_art_direction']=dict(asset['asset_art_direction']); asset['asset_art_direction'].pop('copy_render_mode')
     out=_compile(asset)
-    assert out['model_prompt_status']=='COPY_RENDER_MODE_REQUIRED'
-    assert out['production_assembly_notes']['copy_render_mode']=='UNRESOLVED_AGENT_DECISION'
+    assert out['model_prompt_status'] in {'MODEL_NATIVE_PROMPT_READY','MODEL_NATIVE_PROMPT_PARAMETER_CLOSED'}
+    assert out['production_assembly_notes']['copy_render_mode']=='MODEL_RENDER'
+    assert out['production_assembly_notes']['copy_render_mode_source'] in {'AUTONOMOUS_INTEGRATED_RENDER_DEFAULT','EXPLICIT_AGENT_OR_PROJECT_DECISION'}
+    assert 'KAWAL MINYAK. KEKALKAN HIDRASI.' in out['model_prompt_en']
     assert 'deterministic' not in out['model_prompt_en'].lower()
 
 
