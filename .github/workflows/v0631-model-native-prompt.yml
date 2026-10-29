@@ -9,6 +9,7 @@ on:
       - 'SKILL.md'
       - 'tests/test_v0631_model_native_prompt_contract.py'
       - 'tests/test_v0631_human_delivery_output.py'
+      - 'tests/test_v0631_capability_layering_continuity.py'
       - '.github/workflows/v0631-model-native-prompt.yml'
   workflow_dispatch:
 
@@ -51,6 +52,10 @@ jobs:
         env:
           PYTHONPATH: .:runtime
         run: pytest -q tests/test_v0631_human_delivery_output.py
+      - name: Capability layering continuity
+        env:
+          PYTHONPATH: .:runtime
+        run: pytest -q tests/test_v0631_capability_layering_continuity.py
       - name: Preserve v0.6.30 Agent authority regressions
         env:
           PYTHONPATH: .:runtime
