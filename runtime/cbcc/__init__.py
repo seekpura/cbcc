@@ -1,14 +1,33 @@
 """CBCC runtime package authority wiring.
 
-v0.6.30 keeps the legacy prompt compiler import surface for compatibility, while production callers
-receive the Agent-authority compiler. This bridge is intentionally narrow: it replaces prompt
-compilation only; it does not move creative decisions into Python.
+v0.6.30 keeps legacy module import surfaces for compatibility while installing a narrow authority
+bridge: the host Agent authors portfolio curation, product presence and per-asset Art Direction;
+Python validates, serializes, compiles and executes those decisions. Missing creative decisions are
+returned to the Agent instead of being filled with deterministic product/layout fallbacks.
 """
 
 from . import prompt_compiler as _legacy_prompt_compiler
 from . import agent_authority_prompt_compiler as _agent_authority_prompt_compiler
+from . import agent_autonomy as _agent_autonomy
+from . import creative as _creative
+from . import agent_art_direction_authority as _agent_art_direction_authority
 
-# Compatibility bridge for existing `from .prompt_compiler import compile_asset_prompt` callers.
-# The replacement compiler consumes Agent-authored art direction and refuses to invent product
-# presence when that decision is missing.
+# Existing callers continue importing `prompt_compiler.compile_asset_prompt`, but production now
+# consumes the Agent-authority implementation. It will not infer visible product presence from the
+# mere existence of product reference files.
 _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.compile_asset_prompt
+
+# The compiler imports these symbols after package initialization, so the overrides below become the
+# canonical v0.6.30 behavior without breaking the historical module/file contract.
+_agent_autonomy.compile_agent_autonomy_plan = _agent_art_direction_authority.wrap_compile_agent_autonomy_plan(
+    _agent_autonomy.compile_agent_autonomy_plan
+)
+_agent_autonomy.agent_creative_directions = _agent_art_direction_authority.wrap_agent_creative_directions(
+    _agent_autonomy.agent_creative_directions
+)
+_agent_autonomy.compile_agent_next_action = _agent_art_direction_authority.wrap_compile_agent_next_action(
+    _agent_autonomy.compile_agent_next_action
+)
+_creative.apply_creative_system_to_assets = _agent_art_direction_authority.wrap_apply_creative_system_to_assets(
+    _creative
+)
