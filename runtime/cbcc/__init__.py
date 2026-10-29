@@ -14,9 +14,9 @@ images are strong model reference inputs and the product is rendered natively in
 Exact immutable-pixel compositing is an explicit special route only.
 
 v0.6.46 adds commercial decision continuity: real Market/Pricing/Audience/RACE/Listing/Ads/Review
-payloads must survive into relevant asset lineage, Design Cards, model prompts and human delivery.
-Status/count summaries never substitute for real downstream consumption. Subject choice is per asset:
-person, animal, plant, object/product, environment, multi-subject or none are all valid.
+payloads must survive into relevant asset lineage, Creative Curation, Design Cards, model prompts and
+human delivery. Status/count summaries never substitute for real downstream consumption. Subject
+choice is per asset: person, animal, plant, object/product, environment, multi-subject or none are valid.
 """
 
 from . import prompt_compiler as _legacy_prompt_compiler
@@ -27,12 +27,14 @@ from . import production_parameter_closure as _production_parameter_closure
 from . import reference_guided_native_authority as _reference_guided_native_authority
 from . import commercial_operator_density_authority as _commercial_operator_density_authority
 from . import commercial_continuity_authority as _commercial_continuity_authority
+from . import commercial_curation_lineage as _commercial_curation_lineage
 from . import subject_presence_authority as _subject_presence_authority
 from . import human_delivery_art_direction_projection as _human_delivery_art_direction_projection
 from . import photographic_route_agent_authority as _photographic_route_agent_authority
 from . import art_direction_projection as _art_direction_projection
 from . import agent_autonomy as _agent_autonomy
 from . import creative as _creative
+from . import creative_opportunity as _creative_opportunity
 from . import surface_architecture as _surface_architecture
 from . import asset_architecture as _asset_architecture
 from . import agent_art_direction_authority as _agent_art_direction_authority
@@ -130,6 +132,16 @@ _asset_architecture.build_asset_architecture = _asset_portfolio_taxonomy.wrap_bu
     _asset_architecture.build_asset_architecture
 )
 
+# Commercial analysis must enter curation before it reaches the final prompt. Preserve current asset
+# decision origins/sources plus target/culture in Creative Opportunity and Creative Council, then carry
+# the same basis into per-asset Art Direction. This prevents style-only curation from severing analysis.
+_creative_opportunity.compile_creative_opportunity_universe = _commercial_curation_lineage.wrap_compile_creative_opportunity_universe(
+    _creative_opportunity.compile_creative_opportunity_universe
+)
+_creative.compile_creative_council = _commercial_curation_lineage.wrap_compile_creative_council(
+    _creative.compile_creative_council
+)
+
 # The compiler imports these symbols after package initialization, so the overrides below become the
 # canonical behavior without breaking the historical module/file contract.
 _agent_autonomy.compile_agent_autonomy_plan = _agent_art_direction_authority.wrap_compile_agent_autonomy_plan(
@@ -166,6 +178,9 @@ _creative.apply_creative_system_to_assets = _agent_art_direction_authority.wrap_
     _creative
 )
 _creative.apply_creative_system_to_assets = _portfolio_visual_authority.wrap_apply_creative_system_to_assets(
+    _creative.apply_creative_system_to_assets
+)
+_creative.apply_creative_system_to_assets = _commercial_curation_lineage.wrap_apply_creative_system_to_assets(
     _creative.apply_creative_system_to_assets
 )
 
