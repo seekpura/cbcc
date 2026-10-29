@@ -14,6 +14,7 @@ from . import prompt_compiler as _legacy_prompt_compiler
 from . import agent_authority_prompt_compiler as _agent_authority_prompt_compiler
 from . import model_native_prompt_contract as _model_native_prompt_contract
 from . import model_native_prompt_audit_fix as _model_native_prompt_audit_fix
+from . import production_parameter_closure as _production_parameter_closure
 from . import human_delivery_art_direction_projection as _human_delivery_art_direction_projection
 from . import photographic_route_agent_authority as _photographic_route_agent_authority
 from . import art_direction_projection as _art_direction_projection
@@ -75,6 +76,13 @@ _agent_authority_prompt_compiler.compile_asset_prompt = _human_delivery_art_dire
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
 _agent_authority_prompt_compiler.compile_asset_prompt = _preserve_canonical_status(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
+# Final compiler closure is intentionally outside the compatibility-status wrapper. It does not
+# invent missing design values: it projects every selected generation-relevant value into the model
+# prompt and reports missing route-specific execution depth as model-generation readiness, while
+# leaving the wider strategy/project delivery non-blocking.
+_agent_authority_prompt_compiler.compile_asset_prompt = _production_parameter_closure.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
 _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.compile_asset_prompt
