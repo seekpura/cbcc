@@ -48,8 +48,6 @@ def test_explicit_post_composite_remains_a_valid_specialist_route():
     out=apply_commercial_operator_density_authority(bundle,asset)
     assert out['production_assembly_notes']['copy_render_mode']=='POST_COMPOSITE'
     assert out['production_assembly_notes']['copy_render_mode_source']=='EXPLICIT_AGENT_OR_PROJECT_DECISION'
-    # The explicit specialist route keeps its deliberate no-text instruction; the new authority
-    # does not force MODEL_RENDER in the opposite direction.
     assert 'generate no marketing text inside the image' in out['model_prompt_en'].lower()
     assert 'integrated part of the finished commercial image' not in out['model_prompt_en']
     assert out['renderer_recipe']['text_policy']['post_composite_explicit_only'] is True
@@ -82,3 +80,19 @@ def test_product_presence_is_not_globally_forced_by_commerce_authority():
     qa={row['id']:row for row in out['commercial_visual_qa_contract']['checks']}
     assert qa['PRODUCT_IDENTITY']['required'] is False
     assert out['commercial_authority']['product_presence_rule'].startswith('Per-asset Art Direction')
+
+
+def test_bilingual_production_semantics_do_not_leak_delivery_language_into_english_prompt():
+    bundle=_bundle()
+    asset={
+        'asset_id':'IMG-06',
+        'visible_copy':{'target_market_copy':'KAWAL MINYAK. KEKALKAN HIDRASI.'},
+        'asset_art_direction':{
+            'typography':{'cn':'深绿高对比无衬线，两行。','en':'Forest-green high-contrast sans serif, two lines.'}
+        },
+    }
+    out=apply_commercial_operator_density_authority(bundle,asset)
+    assert 'Forest-green high-contrast sans serif, two lines.' in out['model_prompt_en']
+    assert '深绿高对比无衬线' not in out['model_prompt_en']
+    assert '深绿高对比无衬线，两行。' in out['model_prompt_cn']
+    assert '控油，同时保持水润。' not in out['model_prompt_en']
