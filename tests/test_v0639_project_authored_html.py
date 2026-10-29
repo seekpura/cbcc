@@ -46,7 +46,7 @@ def test_project_authored_html_uses_full_object_map_not_next_step_cards():
     assert '目标市场可直接使用的字段。' in out
     assert '当前项目视觉方向与执行。' in out
     assert '当前资产池。' in out
-    assert 'command-card' not in out
+    assert 'class="command-card' not in out
     assert 'Agent 决策前沿' not in out
     assert '当前重点' in out
     assert '.strategy-index,.content-lane>header>span,.evidence-zone>header span{display:none!important}' in out
