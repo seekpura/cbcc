@@ -30,8 +30,9 @@ def test_project_authored_html_removes_pipeline_shell():
     assert 'class="sidebar"' not in out
     assert 'project-object-dock' in out
     assert '<div class="nav-label">工作区</div>' not in out
-    assert 'KIYUU K01 · 项目地图' in out
-    assert out.count('class="route-link project-object-link') == 1
+    assert out.count('class="route-link project-home-link"') == 1
+    assert 'id="project-object-switcher"' in out
+    assert 'project-object-search' in out
     assert 'KIYUU K01 真源' in out
     assert 'ms-MY 上架稿' in out
     assert '资产宇宙 · 2' in out
@@ -39,16 +40,13 @@ def test_project_authored_html_removes_pipeline_shell():
     assert '.module-nav{position:static!important;display:flex!important' in out
 
 
-def test_project_authored_html_uses_full_object_map_not_next_step_cards():
+def test_project_authored_html_uses_object_switcher_not_dashboard_map():
     out = project_authored_html(SAMPLE)
-    assert '<h2>项目地图</h2>' in out
-    assert '按真实决策、发布对象与资产进入，不按步骤推进。' in out
-    assert 'project-map-grid' in out
-    assert 'project-map-card' in out
-    assert '当前商品事实与证据。' in out
-    assert '目标市场可直接使用的字段。' in out
-    assert '当前项目视觉方向与执行。' in out
-    assert '当前资产池。' in out
+    assert '浏览当前项目对象' in out
+    assert '打开对象切换器' in out
+    assert '按对象进入，不按流程推进。' in out
+    assert 'project-map-grid' not in out
+    assert 'project-map-card' not in out
     assert 'class="command-card' not in out
     assert 'Agent 决策前沿' not in out
     assert '当前重点' in out
@@ -78,5 +76,6 @@ def test_delivery_workspace_wires_project_authored_transform(tmp_path, monkeypat
     out = result.read_text(encoding='utf-8')
     assert 'cbcc-project-authored-workspace' in out
     assert 'class="sidebar"' not in out
-    assert '<h2>项目地图</h2>' in out
-    assert out.count('class="route-link project-object-link') == 1
+    assert 'id="project-object-switcher"' in out
+    assert out.count('class="route-link project-home-link"') == 1
+    assert 'class="command-card' not in out
