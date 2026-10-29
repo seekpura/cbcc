@@ -59,3 +59,4 @@ jobs:
           git add scripts/build_plugin_dist.py
           git commit -m 'fix: enforce Chinese-base language contract at plugin host entry'
           git push origin HEAD:main
+# trigger
