@@ -6,8 +6,12 @@ Python validates, serializes, compiles and executes those decisions. Missing cre
 returned to the Agent instead of being filled with deterministic product/layout fallbacks.
 
 Model-facing prompts are a distinct artifact from production/assembly contracts. Runtime may carry
-locked-source, copy-composition, editable-layer and provider instructions separately, but must not
-pollute the image/video model prompt with those engineering contracts.
+copy-composition, editable-layer and provider instructions separately, but must not pollute the
+image/video model prompt with those engineering contracts.
+
+v0.6.33 makes reference-guided native generation the normal real-product path: supplied real product
+images are strong model reference inputs and the product is rendered natively in the final image.
+Exact immutable-pixel compositing is an explicit special route only.
 """
 
 from . import prompt_compiler as _legacy_prompt_compiler
@@ -15,15 +19,18 @@ from . import agent_authority_prompt_compiler as _agent_authority_prompt_compile
 from . import model_native_prompt_contract as _model_native_prompt_contract
 from . import model_native_prompt_audit_fix as _model_native_prompt_audit_fix
 from . import production_parameter_closure as _production_parameter_closure
+from . import reference_guided_native_authority as _reference_guided_native_authority
 from . import human_delivery_art_direction_projection as _human_delivery_art_direction_projection
 from . import photographic_route_agent_authority as _photographic_route_agent_authority
 from . import art_direction_projection as _art_direction_projection
 from . import agent_autonomy as _agent_autonomy
 from . import creative as _creative
 from . import surface_architecture as _surface_architecture
+from . import asset_architecture as _asset_architecture
 from . import agent_art_direction_authority as _agent_art_direction_authority
 from . import agent_plan_input_bridge as _agent_plan_input_bridge
 from . import portfolio_visual_authority as _portfolio_visual_authority
+from . import asset_universe_authority as _asset_universe_authority
 from . import surface_advisory_authority as _surface_advisory_authority
 
 # Photography is not a universal runtime default. It becomes active only when the Agent's per-asset
@@ -60,10 +67,10 @@ def _preserve_canonical_status(fn):
 
 
 # Existing callers continue importing `prompt_compiler.compile_asset_prompt`. First project the
-# Agent-authored Art Direction into compatibility fields, then compile the existing machine/design
-# contracts, replace legacy execution-contract prose with a true model-facing prompt plus separate
-# Visible Copy / Production Notes, audit concrete values in their correct language/object, and keep
-# the complete authored Art Direction available to the human workspace instead of only summaries.
+# Agent-authored Art Direction into compatibility fields, compile a true model-facing prompt plus
+# separate Visible Copy / Production Notes, close all selected execution parameters, then apply the
+# v0.6.33 real-product reference authority so visible real products are natively generated from the
+# supplied reference image(s) rather than silently becoming a post-composite plate.
 _agent_authority_prompt_compiler.compile_asset_prompt = _art_direction_projection.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
@@ -79,14 +86,21 @@ _agent_authority_prompt_compiler.compile_asset_prompt = _human_delivery_art_dire
 _agent_authority_prompt_compiler.compile_asset_prompt = _preserve_canonical_status(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
-# Final compiler closure is intentionally outside the compatibility-status wrapper. It does not
-# invent missing design values: it projects every selected generation-relevant value into the model
-# prompt and reports missing route-specific execution depth as model-generation readiness, while
-# leaving the wider strategy/project delivery non-blocking.
 _agent_authority_prompt_compiler.compile_asset_prompt = _production_parameter_closure.wrap_compile_asset_prompt(
     _agent_authority_prompt_compiler.compile_asset_prompt
 )
+_agent_authority_prompt_compiler.compile_asset_prompt = _reference_guided_native_authority.wrap_compile_asset_prompt(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
 _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.compile_asset_prompt
+
+# Explicit Agent-authored variants are an asset universe, not one platform-slot list. H01/H02/H03,
+# multiple benefit hypotheses, paid ads, A+/PDP modules, banners and rotation/test variants may coexist
+# even when they answer the same shopper question on the same surface. Platform slot capacity limits
+# only a simultaneous activation set; it never caps total asset candidates.
+_asset_architecture.build_asset_architecture = _asset_universe_authority.wrap_build_asset_architecture(
+    _asset_architecture.build_asset_architecture
+)
 
 # The compiler imports these symbols after package initialization, so the overrides below become the
 # canonical behavior without breaking the historical module/file contract.
