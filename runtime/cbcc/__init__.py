@@ -8,6 +8,7 @@ returned to the Agent instead of being filled with deterministic product/layout 
 
 from . import prompt_compiler as _legacy_prompt_compiler
 from . import agent_authority_prompt_compiler as _agent_authority_prompt_compiler
+from . import art_direction_projection as _art_direction_projection
 from . import agent_autonomy as _agent_autonomy
 from . import creative as _creative
 from . import surface_architecture as _surface_architecture
@@ -16,8 +17,12 @@ from . import agent_plan_input_bridge as _agent_plan_input_bridge
 from . import surface_advisory_authority as _surface_advisory_authority
 
 # Existing callers continue importing `prompt_compiler.compile_asset_prompt`, but production now
-# consumes the Agent-authority implementation. It will not infer visible product presence from the
-# mere existence of product reference files.
+# consumes the Agent-authority implementation. Per-asset Agent Art Direction is projected directly
+# into compatibility fields before the Design Card is compiled, so callers do not need to duplicate
+# the same design manually into `creative_brief`.
+_agent_authority_prompt_compiler.compile_asset_prompt = _art_direction_projection.wrap_compile_asset_prompt(
+    _agent_authority_prompt_compiler.compile_asset_prompt
+)
 _legacy_prompt_compiler.compile_asset_prompt = _agent_authority_prompt_compiler.compile_asset_prompt
 
 # The compiler imports these symbols after package initialization, so the overrides below become the
