@@ -182,7 +182,7 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
     visual_master = sections.get('05_visual_photography_strategy') or {}
     core = sections.get('04_marketing_core_strategy') or {}
     pos = (core.get('positioning') or {}) if isinstance(core, dict) else {}
-    product_fidelity = asset.get('product_fidelity') or 'REFERENCE_CONSTRAINED'
+    product_fidelity = asset.get('product_fidelity') or 'REFERENCE_GUIDED'
     product_masters = list(source_product_assets or [])
     locked_masters = [m for m in product_masters if m.get('pixel_lock')]
 
@@ -218,7 +218,7 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
         },
         'decisive_moment': expression.get('variant_id') or sig.get('visual_job') or 'Make the decision-critical relationship instantly legible.',
         'subject_action_environment_props': {
-            'subject': brief.get('subject') or ('Use the supplied real-product master as the product subject' if presence.get('planning_state') != 'FORBIDDEN' else 'decision-critical context/evidence'),
+            'subject': brief.get('subject') or ('Use supplied product/source files as design references for the product subject; redraw/rerender is allowed unless an explicit locked-source mode is selected' if presence.get('planning_state') != 'FORBIDDEN' else 'decision-critical context/evidence'),
             'action': brief.get('action') or sig.get('visual_job') or asset.get('strategic_job'),
             'environment': brief.get('environment') or sig.get('context_role') or direction.get('scene_props'),
             'props': brief.get('props') or brief.get('scene_props') or direction.get('scene_props'),
@@ -259,7 +259,7 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
             'cmf': cmf, 'material_response_to_show': lighting.get('material_response_to_show'),
             'capture_implications': cmf.get('capture_implications') if isinstance(cmf, dict) else None,
             'post_implications': cmf.get('post_implications') if isinstance(cmf, dict) else None,
-            'material_truth_rule': 'Reveal only source-bound material/finish/texture. Never invent gloss, transparency, cream texture, liquid behavior or physical effects.'
+            'material_truth_rule': 'Creative/stylized material depiction is allowed when selected by the art direction. Do not present invented material, finish, texture or physical behavior as a verified product fact.'
         },
         'inclusive_photography': p.get('inclusive_photography') or {},
         'information_design': {
@@ -275,7 +275,7 @@ def _design_card(asset: dict[str, Any], product: dict[str, Any], target: dict[st
             'product_fidelity': product_fidelity, 'source_product_assets': product_masters,
             'product_visual_intelligence': asset.get('product_visual_intelligence') or {},
             'creative_anchor_plan': asset.get('creative_anchor_plan') or {}, 'locked_masters': locked_masters,
-            'rule': ('Use the supplied real-product master pixels as an immutable layer; do not regenerate, redraw, retype, recolor or reshape the product.' if product_fidelity == 'LOCKED_PIXEL' else 'Preserve verified identity from supplied product references; do not invent packaging, logo, colors, geometry or printed details.')
+            'rule': ('Explicit locked-source mode: use supplied product master pixels as an immutable layer; do not regenerate, redraw, retype, recolor or reshape that layer.' if str(product_fidelity).upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} else 'Reference-guided mode: supplied files are design/product references, not immutable pixels. The product may be redrawn, rerendered, stylized, illustrated or recomposed according to the approved creative direction. Preserve verified product facts and only the identity cues the brief actually requires; photorealism and pixel matching are not default requirements.')
         },
         'market_locale': {
             'market': target.get('market'), 'platform': target.get('platform_family'), 'site': target.get('site'),
@@ -563,9 +563,9 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
             '【生成目标】',
             f"视觉任务：{_txt(_cn_phrase(card.get('visual_objective')))}",
             f"消费者问题：{_txt(_cn_phrase((card.get('commerce_task') or {}).get('consumer_question')))}",
-            '真实产品 / Product Truth 绑定：商品身份、包装、材质、颜色、结构与可见事实只允许来自已验证商品真源及随任务提供的真实商品母版 / 参考图。',
+            'Product Truth / 参考设计绑定：已验证商品事实与 Claim 不得被创意改写；随任务提供的源文件作为产品设计参考。除非明确选择锁定源图模式，否则允许重绘、重渲染、风格化、插画化与重新构图，不要求像素级一致或摄影写实。',
             f"创意母命题：{_cn_creative_thesis(card)}",
-            '图像语言：保持真实商品身份、CMF、色彩与字体系统的一致性；但每张资产必须按自己的购买问题重新建立空间层级和构图，不套上一张版式。',
+            '图像语言：根据当前创意方向决定写实、风格化、插画、3D、合成或其他视觉语言；源文件提供设计与商品事实参考，每张资产按自己的购买问题重新建立空间层级和构图。',
             f"本张表达机制：{_cn_expression(cs)}", f"创意锚点：{_cn_anchor(cs)}",
             '', '【主体 / 动作 / 环境】',
             f"主体：{_txt(_cn_phrase(sae.get('subject')))}", f"动作：{_txt(_cn_phrase(sae.get('action')))}",
@@ -590,7 +590,7 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
             f"CMF：{_txt(_cn_phrase(lm.get('cmf')))}", f"需要表现的材质响应：{_txt(_cn_phrase(lm.get('material_response_to_show')))}",
             f"拍摄影响：{_txt(_cn_phrase(lm.get('capture_implications')))}", f"后期影响：{_txt(_cn_phrase(lm.get('post_implications')))}",
             f"色彩管理合同：{_txt(_cn_phrase(photo_exec.get('color_management')))}",
-            f"颜色一致性：{_txt(_cn_phrase(lm.get('color_consistency_plan')))}", '材质真实性边界：只表现商品真源/CMF 支持的材质、表面处理、透明度与光泽；不得凭空增加液体、膏体、金属、玻璃或其他物理效果。',
+            f"颜色一致性：{_txt(_cn_phrase(lm.get('color_consistency_plan')))}", '材质事实边界：可以按创意方向做风格化材质表达，但不得把源文件未支持的材质、表面处理或物理行为当成真实商品事实。',
             '', '【包容性人物摄影】',
             f"肤色曝光：{_txt(inc_skin)}", f"发质 / 服化道：{_txt(inc_hair)}",
             f"交叉性语境：{_txt(_cn_phrase(inc.get('intersectionality_context') or loc.get('intersectionality')))}",
@@ -604,10 +604,10 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
             f"精确执行边界：{_txt(_cn_phrase(precision))}",
             f"可编辑层：{_txt(_cn_phrase(editable.get('editable_layers')))}",
             f"冻结层：{_txt(_cn_phrase(editable.get('frozen_layers')))}",
-            '局部修改规则：只允许修改明确列出的可编辑层；冻结的商品真源与身份层保持不变，除非重新编译新的商品真源包。' if editable else '',
-            '', '【真实商品身份】',
-            f"商品保真模式：{_txt(prod.get('product_fidelity'))}",
-            '以随任务提供的真实商品母版 / 参考图作为唯一商品身份视觉依据。不得重画、改字、改 Logo、改包装几何比例、改真实产品颜色或凭空补不存在的结构。',
+            '局部修改规则：遵守当前资产声明的冻结事实/Claim/文案边界；参考图本身只有在显式锁定源图模式下才是不可改像素层。' if editable else '',
+            '', '【产品参考 / 保真策略】',
+            f"商品参考模式：{_txt(prod.get('product_fidelity'))}",
+            prod.get('rule'),
             '', '【禁止生成】',
             '不得生成未被产品真源 / 证据支持的成分、质地、认证、检测、疗效、人体结果、before/after、比较数字或包装文字；不得为了“高级感”添加与购买判断无关的水花、粒子、实验室符号、抽象光环或模板化卡片。'
         ]
@@ -616,7 +616,7 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
             '[RENDER OBJECTIVE]',
             f"Visual task: {_txt(card.get('visual_objective'))}",
             f"Consumer decision question: {_txt((card.get('commerce_task') or {}).get('consumer_question'))}",
-            'Product Truth binding: product identity, packaging, material, color, geometry and visible facts must remain source-bound to verified Product Truth and the real-product references supplied with the task.',
+            'Product Truth / reference binding: verified product facts and claims must remain honest. Supplied source files are product/design references; unless locked-source mode is explicitly selected, redraw, rerender, stylization, illustration and recomposition are allowed and photorealism/pixel matching are not required.',
             f"Creative thesis: {_render_safe_text(cs.get('creative_thesis'))}", f"Image language: {_render_safe_text(cs.get('image_language'))}",
             f"Asset expression mechanism: {_txt(_render_expression(cs))}", f"Creative anchor: {_render_anchor(cs)}",
             '', '[SUBJECT / ACTION / ENVIRONMENT]',
@@ -656,10 +656,10 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
             f"Precision boundaries: {_txt(precision)}",
             f"Editable layers: {_txt(editable.get('editable_layers'))}",
             f"Frozen layers: {_txt(editable.get('frozen_layers'))}",
-            'Local edit rule: Change only the explicitly listed editable layers; frozen product-truth and identity layers remain untouched unless a new source-of-truth package is compiled.' if editable else '',
-            '', '[REAL PRODUCT IDENTITY]',
-            f"Product fidelity mode: {_txt(prod.get('product_fidelity'))}",
-            prod.get('rule'), 'Use the real product master/reference images supplied with this task as the sole visual identity authority.',
+            'Local edit rule: preserve declared product facts/claims/copy boundaries; source pixels are immutable only in an explicit locked-source mode.' if editable else '',
+            '', '[PRODUCT REFERENCE / FIDELITY]',
+            f"Product reference mode: {_txt(prod.get('product_fidelity'))}",
+            prod.get('rule'),
             '', '[DO NOT GENERATE]',
             'Do not invent unsupported ingredients, textures, tests, certifications, efficacy, body outcomes, before/after, comparison numbers or package copy. Do not add arbitrary premium splashes, particles, laboratory symbolism, abstract halos or repetitive card layouts.'
         ]
@@ -670,14 +670,14 @@ def _render_lines(card: dict[str, Any], language: str) -> list[str]:
 def _parameter_trace(card: dict[str, Any]) -> list[dict[str, Any]]:
     rows=[
         {'strategy_parameter':'creative thesis / image language / creative anchor','render_location':'RENDER OBJECTIVE','value':card.get('creative_system')},
-        {'strategy_parameter':'consumer decision question / Product Truth execution binding','render_location':'RENDER OBJECTIVE / REAL PRODUCT IDENTITY','value':{'consumer_question':(card.get('commerce_task') or {}).get('consumer_question'),'product_truth_binding':'SOURCE_BOUND'}},
+        {'strategy_parameter':'consumer decision question / Product Truth execution binding','render_location':'RENDER OBJECTIVE / PRODUCT REFERENCE / FIDELITY','value':{'consumer_question':(card.get('commerce_task') or {}).get('consumer_question'),'product_truth_binding':'FACT_BOUND_REFERENCE_GUIDED'}},
         {'strategy_parameter':'composition / camera / lens / focus / exposure settings','render_location':'COMPOSITION / CAMERA','value':card.get('composition_camera')},
         {'strategy_parameter':'capture mode / product occupancy / negative space / output color management','render_location':'PHOTOGRAPHY EXECUTION CONTRACT','value':card.get('photography_execution')},
         {'strategy_parameter':'lighting / CCT / ratio / prelight / polarization / CMF / material response / color management','render_location':'LIGHTING / MATERIAL / CMF','value':{k:v for k,v in (card.get('lighting_material_cmf') or {}).items() if k!='material_truth_rule'}},
         {'strategy_parameter':'skin-tone exposure / hair / wardrobe / intersectionality','render_location':'INCLUSIVE HUMAN PHOTOGRAPHY','value':card.get('inclusive_photography')},
         {'strategy_parameter':'surface / safe zone / copy budget / typography','render_location':'SURFACE / INFORMATION DESIGN','value':{'surface':card.get('surface_contract'),'information_design':card.get('information_design')}},
         {'strategy_parameter':'approved visual elements / precision boundaries / editable & frozen layers','render_location':'VISUAL EXECUTION BOUNDARIES / EDITABILITY','value':{'approved_visual_elements':card.get('approved_visual_elements'),'precision_boundaries':card.get('precision_boundaries'),'editable_layer_contract':card.get('editable_layer_contract')}},
-        {'strategy_parameter':'product fidelity / real masters','render_location':'REAL PRODUCT IDENTITY','value':card.get('product_identity')},
+        {'strategy_parameter':'product reference / fidelity policy','render_location':'PRODUCT REFERENCE / FIDELITY','value':card.get('product_identity')},
     ]
     return [_compact(row) for row in rows if _meaningful(row.get('value'))]
 
@@ -688,7 +688,7 @@ def _renderer_layer_plan(card:dict[str,Any],locked_copy:dict[str,Any])->list[str
     presence=card.get('product_presence') or {}
     if _meaningful(subject.get('environment')): layers.append('background_environment')
     if _meaningful(subject.get('human_context')): layers.append('human_or_context_if_required')
-    if str(presence.get('planning_state') or '').upper()!='FORBIDDEN' or _meaningful(card.get('product_identity')): layers.append('product_master_or_verified_product')
+    if str(presence.get('planning_state') or '').upper()!='FORBIDDEN' or _meaningful(card.get('product_identity')): layers.append('product_reference_or_product_subject')
     if _meaningful((card.get('information_design') or {}).get('proof_plane')): layers.append('evidence_graphics')
     if locked_copy: layers.append('locked_typography')
     if _meaningful((card.get('photography_execution') or {}).get('color_management')) or _meaningful((card.get('lighting_material_cmf') or {}).get('post_implications')): layers.append('final_color_grade')
@@ -728,9 +728,9 @@ def _prompt_consumption_audit(card:dict[str,Any], prompt_cn:str, prompt_en:str)-
     color=(card.get('photography_execution') or {}).get('color_management')
     if isinstance(color,dict) and color.get('output_space'):
         checks.append({'decision':'output_color_space','required':True,'projected':str(color.get('output_space')) in prompt_en or str(color.get('output_space')) in prompt_cn,'value':color.get('output_space')})
-    checks.append({'decision':'real_product_identity','required':True,'projected':'【真实商品身份】' in prompt_cn and '[REAL PRODUCT IDENTITY]' in prompt_en})
+    checks.append({'decision':'product_reference_fidelity','required':True,'projected':'【产品参考 / 保真策略】' in prompt_cn and '[PRODUCT REFERENCE / FIDELITY]' in prompt_en})
     missing=[x['decision'] for x in checks if x.get('required') and not x.get('projected')]
-    return {'status':'PASS' if not missing else 'INCOMPLETE','principle':'Semantic compression may remove repetition and irrelevant toolbox fields, but never an already-selected pixel/capture/composite-affecting execution decision.','checks':checks,'missing_decisions':missing}
+    return {'status':'PASS' if not missing else 'INCOMPLETE','principle':'Prompt readiness is a production-quality diagnostic, not a project-completion gate. When prompts are requested, preserve the selected execution decisions that actually matter to that production route.','checks':checks,'missing_decisions':missing}
 
 
 def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target: dict[str, Any], culture: dict[str, Any], language_contract: dict[str, Any], locale_profiles: dict[str, Any] | None = None, photography: dict[str, Any] | None = None, strategy_authority: dict[str, Any] | None = None, source_product_assets: list[dict[str, Any]] | None = None) -> dict[str, Any]:
@@ -743,9 +743,9 @@ def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target:
         'fidelity': {
             'mode': asset.get('product_fidelity'),
             'source_product_asset_ids': [x.get('asset_id') for x in source_assets if isinstance(x, dict) and x.get('asset_id')],
-            'real_product_master_required': asset.get('product_fidelity') == 'LOCKED_PIXEL',
-            'real_product_master_substitution_allowed': False,
-            'immutable_identity_fields': ['logo', 'packaging_print', 'product_color_identity', 'geometry', 'proportions'] if asset.get('product_fidelity') == 'LOCKED_PIXEL' else ['verified_product_identity', 'approved_claim_facts'],
+            'real_product_master_required': str(asset.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'},
+            'real_product_master_substitution_allowed': str(asset.get('product_fidelity') or '').upper() not in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'},
+            'immutable_identity_fields': ['logo', 'packaging_print', 'product_color_identity', 'geometry', 'proportions'] if str(asset.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} else ['verified_product_facts', 'approved_claim_facts'],
         },
         'product_presence': card.get('product_presence'), 'information_assetization': card.get('information_assetization'),
         'composition_camera': card.get('composition_camera'), 'photography_execution': card.get('photography_execution'), 'lighting_material_cmf': card.get('lighting_material_cmf'),
@@ -775,7 +775,7 @@ def compile_asset_prompt(asset: dict[str, Any], product: dict[str, Any], target:
         })
     renderer = {
         'route': asset.get('production_mode'), 'single_asset_single_canvas': True, 'contact_sheet': False,
-        'real_product_master_required': asset.get('product_fidelity') == 'LOCKED_PIXEL',
+        'real_product_master_required': str(asset.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'},
         'source_product_bindings': source_bindings,
         'deterministic_text_composition': bool(locked_copy),
         'text_policy': {

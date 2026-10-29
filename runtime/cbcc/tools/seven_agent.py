@@ -147,6 +147,52 @@ def review_analysis_tool(*, rows:list[dict[str,Any]])->dict[str,Any]:
     result={**base,'eight_class_taxonomy':REVIEW_EIGHT_CLASSES,'eight_class_counts':dict(counts),'classification_required':[{'index':i,'text':r.get('text'),'task':'Host/model classify into one of the eight classes with evidence from the review text.'} for i,r in enumerate(rows) if r['eight_class']=='CLASSIFICATION_REQUIRED'],'misunderstanding_detector':{'count':len(misunderstand),'examples':[r.get('text') for r in misunderstand[:5]],'route':'Listing/Image/FAQ before Product changes unless separate defect evidence exists'},'fixability':{'communication_or_content_fixable_count':fixable,'classified_count':len(classified),'fixable_rate':round(fixable/len(classified),4) if classified else None},'positive_selling_point_ranking':[{'selling_point':k,'count':v} for k,v in praise.most_common(10)],'exact_reconciliation':{'input_total':total,'classified':len(classified),'classification_required':total-len(classified),'sum':reconciled,'balanced':reconciled==total},'local_revision_routes':local_routes}
     return _contract('07_REVIEW_ANALYSIS',locals(),result,['03_LISTING_CREATIVE','04_PRODUCT_IMAGE','02_PRODUCT_STRATEGY'],'评论工具将语义分类交给模型、计数/对账交给脚本，并优先修正误解与沟通责任层，避免用文案修真实缺陷或用改产品解决说明不清。')
 
+
+def compile_seven_agent_synthesis(*, domain:dict[str,Any]|None=None, architecture:dict[str,Any]|None=None, video_plan:dict[str,Any]|None=None, paid_campaigns:dict[str,Any]|None=None, source_product_assets:list[dict[str,Any]]|None=None)->dict[str,Any]:
+    """Materialize how the seven first-class commerce capabilities are actually consumed.
+
+    The full compiler already uses the same underlying domain engines; this function does not
+    re-run them or manufacture a fixed seven-step pipeline. It records project-active outputs and
+    cross-domain handoffs so release acceptance can prove capability continuity beyond file presence.
+    """
+    domain=domain or {}; architecture=architecture or {}; video_plan=video_plan or {}; paid_campaigns=paid_campaigns or {}
+    assets=architecture.get('assets') or []
+    market=domain.get('market') or {}; economics=domain.get('economics') or {}; listing=domain.get('listing') or {}; ads=domain.get('ads') or {}; feedback=domain.get('feedback') or {}
+    compiled_listing=listing.get('compiled') or {}
+    ad_diag=(ads.get('aggregate') or ads).get('diagnosis') or [] if isinstance(ads,dict) else []
+    ad_routes=sorted({str(x.get('route')) for x in ad_diag if isinstance(x,dict) and x.get('route')})
+    feedback_issues=feedback.get('issues') or [] if isinstance(feedback,dict) else []
+    market_fit_assets=[a for a in assets if a.get('decision_origin')=='MARKET_THEME_FIT']
+    feedback_assets=[a for a in assets if a.get('decision_origin')=='FEEDBACK_SIGNAL']
+    listing_objections=compiled_listing.get('objection_resolution_plan') or []
+    capabilities=[
+        {'id':'01_MARKET_RESEARCH','project_active':bool(market),'consumed_by':['Strategy §3 market/audience','Market Evidence Fit','Asset jobs only after explicit product-truth fit'],'evidence':{'status':market.get('status'),'market_fit_asset_count':len(market_fit_assets)}},
+        {'id':'02_PRODUCT_STRATEGY','project_active':True,'consumed_by':['Strategy value/SKU/offer/positioning','economics guardrails','asset business hypothesis'],'evidence':{'economics_status':economics.get('status'),'asset_count':len(assets)}},
+        {'id':'03_LISTING_CREATIVE','project_active':bool(listing),'consumed_by':['Listing/Search authority','objection-to-asset handoff','human delivery'],'evidence':{'status':listing.get('status'),'objection_count':len(listing_objections)}},
+        {'id':'04_PRODUCT_IMAGE','project_active':bool(assets),'consumed_by':['Dynamic Asset Architecture','Creative Council/CMF','per-asset design cards and optional prompt contracts'],'evidence':{'asset_count':len([a for a in assets if a.get('asset_type')=='IMAGE'])}},
+        {'id':'05_PRODUCT_VIDEO','project_active':bool(video_plan.get('assets')),'consumed_by':['Video Creator Plan','Strategy §5','production only when explicitly requested'],'evidence':{'video_asset_count':len(video_plan.get('assets') or [])}},
+        {'id':'06_ADVERTISING_OPTIMIZATION','project_active':bool(ads or paid_campaigns.get('campaigns')),'consumed_by':['Strategy §9 diagnostics','Paid Campaign Architecture','local revision routing'],'evidence':{'status':ads.get('status'),'diagnostic_routes':ad_routes,'campaign_count':len(paid_campaigns.get('campaigns') or [])}},
+        {'id':'07_REVIEW_ANALYSIS','project_active':bool(feedback),'consumed_by':['communication-fixable asset jobs','Strategy §9 local revision routing','listing/content correction'],'evidence':{'status':feedback.get('status'),'issue_count':len(feedback_issues),'feedback_asset_count':len(feedback_assets)}},
+    ]
+    asset_inputs={
+        'market':{'status':market.get('status'),'approved_fit_asset_count':len(market_fit_assets)},
+        'offer_economics':{'status':economics.get('status'),'currency':economics.get('currency')},
+        'listing':{'status':listing.get('status'),'objection_count':len(listing_objections)},
+        'ads':{'status':ads.get('status'),'diagnostic_routes':ad_routes},
+        'reviews_feedback':{'status':feedback.get('status'),'issue_count':len(feedback_issues),'communication_asset_count':len(feedback_assets)},
+        'product_sources':{'count':len(source_product_assets or []),'default_usage':'DESIGN_REFERENCE'},
+    }
+    return {
+        'status':'SEVEN_AGENT_CAPABILITY_SYNTHESIS_COMPILED',
+        'execution_model':'SHARED_RUNTIME_ENGINES; relevance-driven, not a mandatory seven-step pipeline',
+        'all_seven_available':True,
+        'all_seven_required_each_task':False,
+        'capabilities':capabilities,
+        'asset_inputs':asset_inputs,
+        'active_ids':[x['id'] for x in capabilities if x.get('project_active')],
+        'principle':'A reference capability counts as preserved only when its real project output is consumed by strategy, listing, asset/content decisions, paid/video architecture, review routing or delivery—not because a file exists.',
+    }
+
 SEVEN_TOOLS={
  '01':market_research_tool,'market':market_research_tool,
  '02':product_strategy_tool,'product':product_strategy_tool,

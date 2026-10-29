@@ -11,6 +11,7 @@ from .tools.listing import compile_listing, apply_host_copy_authoring_responses
 from .tools.ads import analyze_ads, analyze_ad_portfolio
 from .tools.feedback import analyze_feedback
 from .tools.experiment import evaluate_binary_experiment, compile_experiment_analysis
+from .tools.seven_agent import compile_seven_agent_synthesis
 from .tools.visual import validate_photography_contract
 from .assets import required_foundation_roles, FoundationAssetRecord
 from .culture import compile_culture_context
@@ -89,6 +90,9 @@ def _normalize_source_product_assets(records, resolution_roots):
             status='EXTERNAL_HANDLE_HASH_DECLARED'
         else:
             status='MISSING_SOURCE_FILE'
+        requested_fidelity=str(r.get('fidelity_mode') or r.get('product_fidelity') or '').upper()
+        explicit_lock=bool(r.get('pixel_lock', False) or requested_fidelity in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'})
+        fidelity_mode='LOCKED_SOURCE_COMPOSITE' if explicit_lock else (requested_fidelity or 'REFERENCE_GUIDED')
         out.append({
             'asset_id':aid,
             'role':r.get('role') or r.get('view') or 'PRODUCT_MASTER',
@@ -96,9 +100,11 @@ def _normalize_source_product_assets(records, resolution_roots):
             'provider_asset_handle':r.get('provider_asset_handle'),
             'sha256':actual_hash or declared_hash,
             'ingest_status':status,
-            'pixel_lock':bool(r.get('pixel_lock', True)),
-            'allowed_transforms':r.get('allowed_transforms') or ['PROPORTIONAL_SCALE','PLACEMENT','MASK_OR_CROP','COMPOSITE'],
-            'identity_features':r.get('identity_features') or ['logo','packaging_print','color','geometry','proportions'],
+            'pixel_lock':explicit_lock,
+            'fidelity_mode':fidelity_mode,
+            'source_usage':r.get('source_usage') or ('IMMUTABLE_SOURCE_LAYER' if explicit_lock else 'DESIGN_REFERENCE'),
+            'allowed_transforms':r.get('allowed_transforms') or (['PROPORTIONAL_SCALE','PLACEMENT','MASK_OR_CROP','COMPOSITE'] if explicit_lock else ['REFERENCE','REDRAW','RERENDER','RESTYLE','RECOMPOSE','PROPORTIONAL_SCALE','PLACEMENT','MASK_OR_CROP','COMPOSITE']),
+            'identity_features':r.get('identity_features') or ['verified_product_facts','recognizable_product_cues','approved_brand_assets'],
             'note':r.get('note'),
         })
     return out
@@ -167,7 +173,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     foundation={'dynamic':True,'roles':[FoundationAssetRecord(f'FND-{i+1:02d}',role,product_fidelity=request.get('product_fidelity','REFERENCE_CONSTRAINED')).to_dict() for i,role in enumerate(foundation_roles)]}
     _write(p/'artifacts/foundation_plan.json',foundation)
     source_product_assets=_normalize_source_product_assets(request.get('source_product_assets'),[Path(request.get('source_asset_root')) if request.get('source_asset_root') else None,Path(packs_dir),Path.cwd()])
-    _write(p/'artifacts/source_product_assets.json',{'status':'SOURCE_PRODUCT_ASSETS_BOUND' if source_product_assets else 'NOT_SUPPLIED','assets':source_product_assets,'count':len(source_product_assets),'principle':'LOCKED_PIXEL production requires an exact supplied product master. Missing masters remain missing and external production must not be represented as executed.'})
+    _write(p/'artifacts/source_product_assets.json',{'status':'SOURCE_PRODUCT_ASSETS_BOUND' if source_product_assets else 'NOT_SUPPLIED','assets':source_product_assets,'count':len(source_product_assets),'principle':'Source files are design/product references by default. Pixel-level preservation is explicit-only (LOCKED_SOURCE_COMPOSITE/LOCKED_PIXEL). Reference-guided work may redraw, rerender, restyle or recompose while keeping verified product facts and selected identity cues honest.'})
     product_visual_intelligence=compile_product_visual_intelligence(facts,source_product_assets,foundation_roles,request.get('photography_contract'),request.get('cmf') or (request.get('photography_contract') or {}).get('cmf'))
     _write(p/'artifacts/product_visual_intelligence.json',product_visual_intelligence)
 
@@ -389,20 +395,28 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
         _asset['creative_anchor_plan']={'direction_id':creative_anchors.get('direction_id'),'roles':[x.get('anchor_role') for x in creative_anchors.get('roles') or []]}
     aap=_write(p/'artifacts/asset_architecture.json',architecture); st.set_gate('ASSET_ARCHITECTURE','READY_REVIEW',[aap],architecture); st.checkpoint('ASSET_ARCHITECTURE','READY_REVIEW')
     creative={'design_system_status':'DIRECTION_SELECTED' if council.get('status')=='SELECTED' else 'TO_BE_CURATED','content_object_ids':[o['object_id'] for o in objects if o['family'] in {'VISUAL','VIDEO','CREATOR_AFFILIATE','PAID'}],
-              'positive_first':True,'photography_contract_required':any(a.get('asset_type')=='IMAGE' for a in architecture['assets']),'photography_validation':photography_validation,
+              'positive_first':True,'photography_contract_required':bool(request.get('photography_contract')),'photography_planning_is_advisory':True,'photography_validation':photography_validation,
               'foundation_asset_ids':[x['asset_id'] for x in foundation['roles']], 'source_truth_binding':st.data['gates']['PRODUCT_TRUTH']['authority_hash'],
               'culture_context_hash':st.data['gates']['CULTURE_CONTEXT']['authority_hash'],'language_profiles':culture['language_profiles'],
               'curation':curation,'creative_opportunity_universe':creative_opportunity_universe,'creative_council':council,'cmf':cmf,'inclusive_photography':inclusive,
               'surface_architecture':surface_architecture,'asset_expression_assignment':architecture.get('creative_system_assignment'),'product_visual_intelligence':product_visual_intelligence,'creative_anchor_plan':creative_anchors,
               'agent_autonomy_plan':agent_plan}
     crp=_write(p/'artifacts/creative_contract.json',creative)
-    creative_ready=(not photography_validation or photography_validation.get('pass')) and council.get('status')=='SELECTED'
+    creative_ready=council.get('status')=='SELECTED'
+    creative['photography_validation_is_advisory']=True
+    creative['photography_validation_blocks_project_completion']=False
     st.set_gate('CREATIVE','READY_REVIEW' if creative_ready else 'HOLD',[crp],creative)
 
     video_plan=build_video_creator_plan(request.get('project_id','project'),objects,questions,lang.to_dict(),request.get('video_jobs'),assets=architecture.get('assets'),creative_council=council)
     _write(p/'artifacts/video_creator_plan.json',video_plan)
     paid_campaigns=compile_paid_campaign_architecture(request.get('project_id','project'),tc,architecture.get('assets') or [],truth,domain.get('economics'),domain.get('ads'),request.get('paid_campaigns'),objects)
     _write(p/'artifacts/paid_campaign_architecture.json',paid_campaigns)
+    seven_agent_synthesis=compile_seven_agent_synthesis(domain=domain,architecture=architecture,video_plan=video_plan,paid_campaigns=paid_campaigns,source_product_assets=source_product_assets)
+    architecture['commerce_capability_inputs']=seven_agent_synthesis.get('asset_inputs') or {}
+    for _asset in architecture.get('assets') or []:
+        _asset['commerce_context']=seven_agent_synthesis.get('asset_inputs') or {}
+    _write(p/'artifacts/seven_agent_synthesis.json',seven_agent_synthesis)
+    _write(p/'artifacts/asset_architecture.json',architecture)
     creative['video_creator_plan']=video_plan
     creative['paid_campaign_architecture']=paid_campaigns
     creative['decision_content_graph']=surface_architecture.get('decision_content_objects') or []

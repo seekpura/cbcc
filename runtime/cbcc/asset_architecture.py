@@ -182,11 +182,14 @@ def _editable_layer_contract(mode:str, product_fidelity:str)->dict[str,Any]:
     layers=['typography_copy','layout_spacing','background_environment','shadow_contact','color_grade']
     if mode in {'AI_HUMAN_REAL_PRODUCT','VIDEO','REAL_PHOTO'}: layers += ['human_context','wardrobe_grooming','camera_crop','lighting_environment']
     if mode in {'GRAPHIC_DESIGN','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','VIDEO'}: layers += ['prop_context','graphic_evidence_layer']
-    if fidelity=='LOCKED_PIXEL':
+    locked=fidelity in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
+    if locked:
         frozen=['product_master_pixels','logo','packaging_print','product_geometry','product_color_identity']
+        rule='Explicit locked-source mode: source product pixels/identity stay immutable; only declared editable layers may change.'
     else:
-        frozen=['verified_product_identity','locked_copy','approved_claim_facts']
-    return {'editable_layers':list(dict.fromkeys(layers)),'frozen_layers':frozen,'revision_rule':'A local revision may change only the explicitly requested editable layers; frozen product truth/identity remains untouched unless a new source-of-truth package is compiled.'}
+        frozen=['verified_product_facts','approved_claim_facts','locked_copy']
+        rule='Reference-guided mode: source files guide product design/identity but are not immutable pixel layers. Visual form may be redrawn, rerendered, restyled or recomposed; do not turn creative interpretation into unsupported product facts or claims.'
+    return {'editable_layers':list(dict.fromkeys(layers)),'frozen_layers':frozen,'revision_rule':rule}
 
 
 def _decision_profile(question:str, surface:str, family:str)->dict[str,Any]:
@@ -302,11 +305,11 @@ def build_asset_architecture(project_id:str,target:dict,questions:list[str],cont
             'reason_to_exist':j.get('reason_to_exist') or profile['reason_to_exist'],'incremental_information':j.get('incremental_information') or profile['incremental_information'],
             'business_hypothesis':j.get('business_hypothesis') or f"If this asset resolves '{q}', the next-stage metric ({j.get('success_metric') or profile['success_metric']}) should improve without requiring unrelated strategy changes.",
             'decision_origin':j.get('decision_origin') or 'EXPLICIT_ASSET_JOB','decision_source':j.get('decision_source'),'compound_parent':j.get('compound_parent'),'compound_part':j.get('compound_part'),
-            'handoff':j.get('handoff'),'production_mode':mode,'product_fidelity':j.get('product_fidelity','REFERENCE_CONSTRAINED'),'approved_visual_elements':j.get('approved_visual_elements',[]),'precision_boundaries':j.get('precision_boundaries',[]),
+            'handoff':j.get('handoff'),'production_mode':mode,'product_fidelity':j.get('product_fidelity','REFERENCE_GUIDED'),'approved_visual_elements':j.get('approved_visual_elements',[]),'precision_boundaries':j.get('precision_boundaries',[]),
             'source_ids':j.get('source_ids',[]),'claim_ids':j.get('claim_ids',[]),'listing_reference':j.get('listing_reference',[]),'priority':j.get('priority','P1'),'status':j.get('status','ACTIVATE'),'dependencies':j.get('dependencies',[]),
             'success_metric':j.get('success_metric') or profile['success_metric'],'visible_copy':j.get('visible_copy',{}),'creative_brief':j.get('creative_brief',{}),
             'visual_production_signature':j.get('visual_production_signature') or _visual_production_signature(intent,topic,surface,mode),
-            'editable_layer_contract':j.get('editable_layer_contract') or _editable_layer_contract(mode,j.get('product_fidelity','REFERENCE_CONSTRAINED'))
+            'editable_layer_contract':j.get('editable_layer_contract') or _editable_layer_contract(mode,j.get('product_fidelity','REFERENCE_GUIDED'))
         }
         seen[key]=len(assets); assets.append(asset)
     # List order is presentation only. Asset relationships/handoffs are explicit author decisions.

@@ -89,7 +89,7 @@ def _human_asset_design_card_markdown(asset:dict[str,Any], prompt_bundle:dict[st
         f"- **目标市场可见语言**：{language_contract.get('primary_locale') or '按目标市场策划'}",
         f"- **目标市场原文**：{target_copy if target_copy not in ({},None,'') else '当前资产无锁定可见文案 / 待补'}",
         f"- **中文释义 / 用途**：{zh_copy or ('当前资产无外语可见文案' if target_copy in ({},None,'') else '待补中文释义；不得把未解释的外语作为人类主交付层')}",
-        '', '## 4. 生产提示词','',
+        '', '## 4. 生产提示词（可选生产辅助，不阻断资产交付）','',
         '### 中文规范生产提示词','',
         '```text', prompt_bundle.get('prompt_cn') or '', '```','',
         '### 英文 / 生成模型执行提示词','',
@@ -152,24 +152,41 @@ def compile_asset_packages(root:Path,assets:list[dict[str,Any]],product:dict[str
         if asset.get('asset_type')=='IMAGE' and photography:
             photography_contract={**photography,'asset_reasoning':asset_photo_reasoning}
         elif asset.get('asset_type')=='IMAGE' and asset_photo_reasoning:
-            photography_contract={'status':'STRATEGY_DERIVED_PHOTOGRAPHY_PLAN','authority':'EXECUTION_RECOMMENDATION_NOT_PRODUCT_TRUTH','prelight_required':True,'asset_type':'IMAGE','asset_reasoning':asset_photo_reasoning,'reason':'No user-supplied photography contract exists. The runtime preserves an executable category/decision-specific planning contract rather than a generic N/A slot; exact geometry/exposure is locked during prelight.'}
+            photography_contract={'status':'STRATEGY_DERIVED_PHOTOGRAPHY_PLAN','authority':'ADVISORY_UNLESS_REAL_CAPTURE_EXPLICITLY_SELECTED','prelight_required':False,'project_completion_blocking':False,'asset_type':'IMAGE','asset_reasoning':asset_photo_reasoning,'reason':'This is an optional execution recommendation. It becomes capture-critical only when real-photo production is explicitly selected; stylized/illustrated/3D/generated directions do not need to imitate real photography.'}
         else:
             photography_contract={'status':'NOT_APPLICABLE_OR_NOT_SUPPLIED','asset_type':asset.get('asset_type'),'reason':'03_photography_contract.json is retained for package continuity; populate with executable photography parameters when this asset requires photography.'}
         _write(d/'03_photography_contract.json',_jdump(photography_contract))
         _write(d/'04_layout_contract.json',_jdump({'surface':asset.get('surface'),'visible_copy':asset.get('visible_copy',{}),'language_contract':language_contract,'surface_production_contracts':surface_production_contracts,'surface_native_contract':asset.get('surface_native_contract',{}),'surface_copy_budget':asset.get('surface_copy_budget',{}),'product_presence':asset.get('product_presence',{}),'information_assetization':asset.get('information_assetization',{}),'visual_expression_variant':asset.get('visual_expression_variant',{}),'visual_production_signature':asset.get('visual_production_signature',{}),'editable_layer_contract':asset.get('editable_layer_contract',{}),'copy_visual_alignment':{'decision_answer':asset.get('incremental_information') or asset.get('belief_target') or asset.get('strategic_job'),'rule':'Visible copy must point to, label or explain the actual decision-critical evidence shown in the frame; decorative copy detached from visual evidence is not an acceptable substitute.'}}))
-        prompt_bundle=compile_asset_prompt(asset,product,target,culture,language_contract,locale_profiles,photography_contract,strategy_authority,source_product_assets)
+        try:
+            prompt_bundle=compile_asset_prompt(asset,product,target,culture,language_contract,locale_profiles,photography_contract,strategy_authority,source_product_assets)
+        except Exception as exc:
+            prompt_bundle={
+                'status':'OPTIONAL_PROMPT_NOT_READY',
+                'design_card':{
+                    'commerce_task':{k:asset.get(k) for k in ['consumer_question','reason_to_exist','purchase_barrier','entry_state','belief_target','exit_state','incremental_information','success_metric','handoff']},
+                    'visual_objective':asset.get('strategic_job'),
+                    'composition_camera':{},'lighting_material_cmf':{},
+                    'information_design':{'locked_visible_copy':asset.get('visible_copy') or {}},
+                    'product_identity':{'product_fidelity':asset.get('product_fidelity') or 'REFERENCE_GUIDED','rule':'Source files are design references by default; visual re-rendering/stylization is allowed unless a locked-source mode was explicitly selected.'},
+                    'editable_layer_contract':asset.get('editable_layer_contract') or {},
+                },
+                'prompt_cn':'','prompt_en':'','deterministic_copy_overlay':asset.get('visible_copy') or {},
+                'parameter_trace':[],
+                'prompt_consumption_audit':{'status':'NOT_READY','project_completion_blocking':False,'missing_decisions':['PROMPT_COMPILE_ERROR'],'error':str(exc)},
+                'machine_visual_contract':{},'renderer_recipe':{},'qa_target_contract':{},
+            }
         _write(d/'00_HUMAN_DESIGN_CARD_CN.md',_human_asset_design_card_markdown(asset,prompt_bundle,language_contract))
         _write(d/'05_prompt_CN.txt',prompt_bundle['prompt_cn'])
         _write(d/'06_prompt_EN.txt',prompt_bundle['prompt_en'])
         _write(d/'12_design_card.json',_jdump(prompt_bundle['design_card']))
-        _write(d/'13_prompt_contract.json',_jdump({'status':prompt_bundle['status'],'design_card':prompt_bundle['design_card'],'canonical_prompt_cn':prompt_bundle['prompt_cn'],'canonical_prompt_en':prompt_bundle['prompt_en'],'deterministic_copy_overlay':prompt_bundle.get('deterministic_copy_overlay') or {},'parameter_trace':prompt_bundle.get('parameter_trace') or [],'prompt_consumption_audit':prompt_bundle.get('prompt_consumption_audit') or {},'machine_visual_contract':prompt_bundle['machine_visual_contract'],'renderer_recipe':prompt_bundle['renderer_recipe'],'qa_target_contract':prompt_bundle['qa_target_contract']}))
+        _write(d/'13_prompt_contract.json',_jdump({'status':prompt_bundle.get('status'),'project_completion_blocking':False,'design_card':prompt_bundle.get('design_card') or {},'canonical_prompt_cn':prompt_bundle.get('prompt_cn') or '','canonical_prompt_en':prompt_bundle.get('prompt_en') or '','deterministic_copy_overlay':prompt_bundle.get('deterministic_copy_overlay') or {},'parameter_trace':prompt_bundle.get('parameter_trace') or [],'prompt_consumption_audit':prompt_bundle.get('prompt_consumption_audit') or {},'machine_visual_contract':prompt_bundle.get('machine_visual_contract') or {},'renderer_recipe':prompt_bundle.get('renderer_recipe') or {},'qa_target_contract':prompt_bundle.get('qa_target_contract') or {}}))
         signature=asset.get('visual_production_signature') or {}
         edit_contract=asset.get('editable_layer_contract') or {}
-        fidelity_line=('Use the supplied product master as the immutable product layer; preserve logo, packaging print, color, geometry and proportions exactly.' if asset.get('product_fidelity')=='LOCKED_PIXEL' else 'Preserve verified product identity and do not turn reference-only details into invented product facts.')
+        fidelity_line=('Explicit locked-source mode: use the supplied master as an immutable product layer.' if str(asset.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} else 'Reference-guided mode: source files guide the design; redraw/rerender/restyle/recompose is allowed. Keep verified facts/claims honest; pixel matching and photorealism are not required.')
         _write(d/'07_generation_guidance.txt','目标结果：\n- '+asset.get('strategic_job','Resolve the consumer question')+'\n- 视觉信息语法：'+str(signature.get('composition_grammar') or 'decision-led composition')+'\n- 决策关键证据平面：'+str(signature.get('evidence_plane') or asset.get('consumer_question'))+'\n- 差异化轴：'+str(signature.get('differentiation_axis') or 'decision-specific evidence relationship')+'\n\n产品 Fidelity 执行：\n- '+fidelity_line+'\n\n允许的语义元素：\n- '+('\n- '.join(map(str,asset.get('approved_visual_elements',[]))) or 'Use only elements required by the approved creative brief.')+'\n\n精确边界：\n- '+('\n- '.join(map(str,asset.get('precision_boundaries',[]))) or 'Preserve product truth, locked copy and approved product identity.')+'\n\n可局部修改层：\n- '+('\n- '.join(map(str,edit_contract.get('editable_layers',[]))) or 'No local editable layers declared; request an explicit scoped revision.')+'\n\n冻结层：\n- '+('\n- '.join(map(str,edit_contract.get('frozen_layers',[]))) or 'Product truth and locked copy remain frozen.')+'\n')
         _write(d/'08_copy.md','# 锁定的可见文案\n\n> 目标市场可见文案按策划使用目标语言；人类交付 HTML 必须同时显示中文释义 / 用途。\n\n```json\n'+_jdump(asset.get('visible_copy',{}))+'\n```\n')
         route=route_production({**asset,'source_product_assets':list(source_product_assets or [])},provider_preferences)
-        production_quality_targets={'product_fidelity':asset.get('product_fidelity'),'source_product_assets':list(source_product_assets or []),'visual_production_signature':asset.get('visual_production_signature',{}),'editable_layer_contract':asset.get('editable_layer_contract',{}),'copy_visual_alignment':{'locked_visible_copy':asset.get('visible_copy',{}),'decision_answer':asset.get('incremental_information') or asset.get('belief_target') or asset.get('strategic_job')},'provider_observation_targets':['product_identity_preserved','decision_answer_visible','surface_contract_met','copy_visual_alignment','photography_cmf_alignment','visual_differentiation_preserved'],'canonical_prompt_contract':prompt_bundle['machine_visual_contract'],'parameter_trace':prompt_bundle.get('parameter_trace') or [],'deterministic_copy_overlay':prompt_bundle.get('deterministic_copy_overlay') or {},'renderer_recipe':prompt_bundle['renderer_recipe'],'qa_target_contract':prompt_bundle['qa_target_contract']}
+        production_quality_targets={'product_fidelity':asset.get('product_fidelity'),'source_product_assets':list(source_product_assets or []),'visual_production_signature':asset.get('visual_production_signature',{}),'editable_layer_contract':asset.get('editable_layer_contract',{}),'copy_visual_alignment':{'locked_visible_copy':asset.get('visible_copy',{}),'decision_answer':asset.get('incremental_information') or asset.get('belief_target') or asset.get('strategic_job')},'provider_observation_targets':['product_identity_preserved','decision_answer_visible','surface_contract_met','copy_visual_alignment','photography_cmf_alignment','visual_differentiation_preserved'],'canonical_prompt_contract':prompt_bundle.get('machine_visual_contract') or {},'parameter_trace':prompt_bundle.get('parameter_trace') or [],'deterministic_copy_overlay':prompt_bundle.get('deterministic_copy_overlay') or {},'renderer_recipe':prompt_bundle.get('renderer_recipe') or {},'qa_target_contract':prompt_bundle.get('qa_target_contract') or {},'prompt_generation_readiness':(prompt_bundle.get('prompt_consumption_audit') or {}).get('status'),'prompt_generation_readiness_blocks_asset_delivery':False}
         _write(d/'09_production_notes.md','# 生产说明\n\n## 执行路由\n```json\n'+_jdump(route)+'\n```\n\n## 展示位置生产合同（Surface）\n```json\n'+_jdump(surface_production_contracts)+'\n```\n\n## 生产质量目标\n```json\n'+_jdump(production_quality_targets)+'\n```\n\n- 产品保真：'+str(asset.get('product_fidelity'))+'\n- 展示位置（Surface）：'+str(asset.get('surface'))+'\n')
         _write(d/'10_source_trace.md','# 来源追踪\n\n```json\n'+_jdump({'source_ids':asset.get('source_ids',[]),'claim_ids':asset.get('claim_ids',[]),'listing_reference':asset.get('listing_reference',[])})+'\n```\n')
         # Additive only: preserve the alpha6 asset package and attach upstream strategy WHY/context.
@@ -226,9 +243,10 @@ def compile_asset_packages(root:Path,assets:list[dict[str,Any]],product:dict[str
 
 
 REQUIRED_ASSET_FILES=[
-    '00_asset_manifest.yaml','01_strategy.md','02_visual_spec.md','03_photography_contract.json','04_layout_contract.json',
-    '05_prompt_CN.txt','06_prompt_EN.txt','07_generation_guidance.txt','08_copy.md','09_production_notes.md','10_source_trace.md','11_strategy_authority_trace.json'
+    '00_asset_manifest.yaml','00_HUMAN_DESIGN_CARD_CN.md','01_strategy.md','02_visual_spec.md','03_photography_contract.json','04_layout_contract.json',
+    '08_copy.md','09_production_notes.md','10_source_trace.md','11_strategy_authority_trace.json','12_design_card.json'
 ]
+OPTIONAL_PRODUCTION_FILES=['05_prompt_CN.txt','06_prompt_EN.txt','07_generation_guidance.txt','13_prompt_contract.json']
 _INTERNAL_PROMPT_TOKENS=['authority_hash','READY_REVIEW','INVALIDATED','claim_ids','source_ids','project_state','revision']
 
 def validate_asset_packages(root:Path)->dict[str,Any]:
@@ -245,5 +263,6 @@ def validate_asset_packages(root:Path)->dict[str,Any]:
                 text=fp.read_text(encoding='utf-8')
                 leaked=[x for x in _INTERNAL_PROMPT_TOKENS if x in text]
                 if leaked: errors.append(f"{row['asset_id']} {fn}: internal-state leakage {leaked}")
-        assets.append({'asset_id':row['asset_id'],'missing':missing})
-    return {'pass':not errors,'errors':errors,'assets':assets,'count':len(assets)}
+        optional_missing=[f for f in OPTIONAL_PRODUCTION_FILES if not (d/f).exists()]
+        assets.append({'asset_id':row['asset_id'],'missing':missing,'optional_production_missing':optional_missing})
+    return {'pass':not errors,'errors':errors,'assets':assets,'count':len(assets),'optional_production_files':OPTIONAL_PRODUCTION_FILES,'prompt_generation_files_block_asset_delivery':False}

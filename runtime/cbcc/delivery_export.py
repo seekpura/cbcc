@@ -29,7 +29,7 @@ _SUPPORT_FILES = [
     'artifacts/market_evidence_fit_contract.json','artifacts/strategy_revision_routing.json',
     'artifacts/capability_integration_map.json','artifacts/execution_contract.json','artifacts/production_run.json',
     'artifacts/decision_question_authority.json','artifacts/strategy_authority.json','artifacts/gate_scope.json',
-    'artifacts/content_requiredness.json','artifacts/agent_next_action.json','artifacts/agent_autonomy_plan.json',
+    'artifacts/content_requiredness.json','artifacts/agent_next_action.json','artifacts/agent_autonomy_plan.json','artifacts/seven_agent_synthesis.json',
 ]
 
 _EXTRA_DIRS = [
@@ -83,11 +83,12 @@ def _prompt_consumption_summary(asset_root: Path) -> dict[str, Any]:
             })
     missing=[r for r in rows if r.get('status')!='PASS' or r.get('missing_decisions')]
     return {
-        'status':'PASS' if not missing else 'INCOMPLETE',
+        'status':'READY' if not missing else 'NEEDS_PROMPT_WORK',
+        'project_completion_blocking':False,
         'asset_count':len(rows),
         'assets':rows,
         'missing_assets':[r.get('asset_id') for r in missing],
-        'principle':'Semantic compression may remove repetition or irrelevant toolbox fields, never a selected execution decision that changes pixels, capture, composite or deterministic post-production.',
+        'principle':'Prompt/generation-plan readiness is advisory for the project and asset delivery. It becomes locally blocking only for an explicitly requested prompt-ready or provider-execution sub-deliverable.',
     }
 
 
@@ -158,8 +159,8 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
 
     asset_root = project / 'artifacts/asset_packages'
     prompt_audit=_prompt_consumption_summary(asset_root)
-    if full and asset_root.exists() and prompt_audit.get('status')!='PASS':
-        raise RuntimeError('BLOCKED FULL prompt consumption audit failed for assets: ' + ', '.join(prompt_audit.get('missing_assets') or []))
+    # Prompt/generation-plan readiness is deliberately non-blocking for FULL human delivery.
+    # It is a production-quality diagnostic; only a separately requested prompt-ready/provider-execution task may treat it as a local gate.
     if asset_root.exists():
         shutil.copytree(asset_root, package_dir / 'asset_packages')
 
@@ -249,7 +250,8 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
             'obsolete_phase_rail_absent': 'asset-production-rail' not in html_text and 'asset-phase' not in html_text,
             'full_decision_depth': depth_audit.get('status') if full else 'NOT_REQUIRED_FOR_TASK_SCOPED',
             'full_visible_objects': html_depth.get('status'),
-            'prompt_execution_continuity': prompt_audit.get('status') if asset_root.exists() else 'NO_ASSETS',
+            'prompt_generation_readiness': prompt_audit.get('status') if asset_root.exists() else 'NO_ASSETS',
+            'prompt_generation_readiness_blocks_project_completion': False,
         },
         'files': files,
     }
