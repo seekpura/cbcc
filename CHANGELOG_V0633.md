@@ -10,6 +10,7 @@ v0.6.32 restored production-parameter depth, but two production semantics were s
 - Camera, perspective, lighting, depth, environment and human context may be re-authored by the Agent and generated natively while product identity remains locked.
 - `EXACT_PIXEL_COMPOSITE` is explicit-only: it is used only when the user explicitly requires the original source pixels to remain immutable.
 - Legacy `pixel_lock=true / LOCKED_PIXEL / LOCKED_SOURCE_COMPOSITE` inputs migrate to native identity locking unless exact-pixel intent is separately declared.
+- Plain `REFERENCE_GUIDED` remains a non-visible truth/design reference when the asset does not require the real product to appear; native reference input becomes mandatory only for visible-product native-lock / `AI_REFERENCE_*` routes.
 - Provider contracts require real-product reference bindings and result evidence that the reference input was actually used and the product was natively rendered in the final output.
 
 ## Dynamic Asset Universe
@@ -29,4 +30,5 @@ v0.6.32 restored production-parameter depth, but two production semantics were s
 - Six Hero variants sharing the same shopper question/surface/family remain six independent Hero variants.
 - Native product reference generation removes legacy “empty plate / do not render product” prompt language.
 - Exact-pixel compositing remains available only under explicit exact-pixel intent.
+- Generic `REFERENCE_GUIDED` video/reference-only assets do not get forced into visible-product binding.
 - v0.6.32 parameter closure, v0.6.31 Model-Native Prompt separation and v0.6.30 Agent Art Direction/Product Presence authority remain covered by regression tests.
