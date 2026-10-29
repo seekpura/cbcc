@@ -17,6 +17,9 @@ from .global_chinese_interpretation import (
 from .final_chinese_interpretation_audit import audit_final_chinese_interpretation
 from .chinese_interpretation_ui import apply_chinese_interpretation_ui
 from .delivery_contract import validate_strategy_delivery
+from .platform_scope import resolve_platform_scope
+from .delivery_language_matrix import build_language_delivery_plan, audit_language_delivery
+from .source_truth_media import materialize_source_truth_media
 
 
 _SUPPORT_FILES = [
@@ -130,11 +133,28 @@ def _resolve_output(project: Path, output: Path) -> tuple[Path, Path]:
     return package_dir, zip_path
 
 
+def _apply_explicit_scope(center: dict[str, Any], scope: dict[str, Any], language_plan: dict[str, Any]) -> dict[str, Any]:
+    target = dict(center.get('target') or {})
+    # Never let compiler/example defaults survive into human delivery when the current project did not explicitly select them.
+    target['platform'] = scope.get('platform')
+    target['market'] = scope.get('market')
+    target['site'] = scope.get('site')
+    target['locale'] = scope.get('primary_locale')
+    target['platform_status'] = scope.get('platform_status')
+    target['market_status'] = scope.get('market_status')
+    target['primary_locale_status'] = scope.get('primary_locale_status')
+    center['target'] = target
+    center['platform_scope'] = scope
+    center['delivery_language_plan'] = language_plan
+    return center
+
+
 def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
     """Materialize the actual CBCC human delivery, not merely a machine manifest.
 
-    Output always includes a complete directory and a ZIP. Every human-facing foreign-language
-    commerce string must carry a Chinese interpretation/use companion before the delivery can be READY.
+    v0.6.45 adds three stability guarantees before HTML is built: source-truth images are physically
+    materialized into the package; platform/market scope is explicit-only; and human copy follows the
+    English + platform-primary + Chinese matrix (China domestic commerce is Chinese-only).
     """
     project = Path(project_dir)
     package_dir, zip_path = _resolve_output(project, Path(output))
@@ -181,9 +201,23 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         if src.exists() and src.is_file():
             shutil.copy2(src, support / src.name)
 
+    source_media_audit = materialize_source_truth_media(project, package_dir)
+    scope = resolve_platform_scope(project)
+    language_plan = build_language_delivery_plan(scope)
+
     center = normalize_global_chinese_interpretation(normalize_upload_center(compile_upload_center(project)))
+    center = _apply_explicit_scope(center, scope, language_plan)
+    language_matrix_audit = audit_language_delivery(center, language_plan)
+    center['delivery_language_audit'] = language_matrix_audit
+
     (package_dir / 'HUMAN_DELIVERY.json').write_text(
         json.dumps(center, ensure_ascii=False, indent=2), encoding='utf-8'
+    )
+    (package_dir / 'DELIVERY_LANGUAGE_MATRIX_AUDIT.json').write_text(
+        json.dumps(language_matrix_audit, ensure_ascii=False, indent=2), encoding='utf-8'
+    )
+    (package_dir / 'PLATFORM_SCOPE.json').write_text(
+        json.dumps(scope, ensure_ascii=False, indent=2), encoding='utf-8'
     )
     (package_dir / '01_LISTING_UPLOAD_READY.md').write_text(
         render_upload_center_md_with_global_cn(center, render_upload_center_md), encoding='utf-8'
@@ -191,6 +225,15 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
     (package_dir / '00_PROJECT_HUB.md').write_text(
         build_project_hub_md(center), encoding='utf-8'
     )
+
+    # When Listing is active and the platform primary language is known, a missing authored English/
+    # primary-language layer is a real delivery defect. Unknown platform scope stays explicitly pending
+    # rather than being silently guessed or blocking the whole project artifact.
+    if (center.get('task_scope') or {}).get('listing_active') and language_plan.get('platform_primary_status') == 'RESOLVED' and language_matrix_audit.get('status') == 'INCOMPLETE':
+        raise RuntimeError(
+            'BLOCKED delivery language matrix incomplete: '
+            + json.dumps(language_matrix_audit.get('missing') or [], ensure_ascii=False)
+        )
 
     html_path = build_delivery_html(package_dir, package_dir / 'index.html', title=f'{project.name} · CBCC Delivery')
     html_path.write_text(apply_chinese_interpretation_ui(html_path.read_text(encoding='utf-8')), encoding='utf-8')
@@ -238,6 +281,9 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         'listing_upload_ready': '01_LISTING_UPLOAD_READY.md',
         'human_delivery_contract': 'HUMAN_DELIVERY.json',
         'human_language_audit': 'HUMAN_LANGUAGE_AUDIT.json',
+        'delivery_language_matrix_audit': 'DELIVERY_LANGUAGE_MATRIX_AUDIT.json',
+        'platform_scope': 'PLATFORM_SCOPE.json',
+        'source_truth_media_audit': 'SOURCE_TRUTH_MEDIA_AUDIT.json',
         'full_delivery_depth_audit': 'FULL_DELIVERY_DEPTH_AUDIT.json',
         'prompt_consumption_audit': 'PROMPT_CONSUMPTION_AUDIT.json',
         'strategy_authority': 'strategy/MASTER_STRATEGY_CN.md',
@@ -245,8 +291,14 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         'asset_package_preserved': asset_root.exists(),
         'supporting_analysis': 'supporting_analysis/',
         'workspace_contract': {
+            'shell_version': 'cbcc-commercial-v1',
             'complete_human_html': bool(html_text.strip()),
-            'chinese_first': '默认中文交付' in html_text or '交付语言' in html_text,
+            'chinese_first': '默认中文交付' in html_text or '交付语言' in html_text or '中文释义' in html_text,
+            'explicit_platform_scope_only': scope.get('platform_status') in {'EXPLICIT','UNSPECIFIED'},
+            'no_silent_platform_default': scope.get('platform_status') != 'INFERRED',
+            'delivery_language_matrix': language_matrix_audit.get('status'),
+            'source_truth_media': source_media_audit.get('status'),
+            'self_contained_source_media': source_media_audit.get('copied_count', 0) == 0 or 'data:image/' in html_text,
             'foreign_human_copy_has_chinese_companion': language_audit.get('status') == 'PASS',
             'global_human_foreign_content_has_chinese_companion': (language_audit.get('global_human_content') or {}).get('final_status') == 'PASS',
             'listing_human_field_titles_chinese_first': (language_audit.get('listing') or {}).get('status') == 'PASS',
