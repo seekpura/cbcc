@@ -23,6 +23,7 @@ from . import creative as _creative
 from . import surface_architecture as _surface_architecture
 from . import agent_art_direction_authority as _agent_art_direction_authority
 from . import agent_plan_input_bridge as _agent_plan_input_bridge
+from . import portfolio_visual_authority as _portfolio_visual_authority
 from . import surface_advisory_authority as _surface_advisory_authority
 
 # Photography is not a universal runtime default. It becomes active only when the Agent's per-asset
@@ -95,10 +96,19 @@ _agent_autonomy.compile_agent_autonomy_plan = _agent_art_direction_authority.wra
 _agent_autonomy.compile_agent_autonomy_plan = _agent_plan_input_bridge.wrap_compile_agent_autonomy_plan(
     _agent_autonomy.compile_agent_autonomy_plan
 )
+_agent_autonomy.compile_agent_autonomy_plan = _portfolio_visual_authority.wrap_compile_agent_autonomy_plan(
+    _agent_autonomy.compile_agent_autonomy_plan
+)
 _agent_autonomy.agent_creative_directions = _agent_art_direction_authority.wrap_agent_creative_directions(
     _agent_autonomy.agent_creative_directions
 )
+_agent_autonomy.agent_creative_directions = _portfolio_visual_authority.wrap_agent_creative_directions(
+    _agent_autonomy.agent_creative_directions
+)
 _agent_autonomy.compile_agent_next_action = _agent_art_direction_authority.wrap_compile_agent_next_action(
+    _agent_autonomy.compile_agent_next_action
+)
+_agent_autonomy.compile_agent_next_action = _portfolio_visual_authority.wrap_compile_agent_next_action(
     _agent_autonomy.compile_agent_next_action
 )
 
@@ -112,4 +122,7 @@ _surface_architecture.compile_surface_architecture = _surface_advisory_authority
 # mode, missing decisions are returned to the Agent and deterministic layout/product fallbacks are disabled.
 _creative.apply_creative_system_to_assets = _agent_art_direction_authority.wrap_apply_creative_system_to_assets(
     _creative
+)
+_creative.apply_creative_system_to_assets = _portfolio_visual_authority.wrap_apply_creative_system_to_assets(
+    _creative.apply_creative_system_to_assets
 )
