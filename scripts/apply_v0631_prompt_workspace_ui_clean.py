@@ -37,8 +37,9 @@ def main()->None:
     # Asset page Prompt lens = same contract, no engineering-contract language.
     text=text.replace('<span>人类生产说明</span><h3>中文规范生产提示词</h3>','<span>直接给生成模型</span><h3>Model Prompt CN｜中文模型提示词</h3>')
     text=text.replace('<span>发送生成模型</span><h3>英文 / 目标模型提示词</h3>','<span>Direct model input</span><h3>Model Prompt EN｜英文模型提示词</h3>')
-    text=text.replace('只核对当前资产实际相关的决策、画面、摄影 / CMF、文案和保真约束。缺失或不相关的维度不应为了“字段完整”被补造；Prompt 是执行合同，不是独立创意来源。','Model Prompt 只承载当前资产真正需要进入生成模型的视觉、空间、摄影 / CMF、动态与文字行为。产品锁定、图层、文字装配、Provider、QA 与修订规则请到“生产说明”查看；这些工程合同不进入模型提示词。')
+    text=text.replace('只核对当前资产实际相关的决策、画面、摄影 / CMF、文案和保真约束。缺失或不相关的维度不应为了“字段完整”被补造；Prompt 是执行合同，不是独立创意来源。','Model Prompt 只承载当前资产真正需要进入生成模型的视觉、空间、摄影 / CMF、动态与文字行为。产品锁定、图层、文字装配、Provider、QA 与修订规则请到“生产 / 装配说明”查看；这些工程合同不进入模型提示词。')
     text=text.replace("add('prompt','Prompt 执行','EXECUTION','执行当前已编译的生产 Prompt；不补造无关参数。',body)","add('prompt','Model Prompt','MODEL INPUT','查看当前资产真正发送给图像 / 视频生成模型的 CN / EN 提示词。',body)")
+    text=text.replace("'production':('生产说明','PRODUCTION','查看与本资产执行方式直接相关的生产备注。')","'production':('生产 / 装配说明','PRODUCTION','查看锁图、文字装配、图层、Provider 与本资产执行方式直接相关的生产备注。')")
 
     # Human workspace readiness reflects semantic readiness, not just file existence.
     old="return {'id':aid,'title':display_title,'original_title':original_title,'summary':summary,'prompt_cn':prompt_cn,'prompt_en':prompt_en,'views':views,'source_files':src,'surface':surface,'intent':intent,'asset_type':asset_type,'agent_view_order':design.get('workspace_view_order') or design.get('agent_view_order') or []}"
