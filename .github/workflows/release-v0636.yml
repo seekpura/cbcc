@@ -1,0 +1,190 @@
+name: CBCC v0.6.36 Seven-Tool Capability Continuity Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v0636.yml'
+      - 'runtime/cbcc/pricing_economics_authority.py'
+      - 'runtime/cbcc/seven_tool_continuity.py'
+      - 'scripts/apply_v0636_seven_tool_continuity.py'
+      - 'tests/test_v0636_seven_tool_pricing_integrity.py'
+      - 'CHANGELOG_V0636.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONPATH: .:runtime
+
+jobs:
+  release-v0636:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
+
+      - name: Apply v0.6.36 source migration
+        run: python scripts/apply_v0636_seven_tool_continuity.py
+
+      - name: Compile changed commercial and delivery authority
+        run: |
+          python -m py_compile \
+            runtime/cbcc/pricing_economics_authority.py \
+            runtime/cbcc/seven_tool_continuity.py \
+            runtime/cbcc/compiler.py \
+            runtime/cbcc/provider_executor.py \
+            runtime/cbcc/delivery_workspace.py \
+            scripts/build_plugin_dist.py \
+            scripts/apply_v0636_seven_tool_continuity.py
+
+      - name: v0.6.36 seven-tool and pricing acceptance
+        run: pytest -q tests/test_v0636_seven_tool_pricing_integrity.py
+
+      - name: Preserve seven-agent and economics depth
+        run: |
+          pytest -q \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
+            tests/test_full_strategy_hard_contract.py \
+            tests/test_full_delivery_last_mile.py
+
+      - name: Preserve v0.6.30-v0.6.35 visual and provider authority
+        run: |
+          pytest -q \
+            tests/test_v0635_native_reference_provider_integrity.py \
+            tests/test_v0634_native_reference_authority_cleanup.py \
+            tests/test_v0633_reference_guided_native_asset_universe.py \
+            tests/test_v0633_asset_universe_workspace.py \
+            tests/test_v0632_production_parameter_closure.py \
+            tests/test_v0632_portfolio_visual_authority.py \
+            tests/test_v0632_human_art_direction_visibility.py \
+            tests/test_v0631_model_native_prompt_contract.py \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0630_prompt_art_direction_projection.py
+
+      - name: Verify compiler and human-delivery consumption
+        run: |
+          grep -q 'compile_pricing_economics_authority' runtime/cbcc/compiler.py
+          grep -q "pricing_economics_authority.json" runtime/cbcc/compiler.py
+          grep -q "listing_pricing_offer_context.json" runtime/cbcc/compiler.py
+          grep -q "ads_pricing_economics_context.json" runtime/cbcc/compiler.py
+          grep -q 'compile_seven_tool_continuity' runtime/cbcc/compiler.py
+          grep -q 'seven_tool_continuity.json' runtime/cbcc/compiler.py
+          grep -q 'id="commercial-brain"' runtime/cbcc/delivery_workspace.py
+          grep -q "if fidelity not in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}" runtime/cbcc/provider_executor.py
+
+      - name: Commit migrated v0.6.36 source to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add VERSION SKILL.md runtime/cbcc/compiler.py runtime/cbcc/provider_executor.py runtime/cbcc/delivery_workspace.py scripts/build_plugin_dist.py
+          if ! git diff --cached --quiet; then
+            git commit -m 'release: activate v0.6.36 seven-tool continuity [skip ci]'
+            git push origin HEAD:main
+          fi
+
+      - name: Verify active v0.6.36 authority
+        run: |
+          test "$(cat VERSION)" = "0.6.36-seven-tool-capability-continuity"
+          grep -q '^version: 0.6.36-seven-tool-capability-continuity$' SKILL.md
+          grep -q 'Seven First-Class Commerce Tools + Pricing/Economics Integrity' SKILL.md
+          grep -q 'Pricing Decision + WHY' SKILL.md
+          grep -q '七大工具按一等能力执行并保持连续性' scripts/build_plugin_dist.py
+
+      - name: Build installable Plugin and Skill archives
+        run: python scripts/build_plugin_dist.py --output-dir dist
+      - name: Build Runtime archive
+        run: python scripts/build_dist.py dist/cross-border-commerce-creative-runtime-v0.6.36.zip
+
+      - name: Verify packaged v0.6.36 authority
+        run: |
+          python - <<'PY'
+          import json, zipfile
+          from pathlib import Path
+          root=Path('dist')
+          plugin=root/'cross-border-commerce-creative-plugin-v0.6.36.zip'
+          skill=root/'cross-border-commerce-creative-skill-v0.6.36.zip'
+          runtime=root/'cross-border-commerce-creative-runtime-v0.6.36.zip'
+          for p in (plugin,skill,runtime):
+              assert p.exists() and p.stat().st_size > 10000, p
+          with zipfile.ZipFile(plugin) as z:
+              r='cross-border-commerce-creative/'
+              b=r+'skills/cross-border-commerce-creative/'
+              manifest=json.loads(z.read(r+'plugin.json'))
+              assert manifest['version']=='0.6.36'
+              wrapper=z.read(b+'SKILL.md').decode('utf-8')
+              authority=z.read(b+'resources/SKILL.md').decode('utf-8')
+              compiler=z.read(b+'resources/runtime/cbcc/compiler.py').decode('utf-8')
+              pricing=z.read(b+'resources/runtime/cbcc/pricing_economics_authority.py').decode('utf-8')
+              continuity=z.read(b+'resources/runtime/cbcc/seven_tool_continuity.py').decode('utf-8')
+              provider=z.read(b+'resources/runtime/cbcc/provider_executor.py').decode('utf-8')
+              workspace=z.read(b+'resources/runtime/cbcc/delivery_workspace.py').decode('utf-8')
+              assert 'Seven First-Class Commerce Tools' in wrapper
+              assert 'Pricing Decision + WHY' in authority
+              assert 'compile_pricing_economics_authority' in compiler
+              assert 'Absent costs/fees/CVR are unresolved' in pricing
+              assert 'SEVEN_TOOL_CONTINUITY_COMPILED' in continuity
+              assert "{'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}" in provider
+              assert 'id="commercial-brain"' in workspace
+          print('packaged v0.6.36 seven-tool continuity PASS')
+          PY
+
+      - name: Write release manifest and SHA256 sums
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('dist/release_manifest.json')
+          data=json.loads(p.read_text(encoding='utf-8')) if p.exists() else {}
+          data.update({'version':'0.6.36','release':'Seven-Tool Capability Continuity + Pricing/Economics Integrity','authority_version':'0.6.36-seven-tool-capability-continuity'})
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2),encoding='utf-8')
+          PY
+          cd dist
+          sha256sum \
+            cross-border-commerce-creative-plugin-v0.6.36.zip \
+            cross-border-commerce-creative-skill-v0.6.36.zip \
+            cross-border-commerce-creative-runtime-v0.6.36.zip \
+            release_manifest.json > SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbcc-v0.6.36-seven-tool-capability-continuity
+          path: |
+            dist/cross-border-commerce-creative-plugin-v0.6.36.zip
+            dist/cross-border-commerce-creative-skill-v0.6.36.zip
+            dist/cross-border-commerce-creative-runtime-v0.6.36.zip
+            dist/release_manifest.json
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish GitHub Release v0.6.36
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.6.36 >/dev/null 2>&1; then
+            gh release upload v0.6.36 \
+              dist/cross-border-commerce-creative-plugin-v0.6.36.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.36.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.36.zip \
+              dist/release_manifest.json dist/SHA256SUMS.txt --clobber
+            gh release edit v0.6.36 --title 'CBCC v0.6.36 — Seven-Tool Capability Continuity + Pricing/Economics Integrity' --notes-file CHANGELOG_V0636.md --latest
+          else
+            gh release create v0.6.36 \
+              dist/cross-border-commerce-creative-plugin-v0.6.36.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.36.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.36.zip \
+              dist/release_manifest.json dist/SHA256SUMS.txt \
+              --target "$GITHUB_SHA" \
+              --title 'CBCC v0.6.36 — Seven-Tool Capability Continuity + Pricing/Economics Integrity' \
+              --notes-file CHANGELOG_V0636.md --latest
+          fi
