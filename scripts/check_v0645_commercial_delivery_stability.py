@@ -42,7 +42,7 @@ def main() -> int:
 
     runtime = skill_root / 'resources' / 'runtime' / 'cbcc'
     files = {
-        'platform_scope.py': ['UNSPECIFIED', 'CURRENT_REQUEST', 'platform_compile'],
+        'platform_scope.py': ['UNSPECIFIED', 'CURRENT_REQUEST', '_target_is_explicit'],
         'delivery_language_matrix.py': ['EN_PLATFORM_PRIMARY_CN', 'CN_ONLY', 'EN_CN_PENDING_PLATFORM_PRIMARY'],
         'source_truth_media.py': ['SOURCE_TRUTH_MEDIA_AUDIT.json', "package / 'sources'"],
         'commercial_workspace_shell.py': ["WORKSPACE_SHELL_VERSION = 'cbcc-commercial-v1'", '一次只显示一个一级工作面'],
