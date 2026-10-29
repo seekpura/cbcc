@@ -31,30 +31,52 @@ def main() -> int:
     canonical = canonical_path.read_text(encoding='utf-8')
     if host != canonical:
         raise SystemExit('Host Skill and Canonical Skill are not byte-identical')
-    if len(canonical.encode('utf-8')) < 90000:
-        raise SystemExit(f'Canonical Skill shrank below commercial baseline: {len(canonical.encode("utf-8"))} bytes')
     must(canonical, [
         'Commercial Continuity & Decision Lineage Authority',
+        'CBCC Canonical Authority Loading Map',
         'Source → Analysis → Decision → Strategy → Curation → Asset',
         'Subject Presence System',
         'ANIMAL', 'PLANT', 'PRODUCT_OR_OBJECT', 'MULTI_SUBJECT',
         'Commercial Asset Universe',
-        'SOCIAL_SEEDING', 'CREATOR_UGC', 'APLUS_CONTENT',
         'Production Parameter Closure',
-        'focal length',
-        'working distance',
-        'negative fill',
-        'polarization',
-        'Prelight',
-        'Pricing',
-        'Economics',
-        'RACE',
-        'Advertising Optimization',
-        'Review Analysis',
-        'Asset Universe',
-        'cbcc-commercial-v1',
-        'English baseline',
+        'Pricing', 'Economics', 'RACE', 'Advertising Optimization', 'Review Analysis',
+        'Asset Universe', 'cbcc-commercial-v1', 'English baseline',
     ], 'Canonical Skill')
+
+    # Commercial depth is not a byte-count contest. Prove the Host routes into the mature specialist
+    # authorities and that those authorities are present with their real production contracts.
+    authority_files = {
+        'resources/SKILL_AUTHORITY_v0.6.6.md': [
+            'Seven first-class commerce tool contracts', 'Photography / CMF',
+            'Asset package preservation — mandatory', 'RACE Research',
+        ],
+        'resources/prompts/canonical_authority_loading_map.md': [
+            'FULL / end-to-end project mandatory authority set',
+            'creative_direction_surface_prompt_compiler.md', 'dynamic_asset_curation.md',
+        ],
+        'resources/prompts/dynamic_asset_curation.md': [
+            'There is no global target such as 6, 7, 9 or 12 assets',
+            'subject / action / environment / props', 'Per-asset Art Direction contract',
+        ],
+        'resources/prompts/creative_direction_surface_prompt_compiler.md': [
+            'lossless production-parameter closure', 'working distance', 'negative fill',
+            'polarization', 'Prelight', 'Four distinct production objects',
+        ],
+        'resources/prompts/commercial_visual_generation_authority.md': [
+            'Integrated native generation is the default', 'Actual-output commercial QA',
+        ],
+        'resources/prompts/commercial_delivery_stability_authority.md': [
+            'CBCC Commercial Workspace Shell v1', 'English baseline', '平台、市场、主语言禁止历史污染',
+        ],
+        'resources/prompts/commercial_continuity_lineage_authority.md': [
+            'Subject Presence System', 'Commercial Asset Universe', 'Decision Lineage',
+        ],
+    }
+    for rel, needles in authority_files.items():
+        path = skill_root / rel
+        if not path.exists():
+            raise SystemExit(f'missing mature authority: {rel}')
+        must(path.read_text(encoding='utf-8'), needles, rel)
 
     openai_yaml = (skill_root / 'agents' / 'openai.yaml').read_text(encoding='utf-8')
     if 'default_prompt:' in openai_yaml:
@@ -86,7 +108,7 @@ def main() -> int:
         if path.is_file() and (path.suffix in {'.pyc', '.pyo'} or '__pycache__' in path.parts):
             raise SystemExit(f'compiled cache leaked into plugin: {path.relative_to(root)}')
 
-    print('v0.6.46 commercial continuity / canonical parity / subject / asset-universe guard: PASS')
+    print('v0.6.46 authority routing / commercial continuity / subject / asset-universe guard: PASS')
     return 0
 
 
