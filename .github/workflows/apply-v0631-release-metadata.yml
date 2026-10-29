@@ -1,0 +1,51 @@
+name: Apply v0.6.31 Release Metadata
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0631-release-metadata.yml'
+      - 'scripts/apply_v0631_release_metadata.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-release-metadata:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply v0.6.31 metadata
+        run: python scripts/apply_v0631_release_metadata.py
+      - name: Verify migrated metadata
+        run: |
+          test "$(cat VERSION)" = "0.6.31-model-native-prompt-integrity"
+          grep -q '^version: 0.6.31-model-native-prompt-integrity$' SKILL.md
+          grep -q "runtime_version']='0.6.31-model-native-prompt-integrity'" runtime/cbcc/compiler.py
+          grep -q 'Model Prompt CN' scripts/build_plugin_dist.py
+          grep -q 'Visible Copy Block' scripts/build_plugin_dist.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('prompts/registry.json').read_text(encoding='utf-8'))
+          assert d['version']=='0.6.31-model-native-prompt-integrity'
+          rows={x['id']:x for x in d['prompts']}
+          assert 'separate Model Prompt CN/EN' in rows['PROMPT-CREATIVE-SURFACE-CANONICAL']['purpose']
+          print('v0.6.31 metadata PASS')
+          PY
+      - name: Commit release metadata
+        run: |
+          if git diff --quiet; then
+            echo 'No release metadata change required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add VERSION SKILL.md runtime/cbcc/compiler.py prompts/registry.json scripts/build_plugin_dist.py
+          git commit -m 'release: promote model-native prompt integrity to v0.6.31'
+          git push
