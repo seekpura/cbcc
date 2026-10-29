@@ -9,6 +9,7 @@ import zipfile
 
 from .delivery_workspace import build_delivery_html
 from .human_delivery import compile_upload_center, render_upload_center_md, build_project_hub_md
+from .human_language_delivery import normalize_upload_center, audit_human_language_delivery
 from .delivery_contract import validate_strategy_delivery
 
 
@@ -176,7 +177,7 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         if src.exists() and src.is_file():
             shutil.copy2(src, support / src.name)
 
-    center = compile_upload_center(project)
+    center = normalize_upload_center(compile_upload_center(project))
     (package_dir / 'HUMAN_DELIVERY.json').write_text(
         json.dumps(center, ensure_ascii=False, indent=2), encoding='utf-8'
     )
@@ -198,6 +199,16 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
     if listing_final.exists():
         suffix = 'listing_final_copy' if listing_final.is_dir() else f'listing_final_copy{listing_final.suffix}'
         _copy_file_or_dir(listing_final, package_dir / suffix)
+
+    language_audit = audit_human_language_delivery(package_dir, center)
+    (package_dir / 'HUMAN_LANGUAGE_AUDIT.json').write_text(
+        json.dumps(language_audit, ensure_ascii=False, indent=2), encoding='utf-8'
+    )
+    if language_audit.get('status') != 'PASS':
+        raise RuntimeError(
+            'BLOCKED human language delivery contract failed: '
+            + json.dumps(language_audit.get('issues') or [], ensure_ascii=False)
+        )
 
     files = []
     for f in sorted(package_dir.rglob('*')):
@@ -221,6 +232,7 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         'project_hub': '00_PROJECT_HUB.md',
         'listing_upload_ready': '01_LISTING_UPLOAD_READY.md',
         'human_delivery_contract': 'HUMAN_DELIVERY.json',
+        'human_language_audit': 'HUMAN_LANGUAGE_AUDIT.json',
         'full_delivery_depth_audit': 'FULL_DELIVERY_DEPTH_AUDIT.json',
         'prompt_consumption_audit': 'PROMPT_CONSUMPTION_AUDIT.json',
         'strategy_authority': 'strategy/MASTER_STRATEGY_CN.md',
@@ -230,6 +242,9 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         'workspace_contract': {
             'complete_human_html': bool(html_text.strip()),
             'chinese_first': '默认中文交付' in html_text or '交付语言' in html_text,
+            'foreign_human_copy_has_chinese_companion': language_audit.get('status') == 'PASS',
+            'listing_human_field_titles_chinese_first': (language_audit.get('listing') or {}).get('status') == 'PASS',
+            'asset_foreign_visible_copy_has_chinese_companion': (language_audit.get('assets') or {}).get('status') == 'PASS',
             'object_based_asset_workspace': 'data-workspace-kind="asset-object"' in html_text or not asset_root.exists(),
             'obsolete_phase_rail_absent': 'asset-production-rail' not in html_text and 'asset-phase' not in html_text,
             'full_decision_depth': depth_audit.get('status') if full else 'NOT_REQUIRED_FOR_TASK_SCOPED',
