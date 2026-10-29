@@ -15,10 +15,14 @@ on:
       - 'runtime/cbcc/delivery_contract.py'
       - 'runtime/cbcc/human_delivery.py'
       - 'runtime/cbcc/strategy_depth.py'
+      - 'runtime/cbcc/prompt_compiler.py'
+      - 'runtime/cbcc/asset_compiler.py'
       - 'runtime/cbcc/creative.py'
       - 'runtime/cbcc/cli.py'
       - 'tests/test_delivery_release_acceptance.py'
       - 'tests/test_full_strategy_hard_contract.py'
+      - 'tests/test_full_delivery_last_mile.py'
+      - 'tests/test_prompt_execution_decision_preservation.py'
       - 'tests/test_v0624_strategy_asset_scope.py'
       - 'tests/test_v0625_decision_question_authority.py'
       - 'tests/test_v066_human_workspace_zh_first.py'
@@ -50,7 +54,7 @@ jobs:
       - name: Smoke validators
         run: bash tests/run_smoke.sh
 
-      - name: FULL hard contract and task-scoped autonomy coexist
+      - name: FULL strategy depth and task-scoped autonomy coexist
         env:
           PYTHONPATH: runtime
         run: |
@@ -59,8 +63,19 @@ jobs:
             tests/test_v0624_strategy_asset_scope.py \
             tests/test_v0625_decision_question_authority.py
           grep -q 'FULL vs TASK_SCOPED Delivery Authority' SKILL.md
+          grep -q 'FULL Decision-Depth + Prompt Execution Continuity' SKILL.md
           grep -q 'C 级证据不得形成硬宣称' SKILL.md
           grep -q 'RACE=Research → Action → Communication → Evaluation' SKILL.md
+
+      - name: Prompt execution decision preservation
+        env:
+          PYTHONPATH: runtime
+        run: pytest -q tests/test_prompt_execution_decision_preservation.py
+
+      - name: FULL human artifact last-mile acceptance
+        env:
+          PYTHONPATH: runtime
+        run: pytest -q tests/test_full_delivery_last_mile.py
 
       - name: Human delivery authority and workspace semantics
         env:
@@ -96,11 +111,18 @@ jobs:
           assert d['version']=='0.6.29', d
           assert d['source_version']=='0.6.29-final-stabilization', d
           c=d.get('delivery_contract') or {}
-          assert c.get('complete_html_required') is True, c
-          assert c.get('artifact_required_for_full_task') is True, c
-          assert c.get('object_based_asset_workspace') is True, c
-          assert c.get('chat_only_completion_forbidden') is True, c
-          print('release + delivery contract PASS')
+          required={
+              'complete_html_required':True,
+              'artifact_required_for_full_task':True,
+              'object_based_asset_workspace':True,
+              'chat_only_completion_forbidden':True,
+              'full_nine_domain_decision_depth_required':True,
+              'prompt_consumption_audit_required':True,
+              'host_custom_short_report_cannot_substitute_full_delivery':True,
+          }
+          missing={k:v for k,v in required.items() if c.get(k) is not v}
+          assert not missing, {'missing_delivery_contract_flags':missing,'actual':c}
+          print('release + FULL depth + prompt consumption contract PASS')
           PY
 
       - name: Verify packaged source contains real delivery and FULL authority
@@ -116,18 +138,30 @@ jobs:
                   root+'SKILL.md',
                   root+'runtime/cbcc/delivery_export.py',
                   root+'runtime/cbcc/delivery_workspace.py',
+                  root+'runtime/cbcc/delivery_html.py',
                   root+'runtime/cbcc/delivery_contract.py',
                   root+'runtime/cbcc/strategy_depth.py',
+                  root+'runtime/cbcc/prompt_compiler.py',
+                  root+'runtime/cbcc/asset_compiler.py',
                   root+'builders/project_delivery_builder.py',
                   root+'tests/test_delivery_release_acceptance.py',
                   root+'tests/test_full_strategy_hard_contract.py',
+                  root+'tests/test_full_delivery_last_mile.py',
+                  root+'tests/test_prompt_execution_decision_preservation.py',
               ]
               missing=[x for x in required if x not in names]
               assert not missing, missing
               skill=z.read(root+'SKILL.md').decode('utf-8')
+              export=z.read(root+'runtime/cbcc/delivery_export.py').decode('utf-8')
+              prompt=z.read(root+'runtime/cbcc/prompt_compiler.py').decode('utf-8')
               assert 'FULL vs TASK_SCOPED Delivery Authority' in skill
+              assert 'FULL Decision-Depth + Prompt Execution Continuity' in skill
               assert 'C 级证据不得形成硬宣称' in skill
-          print('packaged delivery + FULL authority PASS')
+              assert 'FULL_DELIVERY_DEPTH_AUDIT.json' in export
+              assert 'PROMPT_CONSUMPTION_AUDIT.json' in export
+              assert '_prompt_consumption_audit' in prompt
+              assert 'CANONICAL_PROMPT_COMPILED_EXECUTION_PRESERVING' in prompt
+          print('packaged delivery + FULL depth + prompt continuity authority PASS')
           PY
 
       - name: Write SHA256 sums
@@ -139,7 +173,7 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: cbcc-v0.6.29-delivery-repair
+          name: cbcc-v0.6.29-full-depth-prompt-repair
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
