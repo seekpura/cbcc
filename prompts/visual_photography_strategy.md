@@ -5,6 +5,73 @@ Translate Product Truth, Positioning, Message Hierarchy, audience/context eviden
 
 The Agent acts as commerce art director: it decides what the portfolio should feel like, which visual carriers answer which shopper decisions, when the product is hero/supporting/detail/absent, and how each asset is composed while remaining part of one coherent design world.
 
+## v0.6.32 execution-depth authority — restore the useful v0.6.6 contract
+A visual plan is not professionally complete because it names `warm white`, `soft light`, `85mm`, `editorial`, `product right / text left`, or a carrier. Those are fragments. For every activated asset, the Agent must author enough **concrete execution geometry and material/light behavior to reproduce the intended pixels**, then the Prompt Compiler must consume every selected generation-relevant value.
+
+For a photographic / photographic-generation / source-composite photographic route, author a route-specific starting execution contract before calling the asset READY. When relevant, this includes:
+- focal length / lens family;
+- working-distance intent;
+- camera height;
+- yaw / pitch / roll or azimuth / elevation / roll;
+- shot size / framing / crop;
+- focus plane;
+- aperture / DOF intent;
+- shutter / shutter angle and ISO when a real-capture or motion route uses them;
+- key-light direction, size/modifier geometry and distance;
+- fill, negative fill and rim/background light where they materially change form/readability;
+- CCT and WB;
+- key:fill or exposure ratio;
+- shadow density/edge policy;
+- highlight roll-off / clipping protection;
+- exposure/metering policy;
+- reflection / flagging / polarization control when material behavior needs it;
+- Prelight / test-frame instruction;
+- CMF, material response and environment surface behavior;
+- color-management/output-space decision;
+- finishing / grade / post look;
+- for people: skin-tone metering, deep-skin shadow-detail protection, bounce/reflector/diffusion, hair/wardrobe/makeup/age/body representation when relevant.
+
+Do not invent measured-final values. Use an executable starting recommendation and mark values that depend on a real Prelight/test frame as such. A field may be N/A only with a reason tied to the actual carrier/route; silently omitting a useful parameter is not semantic compression.
+
+### Locked-source composite is still a fully designed photograph/composite
+`LOCKED_PIXEL / LOCKED_SOURCE_COMPOSITE` means the product identity layer is not regenerated. It does **not** remove the need to design the final scene.
+
+When a real source product will be composited into a generated plate, the Agent still authors:
+- exact final product envelope / occupancy / scale;
+- relative x/y placement and crop-safe bounds;
+- front/back or multi-object depth relationship;
+- receiving surface and contact point;
+- perspective/lens relationship the plate must match;
+- contact-shadow direction, length, density and softness;
+- reflection/specular receiving behavior when relevant;
+- ambient/key/fill direction and ratio the product layer must match;
+- local color temperature / WB and grade-match target;
+- occlusion/foreground relationships if any;
+- copy-safe/evidence-safe zones around the final product, not around an imaginary empty canvas.
+
+A plate prompt such as “warm ivory background, reserve space on the right, do not generate product” is incomplete when the final composite geometry/light program is already known. The model-facing plate prompt must describe the **final composite spatial/light system** while explicitly telling the model not to render the locked product itself.
+
+## Portfolio design-quality authority
+Platform capacity is not an asset quota. `max 9 images`, `up to 7 images`, or any other slot limit means capacity only; the Agent activates only assets that add a distinct purchase decision, evidence job, emotional/context job, or native surface role.
+
+Before finalizing the portfolio, the Agent performs a visual differentiation review across adjacent assets. Review at least:
+- semantic/visual carrier;
+- product presence and role;
+- subject/action/evidence plane;
+- composition grammar and relative placement;
+- scale/occupancy/depth;
+- focal path and negative-space shape;
+- information density / typography relationship;
+- camera/view where relevant;
+- lighting/material behavior where relevant;
+- palette role (continuity token vs dominant repeated field);
+- decisive moment;
+- deliberate break from the neighboring asset and WHY.
+
+Shared brand continuity is not permission to repeat `warm ivory + left copy/right product + small lower-corner product + soft light` across the gallery. Repetition is allowed only when the Agent can explain why the same geometry is commercially superior for those distinct decisions. Otherwise re-author the weaker assets before delivery.
+
+Use integrated references/cases/techniques as mechanisms, not as templates: retrieve relevant composition, information-design, material, photography, editorial, motion or commerce mechanisms; transform them for the current Product Truth/decision job; record what mechanism changed the actual design. Do not stop at generic adjectives such as premium, editorial, clean, modern or minimal.
+
 ## Positive-first principle
 Plants, water, laboratory cues, models, hands, props, animals, lifestyle scenes, macro texture, diagrams, typography, source/document views, illustration, 3D and abstract materials are selectable tools. Use them only when `Product Truth + Consumer Question + Platform/Surface + Culture + Creative Strategy` gives them a job. Do not globally ban or require them.
 
@@ -48,7 +115,9 @@ Before camera settings or generation prompts, define:
 - camera/view/crop only when relevant;
 - color / material / finish / light behavior when relevant;
 - human/casting/styling only when relevant;
-- why this design is the strongest answer to this shopper decision.
+- post/finishing look;
+- why this design is the strongest answer to this shopper decision;
+- what is deliberately different from adjacent assets and why.
 
 Do not start from `text-left/product-right`, `product-left/text-right`, centered hero, card grid or podium. Those are possible outcomes, not default layouts.
 
@@ -123,6 +192,6 @@ Models appear when they answer relevance, usage, scale, fit or social-context qu
 
 ## Shot / Asset Design list
 Every visual production row records:
-`asset_id → commercial job → consumer question → visual carrier → product presence/role → subject/action/evidence → composition/spatial grammar → camera (if relevant) → lighting/CMF (if relevant) → product fidelity/reference role → WHY → success metric`.
+`asset_id → commercial job → consumer question → visual carrier → product presence/role → subject/action/evidence → composition/spatial grammar → exact scale/occupancy/focal path/negative space → camera geometry (if relevant) → focus/exposure (if relevant) → lighting geometry/CCT/WB/ratio/reflection/prelight (if relevant) → CMF/material/color/post → product fidelity/reference role → adjacent-asset delta → WHY → success metric`.
 
 No shot or image exists merely because the package “needs another image”, and no asset inherits the previous asset’s layout merely because it belongs to the same product listing.
