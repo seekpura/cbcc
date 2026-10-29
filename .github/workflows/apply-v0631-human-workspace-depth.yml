@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/apply-v0631-human-workspace-depth.yml'
       - 'scripts/apply_v0631_human_workspace_depth.py'
+      - 'scripts/run_v0631_human_workspace_depth_migration.py'
   workflow_dispatch:
 
 permissions:
@@ -27,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
       - name: Apply human workspace depth migration
-        run: python scripts/apply_v0631_human_workspace_depth.py
+        run: python scripts/run_v0631_human_workspace_depth_migration.py
       - name: Compile changed modules
         env:
           PYTHONPATH: .:runtime
