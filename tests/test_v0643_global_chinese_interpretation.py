@@ -2,10 +2,8 @@ from pathlib import Path
 import json
 
 from cbcc.human_language_delivery import normalize_upload_center
-from cbcc.global_chinese_interpretation import (
-    audit_global_chinese_interpretation,
-    normalize_global_chinese_interpretation,
-)
+from cbcc.global_chinese_interpretation import normalize_global_chinese_interpretation
+from cbcc.final_chinese_interpretation_audit import audit_final_chinese_interpretation
 from cbcc.chinese_interpretation_ui import apply_chinese_interpretation_ui
 
 
@@ -36,11 +34,24 @@ def test_listing_category_description_attributes_search_and_faq_all_require_cn_c
         {'field': 'search_terms', 'label': '搜索词', 'label_zh_semantic': True, 'value': ['oil control gel', 'lightweight moisturiser']},
         {'field': 'faq', 'label': '常见问题', 'label_zh_semantic': True, 'value': [{'question': 'When should I use it?', 'answer': 'Use after cleansing.'}]},
     ]
-    audit = audit_global_chinese_interpretation(tmp_path, _normalize(center))
+    audit = audit_final_chinese_interpretation(tmp_path, _normalize(center))
     assert audit['status'] == 'INCOMPLETE'
     missing = {(x.get('scope'), x.get('field')) for x in audit['issues']}
     for field in ('category', 'description', 'attributes', 'search_terms', 'faq'):
         assert ('LISTING', field) in missing
+
+
+def test_mixed_attribute_object_does_not_pass_just_because_one_leaf_is_chinese(tmp_path):
+    center = _base_center(True)
+    center['copy_center'] = [{
+        'field': 'attributes',
+        'label': '商品属性',
+        'label_zh_semantic': True,
+        'value': {'skin_type': '油性肌肤', 'texture': 'Lightweight gel'},
+    }]
+    audit = audit_final_chinese_interpretation(tmp_path, _normalize(center))
+    assert audit['status'] == 'INCOMPLETE'
+    assert any(x.get('scope') == 'LISTING' and x.get('field') == 'attributes' for x in audit['issues'])
 
 
 def test_preserved_listing_content_still_requires_cn_if_it_is_shown_to_humans(tmp_path):
@@ -49,7 +60,7 @@ def test_preserved_listing_content_still_requires_cn_if_it_is_shown_to_humans(tm
         {'field': 'category', 'label': '平台类目', 'value': 'Beauty > Skin Care'},
         {'field': 'description', 'label': '商品描述', 'value': 'Daily lightweight gel.'},
     ]
-    audit = audit_global_chinese_interpretation(tmp_path, _normalize(center))
+    audit = audit_final_chinese_interpretation(tmp_path, _normalize(center))
     assert audit['status'] == 'INCOMPLETE'
     assert {x.get('field') for x in audit['issues'] if x.get('scope') == 'PRESERVED_LISTING'} == {'category', 'description'}
 
@@ -68,7 +79,7 @@ def test_video_ads_review_and_research_foreign_human_copy_require_same_object_cn
     _write(support / 'market_analysis.json', {
         'customer_voice': [{'quote': 'I want hydration without a sticky finish.'}]
     })
-    audit = audit_global_chinese_interpretation(tmp_path, _normalize(_base_center(False)))
+    audit = audit_final_chinese_interpretation(tmp_path, _normalize(_base_center(False)))
     assert audit['status'] == 'INCOMPLETE'
     scopes = {x.get('scope') for x in audit['issues']}
     assert {'VIDEO', 'ADS', 'REVIEW', 'RESEARCH'} <= scopes
@@ -105,9 +116,9 @@ def test_same_object_cn_companions_make_global_human_copy_pass(tmp_path):
         {'field': 'search_terms', 'label': '搜索词', 'label_zh_semantic': True, 'value': ['oil control gel'], 'delivery_translation': '搜索意图：控油凝胶。'},
         {'field': 'faq', 'label': '常见问题', 'label_zh_semantic': True, 'value': [{'question': 'When should I use it?', 'answer': 'After cleansing.'}], 'delivery_translation': '问：什么时候使用？答：洁面后使用。'},
     ]
-    audit = audit_global_chinese_interpretation(tmp_path, _normalize(center))
+    audit = audit_final_chinese_interpretation(tmp_path, _normalize(center))
     assert audit['status'] == 'PASS'
-    assert audit['global_human_content']['status'] == 'PASS'
+    assert audit['global_human_content']['final_status'] == 'PASS'
 
 
 def test_formal_asset_delivery_translation_zh_reconciles_legacy_asset_audit(tmp_path):
@@ -128,7 +139,7 @@ def test_formal_asset_delivery_translation_zh_reconciles_legacy_asset_audit(tmp_
         'assets': {'status': 'INCOMPLETE', 'issue_count': 1},
         'listing': {'status': 'PASS', 'issue_count': 0},
     }
-    audit = audit_global_chinese_interpretation(tmp_path, _normalize(_base_center(False)), base_audit=base_audit)
+    audit = audit_final_chinese_interpretation(tmp_path, _normalize(_base_center(False)), base_audit=base_audit)
     assert audit['status'] == 'PASS'
     assert audit['assets']['status'] == 'PASS'
     assert not audit['issues']
@@ -141,7 +152,7 @@ def test_technical_identifiers_do_not_require_literal_translation(tmp_path):
         {'field': 'gtin', 'label': 'GTIN 商品条码', 'label_zh_semantic': True, 'value': '1234567890123'},
         {'field': 'url', 'label': '链接', 'label_zh_semantic': True, 'value': 'https://example.com/p/1'},
     ]
-    audit = audit_global_chinese_interpretation(tmp_path, _normalize(center))
+    audit = audit_final_chinese_interpretation(tmp_path, _normalize(center))
     assert not [x for x in audit['issues'] if x.get('code') == 'FOREIGN_LISTING_COPY_WITHOUT_CN_COMPANION']
 
 
@@ -150,7 +161,7 @@ def test_final_contract_does_not_accept_pending_cn_interpretation_as_ready(tmp_p
     center['copy_center'] = [
         {'field': 'title', 'label': '产品标题', 'label_zh_semantic': True, 'value': 'Daily Oil-Balancing Gel', 'delivery_companion_status': '待补中文释义'}
     ]
-    audit = audit_global_chinese_interpretation(tmp_path, _normalize(center))
+    audit = audit_final_chinese_interpretation(tmp_path, _normalize(center))
     assert audit['status'] == 'INCOMPLETE'
     assert any(x.get('code') == 'FOREIGN_LISTING_COPY_WITHOUT_CN_COMPANION' for x in audit['issues'])
 
