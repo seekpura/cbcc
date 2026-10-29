@@ -80,32 +80,13 @@ def update_plugin_builder() -> None:
     path.write_text(text,encoding='utf-8')
 
 
-def retire_old_release_autotrigger() -> None:
-    path=Path('.github/workflows/release-v0629.yml')
-    text=path.read_text(encoding='utf-8')
-    marker='name: CBCC human-delivery release acceptance'
-    if marker in text:
-        text=text.replace(marker,'name: CBCC v0.6.29 historical release acceptance (manual)',1)
-    # Preserve the historical acceptance job exactly, but stop it from auto-running against v0.6.30 main.
-    text2=re.sub(
-        r'(?ms)^on:\n  push:\n.*?^  workflow_dispatch:\n',
-        'on:\n  workflow_dispatch:\n',
-        text,
-        count=1,
-    )
-    if text2==text and 'on:\n  workflow_dispatch:\n' not in text:
-        raise SystemExit('release-v0629.yml: could not retire push trigger')
-    path.write_text(text2,encoding='utf-8')
-
-
 def main() -> None:
     update_version()
     update_skill()
     update_runtime_version()
     update_prompt_registry()
     update_plugin_builder()
-    retire_old_release_autotrigger()
-    print('Applied v0.6.30 release metadata and retired v0.6.29 automatic release trigger.')
+    print('Applied v0.6.30 active release metadata. Workflow retirement is maintained separately by repository tooling.')
 
 
 if __name__=='__main__':
