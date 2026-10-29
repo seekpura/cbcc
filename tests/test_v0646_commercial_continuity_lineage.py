@@ -85,7 +85,7 @@ def _fixture_context():
 def test_context_keeps_real_commercial_payload_not_only_status_counts():
     ctx = _fixture_context()
     assert ctx['market']['price_bands'][0]['min'] == 49
-    assert ctx['market']['price_valleys'][0]['range'] == '69-75'
+    assert ctx['market']['price_valley_signals'][0]['range'] == '69-75'
     assert ctx['pricing_economics']['pricing_decision']['decision'] == 69
     assert ctx['pricing_economics']['scenarios'][0]['break_even_roas'] == 2.76
     assert 'urban oily / combination skin users' in json.dumps(ctx['audience_culture'], ensure_ascii=False)
