@@ -1,0 +1,37 @@
+name: Apply v0.6.30 Agent Creative Authority
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-v0630-agent-creative-authority.yml'
+      - 'scripts/apply_v0630_agent_creative_authority.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-authority:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply Skill authority migration
+        run: python scripts/apply_v0630_agent_creative_authority.py
+
+      - name: Commit Skill authority when changed
+        run: |
+          if git diff --quiet -- SKILL.md; then
+            echo 'No SKILL.md change required.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add SKILL.md
+          git commit -m 'docs: make agent creative authority highest precedence'
+          git push
