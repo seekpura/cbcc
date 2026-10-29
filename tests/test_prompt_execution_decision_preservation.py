@@ -37,6 +37,9 @@ def _human_asset():
         'consumer_question': 'Why does oily skin still need hydration?',
         'strategic_job': 'make the hydration tension legible in a humid-market context',
         'incremental_information': 'oily skin still needs hydration',
+        # This test explicitly selects a real-photo route. Human presence alone must not imply it.
+        'production_mode': 'REAL_PHOTO',
+        'capture_mode': 'REAL_PHOTO',
         'creative_brief': {
             'subject': 'adult Malaysian / Southeast Asian model, cheek/jaw crop',
             'human': 'authentic adult human skin with visible pores and natural sebum highlights',
@@ -45,12 +48,12 @@ def _human_asset():
         },
         'visual_production_signature': {'context_role': 'human use / skin context'},
         'product_presence': {'planning_state': 'OPTIONAL'},
-        'product_fidelity': 'LOCKED_PIXEL',
-        'editable_layer_contract': {'editable_layers': ['background','human_context'], 'frozen_layers': ['product_identity']},
+        'product_fidelity': 'REFERENCE_GUIDED',
+        'editable_layer_contract': {'editable_layers': ['background','human_context'], 'frozen_layers': ['verified_product_facts']},
     }
 
 
-def test_human_asset_inherits_selected_context_lens_and_p0_inclusive_execution():
+def test_explicit_photo_human_asset_inherits_context_lens_and_p0_photo_execution():
     bundle = compile_asset_prompt(
         _human_asset(),
         {'name':'Test Product','category':'beauty'},
@@ -58,7 +61,7 @@ def test_human_asset_inherits_selected_context_lens_and_p0_inclusive_execution()
         {'casting_constraints':['adult Malaysian / Southeast Asian representation without stereotyping'], 'intersectionality':{'age':'adult','geography':'Malaysia'}},
         {'delivery_locale':'zh-CN','primary_locale':'ms-MY','visible_copy_locales':['ms-MY']},
         strategy_authority=_strategy(),
-        source_product_assets=[{'asset_id':'P1','path':'2.png','sha256':'abc','pixel_lock':True}],
+        source_product_assets=[{'asset_id':'P1','path':'2.png','sha256':'abc','pixel_lock':False,'fidelity_mode':'REFERENCE_GUIDED'}],
     )
     card=bundle['design_card']
     assert card['composition_camera']['focal_length_mm']=='50–85mm equivalent'
@@ -78,9 +81,10 @@ def test_graphic_asset_does_not_reinflate_irrelevant_human_photography_toolbox()
     asset={
         'asset_id':'GRAPHIC-01','asset_name':'Formula architecture','asset_type':'IMAGE','surface':'GALLERY','family':'VISUAL',
         'consumer_question':'How is the formula structured?','strategic_job':'show formula relationship','incremental_information':'two-axis formula relationship',
+        'production_mode':'GRAPHIC_DESIGN',
         'creative_brief':{'subject':'typographic evidence relationship','composition':'two continuous information fields'},
         'visual_production_signature':{'context_role':'evidence graphics'},
-        'product_presence':{'planning_state':'OPTIONAL'},'product_fidelity':'REFERENCE_CONSTRAINED',
+        'product_presence':{'planning_state':'OPTIONAL'},'product_fidelity':'REFERENCE_GUIDED',
     }
     bundle=compile_asset_prompt(
         asset, {'name':'Test Product','category':'beauty'},
