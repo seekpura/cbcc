@@ -1,0 +1,32 @@
+from pathlib import Path
+
+p = Path('scripts/build_plugin_dist.py')
+s = p.read_text(encoding='utf-8')
+
+old_prompt = "基于当前对话、上传资料和必要的最新公开信息，完成当前商品的跨境电商策略、Listing、内容、视觉策展与逐资产中英文 Canonical Prompt。该请求属于 FULL 商品项目：必须执行九域决策深度合同、Prompt 参数消费审计，并物化完整中文优先 index.html + 可编辑源 + 逐资产包 + ZIP。九域是完整度合同，不是固定页面模板；不得用自定义短报告替代。"
+new_prompt = old_prompt + " 人类交付以中文为基础语言；Listing 字段标题中文在前，平台原始 key 仅作次级技术标识；所有英文/马来文/阿语等目标市场外文 Listing、内容与资产可见文案必须在同一对象提供中文释义/用途；英文/目标模型 Prompt 必须与中文 Canonical Prompt 成对。"
+if new_prompt not in s:
+    if old_prompt not in s:
+        raise SystemExit('default prompt anchor not found')
+    s = s.replace(old_prompt, new_prompt, 1)
+
+old = """## 人类工作区合同
+- 默认交付语言为中文；目标市场可见文案保留目标语言，并提供中文释义/用途说明。
+- 工作区按真实业务对象组织，不按固定流水线或 01→02→03 阶段组织。
+"""
+new = """## 人类工作区合同
+- **中文是默认的人类交付基础语言**。策略、解释、WHY、风险、摄影策划、UI 与字段标题优先中文；用户明确要求其他交付语言时才覆盖。
+- **Listing 人类字段标题必须中文在前**。平台原始英文/外文字段 key、类目 ID、SKU、GTIN 等只作为次级技术标识；未知平台字段若没有语义明确的中文标题，不得把原 key 直接当唯一标题交付。
+- **任何英文/马来文/阿语等目标市场外文内容都必须在同一人类交付对象提供中文释义/用途**，覆盖 Listing 标题/描述/卖点/搜索词说明、广告/内容文案、资产 headline/subhead/CTA/badge/caption/hook/script overlay 等。搜索词可解释搜索意图而非机械逐词翻译。
+- **逐资产中文解释不可缺失**：每个资产保留目标市场原文，同时在同一资产对象/中文设计卡说明中文含义、为什么使用、如何进入画面；英文/目标模型 Prompt 必须与中文 Canonical Prompt 成对存在。
+- 品牌、SKU、GTIN、URL、HEX、INCI、平台官方字段 key 等专名/技术值可以保留原文，但必须有中文字段名、用途或角色说明。
+- 缺中文主标题、缺外文中文 companion、缺中文资产设计卡或只有英文 Prompt 时，均不是完成态；真实 Runtime 导出必须由 `HUMAN_LANGUAGE_AUDIT.json` 阻断，宿主原生 Artifact 交付也必须执行同等检查。
+- 工作区按真实业务对象组织，不按固定流水线或 01→02→03 阶段组织。
+"""
+if new not in s:
+    if old not in s:
+        raise SystemExit('human workspace anchor not found')
+    s = s.replace(old, new, 1)
+
+p.write_text(s, encoding='utf-8')
+print('host language contract patched')
