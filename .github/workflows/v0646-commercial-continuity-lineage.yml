@@ -1,0 +1,47 @@
+name: v0.6.46 Commercial Continuity Lineage
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'runtime/cbcc/commerce_decision_context.py'
+      - 'runtime/cbcc/commercial_continuity_authority.py'
+      - 'runtime/cbcc/commercial_intelligence_workspace.py'
+      - 'runtime/cbcc/commercial_delivery_continuity.py'
+      - 'runtime/cbcc/__init__.py'
+      - 'prompts/commercial_continuity_lineage_authority.md'
+      - 'tests/test_v0646_commercial_continuity_lineage.py'
+      - 'scripts/build_plugin_dist_v0646.py'
+      - 'scripts/check_v0646_commercial_continuity.py'
+      - 'SKILL.md'
+      - 'VERSION'
+  workflow_dispatch:
+
+jobs:
+  continuity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile runtime and release code
+        run: python -m compileall -q runtime/cbcc scripts/build_plugin_dist_v0646.py scripts/check_v0646_commercial_continuity.py
+      - name: Run focused and preservation regressions
+        env:
+          PYTHONPATH: .
+        run: >-
+          python -m pytest -q
+          tests/test_v0646_commercial_continuity_lineage.py
+          tests/test_v0645_commercial_delivery_stability.py
+          tests/test_v0644_default_prompt_authority.py
+          tests/test_v0643_global_chinese_interpretation.py
+          tests/test_v0642_regression_recovery.py
+      - name: Build formal full-canonical package
+        run: python -m scripts.build_plugin_dist_v0646 --output-dir dist_v0646
+      - name: Guard actual installable archive
+        run: |
+          rm -rf dist_v0646/unpacked
+          mkdir -p dist_v0646/unpacked
+          unzip -q dist_v0646/cross-border-commerce-creative-plugin-v0.6.46.zip -d dist_v0646/unpacked
+          python scripts/check_v0646_commercial_continuity.py dist_v0646/unpacked/cross-border-commerce-creative
