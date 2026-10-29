@@ -10,7 +10,7 @@ _STYLE = r'''
 .app{display:block!important;min-height:100vh}
 .project-object-dock{position:sticky;top:0;z-index:50;background:#10231C;color:#EDF5F1;display:grid;grid-template-columns:minmax(180px,auto) minmax(0,1fr);gap:14px;align-items:center;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,.10)}
 .project-object-brand b{display:block;font-size:13px}.project-object-brand span{display:block;font-size:9px;color:#9FB5AB;white-space:nowrap}
-.project-object-links{display:flex;gap:7px;overflow:auto;scrollbar-width:none}.project-object-links::-webkit-scrollbar{display:none}
+.project-object-links{display:flex;justify-content:flex-end;gap:7px;overflow:auto;scrollbar-width:none}.project-object-links::-webkit-scrollbar{display:none}
 .project-object-link{white-space:nowrap;text-decoration:none;border:1px solid rgba(255,255,255,.14);border-radius:999px;padding:7px 11px;color:#DDE9E3;font-size:11px}
 .project-object-link:hover,.project-object-link.active{background:#EDF5F1;color:#10231C;border-color:#EDF5F1}
 .workspace{min-width:0}.topbar{top:51px!important}
@@ -30,7 +30,7 @@ _STYLE = r'''
 .strategy-body{padding:14px 18px 18px!important}
 .asset-object-navigator{position:static!important;display:flex!important;gap:7px!important;overflow:auto!important;max-height:none!important}
 .asset-object-tab-index{display:none!important}
-@media(max-width:760px){.project-object-dock{grid-template-columns:1fr;padding:8px 10px}.project-object-brand span{display:none}.topbar{top:82px!important}.project-object-links{padding-bottom:2px}.project-map-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.project-object-dock{grid-template-columns:1fr auto;padding:8px 10px}.project-object-brand span{display:none}.topbar{top:58px!important}.project-map-grid{grid-template-columns:1fr}}
 </style>
 '''
 
@@ -148,10 +148,10 @@ def _project_map(routes: list[str], pages: Mapping[str, Mapping[str, str]], cont
 def project_authored_html(page: str, context: Mapping[str, str] | None = None) -> str:
     """Turn the legacy capability-menu shell into a project-authored object workspace.
 
-    The underlying business pages and their full content remain intact. This function changes only the
-    presentation grammar: no left-side capability pipeline, no numbered reading implication, and no
-    vertical phase rail for generic module views. The current project's real objects remain directly
-    addressable through a compact object dock and project map.
+    The underlying business pages and their full content remain intact. Permanent navigation only returns
+    to the current project's object map; capability categories never become a persistent primary menu.
+    Business objects remain directly addressable from the map, while current priority stays a separate
+    focus surface rather than becoming information architecture.
     """
     if not page or 'cbcc-project-authored-workspace' in page:
         return page
@@ -164,14 +164,11 @@ def project_authored_html(page: str, context: Mapping[str, str] | None = None) -
                 ctx[str(key)] = str(value)
 
     routes = _sidebar_routes(page)
-    links: list[str] = []
-    for route in routes:
-        label = _route_label(route, pages, ctx, page)
-        secondary = ' secondary-object-link' if route == 'archive' else ''
-        links.append(
-            f'<a href="#{html.escape(route)}" data-route="{html.escape(route)}" '
-            f'class="route-link project-object-link{secondary}">{html.escape(label)}</a>'
-        )
+    map_label = _route_label('overview', pages, ctx, page)
+    map_link = (
+        '<a href="#overview" data-route="overview" '
+        f'class="route-link project-object-link">{html.escape(map_label)}</a>'
+    )
 
     context_line = ' · '.join(
         item for item in (ctx.get('platform'), ctx.get('market'), ctx.get('target_locale')) if item
@@ -182,7 +179,7 @@ def project_authored_html(page: str, context: Mapping[str, str] | None = None) -
         f'<b>{html.escape(ctx.get("product_name") or "当前项目")}</b>'
         f'<span>{html.escape(context_line)}</span>'
         '</div>'
-        f'<div class="project-object-links">{"".join(links)}</div>'
+        f'<div class="project-object-links">{map_link}</div>'
         '</nav>'
     )
 
