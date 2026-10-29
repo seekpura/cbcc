@@ -1,7 +1,7 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.33-reference-guided-native-asset-universe
+version: 0.6.34-native-reference-authority-cleanup
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
@@ -25,7 +25,7 @@ Create a professional cross-border ecommerce plan **before** governance machiner
 - FULL 视觉项目、商品图、视频、Prompt/Production 任务中，宿主 Agent 必须先完成 **Portfolio Art Direction → Per-Asset Art Direction → Production Parameter Closure**。资产不能因为有标题、Carrier、占比、构图、Camera、Lighting 六七个摘要字段就标 READY。
 - **恢复并提升 v0.6.6 的摄影执行深度。** 摄影/摄影式生成/摄影式锁图复合路线按实际需要作者化焦段/镜头族、工作距离、机位高度、yaw/pitch/roll、景别/裁切、对焦平面、光圈/景深、真实拍摄或运动相关时的快门/ISO、key/fill/negative/rim、modifier 尺寸与距离、CCT/WB、光比、曝光/阴影/高光保护、反射/偏振、Prelight、CMF/材质响应、色彩管理、finishing/grade；人物相关时再加入肤色测光、深肤色暗部保护、bounce/reflector/diffusion、发质/服装/妆发等。最终值依赖实拍时标注 Prelight-dependent，不得假装已测量。
 - **参数策划必须被消费。** 任何 Agent 已选且会改变当前生成结果的具体值，必须进入 Model Prompt CN/EN；只属于锁图/图层/装配/Provider 的规则进入 Production / Assembly Notes。不能把 `85mm / 5200K / 2:1 / 68% / x-y位置 / 阴影密度 / 高光策略 / 材质响应 / post look` 留在策划卡里却给模型一句“warm ivory background, soft light”。
-- **LOCKED_SOURCE_COMPOSITE 不是空背景生成。** 不重画商品只锁定商品身份层；环境底片仍必须围绕最终商品 envelope/occupancy、相对位置、纵深、透视、接触面、接触阴影、反射接收、环境光向/光比、CCT/WB、grade-match、前景遮挡与 copy/evidence safe zone 来生成。Prompt 必须描述最终合成空间/光线系统，同时明确不生成锁定商品本体。
+- **真实商品锁定默认是 Reference-Guided Native Generation，不是后期像素合成。** 当 Product Presence 要求商品可见时，真实商品图必须作为强模型 Reference Input，商品本体在完整最终画面中原生生成；所有已作者化的 envelope/occupancy、相对位置、纵深、透视、接触面、接触阴影、反射、环境光向/光比、CCT/WB、grade、前景遮挡与 copy/evidence safe zone 都必须共同进入模型执行。只有用户明确要求原始源图像素层不可改变时才启用 `EXACT_PIXEL_COMPOSITE`。
 - 手写 `model_prompt_cn/en` 不能绕过闭环。Compiler/Audit 仍要逐项比对所有 selected generation-relevant values；丢参数则 `ART_DIRECTION_EXECUTION_DEPTH_REQUIRED` / `MODEL_PROMPT_NEEDS_AGENT_DECISIONS`，该 Prompt 不得标 READY。
 - **完整人类 Design Card 必须可见。** Inspector/HTML 至少能查看 decisive moment、subject/action/environment/props、visual carrier、product presence/role、composition/spatial grammar/layout geometry、scale/depth/occupancy、focal path、negative space、evidence hierarchy、copy zone/hierarchy、palette/CMF/material response、camera/focus/exposure、lighting/CCT/WB/ratio/reflection/prelight、human/casting、post look，以及视频 timing/shot/motion/transition/audio；不相关项说明 N/A/原因。摘要卡只能做入口。
 - **平台容量不是资产配额。** “最多9图/7图”等只表示上限，不得因为有槽位就全部激活。资产数量由增量购买决策/证据/情绪/原生 Surface 价值决定；重复、装饰性、低信息资产优先删除或合并。

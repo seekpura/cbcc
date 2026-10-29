@@ -113,11 +113,6 @@ FULL 视觉/视频资产必须由 Agent 完成可执行 Art Direction 并闭环�
 
 当 Product Presence 要求真实商品可见时，真实商品图默认作为强模型 Reference Input，使用 `REFERENCE_GUIDED_NATIVE_LOCK` 原生生成完整最终画面中的商品，并保持真实商品身份；`EXACT_PIXEL_COMPOSITE` 仅在用户明确要求源图像素层不可改变时启用。
 
-## Dynamic Asset Universe + Native Product Reference
-资产总量由购买决策、Surface、创意假设、测试与运营需求决定，不受平台 Gallery 槽位总数限制。Hero、卖点、广告、A+/PDP/详情、Store/Banner、Social/Creator、Video 等均可存在多方案；同一消费者问题和同一 Surface 也允许 H01/H02/H03 等显式 Variant，不得因为 question/surface/family 相同而合并。人类工作区区分上线候选、测试池、轮换池、广告、PDP/A+详情、归档与其他资产。
-
-当 Product Presence 要求真实商品可见时，真实商品图默认作为强模型 Reference Input，使用 `REFERENCE_GUIDED_NATIVE_LOCK` 原生生成完整最终画面中的商品，并保持真实商品身份；`EXACT_PIXEL_COMPOSITE` 仅在用户明确要求源图像素层不可改变时启用。
-
 ## Model-Native Prompt Contract
 逐资产生产必须分离 Model Prompt CN、Model Prompt EN、Visible Copy Block 与 Production / Assembly Notes。英文 Model Prompt 的执行说明保持英文，目标市场原文可准确保留，中文释义放在人类交付/Copy Block；不要把 deterministic typography、renderer layer、machine contract、audit/provenance 等 Runtime 工程词塞进模型 Prompt。文字由模型直接生成还是后期装配由 Agent/生产路线显式决定，不做全局默认。FULL 交付不得为缩短篇幅而压扁 Visual Master、内容矩阵或逐资产 Art Direction。
 
@@ -178,7 +173,7 @@ FULL 视觉/视频资产必须由 Agent 完成可执行 Art Direction 并闭环�
 - 从用户目标、Product Truth、证据、目标市场/平台与当前交付范围开始，由 Agent 动态发现信息缺口并决定研究、内容、Surface、资产与创意方向。
 - **FULL 与 TASK_SCOPED 分权**：FULL 执行上面的九域深度合同与 RACE 四阶段；TASK_SCOPED 局部任务才按当前目标动态选择框架/域。两者都不规定固定图片数、方向数、页面模板或摄影字段配额。
 - 不把固定 9 图/12 图、固定方向数、通用页面流水线当作创意/商业权威；但不得用“动态”作为删除 FULL 已要求能力的理由。
-- 商品规格、成分、功能、认证、Claim 与其他已验证事实必须 source-bound；产品图、包装图和源文件默认是设计参考，可按已选创意方向重绘/重渲染/风格化，除非当前子任务显式锁定源图。Claim、Compliance、平台当前证据、Review 与 Completion 按 `resources/SKILL.md` 和 Runtime 合同执行。
+- 商品规格、成分、功能、认证、Claim 与其他已验证事实必须 source-bound；当 Product Presence 要求真实商品可见时，真实商品图/包装图作为强模型 Reference Input，按已选 Art Direction 原生生成完整成图并保持商品身份；当资产不要求商品出现时，源图可仅作为 Truth/Identity/Design Reference。只有用户明确要求原始像素层不变时才使用 `EXACT_PIXEL_COMPOSITE`。Claim、Compliance、平台当前证据、Review 与 Completion 按 `resources/SKILL.md` 和 Runtime 合同执行。
 - 摄影、灯光、CMF、构图、色彩管理、商品保真、可编辑/冻结层若已参与策划并与当前资产相关，必须一路投影到该资产的 Design Card、Parameter Trace 与 Canonical Prompt；不能只存在于策划文字里。
 - Product Name、Asset ID、RACE/KPI 等内部管理元数据不得污染最终生成模型 Prompt，除非它们本身就是消费者可见内容或执行必需事实。
 
