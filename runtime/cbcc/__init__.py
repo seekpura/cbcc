@@ -15,6 +15,7 @@ from . import agent_authority_prompt_compiler as _agent_authority_prompt_compile
 from . import model_native_prompt_contract as _model_native_prompt_contract
 from . import model_native_prompt_audit_fix as _model_native_prompt_audit_fix
 from . import human_delivery_art_direction_projection as _human_delivery_art_direction_projection
+from . import photographic_route_agent_authority as _photographic_route_agent_authority
 from . import art_direction_projection as _art_direction_projection
 from . import agent_autonomy as _agent_autonomy
 from . import creative as _creative
@@ -22,6 +23,13 @@ from . import surface_architecture as _surface_architecture
 from . import agent_art_direction_authority as _agent_art_direction_authority
 from . import agent_plan_input_bridge as _agent_plan_input_bridge
 from . import surface_advisory_authority as _surface_advisory_authority
+
+# Photography is not a universal runtime default. It becomes active only when the Agent's per-asset
+# Art Direction selects photographic grammar / camera-light execution; then the strategy-level
+# inclusive-photography and lens/lighting decisions remain consumable by the downstream Design Card.
+_legacy_prompt_compiler._derived_photo_contract = _photographic_route_agent_authority.wrap_derived_photo_contract(
+    _legacy_prompt_compiler._derived_photo_contract
+)
 
 
 def _preserve_canonical_status(fn):
