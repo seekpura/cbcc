@@ -15,6 +15,7 @@ from .global_chinese_interpretation import (
     audit_global_chinese_interpretation,
     render_upload_center_md_with_global_cn,
 )
+from .chinese_interpretation_ui import apply_chinese_interpretation_ui
 from .delivery_contract import validate_strategy_delivery
 
 
@@ -191,7 +192,8 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
         build_project_hub_md(center), encoding='utf-8'
     )
 
-    build_delivery_html(package_dir, package_dir / 'index.html', title=f'{project.name} · CBCC Delivery')
+    html_path = build_delivery_html(package_dir, package_dir / 'index.html', title=f'{project.name} · CBCC Delivery')
+    html_path.write_text(apply_chinese_interpretation_ui(html_path.read_text(encoding='utf-8')), encoding='utf-8')
 
     for rel, dest in _EXTRA_DIRS:
         src = project / rel
