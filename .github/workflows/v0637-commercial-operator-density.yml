@@ -35,6 +35,9 @@ jobs:
       - name: Compile runtime
         run: python -m compileall -q runtime/cbcc
 
+      - name: Enforce commercial prompt density
+        run: python scripts/check_commercial_prompt_density.py
+
       - name: Run v0.6.37 authority tests
         run: |
           python -m pytest -q tests/test_v0637_commercial_operator_density.py
