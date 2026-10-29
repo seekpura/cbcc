@@ -8,6 +8,7 @@ on:
       - 'scripts/apply_v0635_native_reference_provider_integrity.py'
       - 'scripts/repair_v0635_migration_script.py'
       - 'tests/test_v0635_native_reference_provider_integrity.py'
+      - 'tests/test_v0634_native_reference_authority_cleanup.py'
   workflow_dispatch:
 
 permissions:
