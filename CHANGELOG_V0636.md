@@ -51,3 +51,5 @@ The Chinese-first `index.html` workspace gains a Commercial Brain section exposi
 ## Provider cleanup
 
 Pixel-layer manifests now activate only for explicit `EXACT_PIXEL_COMPOSITE` / `PIXEL_COMPOSITE_EXPLICIT`. Legacy `LOCKED_PIXEL` no longer implicitly creates an exact-pixel layer manifest.
+
+Release acceptance rerun after repairing the migration script quoting issue found by the first gate.
