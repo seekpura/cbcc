@@ -17,7 +17,8 @@ def _read_json(path:Path, default=None):
 
 
 
-_REAL_PRODUCT_MODES={'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'}
+_REAL_PRODUCT_MODES={'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'}
+_NATIVE_REFERENCE_MODES={'AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'}
 
 def _sha256_file(path:Path)->str:
     h=hashlib.sha256()
@@ -101,21 +102,22 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
     source_ids=[x.get('asset_id') for x in source_bindings if x.get('asset_id')]
     source_by_id={str(x.get('asset_id')):x for x in manifest.get('source_product_assets') or [] if isinstance(x,dict) and x.get('asset_id')}
     sources=[source_by_id[str(aid)] for aid in source_ids if str(aid) in source_by_id]
-    locked=fidelity in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
-    real_product_required=(locked or mode in _REAL_PRODUCT_MODES) and mode not in {'AI_GENERATIVE','DOCUMENTATION'}
+    exact_pixel=fidelity in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
+    native_reference=fidelity in {'REFERENCE_GUIDED','REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} or mode in _NATIVE_REFERENCE_MODES
+    real_product_required=(exact_pixel or native_reference or mode in _REAL_PRODUCT_MODES) and mode not in {'DOCUMENTATION'}
     preflight_errors=[]
     if real_product_required and not sources:
         preflight_errors.append('REAL_PRODUCT_MASTER_NOT_BOUND')
     if real_product_required and not source_bindings:
         preflight_errors.append('REAL_PRODUCT_MASTER_NOT_RESOLVABLE_AT_HANDOFF')
-    if locked and source_bindings and not any(bool(x.get('pixel_lock')) for x in source_bindings):
-        preflight_errors.append('LOCKED_PIXEL_MASTER_NOT_DECLARED')
-    if locked and mode=='AI_GENERATIVE':
-        preflight_errors.append('LOCKED_PIXEL_GENERATIVE_CONFLICT')
+    if exact_pixel and source_bindings and not any(bool(x.get('pixel_lock')) for x in source_bindings):
+        preflight_errors.append('EXACT_PIXEL_MASTER_NOT_DECLARED')
     required_observations=['decision_answer_visible','surface_contract_met','copy_visual_alignment','visual_differentiation_preserved']
     if mode in _REAL_PRODUCT_MODES:
         required_observations.append('photography_cmf_alignment')
-    if locked:
+    if native_reference and not exact_pixel:
+        required_observations += ['product_identity_preserved','source_product_asset_ids_used','source_product_hashes_used','product_reference_input_used','native_product_rendered_in_final_output']
+    if exact_pixel:
         required_observations += ['product_identity_preserved','source_product_asset_ids_used','source_product_hashes_used','product_layer_operation']
     return {
         'version':'0.6.12-portable-provider-package-production-receipt',
@@ -129,7 +131,8 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
         'source_product_binding_errors':source_binding_errors,
         'source_binding_hash':stable_hash(source_bindings),
         'source_product_asset_ids':source_ids,
-        'locked_pixel_rule':('Explicit locked-source mode: use the exact supplied master as an immutable pixel layer and permit only authorized transforms.' if locked else 'Reference-guided mode: source files guide the design/product subject; redraw/rerender/restyle/recompose is allowed. Keep verified product facts and approved claims honest.'),
+        'product_reference_rule':('Explicit exact-pixel route: preserve the exact supplied source pixels as an immutable layer.' if exact_pixel else ('Native reference route: pass the real product image(s) into the generation model as strong subject references and natively render the same real product identity in the complete final image.' if native_reference else 'Product source files are truth/design references only.')),
+        'locked_pixel_rule':('EXACT_PIXEL_COMPOSITE_EXPLICIT_ONLY' if exact_pixel else 'NOT_DEFAULT_NATIVE_REFERENCE_GENERATION'),
         'visual_production_signature':signature,
         'surface_production_contracts':layout.get('surface_production_contracts') or [],
         'copy_visual_alignment':layout.get('copy_visual_alignment') or {'locked_visible_copy':layout.get('visible_copy') or {},'rule':'Visible copy must be visually attributable to the decision evidence shown.'},
@@ -181,7 +184,19 @@ def _quality_result_issues(row:dict[str,Any], result:dict[str,Any])->list[str]:
             elif str(qc.get('version') or '').startswith(('0.5.14','0.6.0','0.6.1','0.6.2','0.6.3','0.6.4','0.6.5','0.6.6')) and not evidence:
                 issues.append('QUALITY_EVIDENCE_MISSING:'+str(key))
     fidelity=str(qc.get('product_fidelity') or '').upper()
-    if fidelity in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}:
+    exact_pixel=fidelity in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
+    native_reference=fidelity in {'REFERENCE_GUIDED','REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
+    if native_reference and not exact_pixel:
+        identity_status,_identity_evidence=_quality_obs_state(obs.get('product_identity_preserved'))
+        if identity_status not in {'PASS','PASSED','CONFIRMED','MET'}:
+            issues.append('REFERENCE_PRODUCT_IDENTITY_NOT_CONFIRMED')
+        ref_status,_=_quality_obs_state(obs.get('product_reference_input_used'))
+        native_status,_=_quality_obs_state(obs.get('native_product_rendered_in_final_output'))
+        if ref_status not in {'PASS','PASSED','CONFIRMED','MET'}:
+            issues.append('REFERENCE_INPUT_USE_NOT_CONFIRMED')
+        if native_status not in {'PASS','PASSED','CONFIRMED','MET'}:
+            issues.append('NATIVE_PRODUCT_RENDER_NOT_CONFIRMED')
+    if exact_pixel:
         identity_status,_identity_evidence=_quality_obs_state(obs.get('product_identity_preserved'))
         if identity_status not in {'PASS','PASSED','CONFIRMED','MET'}:
             issues.append('LOCKED_PIXEL_IDENTITY_NOT_CONFIRMED')
@@ -398,7 +413,7 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
             },
             'production_receipt_contract':receipt_contract,
             'result_contract':{
-                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations','production_receipt'] + (['source_binding_hash','production_contract_ack'] if str(quality.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
+                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations','production_receipt'] + (['source_binding_hash','production_contract_ack'] if str(quality.get('product_fidelity') or '').upper() in {'REFERENCE_GUIDED','REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE','EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'} else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
                 'qa_required':['product','fact','claim','visual','culture','platform'],
                 'quality_observations_required':quality.get('required_result_observations',[]),
                 'optional':['changed_fields','changed_layers','provider_metadata','production_contract_ack','source_binding_hash','layout_contract_hash','photography_contract_hash','prompt_contract_hash']

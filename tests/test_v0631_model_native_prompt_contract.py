@@ -46,7 +46,7 @@ def _asset():
 
 
 def _compile(asset):
-    return compile_asset_prompt(asset,{'name':'K01'},{'market':'MY','platform_family':'TikTok Shop','site':'MY','category':'skincare'}, {}, {'primary_locale':'ms-MY','delivery_locale':'zh-CN'}, {}, None, None, [])
+    return compile_asset_prompt(asset,{'name':'K01'},{'market':'MY','platform_family':'TikTok Shop','site':'MY','category':'skincare'}, {}, {'primary_locale':'ms-MY','delivery_locale':'zh-CN'}, {}, None, None, [{'asset_id':'MASTER-FRONT','role':'FRONT','provider_asset_handle':'ref://master-front','sha256':'abc123','ingest_status':'HASH_VERIFIED_LOCAL'}])
 
 
 def test_model_prompt_is_pure_and_parameter_complete_while_package_status_stays_compatible():

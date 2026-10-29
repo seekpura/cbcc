@@ -1,10 +1,20 @@
 ---
 name: cross-border-commerce-creative
 description: Autonomous cross-border commerce agent for product truth, decision-driven research, market/SKU/economics, strategy, listing, content, visual/photography, dynamic assets, production, review and learning.
-version: 0.6.32-production-parameter-closure
+version: 0.6.33-reference-guided-native-asset-universe
 ---
 
 # Cross-Border Commerce Creative — Hard Contract Strategy → Creative → Production Build
+
+## Reference-Guided Native Product + Dynamic Asset Universe Authority — highest current precedence
+- **“锁真实商品”默认不是后期合成。** 真实商品图作为生成模型的强参考输入，最终商品必须在完整最终画面中原生生成并真实可见；同时锁定包装几何/比例、泵头/滴管/瓶盖结构、Logo、品牌文字、标签版式与可辨识印刷、主色和材质身份。模型可以为匹配已作者化的机位/透视/灯光/景深/场景做原生重建，但不得把商品改成另一个包装版本。
+- 默认保真模式为 `REFERENCE_GUIDED_NATIVE_LOCK`。旧输入中的 `pixel_lock=true / LOCKED_PIXEL / LOCKED_SOURCE_COMPOSITE` 在没有“必须保留原始像素层”这一明确意图时，迁移为 native reference identity lock；只有 `exact_pixel_layer=true / exact_pixel_composite=true / EXACT_PIXEL_COMPOSITE` 才允许使用不可变像素层合成。
+- **Reference input 必须进入 Provider handoff。** 真实商品源图不能只留在 Truth/QA；当 Product Presence=PRESENT 时，Provider Job 必须绑定真实商品 reference input，生成结果必须确认 `product_reference_input_used + native_product_rendered_in_final_output + product_identity_preserved`。
+- **资产宇宙没有总数上限。** 平台“最多9图/7图”等仅约束一次同时上线的 activation set；不约束 Hero 变体、卖点变体、测试图、轮换图、广告图、A+/PDP 详情模块、长图、Banner、Social/Creator/Video 或其他资产总量。20、30、50 个候选都允许，只要每个有独立创意/商业假设。
+- **同一角色允许多方案。** Hero H01/H02/H03、同一卖点 B01/B02/B03、同一广告角度的多个 Hook/构图/人群版本不得因为 `consumer_question + surface + family` 相同被 Runtime 合并。显式 `variant_id / creative_hypothesis_id / test_hypothesis` 是一等身份。
+- 资产交付分为 `Asset Universe`、`Live/Activation Candidates`、`Test Pool`、`Rotation Pool`、`Paid Media`、`PDP/A+ Content`、`Archive` 等运营状态；“现在没放进平台9个槽位”不等于“不生产/不存在”。
+- Surface 范围至少允许 Listing/Gallery/Search、Hero、Benefit/Proof、Usage/How-to、Trust/Packaging、Paid Ads、A+/PDP/Longform、Store/Banner、Social/Creator/UGC、Short Video/Live、Campaign/Seasonal 等。实际项目由 Agent 动态增删，不形成固定20张或固定类型配额。
+
 
 ## Purpose
 Create a professional cross-border ecommerce plan **before** governance machinery becomes visible. The user-facing mainline is positive commercial design: understand the product, market and shopper; decide positioning and message architecture; design platform-native content, visual and photography; compile dynamic assets; then use evidence/platform/compliance/review as background guardrails.

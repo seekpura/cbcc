@@ -5,9 +5,9 @@ from .models import stable_hash
 from .category_strategy import classify_decision_intent, decision_profile, surface_score
 
 SURFACE_TO_MODE={
-    'GALLERY':'REAL_PRODUCT_COMPOSITE','PDP':'GRAPHIC_DESIGN','PDP_VIDEO':'VIDEO',
-    'CREATOR':'AI_HUMAN_REAL_PRODUCT','PAID_AD':'GRAPHIC_DESIGN','FAQ':'DOCUMENTATION',
-    'SEARCH_RESULTS':'REAL_PRODUCT_COMPOSITE','LIVE':'VIDEO','CRM':'GRAPHIC_DESIGN','LONGFORM':'GRAPHIC_DESIGN','A_PLUS':'GRAPHIC_DESIGN','SOCIAL_CONTENT':'GRAPHIC_DESIGN','STORE_BANNER':'GRAPHIC_DESIGN','LANDING_PAGE_HERO':'REAL_PRODUCT_COMPOSITE','COMPARISON':'GRAPHIC_DESIGN','SPECIFICATION':'GRAPHIC_DESIGN','UGC_BRIEF':'DOCUMENTATION','POST_PURCHASE':'GRAPHIC_DESIGN','SHORT_VIDEO':'VIDEO'
+    'GALLERY':'AI_REFERENCE_PRODUCT','PDP':'GRAPHIC_DESIGN','PDP_VIDEO':'VIDEO',
+    'CREATOR':'AI_REFERENCE_HUMAN_PRODUCT','PAID_AD':'GRAPHIC_DESIGN','FAQ':'DOCUMENTATION',
+    'SEARCH_RESULTS':'AI_REFERENCE_PRODUCT','LIVE':'VIDEO','CRM':'GRAPHIC_DESIGN','LONGFORM':'GRAPHIC_DESIGN','A_PLUS':'GRAPHIC_DESIGN','SOCIAL_CONTENT':'GRAPHIC_DESIGN','STORE_BANNER':'GRAPHIC_DESIGN','LANDING_PAGE_HERO':'AI_REFERENCE_PRODUCT','COMPARISON':'GRAPHIC_DESIGN','SPECIFICATION':'GRAPHIC_DESIGN','UGC_BRIEF':'DOCUMENTATION','POST_PURCHASE':'GRAPHIC_DESIGN','SHORT_VIDEO':'VIDEO'
 }
 
 def _norm(s:str)->str: return ' '.join(str(s or '').split()).casefold()
@@ -305,11 +305,11 @@ def build_asset_architecture(project_id:str,target:dict,questions:list[str],cont
             'reason_to_exist':j.get('reason_to_exist') or profile['reason_to_exist'],'incremental_information':j.get('incremental_information') or profile['incremental_information'],
             'business_hypothesis':j.get('business_hypothesis') or f"If this asset resolves '{q}', the next-stage metric ({j.get('success_metric') or profile['success_metric']}) should improve without requiring unrelated strategy changes.",
             'decision_origin':j.get('decision_origin') or 'EXPLICIT_ASSET_JOB','decision_source':j.get('decision_source'),'compound_parent':j.get('compound_parent'),'compound_part':j.get('compound_part'),
-            'handoff':j.get('handoff'),'production_mode':mode,'product_fidelity':j.get('product_fidelity','REFERENCE_GUIDED'),'approved_visual_elements':j.get('approved_visual_elements',[]),'precision_boundaries':j.get('precision_boundaries',[]),
+            'handoff':j.get('handoff'),'production_mode':mode,'product_fidelity':j.get('product_fidelity','REFERENCE_GUIDED_NATIVE_LOCK'),'approved_visual_elements':j.get('approved_visual_elements',[]),'precision_boundaries':j.get('precision_boundaries',[]),
             'source_ids':j.get('source_ids',[]),'claim_ids':j.get('claim_ids',[]),'listing_reference':j.get('listing_reference',[]),'priority':j.get('priority','P1'),'status':j.get('status','ACTIVATE'),'dependencies':j.get('dependencies',[]),
             'success_metric':j.get('success_metric') or profile['success_metric'],'visible_copy':j.get('visible_copy',{}),'creative_brief':j.get('creative_brief',{}),
             'visual_production_signature':j.get('visual_production_signature') or _visual_production_signature(intent,topic,surface,mode),
-            'editable_layer_contract':j.get('editable_layer_contract') or _editable_layer_contract(mode,j.get('product_fidelity','REFERENCE_GUIDED'))
+            'editable_layer_contract':j.get('editable_layer_contract') or _editable_layer_contract(mode,j.get('product_fidelity','REFERENCE_GUIDED_NATIVE_LOCK'))
         }
         seen[key]=len(assets); assets.append(asset)
     # List order is presentation only. Asset relationships/handoffs are explicit author decisions.

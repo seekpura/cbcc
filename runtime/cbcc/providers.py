@@ -11,6 +11,8 @@ DEFAULT_PROVIDER_BY_MODE={
     'AI_ENVIRONMENT_REAL_PRODUCT':'COMPOSITE_PIPELINE',
     'AI_HUMAN_REAL_PRODUCT':'COMPOSITE_PIPELINE',
     'AI_GENERATIVE':'AI_IMAGE_PROVIDER',
+    'AI_REFERENCE_PRODUCT':'AI_IMAGE_PROVIDER',
+    'AI_REFERENCE_HUMAN_PRODUCT':'AI_IMAGE_PROVIDER',
     'GRAPHIC_DESIGN':'HUMAN_OR_DESIGN_PROVIDER',
     'THREE_D':'CG_3D_PROVIDER',
     'VIDEO':'VIDEO_PROVIDER',
@@ -20,12 +22,12 @@ DEFAULT_PROVIDER_BY_MODE={
 PROVIDER_REGISTRY={
     'HUMAN_PHOTOGRAPHY': {'modes':['REAL_PHOTO'],'locked_pixel':'NATIVE_CAPTURE','human_review':True,'adapter':'FILE_HANDOFF','outputs':['image','capture_metadata','qa']},
     'COMPOSITE_PIPELINE': {'modes':['REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'],'locked_pixel':'SUPPORTED','human_review':True,'adapter':'FILE_HANDOFF','outputs':['image','layer_manifest','qa']},
-    'AI_IMAGE_PROVIDER': {'modes':['AI_GENERATIVE'],'locked_pixel':'NOT_APPLICABLE','human_review':True,'adapter':'FILE_HANDOFF','outputs':['image','generation_metadata','qa']},
+    'AI_IMAGE_PROVIDER': {'modes':['AI_GENERATIVE','AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'],'locked_pixel':'REFERENCE_INPUT_SUPPORTED','human_review':True,'adapter':'FILE_HANDOFF','outputs':['image','generation_metadata','qa']},
     'HUMAN_OR_DESIGN_PROVIDER': {'modes':['GRAPHIC_DESIGN'],'locked_pixel':'SUPPORTED_BY_PLACEMENT','human_review':True,'adapter':'FILE_HANDOFF','outputs':['design','export','qa']},
     'CG_3D_PROVIDER': {'modes':['THREE_D'],'locked_pixel':'REFERENCE_ONLY','human_review':True,'adapter':'FILE_HANDOFF','outputs':['render','scene_manifest','qa']},
     'VIDEO_PROVIDER': {'modes':['VIDEO'],'locked_pixel':'SUPPORTED_BY_COMPOSITE','human_review':True,'adapter':'FILE_HANDOFF','outputs':['video','edit_manifest','qa']},
     'DOCUMENT_RENDERER': {'modes':['DOCUMENTATION'],'locked_pixel':'NOT_APPLICABLE','human_review':False,'adapter':'FILE_HANDOFF','outputs':['document','qa']},
-    'EPV_ADAPTER': {'modes':['REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','AI_GENERATIVE','GRAPHIC_DESIGN','THREE_D','VIDEO'],'locked_pixel':'CONTRACT_DRIVEN','human_review':True,'adapter':'EXTERNAL_ADAPTER','outputs':['provider_manifest','artifact','qa'],'adapter_profile':adapter_profile_for('EXTERNAL_ADAPTER','EPV_ADAPTER')},
+    'EPV_ADAPTER': {'modes':['REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT','AI_GENERATIVE','GRAPHIC_DESIGN','THREE_D','VIDEO'],'locked_pixel':'CONTRACT_DRIVEN','human_review':True,'adapter':'EXTERNAL_ADAPTER','outputs':['provider_manifest','artifact','qa'],'adapter_profile':adapter_profile_for('EXTERNAL_ADAPTER','EPV_ADAPTER')},
 }
 
 
@@ -36,12 +38,14 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
     errors=[]
     if mode not in spec['modes']: errors.append('MODE_NOT_SUPPORTED_BY_PROVIDER')
     fidelity=asset.get('product_fidelity')
-    locked=str(fidelity or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
-    if locked and spec.get('locked_pixel') in {'NOT_APPLICABLE','REFERENCE_ONLY'}:
-        errors.append('LOCKED_PIXEL_PROVIDER_MISMATCH')
+    fidelity_u=str(fidelity or '').upper()
+    exact_pixel=fidelity_u in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
+    native_reference=fidelity_u in {'REFERENCE_GUIDED','REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} or mode in {'AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'}
+    if exact_pixel and spec.get('locked_pixel') in {'NOT_APPLICABLE','REFERENCE_ONLY','REFERENCE_INPUT_SUPPORTED'}:
+        errors.append('EXACT_PIXEL_PROVIDER_MISMATCH')
     required_inputs=['asset_manifest','strategy','visual_spec','source_trace','layout_contract','surface_production_contract','design_card','canonical_prompt_contract','renderer_recipe']
-    real_product_mode=mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT'}
-    source_binding_required=bool(real_product_mode or locked)
+    real_product_mode=mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'}
+    source_binding_required=bool(real_product_mode or native_reference or exact_pixel)
     if source_binding_required: required_inputs.extend(['source_product_assets','source_product_bindings'])
     if real_product_mode: required_inputs.extend(['photography_contract','shot_lighting_reasoning'])
     adapter=spec.get('adapter','FILE_HANDOFF')
@@ -56,7 +60,9 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
             'resolver_precedence':['PROVIDER_ASSET_HANDLE','PACKAGE_RELATIVE_PATH','LOCAL_FILE_PATH'],
             'integrity_key':'sha256',
             'required_binding_fields':['asset_id','locator','sha256','pixel_lock','allowed_transforms','identity_features'],
-            'locked_pixel_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_layer_operation','product_identity_preserved'] if locked else [],
+            'locked_pixel_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_layer_operation','product_identity_preserved'] if exact_pixel else [],
+            'native_reference_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_reference_input_used','native_product_rendered_in_final_output','product_identity_preserved'] if native_reference and not exact_pixel else [],
+            'reference_input_semantics':'For native-reference modes, the source product image is a model input reference and the final product is rendered natively in the generated image. Exact-pixel compositing is explicit-only.',
             'provider_asset_handle_lifecycle':{
                 'supported':True,
                 'structured_fields':['handle_id','provider','state','sha256','issued_at','verified_at','expires_at','supersedes_handle','generation'],

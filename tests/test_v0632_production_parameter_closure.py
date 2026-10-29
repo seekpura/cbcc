@@ -10,7 +10,7 @@ def _compile(asset):
         {'market':'MY','platform_family':'TikTok Shop','site':'MY','category':'skincare'},
         {},
         {'primary_locale':'ms-MY','delivery_locale':'zh-CN'},
-        {}, None, None, [],
+        {}, None, None, [{'asset_id':'MASTER-FRONT','role':'FRONT','provider_asset_handle':'ref://master-front','sha256':'abc123','ingest_status':'HASH_VERIFIED_LOCAL'}],
     )
 
 
@@ -80,21 +80,23 @@ def _photo_asset():
     }
 
 
-def test_locked_source_composite_prompt_consumes_full_execution_program():
+def test_reference_locked_product_prompt_consumes_full_execution_program_and_renders_product_natively():
     out=_compile(_photo_asset())
     assert out['status']=='CANONICAL_PROMPT_COMPILED_AGENT_AUTHORITY'
     assert out['model_prompt_status']=='MODEL_NATIVE_PROMPT_PARAMETER_CLOSED'
     closure=out['production_parameter_closure']
     assert closure['status']=='PASS'
-    assert closure['locked_source_final_composite_instruction'] is True
+    assert closure['locked_source_final_composite_instruction'] is False
+    assert closure['product_reference_generation_mode']=='REFERENCE_GUIDED_NATIVE_GENERATION'
+    assert closure['native_product_generation_required'] is True
     en=out['model_prompt_en']
     for token in [
         '95mm','1.2 m','12 cm','5 degrees right','-3 degrees','f/8','120 cm','1.1 m','5200K','2:1',
         '8–12%','0.7 stop','#F6F3EC','#0B3B31','68% frame height','x=68%','x=8–38%','product silhouette',
     ]:
         assert token in en
-    assert 'final composite' in en.lower()
-    assert 'do not render, redraw or substitute the product itself' in en.lower()
+    assert 'natively render the product inside the complete final image' in en.lower()
+    assert 'do not render, redraw or substitute the product itself' not in en.lower()
 
 
 def test_missing_photo_execution_depth_is_not_prompt_ready():

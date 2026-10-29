@@ -141,6 +141,8 @@ def apply_reference_guided_native_authority(bundle:Mapping[str,Any], asset:Mappi
     closure['final_product_visibility_required']=bool(visible)
     closure['native_product_generation_required']=bool(visible and not exact)
     closure['exact_pixel_composite_explicit_only']=True
+    if visible and not exact:
+        closure['locked_source_final_composite_instruction']=False
     if visible and not exact and not sources:
         missing=list(closure.get('missing_required_parameters') or [])
         if 'real_product_reference_input' not in missing:
@@ -148,7 +150,9 @@ def apply_reference_guided_native_authority(bundle:Mapping[str,Any], asset:Mappi
         closure['missing_required_parameters']=missing
         closure['status']='INCOMPLETE'
         closure['model_generation_blocking']=True
-        out['model_prompt_status']='REAL_PRODUCT_REFERENCE_INPUT_REQUIRED'
+        prior=str(out.get('model_prompt_status') or '')
+        if prior not in {'BILINGUAL_RENDER_SEMANTICS_REQUIRED','COPY_RENDER_MODE_REQUIRED','AGENT_ART_DIRECTION_REQUIRED','ART_DIRECTION_EXECUTION_DEPTH_REQUIRED'}:
+            out['model_prompt_status']='REAL_PRODUCT_REFERENCE_INPUT_REQUIRED'
     out['production_parameter_closure']=closure
     return out
 

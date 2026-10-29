@@ -43,7 +43,7 @@ def compile_product_visual_intelligence(product:dict[str,Any], source_product_as
             'material':'Macro/detail only when texture/finish/contents is decision-relevant and source-bound.',
             'scale':'Use dimension/on-body/context reference only when it changes purchase understanding.'
         },
-        'render_permissions':{'LOCKED_PIXEL':'Exact real-product master is immutable; environment/human/graphics are separate layers.','REFERENCE_CONSTRAINED':'Reconstruction must preserve verified identity; unknown pack details remain unknown.'},
+        'render_permissions':{'REFERENCE_GUIDED_NATIVE_LOCK':'Use supplied real-product images as strong model reference inputs and natively render the same product identity in the final image; preserve package geometry/proportions/logo/brand wording/label layout/recognizable print/colors/material identity.','EXACT_PIXEL_COMPOSITE':'Explicit-only route: exact source pixels remain immutable and are composited as a source layer.','REFERENCE_CONSTRAINED':'Reconstruction must preserve verified identity; unknown pack details remain unknown.'},
         'principle':'Foundation assets define who the product is. Downstream creative may change environment, evidence hierarchy and composition, but must not re-invent product identity.'
     }
 
