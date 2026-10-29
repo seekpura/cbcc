@@ -13,12 +13,6 @@ DEFAULT_PROVIDER_BY_MODE={
     'AI_GENERATIVE':'AI_IMAGE_PROVIDER',
     'AI_REFERENCE_PRODUCT':'AI_IMAGE_PROVIDER',
     'AI_REFERENCE_HUMAN_PRODUCT':'AI_IMAGE_PROVIDER',
-    'AI_REFERENCE_PRODUCT':'AI_IMAGE_PROVIDER',
-    'AI_REFERENCE_HUMAN_PRODUCT':'AI_IMAGE_PROVIDER',
-    'AI_REFERENCE_PRODUCT':'AI_IMAGE_PROVIDER',
-    'AI_REFERENCE_HUMAN_PRODUCT':'AI_IMAGE_PROVIDER',
-    'AI_REFERENCE_PRODUCT':'AI_IMAGE_PROVIDER',
-    'AI_REFERENCE_HUMAN_PRODUCT':'AI_IMAGE_PROVIDER',
     'GRAPHIC_DESIGN':'HUMAN_OR_DESIGN_PROVIDER',
     'THREE_D':'CG_3D_PROVIDER',
     'VIDEO':'VIDEO_PROVIDER',
@@ -53,6 +47,9 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
     real_product_mode=mode in {'REAL_PHOTO','REAL_PRODUCT_COMPOSITE','AI_ENVIRONMENT_REAL_PRODUCT','AI_HUMAN_REAL_PRODUCT','AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'}
     source_binding_required=bool(real_product_mode or native_reference or exact_pixel)
     if source_binding_required: required_inputs.extend(['source_product_assets','source_product_bindings'])
+    binding_fields=['asset_id','locator','sha256','pixel_lock','allowed_transforms','identity_features']
+    if native_reference and not exact_pixel:
+        binding_fields += ['usage_role','reference_input_required','native_generation_required','pixel_copy_required','fidelity_mode']
     if real_product_mode: required_inputs.extend(['photography_contract','shot_lighting_reasoning'])
     adapter=spec.get('adapter','FILE_HANDOFF')
     return {
@@ -65,7 +62,7 @@ def provider_contract(provider:str, mode:str, asset:dict[str,Any])->dict[str,Any
             'required': source_binding_required,
             'resolver_precedence':['PROVIDER_ASSET_HANDLE','PACKAGE_RELATIVE_PATH','LOCAL_FILE_PATH'],
             'integrity_key':'sha256',
-            'required_binding_fields':['asset_id','locator','sha256','pixel_lock','allowed_transforms','identity_features'],
+            'required_binding_fields':binding_fields,
             'locked_pixel_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_layer_operation','product_identity_preserved'] if exact_pixel else [],
             'native_reference_result_evidence':['source_product_asset_ids_used','source_product_hashes_used','product_reference_input_used','native_product_rendered_in_final_output','product_identity_preserved'] if native_reference and not exact_pixel else [],
             'reference_input_semantics':'For native-reference modes, the source product image is a model input reference and the final product is rendered natively in the generated image. Exact-pixel compositing is explicit-only.',

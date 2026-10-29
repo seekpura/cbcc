@@ -233,8 +233,17 @@ def _quality_observations(job: dict[str, Any], collected: dict[str, Any]) -> dic
     hashes = {str(x.get('asset_id')): str(x.get('sha256') or '') for x in bindings if x.get('asset_id')}
     out: dict[str, Any] = {}
     required = (job.get('result_contract') or {}).get('quality_observations_required') or []
+    fidelity=str((job.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()
+    mode=str(job.get('production_mode') or '').upper()
+    native_reference=fidelity in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} or mode in {'AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'}
     for key in required:
-        if key == 'source_product_asset_ids_used':
+        if native_reference and key == 'source_product_asset_ids_used':
+            out[key] = []
+        elif native_reference and key == 'source_product_hashes_used':
+            out[key] = {}
+        elif native_reference and key in {'product_reference_input_used','native_product_rendered_in_final_output','product_identity_preserved'}:
+            out[key] = {'status': 'UNVERIFIED', 'evidence': None}
+        elif key == 'source_product_asset_ids_used':
             out[key] = ids
         elif key == 'source_product_hashes_used':
             out[key] = hashes

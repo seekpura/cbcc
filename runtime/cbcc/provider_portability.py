@@ -164,8 +164,12 @@ def build_production_receipt_contract(job_id: str, asset_id: str, provider: str,
     mode = str(production_mode or '').upper()
     fidelity = str(product_fidelity or '').upper()
     required = ['job_id', 'asset_id', 'provider', 'package_hash', 'portable_manifest_hash', 'output_artifacts']
-    if fidelity == 'LOCKED_PIXEL':
-        required += ['source_binding_hash', 'layer_manifest']
+    native_reference=fidelity in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
+    exact_pixel=fidelity in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
+    if native_reference or exact_pixel:
+        required += ['source_binding_hash']
+    if exact_pixel:
+        required += ['layer_manifest']
     if mode in _CAPTURE_METADATA_MODES:
         required += ['capture_metadata']
     return {
@@ -181,7 +185,7 @@ def build_production_receipt_contract(job_id: str, asset_id: str, provider: str,
         },
         'output_artifact_contract': {'required_fields': ['path_or_uri', 'sha256'], 'local_paths_must_be_job_relative': True},
         'layer_manifest_contract': {
-            'required': fidelity == 'LOCKED_PIXEL',
+            'required': exact_pixel,
             'product_layer_required_fields': ['source_asset_id', 'source_sha256', 'operation', 'frozen'],
             'rule': 'Every reported locked product layer must resolve to a bound source master and preserve its SHA256 lineage.',
         },
@@ -231,7 +235,10 @@ def validate_production_receipt(row: dict[str, Any], result: dict[str, Any], *, 
         'portable_manifest_hash': row.get('portable_job_manifest_hash'),
     }
     qc = row.get('production_quality_contract') or {}
-    if str(qc.get('product_fidelity') or '').upper() == 'LOCKED_PIXEL':
+    fidelity = str(qc.get('product_fidelity') or '').upper()
+    native_reference=fidelity in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}
+    exact_pixel=fidelity in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
+    if native_reference or exact_pixel:
         expected['source_binding_hash'] = qc.get('source_binding_hash')
     for key, value in expected.items():
         if value is not None and receipt.get(key) != value:
@@ -256,7 +263,8 @@ def validate_production_receipt(row: dict[str, Any], result: dict[str, Any], *, 
             issues.extend(check.get('issues') or [])
 
     fidelity = str(qc.get('product_fidelity') or '').upper()
-    if fidelity == 'LOCKED_PIXEL':
+    exact_pixel=fidelity in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
+    if exact_pixel:
         layers = receipt.get('layer_manifest')
         if not isinstance(layers, list) or not layers:
             issues.append('PRODUCTION_RECEIPT_LAYER_MANIFEST_MISSING')

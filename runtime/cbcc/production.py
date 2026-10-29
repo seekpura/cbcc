@@ -33,6 +33,12 @@ def _source_product_bindings(manifest:dict[str,Any])->tuple[list[dict[str,Any]],
     Local masters are re-hashed at handoff. Provider handles may be legacy strings (declared-only
     compatibility) or structured lifecycle records with provider/state/expiry/refresh lineage.
     """
+    fidelity=str(manifest.get('product_fidelity') or 'REFERENCE_GUIDED').upper()
+    mode=str(manifest.get('production_mode') or '').upper()
+    exact_pixel=fidelity in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}
+    native_reference=(not exact_pixel) and (fidelity in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} or mode in _NATIVE_REFERENCE_MODES)
+    usage_role='EXACT_PIXEL_SOURCE_LAYER' if exact_pixel else ('NATIVE_SUBJECT_REFERENCE' if native_reference else 'TRUTH_REFERENCE')
+    source_usage='EXACT_PIXEL_SOURCE_LAYER' if exact_pixel else ('MODEL_REFERENCE_INPUT' if native_reference else 'DESIGN_REFERENCE')
     ready=[]; errors=[]
     for row in manifest.get('source_product_assets') or []:
         if not isinstance(row,dict):
@@ -47,7 +53,14 @@ def _source_product_bindings(manifest:dict[str,Any])->tuple[list[dict[str,Any]],
                 'asset_id':aid,'role':row.get('role'),
                 'locator':{'kind':'PROVIDER_ASSET_HANDLE','value':locator_value},
                 'sha256':declared,'handoff_sha256':declared,
-                'pixel_lock':bool(row.get('pixel_lock')),
+                'pixel_lock':bool(exact_pixel),
+                'identity_lock':bool(native_reference or exact_pixel),
+                'fidelity_mode':fidelity,
+                'source_usage':source_usage,
+                'usage_role':usage_role,
+                'reference_input_required':bool(native_reference),
+                'native_generation_required':bool(native_reference),
+                'pixel_copy_required':bool(exact_pixel),
                 'allowed_transforms':list(row.get('allowed_transforms') or []),
                 'identity_features':list(row.get('identity_features') or []),
                 'provider_asset_lifecycle':lifecycle,
@@ -74,7 +87,14 @@ def _source_product_bindings(manifest:dict[str,Any])->tuple[list[dict[str,Any]],
             'asset_id':aid,'role':row.get('role'),
             'locator':{'kind':locator_kind,'value':locator_value},
             'sha256':declared,'handoff_sha256':actual or declared,'handoff_status':status,
-            'pixel_lock':bool(row.get('pixel_lock')),
+            'pixel_lock':bool(exact_pixel),
+            'identity_lock':bool(native_reference or exact_pixel),
+            'fidelity_mode':fidelity,
+            'source_usage':source_usage,
+            'usage_role':usage_role,
+            'reference_input_required':bool(native_reference),
+            'native_generation_required':bool(native_reference),
+            'pixel_copy_required':bool(exact_pixel),
             'allowed_transforms':list(row.get('allowed_transforms') or []),
             'identity_features':list(row.get('identity_features') or []),
         }
@@ -131,6 +151,9 @@ def _production_quality_contract(package_dir:Path, manifest:dict[str,Any])->dict
         'source_product_binding_errors':source_binding_errors,
         'source_binding_hash':stable_hash(source_bindings),
         'source_product_asset_ids':source_ids,
+        'product_reference_generation_mode':('EXACT_PIXEL_COMPOSITE' if exact_pixel else ('REFERENCE_GUIDED_NATIVE_GENERATION' if native_reference else 'TRUTH_REFERENCE_ONLY')),
+        'reference_input_required':bool(native_reference),
+        'native_product_generation_required':bool(native_reference),
         'product_reference_rule':('Explicit exact-pixel route: preserve the exact supplied source pixels as an immutable layer.' if exact_pixel else ('Native reference route: pass the real product image(s) into the generation model as strong subject references and natively render the same real product identity in the complete final image.' if native_reference else 'Product source files are truth/design references only.')),
         'locked_pixel_rule':('EXACT_PIXEL_COMPOSITE_EXPLICIT_ONLY' if exact_pixel else 'NOT_DEFAULT_NATIVE_REFERENCE_GENERATION'),
         'visual_production_signature':signature,
@@ -280,7 +303,7 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]], remo
             local.append('PACKAGE_HASH_MISMATCH')
         binding=contract_row.get('production_contract_binding') or {}
         fidelity=str((contract_row.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()
-        if (fidelity in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} and r.get('production_contract_ack') is not True) or ('production_contract_ack' in r and not r.get('production_contract_ack')):
+        if (fidelity in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE','EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'} and r.get('production_contract_ack') is not True) or ('production_contract_ack' in r and not r.get('production_contract_ack')):
             local.append('PRODUCTION_CONTRACT_NOT_ACKNOWLEDGED')
         if r.get('layout_contract_hash') and r.get('layout_contract_hash') != binding.get('layout_contract_hash'):
             local.append('LAYOUT_CONTRACT_HASH_MISMATCH')
@@ -290,7 +313,7 @@ def apply_production_result(run:dict[str,Any], results:list[dict[str,Any]], remo
             local.append('PROMPT_CONTRACT_HASH_MISMATCH')
         qc=contract_row.get('production_quality_contract') or {}
         expected_source_binding_hash=qc.get('source_binding_hash')
-        if str(qc.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}:
+        if str(qc.get('product_fidelity') or '').upper() in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE','EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}:
             if not r.get('source_binding_hash') or r.get('source_binding_hash')!=expected_source_binding_hash:
                 local.append('SOURCE_BINDING_HASH_MISMATCH')
         edit=qc.get('editable_layer_contract') or {}
@@ -396,6 +419,9 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
                 'decision_critical_evidence_plane':(quality.get('visual_production_signature') or {}).get('evidence_plane'),
                 'differentiation_axis':(quality.get('visual_production_signature') or {}).get('differentiation_axis'),
                 'locked_pixel_rule':quality.get('locked_pixel_rule'),
+                'product_reference_generation_mode':quality.get('product_reference_generation_mode'),
+                'reference_input_required':quality.get('reference_input_required'),
+                'native_product_generation_required':quality.get('native_product_generation_required'),
                 'source_product_bindings':portable_bindings,
                 'source_binding_hash':portable_hash,
                 'copy_visual_alignment':quality.get('copy_visual_alignment'),
@@ -413,7 +439,7 @@ def materialize_provider_jobs(asset_packages_root:Path, run:dict[str,Any], jobs_
             },
             'production_receipt_contract':receipt_contract,
             'result_contract':{
-                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations','production_receipt'] + (['source_binding_hash','production_contract_ack'] if str(quality.get('product_fidelity') or '').upper() in {'REFERENCE_GUIDED','REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE','EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'} else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
+                'required':['asset_id','provider','package_hash','output_path','qa','quality_observations','production_receipt'] + (['source_binding_hash','production_contract_ack'] if str(quality.get('product_fidelity') or '').upper() in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE','EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'} else []) + (['changed_fields','changed_layers'] if row.get('revision_scope') else []),
                 'qa_required':['product','fact','claim','visual','culture','platform'],
                 'quality_observations_required':quality.get('required_result_observations',[]),
                 'optional':['changed_fields','changed_layers','provider_metadata','production_contract_ack','source_binding_hash','layout_contract_hash','photography_contract_hash','prompt_contract_hash']

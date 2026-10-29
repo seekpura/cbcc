@@ -277,6 +277,10 @@ class ProviderExecutorBridge:
         operations = ['ensure_asset', 'submit', 'poll', 'collect', 'resolve']
         if job.get('source_product_bindings'):
             caps.append('ASSET_HANDLE_LIFECYCLE')
+        mode=str(job.get('production_mode') or '').upper()
+        fidelity=str((job.get('production_quality_contract') or {}).get('product_fidelity') or '').upper()
+        if mode in {'AI_REFERENCE_PRODUCT','AI_REFERENCE_HUMAN_PRODUCT'} or fidelity in {'REFERENCE_GUIDED_NATIVE','REFERENCE_GUIDED_NATIVE_LOCK','NATIVE_REFERENCE_LOCK','LOCKED_IDENTITY_REFERENCE','LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'}:
+            caps.append('REFERENCE_IMAGE_INPUT')
         return caps, operations
 
     def resolve_adapter(self, job_dir: Path, *, adapter_id: str | None = None) -> dict[str, Any]:
@@ -598,7 +602,7 @@ def host_callback_adapter_declaration(
 ) -> AdapterDeclaration:
     provider_id = str(provider).upper()
     operations = ['ensure_asset', 'submit', 'poll', 'collect', 'resolve']
-    capabilities = ['IDEMPOTENT_SUBMIT', 'RESUMABLE_POLL', 'OUTPUT_RESOLVE', 'ASSET_HANDLE_LIFECYCLE', 'HOST_CALLBACK_INJECTION']
+    capabilities = ['IDEMPOTENT_SUBMIT', 'RESUMABLE_POLL', 'OUTPUT_RESOLVE', 'ASSET_HANDLE_LIFECYCLE', 'HOST_CALLBACK_INJECTION', 'REFERENCE_IMAGE_INPUT']
     if supports_cancel:
         operations.append('cancel')
         capabilities.append('CANCEL')
@@ -665,7 +669,7 @@ def build_default_adapter_registry(*, include_reference: bool = False) -> Provid
         provider='EPV_ADAPTER',
         production_modes=(
             'REAL_PHOTO', 'REAL_PRODUCT_COMPOSITE', 'AI_ENVIRONMENT_REAL_PRODUCT',
-            'AI_HUMAN_REAL_PRODUCT', 'AI_GENERATIVE', 'GRAPHIC_DESIGN', 'THREE_D', 'VIDEO',
+            'AI_HUMAN_REAL_PRODUCT', 'AI_REFERENCE_PRODUCT', 'AI_REFERENCE_HUMAN_PRODUCT', 'AI_GENERATIVE', 'GRAPHIC_DESIGN', 'THREE_D', 'VIDEO',
         ),
         adapter_id='EPV_HOST_CALLBACK_V1',
         priority=10,
@@ -679,9 +683,9 @@ def build_default_adapter_registry(*, include_reference: bool = False) -> Provid
             provider='EPV_ADAPTER',
             production_modes=(
                 'REAL_PHOTO', 'REAL_PRODUCT_COMPOSITE', 'AI_ENVIRONMENT_REAL_PRODUCT',
-                'AI_HUMAN_REAL_PRODUCT', 'AI_GENERATIVE', 'GRAPHIC_DESIGN', 'THREE_D', 'VIDEO',
+                'AI_HUMAN_REAL_PRODUCT', 'AI_REFERENCE_PRODUCT', 'AI_REFERENCE_HUMAN_PRODUCT', 'AI_GENERATIVE', 'GRAPHIC_DESIGN', 'THREE_D', 'VIDEO',
             ),
-            capabilities=('IDEMPOTENT_SUBMIT', 'RESUMABLE_POLL', 'OUTPUT_RESOLVE', 'ASSET_HANDLE_LIFECYCLE'),
+            capabilities=('IDEMPOTENT_SUBMIT', 'RESUMABLE_POLL', 'OUTPUT_RESOLVE', 'ASSET_HANDLE_LIFECYCLE', 'REFERENCE_IMAGE_INPUT'),
             operations=('ensure_asset', 'submit', 'poll', 'collect', 'resolve'),
             priority=1000,
             auth_external=True,

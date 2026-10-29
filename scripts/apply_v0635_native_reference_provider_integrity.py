@@ -98,7 +98,7 @@ patch('runtime/cbcc/provider_bridge.py',
 "            'AI_HUMAN_REAL_PRODUCT', 'AI_GENERATIVE', 'GRAPHIC_DESIGN', 'THREE_D', 'VIDEO',\n",
 "            'AI_HUMAN_REAL_PRODUCT', 'AI_REFERENCE_PRODUCT', 'AI_REFERENCE_HUMAN_PRODUCT', 'AI_GENERATIVE', 'GRAPHIC_DESIGN', 'THREE_D', 'VIDEO',\n")
 patch('runtime/cbcc/provider_bridge.py',
-"                'AI_HUMAN_REAL_PRODUCT', 'AI_GENERATIVE', 'GRAPHIC_DESIGN', 'THREE_D', 'VIDEO',\n            ),\n            capabilities=('IDEMPOTENT_SUBMIT', 'RESUMABLE_POLL', 'OUTPUT_RESOLVE', 'ASSET_HANDLE_LIFECYCLE'),\n",
-"                'AI_HUMAN_REAL_PRODUCT', 'AI_REFERENCE_PRODUCT', 'AI_REFERENCE_HUMAN_PRODUCT', 'AI_GENERATIVE', 'GRAPHIC_DESIGN', 'THREE_D', 'VIDEO',\n            ),\n            capabilities=('IDEMPOTENT_SUBMIT', 'RESUMABLE_POLL', 'OUTPUT_RESOLVE', 'ASSET_HANDLE_LIFECYCLE', 'REFERENCE_IMAGE_INPUT'),\n")
+"            capabilities=('IDEMPOTENT_SUBMIT', 'RESUMABLE_POLL', 'OUTPUT_RESOLVE', 'ASSET_HANDLE_LIFECYCLE'),\n",
+"            capabilities=('IDEMPOTENT_SUBMIT', 'RESUMABLE_POLL', 'OUTPUT_RESOLVE', 'ASSET_HANDLE_LIFECYCLE', 'REFERENCE_IMAGE_INPUT'),\n")
 
 print('v0.6.35 native-reference provider integrity migration applied')
