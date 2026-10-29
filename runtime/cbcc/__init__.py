@@ -32,12 +32,14 @@ def _preserve_canonical_status(fn):
         card=out.get('design_card') or {}
         presence=card.get('product_presence') or {}
         if str(presence.get('planning_state') or '').upper() in {'FORBIDDEN','ABSENT','NOT_APPLICABLE'}:
-            prefix='Product is intentionally absent in this asset. '
+            prefix='Product is intentionally absent in this asset. Do not add a packshot, corner product, silhouette, podium object or product layer. '
             en=out.get('model_prompt_en') or out.get('prompt_en') or ''
-            if prefix.strip() not in en:
+            if 'Product is intentionally absent in this asset.' not in en:
                 en=prefix+en
-                out['model_prompt_en']=en
-                out['prompt_en']=en
+            elif 'Do not add a packshot' not in en:
+                en=en.replace('Product is intentionally absent in this asset. ',prefix,1)
+            out['model_prompt_en']=en
+            out['prompt_en']=en
         if card.get('generation_blocking') or model_status=='AGENT_ART_DIRECTION_REQUIRED':
             out['status']='AGENT_ART_DIRECTION_REQUIRED'
         else:
