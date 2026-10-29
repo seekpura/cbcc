@@ -1,0 +1,167 @@
+name: CBCC v0.6.37 Commercial Operator Density Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-v0637.yml'
+      - 'VERSION'
+      - 'scripts/build_plugin_dist_v0637.py'
+      - 'scripts/apply_v0637_commercial_operator_density.py'
+      - 'scripts/check_commercial_prompt_density.py'
+      - 'runtime/cbcc/commercial_operator_density_authority.py'
+      - 'runtime/cbcc/operator_execution_board.py'
+      - 'runtime/cbcc/operator_delivery_html.py'
+      - 'prompts/commercial_visual_generation_authority.md'
+      - 'prompts/commercial_video_generation_authority.md'
+      - 'prompts/operator_execution_density.md'
+      - 'CHANGELOG_V0637.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  PYTHONPATH: .:runtime
+
+jobs:
+  release-v0637:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install runtime and test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest PyYAML
+
+      - name: Re-apply v0.6.37 authority idempotently
+        run: |
+          python scripts/apply_v0637_commercial_operator_density.py
+          python scripts/apply_v0637_commercial_operator_density.py
+          git diff --exit-code
+
+      - name: Compile runtime and release builder
+        run: |
+          python -m compileall -q runtime/cbcc
+          python -m py_compile scripts/build_plugin_dist.py scripts/build_plugin_dist_v0637.py scripts/apply_v0637_commercial_operator_density.py scripts/check_commercial_prompt_density.py
+
+      - name: Enforce commercial prompt density
+        run: python scripts/check_commercial_prompt_density.py
+
+      - name: Run v0.6.37 authority tests
+        run: |
+          python -m pytest -q tests/test_v0637_commercial_operator_density.py
+          python -m pytest -q tests/test_v0637_operator_execution_board.py
+          python -m pytest -q tests/test_v0637_operator_delivery_html.py
+          python -m pytest -q tests/test_v0637_video_narrative.py
+          python -m pytest -q tests/test_v0637_prompt_activation.py
+          python -m pytest -q tests/test_v0631_model_native_prompt_contract.py
+
+      - name: Run smoke suites
+        run: |
+          python tests/run_smoke.py
+          python tests/run_toolkit_smoke.py
+
+      - name: Verify active source authority
+        run: |
+          test "$(cat VERSION)" = "0.6.37-commercial-operator-density"
+          grep -q '0.6.37-commercial-operator-density' SKILL.md
+          grep -q 'AUTONOMOUS_INTEGRATED_RENDER_DEFAULT' runtime/cbcc/commercial_operator_density_authority.py
+          grep -q 'PROMPT-COMMERCIAL-INTEGRATED-VISUAL' runtime/cbcc/strategy_sources.py
+          grep -q 'PROMPT-COMMERCIAL-VIDEO' runtime/cbcc/strategy_sources.py
+          grep -q 'PROMPT-OPERATOR-EXECUTION-DENSITY' runtime/cbcc/strategy_sources.py
+          grep -q 'fixed_five_beat_template' runtime/cbcc/video_creator.py
+          grep -q 'build_operator_execution_board' runtime/cbcc/compiler.py
+          grep -q 'inject_operator_execution' runtime/cbcc/delivery_workspace.py
+
+      - name: Build installable Plugin and Skill archives
+        run: python scripts/build_plugin_dist_v0637.py --output-dir dist
+
+      - name: Build Runtime archive
+        run: python scripts/build_dist.py dist/cross-border-commerce-creative-runtime-v0.6.37.zip
+
+      - name: Verify packaged v0.6.37 authority
+        run: |
+          python - <<'PY'
+          import json, zipfile
+          from pathlib import Path
+          root=Path('dist')
+          plugin=root/'cross-border-commerce-creative-plugin-v0.6.37.zip'
+          skill=root/'cross-border-commerce-creative-skill-v0.6.37.zip'
+          runtime=root/'cross-border-commerce-creative-runtime-v0.6.37.zip'
+          for p in (plugin, skill, runtime):
+              assert p.exists() and p.stat().st_size > 10000, p
+          with zipfile.ZipFile(plugin) as z:
+              r='cross-border-commerce-creative/'
+              b=r+'skills/cross-border-commerce-creative/'
+              manifest=json.loads(z.read(r+'plugin.json'))
+              assert manifest['version']=='0.6.37'
+              assert 'v0.6.37 最高权威' in manifest['extensions']['com.openai']['interface']['defaultPrompt'][0]
+              wrapper=z.read(b+'SKILL.md').decode('utf-8')
+              authority=z.read(b+'resources/SKILL.md').decode('utf-8')
+              visual=z.read(b+'resources/prompts/commercial_visual_generation_authority.md').decode('utf-8')
+              video=z.read(b+'resources/prompts/commercial_video_generation_authority.md').decode('utf-8')
+              runtime_auth=z.read(b+'resources/runtime/cbcc/commercial_operator_density_authority.py').decode('utf-8')
+              board=z.read(b+'resources/runtime/cbcc/operator_execution_board.py').decode('utf-8')
+              assert 'Autonomous Integrated Render + Operator Density Authority' in wrapper
+              assert '0.6.37-commercial-operator-density' in authority
+              assert 'MODEL_RENDER' in visual and len(visual) > 3000
+              assert 'fixed five-beat' in video.lower() or 'five-beat' in video.lower()
+              assert 'AUTONOMOUS_INTEGRATED_RENDER_DEFAULT' in runtime_auth
+              assert 'operator' in board.lower()
+          data=json.loads((root/'release_manifest.json').read_text(encoding='utf-8'))
+          assert data['version']=='0.6.37'
+          assert data['authority_version']=='0.6.37-commercial-operator-density'
+          assert data['delivery_contract']['autonomous_integrated_render_default'] is True
+          print('packaged v0.6.37 commercial operator density PASS')
+          PY
+
+      - name: Write SHA256 sums
+        run: |
+          cd dist
+          sha256sum \
+            cross-border-commerce-creative-plugin-v0.6.37.zip \
+            cross-border-commerce-creative-skill-v0.6.37.zip \
+            cross-border-commerce-creative-runtime-v0.6.37.zip \
+            release_manifest.json > SHA256SUMS.txt
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbcc-v0.6.37-commercial-operator-density
+          path: |
+            dist/cross-border-commerce-creative-plugin-v0.6.37.zip
+            dist/cross-border-commerce-creative-skill-v0.6.37.zip
+            dist/cross-border-commerce-creative-runtime-v0.6.37.zip
+            dist/release_manifest.json
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Publish GitHub Release v0.6.37
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v0.6.37 >/dev/null 2>&1; then
+            gh release upload v0.6.37 \
+              dist/cross-border-commerce-creative-plugin-v0.6.37.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.37.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.37.zip \
+              dist/release_manifest.json dist/SHA256SUMS.txt --clobber
+            gh release edit v0.6.37 --title 'CBCC v0.6.37 — Commercial Operator Density + Autonomous Integrated Render' --notes-file CHANGELOG_V0637.md --latest
+          else
+            gh release create v0.6.37 \
+              dist/cross-border-commerce-creative-plugin-v0.6.37.zip \
+              dist/cross-border-commerce-creative-skill-v0.6.37.zip \
+              dist/cross-border-commerce-creative-runtime-v0.6.37.zip \
+              dist/release_manifest.json dist/SHA256SUMS.txt \
+              --target "$GITHUB_SHA" \
+              --title 'CBCC v0.6.37 — Commercial Operator Density + Autonomous Integrated Render' \
+              --notes-file CHANGELOG_V0637.md --latest
+          fi
