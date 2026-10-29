@@ -12,7 +12,7 @@ def _asset(mode='REAL_PRODUCT_COMPOSITE'):
     return {
         'asset_id': 'AST-V0612-PORTABLE', 'asset_name': 'Portable provider proof', 'asset_type': 'IMAGE', 'status': 'ACTIVATE',
         'surface': 'GALLERY', 'family': 'VISUAL', 'consumer_question': 'What is this product?', 'strategic_job': 'Identify exact product',
-        'production_mode': mode, 'product_fidelity': 'LOCKED_PIXEL', 'priority': 'P0', 'dependencies': [],
+        'production_mode': mode, 'product_fidelity': 'EXACT_PIXEL_COMPOSITE', 'exact_pixel_composite': True, 'priority': 'P0', 'dependencies': [],
         'source_ids': ['SRC-1'], 'claim_ids': [], 'listing_reference': [], 'success_metric': 'identity clarity',
     }
 
@@ -23,6 +23,7 @@ def _compile(root: Path, master: Path, mode='REAL_PRODUCT_COMPOSITE'):
     sources = [{
         'asset_id': 'MASTER-V0612', 'role': 'FRONT_MASTER', 'path': str(master),
         'sha256': hashlib.sha256(data).hexdigest(), 'ingest_status': 'HASH_VERIFIED_LOCAL', 'pixel_lock': True,
+        'exact_pixel_layer': True, 'fidelity_mode': 'EXACT_PIXEL_COMPOSITE',
         'allowed_transforms': ['PROPORTIONAL_SCALE', 'PLACEMENT', 'MASK_OR_CROP', 'COMPOSITE'],
         'identity_features': ['logo', 'packaging_print', 'color', 'geometry', 'proportions'],
     }]
