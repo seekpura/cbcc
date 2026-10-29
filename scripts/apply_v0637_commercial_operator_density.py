@@ -35,21 +35,9 @@ def patch_init()->None:
 
 def patch_base_prompt_compiler()->None:
     rel='runtime/cbcc/prompt_compiler.py'; text=read(rel)
-    text=replace_if_present(
-        text,
-        'Reserve deliberate copy zones in generation. Exact approved copy is composed deterministically after image generation unless selected renderer has verified exact-text capability.',
-        'Use the Agent-selected copy route. Integrated model-rendered copy is allowed and preferred when it best serves the final asset; post-composite typography is explicit-only when selected for fidelity, editability, platform or provider reasons.'
-    )
-    text=replace_if_present(
-        text,
-        'Reserve deliberate layout zones for locked copy, but do not ask the image model to retype packaging or final marketing copy. Exact approved text is composed deterministically after generation.',
-        'Follow the Agent-selected copy-render route. When MODEL_RENDER or HYBRID is selected, render approved market copy directly and exactly as part of the finished commercial image. Use post-composite typography only when explicitly selected.'
-    )
-    text=replace_if_present(
-        text,
-        '为锁定文案保留明确排版区，但不要让图像模型重新输入包装文字或最终营销文案；精确批准文案在生成后确定性合成。',
-        '遵循 Agent 选择的文案渲染路线；当选择 MODEL_RENDER 或 HYBRID 时，把批准的市场文案作为最终商业画面的一部分直接、准确生成；只有明确选择后期合成时才保留后期文字路线。'
-    )
+    text=replace_if_present(text,'Reserve deliberate copy zones in generation. Exact approved copy is composed deterministically after image generation unless selected renderer has verified exact-text capability.','Use the Agent-selected copy route. Integrated model-rendered copy is allowed and preferred when it best serves the final asset; post-composite typography is explicit-only when selected for fidelity, editability, platform or provider reasons.')
+    text=replace_if_present(text,'Reserve deliberate layout zones for locked copy, but do not ask the image model to retype packaging or final marketing copy. Exact approved text is composed deterministically after generation.','Follow the Agent-selected copy-render route. When MODEL_RENDER or HYBRID is selected, render approved market copy directly and exactly as part of the finished commercial image. Use post-composite typography only when explicitly selected.')
+    text=replace_if_present(text,'为锁定文案保留明确排版区，但不要让图像模型重新输入包装文字或最终营销文案；精确批准文案在生成后确定性合成。','遵循 Agent 选择的文案渲染路线；当选择 MODEL_RENDER 或 HYBRID 时，把批准的市场文案作为最终商业画面的一部分直接、准确生成；只有明确选择后期合成时才保留后期文字路线。')
     text=text.replace("'deterministic_text_composition': bool(locked_copy),","'deterministic_text_composition': False,")
     text=text.replace("'exact_copy_mode': 'DETERMINISTIC_COMPOSITION_AFTER_RENDER',","'exact_copy_mode': 'AGENT_PROVIDER_SELECTED',")
     write(rel,text)
@@ -100,7 +88,7 @@ def patch_registry()->None:
 def patch_strategy_sources()->None:
     rel='runtime/cbcc/strategy_sources.py'; text=read(rel)
     old="wanted_prompts={'PROMPT-MASTER-STRATEGY','PROMPT-SKU-OFFER','PROMPT-POSITIONING','PROMPT-VISUAL-PHOTO','PROMPT-PLATFORM-MATRIX','PROMPT-ASSET-CURATION','PROMPT-CULTURE','PROMPT-CREATIVE-SURFACE-CANONICAL'}"
-    new="wanted_prompts={'PROMPT-MASTER-STRATEGY','PROMPT-SKU-OFFER','PROMPT-POSITIONING','PROMPT-VISUAL-PHOTO','PROMPT-PLATFORM-MATRIX','PROMPT-ASSET-CURATION','PROMPT-CULTURE','PROMPT-CREATIVE-SURFACE-CANONICAL','PROMPT-COMMERCIAL-INTEGRATED-VISUAL','PROMPT-OPERATOR-EXECUTION-DENSITY'}"
+    new="wanted_prompts={'PROMPT-MASTER-STRATEGY','PROMPT-SKU-OFFER','PROMPT-POSITIONING','PROMPT-VISUAL-PHOTO','PROMPT-PLATFORM-MATRIX','PROMPT-ASSET-CURATION','PROMPT-CULTURE','PROMPT-CREATIVE-SURFACE-CANONICAL','PROMPT-SEVEN-TOOLS','PROMPT-COMMERCIAL-INTEGRATED-VISUAL','PROMPT-OPERATOR-EXECUTION-DENSITY'}"
     text=replace_if_present(text,old,new)
     video_selector="""    if request.get('video_jobs') or any(str(x).upper() in {'VIDEO','PDP_VIDEO','CREATOR','LIVE','SOCIAL_CONTENT'} for x in ((request.get('target') or {}).get('surfaces') or [])): wanted_prompts.add('PROMPT-COMMERCIAL-VIDEO')\n"""
     marker="    if 'measurement' in domains: wanted_prompts.add('PROMPT-MEASUREMENT')\n"
@@ -110,10 +98,25 @@ def patch_strategy_sources()->None:
     write(rel,text)
 
 
+def patch_video_creator()->None:
+    rel='runtime/cbcc/video_creator.py'; text=read(rel)
+    helper="""\ndef _decision_derived_fallback_shots(j:dict[str,Any], source:dict[str,Any], q:str, proof:Any, dur:float, family:str)->tuple[list[dict[str,Any]],str]:\n    \"\"\"Graceful fallback only. Prefer explicit Agent-authored video_jobs/shots.\n\n    Unlike the legacy universal five-beat template, this fallback selects a narrative carrier from\n    the actual decision job and source asset. It is deliberately simple and records its source.\n    \"\"\"\n    carrier=str(j.get('narrative_carrier') or source.get('visual_carrier') or (source.get('asset_art_direction') or {}).get('visual_carrier') or '').upper()\n    blob=' '.join(str(x or '') for x in [q,proof,source.get('decision_intent'),source.get('strategic_job'),source.get('reason_to_exist')]).lower()\n    if family=='CREATOR_AFFILIATE' or 'CREATOR' in carrier or 'POV' in carrier:\n        weights=[.25,.38,.25,.12]; narrative='CREATOR_CONTEXT_DEMO'\n        specs=[\n          ('CREATOR_CONTEXT','Open inside the real use/problem context; the creator is already doing something, not presenting a title card.'),\n          ('CREATOR_DEMO','Show the product/action relationship in first person and make the relevant mechanism/use visible.'),\n          ('CREATOR_PROOF_OR_OBJECTION',f'Answer the decisive question with supported evidence: {proof}'),\n          ('NATIVE_HANDOFF','Close naturally into the relevant shop/next action without resetting into a corporate packshot.')\n        ]\n    elif any(k in blob for k in ['size','fit','compatib','dimension','capacity','scale']):\n        weights=[.18,.42,.25,.15]; narrative='FIT_SCALE_PROOF'\n        specs=[\n          ('DECISION_QUESTION',f'Make the fit/scale question immediately visible: {q}'),\n          ('MEASURED_PROOF',f'Show the truthful size/fit/compatibility relationship: {proof}'),\n          ('USE_CONTEXT','Show the product in the relevant real context so the proof can be judged.'),\n          ('DECISION_CLOSE','Hold the resolved fit/scale answer and hand off to the correct commerce action.')\n        ]\n    elif any(k in blob for k in ['package','contents','receive','included','unbox','trust']):\n        weights=[.2,.36,.29,.15]; narrative='PACKAGE_TRUST'\n        specs=[\n          ('ARRIVAL_CONTEXT','Open on what the shopper actually receives.'),\n          ('CONTENTS_REVEAL','Reveal verified package contents/packaging clearly and without invented accessories.'),\n          ('DETAIL_TRUST',f'Hold the decisive packaging/detail proof: {proof}'),\n          ('EXPECTATION_CLOSE','Close on the accurate purchase expectation and next action.')\n        ]\n    elif any(k in blob for k in ['texture','material','feel','fabric','gel','liquid','finish']):\n        weights=[.2,.4,.27,.13]; narrative='TACTILE_MATERIAL'\n        specs=[\n          ('TACTILE_OPEN','Open on the material/texture behavior itself, using motion and light that make it judgeable.'),\n          ('MATERIAL_PROOF',f'Make the supported material/use property visible: {proof}'),\n          ('PRODUCT_CONTEXT','Connect the tactile evidence back to the product and real use context.'),\n          ('BELIEF_HOLD','Hold the resolved material belief long enough to understand, then hand off.')\n        ]\n    else:\n        weights=[.23,.37,.27,.13]; narrative='DECISION_SPECIFIC'\n        specs=[\n          ('DECISION_OPEN',f'Open on the concrete shopper tension/question: {q}'),\n          ('VISIBLE_ANSWER',f'Make the supported decision answer visible through the most relevant action/evidence: {proof}'),\n          ('PRODUCT_OR_USE_CONTEXT','Connect the evidence to the product/use context; product presence follows the authored asset role rather than a mandatory packshot.'),\n          ('DECISION_HANDOFF','Hold the resolved belief and move into the relevant commerce action.')\n        ]\n    shots=[]\n    used=0.0\n    for idx,(shot,job) in enumerate(specs):\n        seconds=round(dur*weights[idx],2) if idx<len(specs)-1 else round(dur-used,2)\n        used+=seconds\n        shots.append({'shot':shot,'seconds':seconds,'job':job,'visual':'Author scene/action/camera/copy/audio from this decision job; do not substitute generic B-roll.'})\n    return shots,narrative\n\n"""
+    marker="def build_video_creator_plan(project_id:str, content_objects:list[dict[str,Any]], shopper_questions:list[str], language_contract:dict[str,Any], video_jobs:list[dict[str,Any]]|None=None, *, assets:list[dict[str,Any]]|None=None, creative_council:dict[str,Any]|None=None)->dict[str,Any]:\n"
+    if '_decision_derived_fallback_shots' not in text:
+        if marker not in text: raise RuntimeError('video helper insertion marker missing')
+        text=text.replace(marker,helper+marker,1)
+    old="""        if j.get('shots'):\n            shots=j['shots']\n        else:\n            # Timing is dynamic by role; not a fixed 3-card visual template. Each beat has a production job.\n            shots=[\n              {'shot':'NATIVE_HOOK','seconds':round(dur*0.18,2),'job':f'Open on a concrete tension/action/question: {q}','visual':'Show the decision situation before explanatory copy; no generic title card.'},\n              {'shot':'PRODUCT_OR_ACTION_REVEAL','seconds':round(dur*0.24,2),'job':'Introduce the product/reference subject in the action/evidence relationship using the selected fidelity policy.','visual':source.get('visual_expression_variant') or source.get('visual_production_signature')},\n              {'shot':'PROOF_DEMO','seconds':round(dur*0.34,2),'job':f'Make the decision answer visible: {proof}','visual':'Use mechanism, scale, fit, use or proof appropriate to the decision intent; do not substitute generic B-roll.'},\n              {'shot':'BELIEF_CLOSE','seconds':round(dur*0.14,2),'job':f'Land the target belief: {source.get(\"belief_target\") or proof}','visual':'Hold the evidence long enough to understand; locked copy labels what is visible.'},\n              {'shot':'CTA_HANDOFF','seconds':round(dur*0.10,2),'job':'Hand off to the correct commerce action/surface.','visual':'CTA is subordinate to product truth and the resolved decision.'}\n            ]\n        family=j.get('family','VIDEO')\n"""
+    new="""        family=j.get('family','VIDEO')\n        if j.get('shots'):\n            shots=j['shots']; narrative_source='EXPLICIT_AGENT_VIDEO_JOB'; narrative_carrier=j.get('narrative_carrier') or 'AGENT_AUTHORED'\n        else:\n            shots,narrative_carrier=_decision_derived_fallback_shots(j,source,q,proof,dur,family); narrative_source='DECISION_DERIVED_RUNTIME_FALLBACK'\n"""
+    text=replace_if_present(text,old,new)
+    oldrow="""            'hook':j.get('hook') or q,'duration_seconds':dur,'timing':timing(shots,dur),'shots':shots,\n"""
+    newrow="""            'hook':j.get('hook') or q,'duration_seconds':dur,'timing':timing(shots,dur),'shots':shots,'narrative_carrier':narrative_carrier,'narrative_source':narrative_source,'fixed_five_beat_template':False,\n"""
+    text=replace_if_present(text,oldrow,newrow)
+    write(rel,text)
+
+
 def patch_compiler()->None:
     rel='runtime/cbcc/compiler.py'; text=read(rel)
-    import_line='from .operator_execution_board import build_operator_execution_board\n'
-    marker='from .seven_tool_continuity import compile_seven_tool_continuity\n'
+    import_line='from .operator_execution_board import build_operator_execution_board\n'; marker='from .seven_tool_continuity import compile_seven_tool_continuity\n'
     if import_line not in text:
         if marker not in text: raise RuntimeError('compiler import marker missing')
         text=text.replace(marker,marker+import_line,1)
@@ -127,15 +130,13 @@ def patch_compiler()->None:
 
 def patch_delivery_workspace()->None:
     rel='runtime/cbcc/delivery_workspace.py'; text=read(rel)
-    import_line='from .operator_delivery_html import inject_operator_execution\n'
-    marker='from .delivery_html import build_delivery_html as _build_legacy_delivery_html\n'
+    import_line='from .operator_delivery_html import inject_operator_execution\n'; marker='from .delivery_html import build_delivery_html as _build_legacy_delivery_html\n'
     if import_line not in text:
         if marker not in text: raise RuntimeError('delivery import marker missing')
         text=text.replace(marker,marker+import_line,1)
     old="""    text = _transform_to_object_workspace(text)\n    text = _inject_commercial_brain(text, package_dir)\n    result.write_text(text, encoding='utf-8')\n"""
     new="""    text = _transform_to_object_workspace(text)\n    text = inject_operator_execution(text, package_dir)\n    text = _inject_commercial_brain(text, package_dir)\n    result.write_text(text, encoding='utf-8')\n"""
-    text=replace_if_present(text,old,new)
-    write(rel,text)
+    text=replace_if_present(text,old,new); write(rel,text)
 
 
 def patch_tool_contract_version()->None:
@@ -145,16 +146,7 @@ def patch_tool_contract_version()->None:
 
 
 def main()->None:
-    patch_init()
-    patch_base_prompt_compiler()
-    patch_model_native_contract()
-    patch_reference_authority()
-    patch_skill()
-    patch_registry()
-    patch_strategy_sources()
-    patch_compiler()
-    patch_delivery_workspace()
-    patch_tool_contract_version()
+    patch_init(); patch_base_prompt_compiler(); patch_model_native_contract(); patch_reference_authority(); patch_skill(); patch_registry(); patch_strategy_sources(); patch_video_creator(); patch_compiler(); patch_delivery_workspace(); patch_tool_contract_version()
     print('v0.6.37 commercial operator density authority applied')
 
 
