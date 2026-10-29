@@ -1,110 +1,16 @@
-name: CBCC v0.6.34 Native-Reference Authority Cleanup Release
+name: CBCC v0.6.34 historical release acceptance (manual)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/release-v0634.yml'
-      - 'VERSION'
-      - 'SKILL.md'
-      - 'CHANGELOG_V0634.md'
-      - 'scripts/build_plugin_dist.py'
-      - 'runtime/cbcc/reference_guided_native_authority.py'
-      - 'runtime/cbcc/asset_universe_authority.py'
-      - 'runtime/cbcc/delivery_html.py'
-      - 'tests/test_v0634_native_reference_authority_cleanup.py'
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  release-v0634:
+  historical-v0634-reference:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
-    env:
-      PYTHONPATH: .:runtime
-      GH_TOKEN: ${{ github.token }}
+    timeout-minutes: 3
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install test dependencies
-        run: python -m pip install --disable-pip-version-check -r requirements-runtime.txt pytest
-      - name: Verify clean active authority
-        run: |
-          test "$(cat VERSION)" = "0.6.34-native-reference-authority-cleanup"
-          grep -q '^version: 0.6.34-native-reference-authority-cleanup$' SKILL.md
-          ! grep -q 'LOCKED_SOURCE_COMPOSITE 不是空背景生成' SKILL.md
-          ! grep -q '生成可合成底片' scripts/build_plugin_dist.py
-      - name: Clean authority and semantic regression
-        run: |
-          pytest -q \
-            tests/test_v0634_native_reference_authority_cleanup.py \
-            tests/test_v0633_reference_guided_native_asset_universe.py \
-            tests/test_v0633_asset_universe_workspace.py \
-            tests/test_v0633_plugin_wrapper_authority.py \
-            tests/test_reference_guided_video_provider_authority.py \
-            tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
-            tests/test_v0632_production_parameter_closure.py \
-            tests/test_v0632_portfolio_visual_authority.py \
-            tests/test_v0631_model_native_prompt_contract.py \
-            tests/test_v0630_agent_art_direction_authority.py
-      - name: Build Plugin and Skill archives
-        run: python scripts/build_plugin_dist.py --output-dir dist
-      - name: Build Runtime archive
-        run: python scripts/build_dist.py dist/cross-border-commerce-creative-runtime-v0.6.34.zip
-      - name: Verify packaged plugin authority is single and contradiction-free
-        run: |
-          python - <<'PY'
-          import json,zipfile
-          from pathlib import Path
-          p=Path('dist/cross-border-commerce-creative-plugin-v0.6.34.zip')
-          assert p.exists()
-          with zipfile.ZipFile(p) as z:
-              root='cross-border-commerce-creative/'
-              base=root+'skills/cross-border-commerce-creative/'
-              manifest=json.loads(z.read(root+'plugin.json'))
-              assert manifest['version']=='0.6.34'
-              wrapper=z.read(base+'SKILL.md').decode('utf-8')
-              authority=z.read(base+'resources/SKILL.md').decode('utf-8')
-              assert wrapper.count('## Dynamic Asset Universe + Native Product Reference')==1
-              assert '生成可合成底片' not in wrapper
-              assert '产品图、包装图和源文件默认是设计参考，可按已选创意方向重绘/重渲染/风格化' not in wrapper
-              assert 'LOCKED_SOURCE_COMPOSITE 不是空背景生成' not in authority
-              assert '真实商品锁定默认是 Reference-Guided Native Generation，不是后期像素合成' in authority
-              assert 'REFERENCE_GUIDED_NATIVE_LOCK' in wrapper
-              assert 'EXACT_PIXEL_COMPOSITE' in wrapper
-          print('v0.6.34 packaged authority clean PASS')
-          PY
-      - name: Write SHA256 sums
-        run: |
-          cd dist
-          sha256sum \
-            cross-border-commerce-creative-plugin-v0.6.34.zip \
-            cross-border-commerce-creative-skill-v0.6.34.zip \
-            cross-border-commerce-creative-runtime-v0.6.34.zip \
-            release_manifest.json > SHA256SUMS.txt
-      - name: Upload workflow artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: cbcc-v0.6.34-native-reference-authority-cleanup
-          path: |
-            dist/cross-border-commerce-creative-plugin-v0.6.34.zip
-            dist/cross-border-commerce-creative-skill-v0.6.34.zip
-            dist/cross-border-commerce-creative-runtime-v0.6.34.zip
-            dist/release_manifest.json
-            dist/SHA256SUMS.txt
-          if-no-files-found: error
-          retention-days: 90
-      - name: Publish GitHub Release v0.6.34
-        run: |
-          if gh release view v0.6.34 >/dev/null 2>&1; then
-            gh release upload v0.6.34 dist/cross-border-commerce-creative-plugin-v0.6.34.zip dist/cross-border-commerce-creative-skill-v0.6.34.zip dist/cross-border-commerce-creative-runtime-v0.6.34.zip dist/release_manifest.json dist/SHA256SUMS.txt --clobber
-            gh release edit v0.6.34 --title 'CBCC v0.6.34 — Native-Reference Authority Cleanup' --notes-file CHANGELOG_V0634.md --latest
-          else
-            gh release create v0.6.34 dist/cross-border-commerce-creative-plugin-v0.6.34.zip dist/cross-border-commerce-creative-skill-v0.6.34.zip dist/cross-border-commerce-creative-runtime-v0.6.34.zip dist/release_manifest.json dist/SHA256SUMS.txt --target "$GITHUB_SHA" --title 'CBCC v0.6.34 — Native-Reference Authority Cleanup' --notes-file CHANGELOG_V0634.md --latest
-          fi
+      - run: |
+          echo 'v0.6.34 is a frozen historical release.'
+          echo 'Use tag/release v0.6.34 for historical inspection; current main is validated by v0.6.35+.'
