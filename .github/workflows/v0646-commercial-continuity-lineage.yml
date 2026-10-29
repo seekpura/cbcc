@@ -5,12 +5,16 @@ on:
     branches: [main]
     paths:
       - 'runtime/cbcc/commerce_decision_context.py'
+      - 'runtime/cbcc/commercial_context_compatibility.py'
       - 'runtime/cbcc/commercial_continuity_authority.py'
+      - 'runtime/cbcc/commercial_continuity_bootstrap.py'
+      - 'runtime/cbcc/human_asset_commercial_projection.py'
       - 'runtime/cbcc/commercial_intelligence_workspace.py'
       - 'runtime/cbcc/commercial_delivery_continuity.py'
       - 'runtime/cbcc/__init__.py'
       - 'prompts/commercial_continuity_lineage_authority.md'
       - 'tests/test_v0646_commercial_continuity_lineage.py'
+      - 'tests/test_v0646_continuity_regression_edges.py'
       - 'scripts/build_plugin_dist_v0646.py'
       - 'scripts/check_v0646_commercial_continuity.py'
       - 'SKILL.md'
@@ -33,6 +37,7 @@ jobs:
         run: >-
           python -m pytest -q
           tests/test_v0646_commercial_continuity_lineage.py
+          tests/test_v0646_continuity_regression_edges.py
           tests/test_v0645_commercial_delivery_stability.py
           tests/test_v0644_default_prompt_authority.py
           tests/test_v0643_global_chinese_interpretation.py
