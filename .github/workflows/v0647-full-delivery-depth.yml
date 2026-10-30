@@ -28,6 +28,7 @@ jobs:
           tests/test_v0647_full_delivery_depth_materialization.py
           tests/test_v0647_real_package_contract_regression.py
           tests/test_v0647_full_package_content_hardening.py
+          tests/test_v0647_video_html_and_language_consumer.py
       - name: Build plugin release
         run: python scripts/build_plugin_dist_v0647.py --output-dir dist_v0647
       - name: Release guard
