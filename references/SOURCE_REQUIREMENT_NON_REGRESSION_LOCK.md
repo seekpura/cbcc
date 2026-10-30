@@ -9,6 +9,7 @@ Mandatory original/current authorities:
 - `references/CONVERSATION_REQUIREMENT_AUDIT.md` — cumulative user-requirement ledger; new long-form requirements must be merged here or into an explicitly referenced successor in the same release;
 - `references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md` — normalized release IDs for the current verbatim long-form strategy/culture/execution requirements;
 - `references/USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` — **verbatim user long-form source; its concrete sequence, thresholds, table columns, P0/P1/P2 definitions, visual execution details and output-object requirements may not be replaced by a shorter summary**;
+- `references/REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md` — REQ-001..060 source → Runtime/Consumer → Human/package evidence → proof-status matrix; `E2E_PENDING` rows cannot be promoted by source/test presence alone;
 - `references/MASTER_CONSTRUCTION_CONTRACT.md`
 - `references/PROMPT_ART_DIRECTION_MASTER_CONTRACT.md`
 - `references/BUSINESS_OBJECT_DENSITY_MASTER_CONTRACT.md`
@@ -23,6 +24,8 @@ Mandatory original/current authorities:
 The latest user turn is never treated as the whole specification unless the user explicitly replaces prior requirements. Before coding a fix, determine which cumulative requirement IDs from `CONVERSATION_REQUIREMENT_AUDIT.md` plus its referenced extensions the change touches and which adjacent capabilities could regress.
 
 When the user supplies a concrete long-form block, preserve a verbatim source authority whenever summarization could lose execution detail. The normalized ledger and the verbatim source serve different purposes: IDs support traceability; the verbatim source prevents the IDs from silently collapsing exact sequencing, columns, thresholds, wording constraints or execution mechanics.
+
+`REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md` is the implementation-accounting layer. It must name the real downstream consumer and proof object for each requirement. A row may remain `E2E_PENDING`; it must not be marked complete merely because a requirement sentence, schema field or unit test exists.
 
 A release that adds a new rule but leaves the cumulative requirement ledger/verbatim sources stale is incomplete. A release that updates the ledger but does not prove the affected rules in the actual downstream objects is also incomplete.
 
@@ -72,7 +75,11 @@ Any release that changes Prompt, asset curation, materialization, Human Workspac
 10. the actual FULL project materialization path is used; a Host-authored five-file shortcut cannot substitute for the mature asset compiler/export package;
 11. Product Presence and copy-render route are demonstrably per-asset decisions rather than global product-everywhere / no-text / post-composite defaults;
 12. a real FULL project is inspected after generation/materialization. If Provider execution is unavailable, the project must say so and must not claim actual-output QA or FULL production completion;
-13. the exact execution locks in `USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` are visible in the final relevant objects, including: max-10-question continuation behavior; Product Truth four-way audit + A/B/C; platform/region/audience/ethnicity-culture WHY; P0 compliance; intersectionality; inclusive deep-skin photography; platform mechanics; regional localization; P0/P1/P2 tradeoff; RACE/culture tables; required Content Matrix columns; assumption/decision log; and the nine semantic FULL output objects.
+13. the exact execution locks in `USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` are visible in the final relevant objects, including: max-10-question continuation behavior; Product Truth four-way audit + A/B/C; platform/region/audience/ethnicity-culture WHY; P0 compliance; intersectionality; inclusive deep-skin photography; platform mechanics; regional localization; P0/P1/P2 tradeoff; RACE/culture tables; required Content Matrix columns; assumption/decision log; and the nine semantic FULL output objects;
+14. `REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md` is checked for every touched requirement. `E2E_PENDING` rows remain pending until the named real downstream evidence is observed in the installed plugin / fresh FULL project;
+15. the Asset Opportunity Universe exposes the 12-family sweep and Product Presence portfolio audit; silent family omission or unstructured product presence is incomplete;
+16. integrated-render assets cannot carry legacy no-text/no-product prompt instructions unless the per-asset route explicitly selects post-composite/no-copy/exact-pixel behavior;
+17. pricing recommendations cannot outrun the required unit-economics inputs; market price-band evidence stays separate from own-SKU pricing decisions.
 
 The 2026-10-30 KIYUU K01 Malaysia TikTok package is a negative regression fixture for this rule. An equivalent simplified output must fail release acceptance even if unit tests and source-contract checks pass.
 
