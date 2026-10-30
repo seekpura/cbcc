@@ -18,28 +18,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Patch the invalid f-string without touching adjacent logic
+      - name: Ensure human_delivery f-string source is valid
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('runtime/cbcc/human_delivery.py')
           lines = p.read_text(encoding='utf-8').splitlines()
-          hits = [i for i, line in enumerate(lines) if 'for a in assets[:30]: lines.append(f' in line]
-          if len(hits) != 1:
-              raise SystemExit(f'expected exactly one bad asset-table line, found {len(hits)}')
-          i = hits[0]
-          indent = lines[i][:len(lines[i]) - len(lines[i].lstrip())]
-          lines[i:i+1] = [
-              indent + 'for a in assets[:30]:',
-              indent + "    role = _clean_text(a.get('role') or a.get('title') or '—').replace('|', '\\\\|')",
-              indent + '    lines.append(',
-              indent + '        f"| {a.get(\'asset_id\') or \'—\'} | {a.get(\'surface\') or \'—\'} | {role} | {a.get(\'status\') or \'—\'} |"',
-              indent + '    )',
-          ]
-          p.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          bad_hits = [i for i, line in enumerate(lines) if 'for a in assets[:30]: lines.append(f' in line]
+          fixed_hits = [i for i, line in enumerate(lines) if "role = _clean_text(a.get('role') or a.get('title') or '—').replace('|'," in line]
+
+          if not bad_hits:
+              if not fixed_hits:
+                  raise SystemExit('neither the known bad line nor the repaired role-precompute form is present')
+              print('human_delivery source is already repaired; no patch required')
+          elif len(bad_hits) == 1:
+              i = bad_hits[0]
+              indent = lines[i][:len(lines[i]) - len(lines[i].lstrip())]
+              lines[i:i+1] = [
+                  indent + 'for a in assets[:30]:',
+                  indent + "    role = _clean_text(a.get('role') or a.get('title') or '—').replace('|', '\\\\|')",
+                  indent + '    lines.append(',
+                  indent + '        f"| {a.get(\'asset_id\') or \'—\'} | {a.get(\'surface\') or \'—\'} | {role} | {a.get(\'status\') or \'—\'} |"',
+                  indent + '    )',
+              ]
+              p.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          else:
+              raise SystemExit(f'expected at most one bad asset-table line, found {len(bad_hits)}')
           PY
           python -m py_compile runtime/cbcc/human_delivery.py
-      - name: Commit exact source fix
+      - name: Commit exact source fix when needed
         run: |
           if git diff --quiet -- runtime/cbcc/human_delivery.py; then
             echo 'No source change required.'
