@@ -1,0 +1,97 @@
+name: build-v0662-release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-v0662-release.yml'
+      - 'VERSION'
+      - 'SKILL.md'
+      - 'runtime/**'
+      - 'references/**'
+      - 'prompts/**'
+      - 'tests/test_v0662_*.py'
+      - 'scripts/build_plugin_dist_v0662.py'
+      - 'scripts/build_plugin_dist_v0661.py'
+      - 'scripts/build_plugin_dist_v0660.py'
+      - 'scripts/build_plugin_dist_v0659.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout current GitHub source of truth
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install focused test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pyyaml
+
+      - name: Verify v0.6.62 one-to-one requirement runtime
+        env:
+          PYTHONPATH: .
+        run: |
+          python -m pytest -q \
+            tests/test_v0662_long_requirements_runtime_enforcement.py \
+            tests/test_v0662_asset_universe_and_package_regressions.py \
+            tests/test_v0660_requirement_ledger_integrated_render.py \
+            tests/test_v0658_art_direction_end_to_end_lock.py \
+            tests/test_v0655_asset_universe_open_world.py \
+            tests/test_v0654_workspace_prompt_continuity.py
+
+      - name: Build complete v0.6.62 plugin from current repository
+        env:
+          PYTHONPATH: .
+        run: |
+          rm -rf dist_v0662_ci
+          python scripts/build_plugin_dist_v0662.py --output-dir dist_v0662_ci
+          test -f dist_v0662_ci/cross-border-commerce-creative-plugin-v0.6.62.zip
+          test -f dist_v0662_ci/release_manifest.json
+
+      - name: Verify packaged authority parity and required runtime files
+        run: |
+          rm -rf /tmp/cbcc-v0662
+          mkdir -p /tmp/cbcc-v0662
+          unzip -q dist_v0662_ci/cross-border-commerce-creative-plugin-v0.6.62.zip -d /tmp/cbcc-v0662
+          ROOT=/tmp/cbcc-v0662/cross-border-commerce-creative
+          test -f "$ROOT/plugin.json"
+          test -f "$ROOT/skills/cross-border-commerce-creative/SKILL.md"
+          test -f "$ROOT/skills/cross-border-commerce-creative/resources/SKILL.md"
+          cmp "$ROOT/skills/cross-border-commerce-creative/SKILL.md" "$ROOT/skills/cross-border-commerce-creative/resources/SKILL.md"
+          grep -q '0.6.62-one-to-one-long-requirement-runtime' "$ROOT/skills/cross-border-commerce-creative/SKILL.md"
+          grep -q '0.6.62-one-to-one-long-requirement-runtime' "$ROOT/skills/cross-border-commerce-creative/resources/VERSION"
+          grep -q '"version": "0.6.62"' "$ROOT/plugin.json"
+          for f in \
+            integrated_render_route_authority.py \
+            long_requirement_runtime.py \
+            long_requirement_human_projection.py \
+            long_requirement_full_audit.py \
+            asset_universe_family_audit.py \
+            commercial_continuity_bootstrap.py; do
+            test -f "$ROOT/skills/cross-border-commerce-creative/resources/runtime/cbcc/$f"
+          done
+          test -f "$ROOT/skills/cross-border-commerce-creative/resources/references/REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md"
+          test -f "$ROOT/skills/cross-border-commerce-creative/resources/references/USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md"
+          test -f "$ROOT/skills/cross-border-commerce-creative/resources/prompts/canonical_authority_loading_map.md"
+          grep -q 'v0.6.62' "$ROOT/skills/cross-border-commerce-creative/resources/prompts/canonical_authority_loading_map.md"
+
+      - name: Upload complete plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbcc-v0.6.62-plugin
+          path: |
+            dist_v0662_ci/cross-border-commerce-creative-plugin-v0.6.62.zip
+            dist_v0662_ci/release_manifest.json
+          if-no-files-found: error
+          retention-days: 7
