@@ -75,9 +75,29 @@ def install() -> None:
         return ids
     full_depth._asset_ids_from_package = materialized_asset_ids
 
+    # v0.6.58 final public prompt boundary. Normalize the complete Agent-authored Art Direction before
+    # the historical wrapper chain sees it, then apply the semantic membrane AFTER every later prompt
+    # mutation. This prevents two opposite regressions: (1) camera/people/scene/CMF values being dropped
+    # before prompt compilation; (2) later wrappers re-introducing Excel/QA/revision prose after an early
+    # membrane pass.
+    from .full_art_direction_preservation import normalize_full_art_direction
+    from .model_prompt_semantic_membrane import finalize_model_prompt_bundle
+
     existing_prompt_compile = prompt_compiler.compile_asset_prompt
     def strict_prompt_compile(*args, **kwargs):
-        out = existing_prompt_compile(*args, **kwargs)
+        if args:
+            call_args = list(args)
+            call_args[0] = normalize_full_art_direction(call_args[0] or {})
+            out = existing_prompt_compile(*call_args, **kwargs)
+        else:
+            call_kwargs = dict(kwargs)
+            if 'asset' in call_kwargs:
+                call_kwargs['asset'] = normalize_full_art_direction(call_kwargs.get('asset') or {})
+            out = existing_prompt_compile(**call_kwargs)
+
+        # No wrapper/provider path may mutate Model Prompt after this point.
+        out = finalize_model_prompt_bundle(out)
+
         continuity = out.get('commerce_decision_consumption_audit') or (out.get('prompt_consumption_audit') or {}).get('commerce_decision_continuity') or {}
         if continuity and continuity.get('status') not in {'PASS', 'NOT_BOUND'}:
             out['model_prompt_status'] = 'MODEL_PROMPT_NEEDS_COMMERCIAL_DECISION_CONSUMPTION'
