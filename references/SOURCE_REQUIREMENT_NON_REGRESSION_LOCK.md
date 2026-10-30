@@ -1,86 +1,68 @@
 # CBCC SOURCE REQUIREMENT NON-REGRESSION LOCK
 
 ## Purpose
-This is the release-construction lock for Cross-Border Commerce Creative. It exists because additive upgrades can still regress mature behavior when a local fix is implemented without re-reading the original source requirements that define the full system.
+This is the release-construction lock for Cross-Border Commerce Creative. Additive upgrades can still regress mature behavior when a local fix is implemented without re-reading the original source requirements that define the full system.
 
 **The mandatory authorities below must be read before every release change that touches strategy, asset curation, Art Direction, Prompt compilation, production, Human Workspace, language, compliance or runtime behavior.** A release is not valid merely because the new local bug is fixed.
 
 Mandatory original/current authorities:
-- `references/CONVERSATION_REQUIREMENT_AUDIT.md` — cumulative user-requirement ledger; new long-form requirements must be merged here or into an explicitly referenced successor in the same release;
-- `references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md` — normalized release IDs for the current verbatim long-form strategy/culture/execution requirements;
-- `references/USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` — **verbatim user long-form source; its concrete sequence, thresholds, table columns, P0/P1/P2 definitions, visual execution details and output-object requirements may not be replaced by a shorter summary**;
-- `references/REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md` — REQ-001..060 source → Runtime/Consumer → Human/package evidence → proof-status matrix; `E2E_PENDING` rows cannot be promoted by source/test presence alone;
-- `references/MASTER_CONSTRUCTION_CONTRACT.md`
-- `references/PROMPT_ART_DIRECTION_MASTER_CONTRACT.md`
-- `references/BUSINESS_OBJECT_DENSITY_MASTER_CONTRACT.md`
-- `references/HUMAN_WORKSPACE_PROMPT_CONTINUITY_LOCK.md`
-- `references/ASSET_UNIVERSE_OPEN_WORLD_CONTRACT.md`
-- `references/AUTHORITY_SOURCE_PARITY_LOCK.md`
-- current canonical loading map and current Skill authority
+- `references/CONVERSATION_REQUIREMENT_AUDIT.md` — detailed cumulative REQ-001..050 ledger; a heading-only projection is invalid;
+- `references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md` — REQ-051..060 normalized release IDs;
+- `references/USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` — **verbatim user long-form source; sequence, thresholds, table columns, P0/P1/P2 definitions, visual-execution details and output-object requirements may not be summarized away**;
+- `references/REQUIREMENT_IMPLEMENTATION_MATRIX_V0663.md` — current REQ-001..060 source → Runtime/Consumer → Human/package evidence → proof-status matrix;
+- `references/REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md` — frozen real K01 `data/project.json + assets/` shortcut regression authority;
+- `references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK_V0663_ADDENDUM.md`;
+- `references/MASTER_CONSTRUCTION_CONTRACT.md`;
+- `references/PROMPT_ART_DIRECTION_MASTER_CONTRACT.md`;
+- `references/BUSINESS_OBJECT_DENSITY_MASTER_CONTRACT.md`;
+- `references/HUMAN_WORKSPACE_PROMPT_CONTINUITY_LOCK.md`;
+- `references/ASSET_UNIVERSE_OPEN_WORLD_CONTRACT.md`;
+- `references/AUTHORITY_SOURCE_PARITY_LOCK.md`;
+- current canonical loading map + v0.6.62/v0.6.63 addenda + current Skill authority.
 
-`AUTHORITY_SOURCE_PARITY_LOCK.md` is mandatory because an additive release is still invalid when the current top-level Skill advances but packaged `resources/SKILL.md` remains on an older authority. The actually installed plugin must be re-read after update; source/package intent alone is not proof.
+`AUTHORITY_SOURCE_PARITY_LOCK.md` remains mandatory: a release is invalid when top-level Skill, packaged `resources/SKILL.md`, `resources/VERSION`, manifests or changed Runtime identify different release families. The actually installed plugin must be re-read after update; source/package intent alone is not proof.
 
 ## Conversation-requirement continuity
-The latest user turn is never treated as the whole specification unless the user explicitly replaces prior requirements. Before coding a fix, determine which cumulative requirement IDs from `CONVERSATION_REQUIREMENT_AUDIT.md` plus its referenced extensions the change touches and which adjacent capabilities could regress.
+The latest user turn is never the whole specification unless the user explicitly replaces prior requirements. Before coding a fix, identify which cumulative requirement IDs the change touches and which adjacent capabilities could regress.
 
-When the user supplies a concrete long-form block, preserve a verbatim source authority whenever summarization could lose execution detail. The normalized ledger and the verbatim source serve different purposes: IDs support traceability; the verbatim source prevents the IDs from silently collapsing exact sequencing, columns, thresholds, wording constraints or execution mechanics.
+When the user supplies a concrete long-form block, preserve it verbatim whenever summarization could lose execution detail. IDs support traceability; verbatim sources preserve exact sequencing, columns, thresholds and mechanics.
 
-`REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md` is the implementation-accounting layer. It must name the real downstream consumer and proof object for each requirement. A row may remain `E2E_PENDING`; it must not be marked complete merely because a requirement sentence, schema field or unit test exists.
-
-A release that adds a new rule but leaves the cumulative requirement ledger/verbatim sources stale is incomplete. A release that updates the ledger but does not prove the affected rules in the actual downstream objects is also incomplete.
+`REQUIREMENT_IMPLEMENTATION_MATRIX_V0663.md` is the implementation-accounting layer. `E2E_PENDING` rows cannot be promoted merely because a requirement sentence, schema field, unit test or package guard exists.
 
 ## Additive release invariant
-Every change must preserve the complete existing capability set unless the user explicitly replaces a requirement. A fix is a regression if it improves one local dimension by deleting, compressing, hiding or bypassing another established dimension.
+Every change preserves the complete existing capability set unless the user explicitly replaces a requirement. A fix is a regression if it improves one local dimension by deleting, compressing, hiding or bypassing another established dimension.
 
-For commercial visual assets, the following authored dimensions are independently protected and must survive from planning → asset object → Design Card → Model Prompt / Production Notes / Review according to their proper semantic plane:
-- 商业决策、消费者问题、购买障碍、目标信念、WHY；
-- 人物 / 主体：角色、年龄、肤色、发型发质、妆容、服装、体型、残障、姿态、表情、视线、手部动作、人物与商品交互；
-- 动作与 decisive moment；
-- 场景、环境、前景 / 中景 / 背景、道具、承托面、空间深度；
-- Visual Carrier、视觉钩子、Hero Moment、情绪节奏、信息密度；
-- Product Presence、Product Role、Product Fidelity、真实包装身份与参考图绑定；
-- 构图、空间关系、相对位置、尺度、纵深、焦点路径、负空间、裁切、安全区；
-- 证据层级与可视证据关系；
-- 文案、字体角色、字号层级、字重、行数、对齐、本地化排版、目标市场语言；
-- 文化、人群、交叉性、包容性表征；
-- CMF、材质、微表面、透明 / 半透明、反射、折射、高光、真实物理响应、颜色系统；
-- 摄影 / 光学：焦段、镜头、工作距离、机位高度、yaw / pitch / roll、景别、透视、对焦面、景深 / 光圈、快门 / ISO；
-- 灯光：key / fill / negative / rim、modifier 尺寸 / 距离 / 角度、CCT / WB、光比、阴影 / 高光政策、反射 / 偏振、Prelight；
-- finishing / retouch / final grade；
-- Surface / 平台 / 尺寸 / 移动端 / 缩略图行为；
-- 视频 / Creator / LIVE 的时长、beat、shot sequence、主体运动、camera motion、转场、音频、字幕、CTA；
-- Business Hypothesis、Success Metric、Test / Rotation / A-B 变量；
-- QA、Review、最小修复作为独立后验对象继续保留。
+Protected authored dimensions include, independently: commercial decision/purchase barrier/target belief/WHY; people/subject/action/decisive moment; scene/environment/foreground-midground-background/props; Visual Carrier/hook/Hero Moment; Product Presence/Role/Fidelity/reference binding; composition/spatial relations/scale/depth/focal path/negative space/crop/safe zone; evidence hierarchy; copy/typography/localization; culture/intersectionality/inclusion; CMF/material/physical response/color; full camera/focus/exposure; full lighting/prelight/reflection/polarization; finishing/grade; Surface/device/output; Video/Creator/LIVE timing/motion/audio; hypothesis/metric/test variables; and QA/Review/smallest repair as separate downstream objects.
 
 ## Semantic-plane rule
-“完整 Art Direction”不等于“所有字段都塞进 Model Prompt”。正确分流是：
-- **Model Prompt**：真正会改变像素 / 帧 / 音频的已选视觉执行信息；
-- **Visible Copy Block**：消费者可见 exact copy 与中文释义 / 用途；
-- **Production / Assembly Notes**：真源、文件、Provider 绑定、可编辑 / 冻结层、装配与责任层；
-- **Review / QA / Revision**：验收、合规复核、缺陷分类、最小修复顺序。
-
-语义隔离只能移除不属于 Model Prompt 的治理 / 生产 / Review 信息；**不得删除同一段中已经选定的人物、场景、道具、构图、摄影、灯光、CMF、材质、文案、文化或动态执行内容。**
+Complete Art Direction does not mean all fields belong in Model Prompt:
+- **Model Prompt**: selected pixel/frame/audio-changing execution;
+- **Visible Copy Block**: exact consumer-visible copy + Chinese meaning/use;
+- **Production / Assembly Notes**: source/reference/provider/editability/assembly/responsibility;
+- **Review / QA / Revision**: post-output inspection, defect classification and smallest repair.
+Semantic cleanup may remove orchestration from Model Prompt but may not delete neighboring people/scene/composition/camera/light/CMF/material/copy/culture/motion execution.
 
 ## Required release proof
-Any release that changes Prompt, asset curation, materialization, Human Workspace, strategy/culture execution or visual production must prove all of the following on a representative high-density asset/project:
-1. upstream Art Direction actually contains the relevant human / scene / composition / evidence / copy / culture / CMF / photography / lighting / finishing decisions;
-2. compatibility projection preserves those concrete values;
-3. final Model Prompt still contains every selected pixel/frame/audio-changing value relevant to the chosen route;
-4. Excel/source-authority/QA labels/minimum-repair/provider-internal prose do not leak into Model Prompt;
-5. Production Notes and Review still contain the orchestration / QA information that was intentionally separated;
-6. final public compiler/provider path is tested, not only an intermediate helper;
-7. previous Asset Universe, business-object density, Chinese Human Workspace and routed interaction contracts remain intact;
-8. top-level packaged Skill, packaged `resources/SKILL.md`, `resources/VERSION`, plugin manifests and latest builder identify the same current release family;
-9. the actually installed plugin is re-read and passes the same authority-parity check;
-10. the actual FULL project materialization path is used; a Host-authored five-file shortcut cannot substitute for the mature asset compiler/export package;
-11. Product Presence and copy-render route are demonstrably per-asset decisions rather than global product-everywhere / no-text / post-composite defaults;
-12. a real FULL project is inspected after generation/materialization. If Provider execution is unavailable, the project must say so and must not claim actual-output QA or FULL production completion;
-13. the exact execution locks in `USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` are visible in the final relevant objects, including: max-10-question continuation behavior; Product Truth four-way audit + A/B/C; platform/region/audience/ethnicity-culture WHY; P0 compliance; intersectionality; inclusive deep-skin photography; platform mechanics; regional localization; P0/P1/P2 tradeoff; RACE/culture tables; required Content Matrix columns; assumption/decision log; and the nine semantic FULL output objects;
-14. `REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md` is checked for every touched requirement. `E2E_PENDING` rows remain pending until the named real downstream evidence is observed in the installed plugin / fresh FULL project;
-15. the Asset Opportunity Universe exposes the 12-family sweep and Product Presence portfolio audit; silent family omission or unstructured product presence is incomplete;
-16. integrated-render assets cannot carry legacy no-text/no-product prompt instructions unless the per-asset route explicitly selects post-composite/no-copy/exact-pixel behavior;
-17. pricing recommendations cannot outrun the required unit-economics inputs; market price-band evidence stays separate from own-SKU pricing decisions.
+Any release changing Prompt, asset curation, materialization, Human Workspace, strategy/culture execution or visual production must prove:
+1. upstream structured Art Direction actually contains relevant selected decisions;
+2. compatibility projection preserves concrete values;
+3. final Model Prompt preserves every selected pixel/frame/audio-changing value relevant to route;
+4. Excel/source authority/QA labels/repair workflow/provider internals do not leak into Model Prompt;
+5. Production Notes and Review retain intentionally separated orchestration/QA;
+6. final public compiler/provider path is tested, not only a helper;
+7. Asset Universe, business density, Chinese Human Workspace and routed interaction remain intact;
+8. top Skill, deep Skill, VERSION, manifests, builder and changed Runtime are same release family;
+9. actual installed plugin is re-read;
+10. actual FULL materialization uses mature compiler/export; a Host five-file shortcut is not an alternate schema;
+11. Product Presence and copy-render route are per-asset decisions, not global product-everywhere/no-text/post-composite defaults;
+12. a real FULL project is inspected after generation/materialization; if Provider execution is unavailable, actual-output QA cannot be claimed;
+13. verbatim long-requirement locks are visible in relevant final objects: max-10 questions then continue; Product Truth four-way + A/B/C; four-context WHY; six-area P0 compliance; intersectionality; inclusive deep-skin photography; platform execution; regional localization; P0/P1/P2 tradeoff; RACE/culture tables; required Content Matrix columns; assumption/decision log; nine semantic output objects;
+14. current implementation matrix is checked for every touched requirement;
+15. Asset Opportunity Universe exposes 12-family sweep and Product Presence portfolio audit;
+16. integrated-render assets cannot carry legacy no-text/no-product instructions unless route explicitly selects post-composite/no-copy/exact-pixel behavior;
+17. pricing recommendations cannot outrun required unit-economics inputs;
+18. **both** mature `ASSET_UNIVERSE.json + asset_packages/` and any Host shortcut `data/project.json + assets/` shape are audited;
+19. every active mature production asset materializes Prompt CN, Prompt EN, machine Design Card, Visible Copy Block and Production/Assembly Notes;
+20. the historical real K01 package triggers the 17 frozen structural regression classes.
 
-The 2026-10-30 KIYUU K01 Malaysia TikTok package is a negative regression fixture for this rule. An equivalent simplified output must fail release acceptance even if unit tests and source-contract checks pass.
-
-A heading check, field-name check or self-authored PASS flag is insufficient. Use concrete-value regression fixtures and inspect the final object actually sent downstream.
+A heading check, field-name check or self-authored PASS flag is insufficient. Use concrete-value regression fixtures and inspect the final downstream object.
