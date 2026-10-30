@@ -23,7 +23,7 @@ def _cluster_key(asset:dict[str,Any])->str:
         return 'A_PLUS_PDP'
     if surface=='STORE_BANNER' or family=='STORE':
         return 'STORE'
-    if surface in {'SOCIAL_CONTENT','CREATOR','SHORT_VIDEO','PDP_VIDEO','LIVE'}:
+    if surface in {'SOCIAL_CONTENT','CREATOR','UGC_BRIEF','SHORT_VIDEO','PDP_VIDEO','LIVE'}:
         return 'SOCIAL_VIDEO'
     return intent or surface or family or 'OTHER'
 
@@ -32,6 +32,17 @@ def _deployment_state(asset:dict[str,Any])->str:
     for key in ('deployment_state','activation_state','pool_state'):
         if asset.get(key):
             return str(asset.get(key)).upper()
+    if asset.get('testing_variant'):
+        return 'TEST_POOL'
+    surface=str(asset.get('surface') or '').upper()
+    family=str(asset.get('family') or '').upper()
+    if surface=='PAID_AD' or family=='PAID': return 'PAID_MEDIA'
+    if surface in {'A_PLUS','LONGFORM','SPECIFICATION','COMPARISON'} or family=='RICH_CONTENT': return 'PDP_CONTENT'
+    if surface=='SOCIAL_CONTENT' or family=='SOCIAL': return 'SOCIAL'
+    if surface in {'CREATOR','UGC_BRIEF'} or family=='CREATOR_AFFILIATE': return 'CREATOR'
+    if surface in {'SHORT_VIDEO','PDP_VIDEO','LIVE'} or family in {'VIDEO','LIVE'}: return 'VIDEO'
+    if surface in {'STORE_BANNER','LANDING_PAGE_HERO'} or family=='STORE': return 'STORE'
+    if surface in {'CRM','POST_PURCHASE'} or family in {'CX','LIFECYCLE'}: return 'LIFECYCLE'
     status=str(asset.get('status') or 'ACTIVATE').upper()
     return 'LIVE_CANDIDATE' if status=='ACTIVATE' else status
 
@@ -39,7 +50,11 @@ def _deployment_state(asset:dict[str,Any])->str:
 def compile_asset_universe(assets:list[dict[str,Any]], target:dict[str,Any]|None=None)->dict[str,Any]:
     target=target or {}
     clusters:dict[str,list[dict[str,Any]]]={}
-    pools={'LIVE_CANDIDATE':[],'TEST_POOL':[],'ROTATION_POOL':[],'PAID_MEDIA':[],'PDP_CONTENT':[],'ARCHIVE':[],'OTHER':[]}
+    pools={
+        'LIVE_CANDIDATE':[],'TEST_POOL':[],'ROTATION_POOL':[],'PAID_MEDIA':[],
+        'PDP_CONTENT':[],'SOCIAL':[],'CREATOR':[],'VIDEO':[],'STORE':[],
+        'LIFECYCLE':[],'ARCHIVE':[],'OTHER':[]
+    }
     for idx,raw in enumerate(assets or []):
         a=raw
         cluster=_cluster_key(a)
@@ -53,26 +68,33 @@ def compile_asset_universe(assets:list[dict[str,Any]], target:dict[str,Any]|None
             'test_hypothesis':a.get('test_hypothesis')
         })
         state=str(a.get('deployment_state') or 'OTHER').upper()
-        if state not in pools:
-            if str(a.get('surface') or '').upper()=='PAID_AD': state='PAID_MEDIA'
-            elif str(a.get('surface') or '').upper() in {'A_PLUS','LONGFORM','PDP'}: state='PDP_CONTENT'
-            else: state='OTHER'
+        if state not in pools: state='OTHER'
         pools[state].append(a.get('asset_id'))
     capacity=target.get('listing_image_capacity') or target.get('gallery_capacity') or target.get('platform_slot_capacity')
+    live_count=len(pools['LIVE_CANDIDATE'])
     return {
-        'status':'DYNAMIC_ASSET_UNIVERSE',
+        'status':'OPEN_WORLD_ASSET_OPPORTUNITY_UNIVERSE',
+        'universe_mode':'OPEN_WORLD_COMMERCIAL_OPPORTUNITY',
         'fixed_total_asset_limit':False,
+        'optimize_for_fewest_assets':False,
+        'opportunity_sweep_required_before_activation_pruning':True,
         'platform_capacity_is_activation_constraint_only':True,
+        'activation_set_separate_from_asset_universe':True,
         'platform_capacity':capacity,
+        'live_candidate_count':live_count,
         'total_asset_candidates':len(assets or []),
         'cluster_count':len(clusters),
         'clusters':clusters,
         'pools':pools,
         'principle':(
-            'Asset universe size is determined by useful creative hypotheses, shopper decisions, surfaces and testing needs. '
-            'Platform gallery capacity limits only the simultaneous live activation set; it never limits the total asset universe, Hero variants, benefit variants, paid ads, A+/PDP modules, detail visuals, banners, social/video or rotation/testing inventory.'
+            'Build the complete commercially justified Asset Opportunity Universe before activation selection. '
+            'Asset universe size is determined by useful creative hypotheses, shopper decisions, surface-native needs, evidence routes, audience/offer treatments and testing needs. '
+            'Platform gallery/video capacity limits only the simultaneous Live/Activation Set; it never limits the total asset universe, Hero variants, scenario assets, benefit/proof variants, paid ads, A+/PDP modules, detail visuals, banners, social/creator/video, lifecycle or rotation/testing inventory.'
         ),
-        'variant_rule':'Multiple assets may answer the same shopper question on the same surface when they carry distinct authored creative hypotheses or variant IDs. Do not merge them merely because role/surface/question match.',
+        'variant_rule':(
+            'Multiple assets may answer the same shopper question on the same surface when they carry distinct creative, evidence, audience, offer, CTA, product-presence, scene, visual-mechanism, motion or other testable hypotheses. '
+            'Do not merge them merely because role/surface/question match.'
+        ),
     }
 
 
@@ -90,15 +112,13 @@ def wrap_build_asset_architecture(fn):
                 for a in one.get('assets') or []:
                     a['variant_id']=variant_id
                     a['variant_cluster']=job.get('variant_cluster') or job.get('asset_cluster') or job.get('asset_role') or _cluster_key(a)
-                    a['deployment_state']=str(job.get('deployment_state') or job.get('activation_state') or ('TEST_POOL' if job.get('testing_variant') else 'LIVE_CANDIDATE')).upper()
+                    a['deployment_state']=str(job.get('deployment_state') or job.get('activation_state') or ('TEST_POOL' if job.get('testing_variant') else _deployment_state({**a,**job}))).upper()
                     a['test_hypothesis']=job.get('test_hypothesis') or job.get('creative_hypothesis') or a.get('business_hypothesis')
                     a['activation_set_id']=job.get('activation_set_id')
                     a['testing_variant']=bool(job.get('testing_variant') or a['deployment_state'] in {'TEST_POOL','ROTATION_POOL'})
                     assets.append(a)
                 audits.extend(one.get('decision_question_audit') or [])
                 unrouted.extend(one.get('unrouted_questions') or [])
-            # Preserve every explicit variant. Asset IDs are generated from index inside each single-job call,
-            # so make IDs unique when the same question/surface repeats.
             seen={}
             for idx,a in enumerate(assets):
                 aid=str(a.get('asset_id') or '')
@@ -121,7 +141,7 @@ def wrap_build_asset_architecture(fn):
                 'asset_scope_active':True,'unrouted_questions':unrouted,'relationship_mode':'EXPLICIT_ONLY',
                 'explicit_handoff_count':sum(1 for a in assets if a.get('handoff')),'auto_sequence_authority':False,
                 'category_family':category_family,
-                'curation_basis':['Consumer Decision Question','Decision Intent','Decision Topic','Strategic Job','Surface Need','Incremental Information','Business Hypothesis','Creative Hypothesis','Variant Cluster','Testing/Deployment State'],
+                'curation_basis':['Consumer Decision Question','Decision Intent','Decision Topic','Strategic Job','Surface Need','Incremental Value','Business Hypothesis','Creative Hypothesis','Audience/Culture','Offer/CTA','Evidence Route','Media Form','Product Presence','Visual Mechanism','Variant Cluster','Testing/Deployment State'],
                 'asset_universe':universe,
             }
         out=fn(project_id,target,questions,content_objects,asset_jobs,decision_context,category_family)
