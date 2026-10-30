@@ -43,6 +43,7 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
             "prompts/canonical_authority_loading_map_CURRENT.md",
             "scripts/build_plugin_dist_current.py",
             "scripts/check_v0664_requirement_consumer_map.py",
+            "runtime/cbcc/strategy_culture_materialization.py",
         ):
             self.assertIn(rel, required)
 
@@ -66,6 +67,17 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
         self.assertEqual(issues[0]["code"], "PACKAGED_CURRENT_OVERRIDE_RELEASE_VERSION_MISMATCH")
         self.assertEqual(issues[0]["actual"], "0.6.66")
         self.assertEqual(issues[0]["expected"], expected)
+
+    def test_final_package_checker_proves_strategy_culture_materialization_tokens(self):
+        text = CHECKER.read_text(encoding="utf-8")
+        for token in (
+            "STRATEGY_CULTURE_MATERIALIZATION_TOKEN_MISSING",
+            "product_truth_audit_table",
+            "assumption_decision_log",
+            "visual_execution_checklist",
+            "output_self_check_rows",
+        ):
+            self.assertIn(token, text)
 
 
 if __name__ == "__main__":
