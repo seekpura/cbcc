@@ -1,0 +1,26 @@
+name: current-requirement-freshness
+
+on:
+  push:
+    paths:
+      - 'VERSION'
+      - 'references/REQUIREMENT_CONSUMER_MAP_V0664.json'
+      - 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json'
+      - 'references/CURRENT_CANONICAL_SKILL_BUILD.md'
+      - 'prompts/canonical_authority_loading_map_CURRENT.md'
+      - 'scripts/build_plugin_dist_current.py'
+      - 'scripts/check_v0664_requirement_consumer_map.py'
+      - 'tests/test_current_requirement_consumer_freshness.py'
+      - '.github/workflows/current-requirement-freshness.yml'
+  workflow_dispatch:
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pytest -q tests/test_current_requirement_consumer_freshness.py
+      - run: python scripts/check_v0664_requirement_consumer_map.py
