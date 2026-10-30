@@ -24,11 +24,14 @@ on:
       - 'runtime/cbcc/strategy_culture_materialization.py'
       - 'runtime/cbcc/strategy_culture_completion_v0670.py'
       - 'runtime/cbcc/long_requirement_full_audit.py'
+      - 'runtime/cbcc/full_art_direction_preservation.py'
       - 'runtime/cbcc/canonical_materialization_integrity.py'
       - 'runtime/cbcc/canonical_prompt_guard.py'
       - 'runtime/cbcc/canonical_asset_package_lineage.py'
+      - 'runtime/cbcc/canonical_human_workspace_projection.py'
       - 'runtime/cbcc/canonical_materialization_package_audit.py'
       - 'runtime/cbcc/human_projection_integrity.py'
+      - 'runtime/cbcc/full_delivery_materialization.py'
       - 'runtime/cbcc/delivery_export_continuity.py'
       - 'runtime/cbcc/commercial_continuity_bootstrap.py'
       - 'tests/test_current_requirement_consumer_freshness.py'
@@ -43,6 +46,7 @@ on:
       - 'tests/test_v0670_asset_package_lineage_materialization.py'
       - 'tests/test_v0670_full_package_canonical_materialization_audit.py'
       - 'tests/test_v0670_release_architecture.py'
+      - 'tests/test_v0670_positive_canonical_projection.py'
       - '.github/workflows/current-requirement-freshness.yml'
   workflow_dispatch:
 
@@ -67,4 +71,5 @@ jobs:
       - run: python -m pytest tests/test_v0670_asset_package_lineage_materialization.py -q
       - run: python -m pytest tests/test_v0670_full_package_canonical_materialization_audit.py -q
       - run: python -m pytest tests/test_v0670_release_architecture.py -q
+      - run: python -m pytest tests/test_v0670_positive_canonical_projection.py -q
       - run: python scripts/check_v0664_requirement_consumer_map.py
