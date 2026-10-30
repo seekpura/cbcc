@@ -51,6 +51,22 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
         self.assertNotRegex(text, r"EXPECTED_VERSION\s*=\s*['\"]\d+\.\d+\.\d+['\"]")
         self.assertNotRegex(text, r"EXPECTED_AUTHORITY\s*=\s*['\"]\d+\.\d+\.\d+")
 
+    def test_packaged_override_release_family_is_checked_directly(self):
+        checker = _load_checker()
+        expected = _expected_version_family()
+
+        self.assertEqual(
+            checker.validate_override_release_version({"current_release_version": expected}, expected),
+            [],
+        )
+        issues = checker.validate_override_release_version(
+            {"current_release_version": "0.6.66"}, expected
+        )
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["code"], "PACKAGED_CURRENT_OVERRIDE_RELEASE_VERSION_MISMATCH")
+        self.assertEqual(issues[0]["actual"], "0.6.66")
+        self.assertEqual(issues[0]["expected"], expected)
+
 
 if __name__ == "__main__":
     unittest.main()
