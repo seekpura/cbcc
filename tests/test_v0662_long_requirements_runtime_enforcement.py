@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from runtime.cbcc.strategy_depth_projection_v3 import wrap_build_master_strategy
+from runtime.cbcc.long_requirement_runtime import wrap_build_master_strategy
 from runtime.cbcc.full_delivery_depth_v3 import audit_full_strategy_depth_v3, audit_host_full_package
+from runtime.cbcc.long_requirement_full_audit import wrap_audit_full_strategy_depth_v3, wrap_audit_host_full_package
 from runtime.cbcc.long_requirement_human_projection import wrap_render_master_strategy_cn
 
 
@@ -75,7 +76,16 @@ def _request():
 
 def test_verbatim_requirements_are_projected_into_full_strategy_runtime():
     def base(request, *args, **kwargs):
-        return _base_strategy()
+        strategy = _base_strategy()
+        strategy['sections']['03_platform_region_audience_culture_insight']['dimension_status'] = {
+            'platform': {'status': 'EVIDENCED', 'value': 'TikTok Shop', 'why': 'selected platform'},
+            'market_region': {'status': 'EVIDENCED', 'value': 'Malaysia', 'why': 'selected market'},
+            'audience_segments': {'status': 'EVIDENCED', 'value': ['urban skincare shoppers'], 'why': 'supplied audience'},
+            'race_ethnicity': {'status': 'TO_VERIFY', 'why': 'no identity inference'},
+            'religion': {'status': 'TO_VERIFY', 'why': 'verify when relevant'},
+            'stereotype_taboo': {'status': 'TO_VERIFY', 'why': 'verify culture risks'},
+        }
+        return strategy
 
     wrapped = wrap_build_master_strategy(base)
     strategy = wrapped(
@@ -122,7 +132,8 @@ def test_verbatim_requirements_are_projected_into_full_strategy_runtime():
 
 def test_full_depth_audit_blocks_missing_verbatim_execution_objects():
     strategy = _base_strategy()
-    result = audit_full_strategy_depth_v3(strategy)
+    audited = wrap_audit_full_strategy_depth_v3(audit_full_strategy_depth_v3)
+    result = audited(strategy)
     codes = {x['code'] for x in result['issues']}
     assert 'FULL_PENDING_CONFIRMATION_LIMIT_EXCEEDED' in codes
     assert 'FULL_DECISION_CONTEXT_WHY_MISSING' in codes
@@ -161,7 +172,6 @@ def test_human_strategy_projection_exposes_platform_execution_culture_checks_and
 
 
 def test_host_full_package_rejects_assets_shortcut_and_missing_structured_art_direction(tmp_path: Path):
-    # Minimal required shell to isolate asset-path failures.
     from runtime.cbcc.full_delivery_depth_v3 import CORE_HOST_FULL_FILES
     for rel in CORE_HOST_FULL_FILES:
         p = tmp_path / rel
@@ -181,7 +191,8 @@ def test_host_full_package_rejects_assets_shortcut_and_missing_structured_art_di
         'assets': [{'asset_id': 'A1', 'deployment_state': 'LIVE_CANDIDATE', 'family': 'GALLERY'}],
     }), encoding='utf-8')
 
-    result = audit_host_full_package(tmp_path)
+    audited = wrap_audit_host_full_package(audit_host_full_package)
+    result = audited(tmp_path)
     codes = {x['code'] for x in result['issues']}
     assert 'HOST_SHORTCUT_ASSET_PACKAGE_FORBIDDEN' in codes
     assert 'MATURE_ASSET_PACKAGES_REQUIRED' in codes
