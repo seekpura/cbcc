@@ -9,6 +9,9 @@ from pathlib import Path
 from scripts import build_plugin_dist_v0662 as v0662
 
 ROOT = Path(__file__).resolve().parents[1]
+LEDGER = (ROOT / 'references' / 'CONVERSATION_REQUIREMENT_AUDIT.md').read_text(encoding='utf-8').strip()
+MATRIX = (ROOT / 'references' / 'REQUIREMENT_IMPLEMENTATION_MATRIX_V0663.md').read_text(encoding='utf-8').strip()
+SOURCE_LOCK = (ROOT / 'references' / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md').read_text(encoding='utf-8').strip()
 CLOSURE = (ROOT / 'references' / 'REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md').read_text(encoding='utf-8').strip()
 SOURCE_ADDENDUM = (ROOT / 'references' / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK_V0663_ADDENDUM.md').read_text(encoding='utf-8').strip()
 ADDENDUM = (ROOT / 'prompts' / 'canonical_authority_loading_map_v0663_addendum.md').read_text(encoding='utf-8').strip()
@@ -20,7 +23,7 @@ The historical `data/project.json + assets/<id>/` Host shortcut is now part of t
 
 Production-ready mature assets must also materialize all four production objects plus the machine Design Card: `05_prompt_CN.txt`, `06_prompt_EN.txt`, `12_design_card.json`, `14_visible_copy_block.json`, `15_production_assembly_notes.json`. Missing any of them is `PRODUCTION_OBJECTS_INCOMPLETE`.
 
-Load `resources/references/REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md`, `resources/references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK_V0663_ADDENDUM.md` and `resources/prompts/canonical_authority_loading_map_v0663_addendum.md` for the exact negative-fixture and source-loading closure.
+Load the detailed cumulative ledger, `resources/references/REQUIREMENT_IMPLEMENTATION_MATRIX_V0663.md`, `resources/references/REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md`, the current source lock and its v0.6.63 addendum, and the v0.6.63 canonical loading addendum. A heading-only Requirement Ledger is invalid.
 
 This closes the negative-fixture audit bypass only. Fresh positive K01 FULL generation, Provider execution, actual-output QA and review/revision lineage remain required before FULL behavior is called complete.
 '''.strip()
@@ -29,6 +32,7 @@ This closes the negative-fixture audit bypass only. Fresh positive K01 FULL gene
 def _normalize_version(text: str) -> str:
     text = re.sub(r'(?m)^version:\s*[^\n]+$', 'version: 0.6.63-real-k01-host-shortcut-audit-closure', text, count=1)
     text = re.sub(r'(?m)^# Cross-Border Commerce Creative v[^\n]+$', '# Cross-Border Commerce Creative v0.6.63', text, count=1)
+    text = text.replace('REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md', 'REQUIREMENT_IMPLEMENTATION_MATRIX_V0663.md')
     text = text.replace('Before claiming v0.6.62 behavior complete:', 'Before claiming v0.6.63 behavior complete:')
     return text
 
@@ -49,13 +53,20 @@ def copy_repo_resources(dest: Path) -> None:
     v0662.copy_repo_resources(dest)
     current = canonical_skill('0.6.63')
     (dest / 'SKILL.md').write_text(current, encoding='utf-8')
+
     refs = dest / 'references'
     refs.mkdir(parents=True, exist_ok=True)
+    # Explicit writes prevent stale/heading-only release authority from reappearing.
+    (refs / 'CONVERSATION_REQUIREMENT_AUDIT.md').write_text(LEDGER + '\n', encoding='utf-8')
+    (refs / 'REQUIREMENT_IMPLEMENTATION_MATRIX_V0663.md').write_text(MATRIX + '\n', encoding='utf-8')
+    (refs / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md').write_text(SOURCE_LOCK + '\n', encoding='utf-8')
     (refs / 'REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md').write_text(CLOSURE + '\n', encoding='utf-8')
     (refs / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK_V0663_ADDENDUM.md').write_text(SOURCE_ADDENDUM + '\n', encoding='utf-8')
+
     prompts = dest / 'prompts'
     prompts.mkdir(parents=True, exist_ok=True)
     (prompts / 'canonical_authority_loading_map_v0663_addendum.md').write_text(ADDENDUM + '\n', encoding='utf-8')
+
     tests = dest / 'tests'
     tests.mkdir(parents=True, exist_ok=True)
     (tests / TEST.name).write_text(TEST.read_text(encoding='utf-8'), encoding='utf-8')
@@ -76,7 +87,7 @@ def plugin_manifest(version: str) -> dict:
     interface['longDescription'] = (
         'v0.6.63 将真实K01历史旁路直接纳入FULL Runtime审计：data/project.json、assets五文件简包、全局后合成/禁字/禁商品、'
         '商品铺满全部资产、缺结构化Art Direction、缺机会家族审计、缺真实输出/Provider/Review/Revision、固定能力菜单与Economics未闭环却给建议价均可被实际包级阻断。'
-        '生产就绪成熟资产同时强制Prompt CN/EN、Design Card、Visible Copy与Production Notes完整物化。'
+        '生产就绪成熟资产同时强制Prompt CN/EN、Design Card、Visible Copy与Production Notes完整物化；详细累计Requirement Ledger与当前实施矩阵显式打包。'
     )
     return manifest
 
@@ -95,6 +106,8 @@ def build(output_dir: Path) -> dict:
     release['release'] = 'v0.6.63 Real K01 Host-Shortcut Audit Closure'
     release['authority_version'] = '0.6.63-real-k01-host-shortcut-audit-closure'
     release.setdefault('delivery_contract', {}).update({
+        'detailed_cumulative_requirement_ledger_packaged': True,
+        'current_v0663_implementation_matrix_packaged': True,
         'real_k01_data_project_shortcut_audited': True,
         'historical_k01_17_structural_failures_locked': True,
         'production_objects_cn_en_design_card_visible_copy_notes_required': True,
