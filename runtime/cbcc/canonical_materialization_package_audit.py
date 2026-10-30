@@ -15,15 +15,27 @@ def _read_json(path:Path)->dict[str,Any]:
         return {}
 
 
+def _extract_prompt_lineage(contract:dict[str,Any])->dict[str,Any]:
+    direct=contract.get('canonical_prompt_lineage')
+    if isinstance(direct,dict) and direct.get('canonical_art_direction_sha256'):
+        return direct
+    card=contract.get('design_card')
+    if isinstance(card,dict):
+        nested=card.get('canonical_prompt_lineage')
+        if isinstance(nested,dict) and nested.get('canonical_art_direction_sha256'):
+            return nested
+    return {}
+
+
 def _prompt_lineage_issue(asset_dir:Path)->dict[str,Any]|None:
     contract={}
     for name in ('13_prompt_contract.json','12_prompt_contract.json'):
         p=asset_dir/name
         if p.exists(): contract=_read_json(p);break
     if not contract:return {'code':'PROMPT_CANONICAL_LINEAGE_MISSING','asset_id':asset_dir.name,'why':'Prompt contract is missing.'}
-    lineage=contract.get('canonical_prompt_lineage')
-    if not isinstance(lineage,dict) or not lineage.get('canonical_art_direction_sha256'):
-        return {'code':'PROMPT_CANONICAL_LINEAGE_MISSING','asset_id':asset_dir.name,'why':'CN/EN Prompt package has no canonical Art Direction lineage hash.'}
+    lineage=_extract_prompt_lineage(contract)
+    if not lineage:
+        return {'code':'PROMPT_CANONICAL_LINEAGE_MISSING','asset_id':asset_dir.name,'why':'CN/EN Prompt package has no persisted canonical Art Direction lineage hash at contract or design_card level.'}
     return None
 
 
@@ -52,7 +64,6 @@ def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
         html=package/'index.html'
         if html.exists():
             issues.extend(audit_human_projection_html(html.read_text(encoding='utf-8',errors='ignore')))
-        # Dedupe exact issue objects while preserving evidence-rich rows.
         out=[];seen=set()
         for row in issues:
             key=json.dumps(row,ensure_ascii=False,sort_keys=True,default=str)
