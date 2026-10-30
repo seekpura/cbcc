@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,10 +93,20 @@ def test_final_public_compiler_normalizes_art_direction_then_runs_semantic_membr
     text = (ROOT / 'runtime' / 'cbcc' / 'commercial_continuity_bootstrap.py').read_text(encoding='utf-8')
     for token in ['normalize_full_art_direction', 'finalize_model_prompt_bundle', 'existing_prompt_compile']:
         assert token in text, token
-    normalize_call = text.index('call_args[0] = normalize_full_art_direction')
-    compile_call = text.index('out = existing_prompt_compile', normalize_call)
-    finalize_call = text.index('out = finalize_model_prompt_bundle(out)', compile_call)
-    assert normalize_call < compile_call < finalize_call
+
+    # Check semantic execution order, not one historical formatting/spelling of the assignment.
+    normalize_match = re.search(
+        r'(?:call_args\[0\]\s*=\s*|normalized_asset\s*=\s*)normalize_full_art_direction\s*\(',
+        text,
+    )
+    assert normalize_match, 'final public compiler must normalize structured Art Direction before historical compile'
+    compile_match = re.search(r'out\s*=\s*existing_prompt_compile\s*\(', text[normalize_match.end():])
+    assert compile_match, 'historical compiler call missing after Art Direction normalization'
+    compile_pos = normalize_match.end() + compile_match.start()
+    finalize_match = re.search(r'out\s*=\s*finalize_model_prompt_bundle\s*\(\s*out\s*\)', text[compile_pos:])
+    assert finalize_match, 'final semantic membrane must run after the historical compiler chain'
+    finalize_pos = compile_pos + finalize_match.start()
+    assert normalize_match.start() < compile_pos < finalize_pos
 
 
 def test_source_requirement_lock_is_mandatory_and_names_original_authorities():
