@@ -10,6 +10,7 @@ from scripts import build_plugin_dist_v0662 as v0662
 
 ROOT = Path(__file__).resolve().parents[1]
 CLOSURE = (ROOT / 'references' / 'REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md').read_text(encoding='utf-8').strip()
+SOURCE_ADDENDUM = (ROOT / 'references' / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK_V0663_ADDENDUM.md').read_text(encoding='utf-8').strip()
 ADDENDUM = (ROOT / 'prompts' / 'canonical_authority_loading_map_v0663_addendum.md').read_text(encoding='utf-8').strip()
 TEST = ROOT / 'tests' / 'test_v0663_real_k01_host_shortcut_audit.py'
 
@@ -18,6 +19,8 @@ CURRENT_PATCH = r'''
 The historical `data/project.json + assets/<id>/` Host shortcut is now part of the real FULL package audit, not an out-of-band manual observation. An equivalent package must fail for the frozen K01 structural regression classes, including incomplete five-file asset folders, missing structured Art Direction, unstructured/all-visible Product Presence, missing opportunity sweep, global post-composite/no-text/no-product patterns, missing generated media/Provider Result/Review/Revision, missing information-assumption-decision log, pricing ahead of unit economics, and fixed capability-menu/route taxonomy.
 
 Production-ready mature assets must also materialize all four production objects plus the machine Design Card: `05_prompt_CN.txt`, `06_prompt_EN.txt`, `12_design_card.json`, `14_visible_copy_block.json`, `15_production_assembly_notes.json`. Missing any of them is `PRODUCTION_OBJECTS_INCOMPLETE`.
+
+Load `resources/references/REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md`, `resources/references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK_V0663_ADDENDUM.md` and `resources/prompts/canonical_authority_loading_map_v0663_addendum.md` for the exact negative-fixture and source-loading closure.
 
 This closes the negative-fixture audit bypass only. Fresh positive K01 FULL generation, Provider execution, actual-output QA and review/revision lineage remain required before FULL behavior is called complete.
 '''.strip()
@@ -49,6 +52,7 @@ def copy_repo_resources(dest: Path) -> None:
     refs = dest / 'references'
     refs.mkdir(parents=True, exist_ok=True)
     (refs / 'REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md').write_text(CLOSURE + '\n', encoding='utf-8')
+    (refs / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK_V0663_ADDENDUM.md').write_text(SOURCE_ADDENDUM + '\n', encoding='utf-8')
     prompts = dest / 'prompts'
     prompts.mkdir(parents=True, exist_ok=True)
     (prompts / 'canonical_authority_loading_map_v0663_addendum.md').write_text(ADDENDUM + '\n', encoding='utf-8')
