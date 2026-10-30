@@ -32,8 +32,10 @@ def install() -> None:
     # localization operations, resource tradeoffs and conditional inclusive-photography depth before audit.
     from . import strategy_authority
     from .strategy_depth_projection_v3 import wrap_build_master_strategy
+    from .claim_grade_safety_v0647 import wrap_build_master_strategy as wrap_claim_grade_safety
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0647_full_depth_projection', False):
         wrapped_strategy = wrap_build_master_strategy(strategy_authority.build_master_strategy)
+        wrapped_strategy = wrap_claim_grade_safety(wrapped_strategy)
         setattr(wrapped_strategy, '_cbcc_v0647_full_depth_projection', True)
         strategy_authority.build_master_strategy = wrapped_strategy
 
@@ -48,7 +50,6 @@ def install() -> None:
             if str(base.get('mode') or '').upper() != 'FULL':
                 return base
             upgraded = audit_full_strategy_depth_v3(strategy, base)
-            # Preserve stable metadata expected by existing consumers.
             for key in ('required_sections', 'evidence_levels', 'race_stages'):
                 if key in base and key not in upgraded:
                     upgraded[key] = base[key]
@@ -73,7 +74,6 @@ def install() -> None:
     prompt_compiler.compile_asset_prompt = strict_prompt_compile
     seven_agent.compile_asset_prompt = strict_prompt_compile
 
-    # Import after the strict prompt compiler is installed so asset_compiler captures the final compiler.
     from . import asset_compiler
     asset_compiler.compile_asset_prompt = strict_prompt_compile
     from . import human_asset_commercial_projection
