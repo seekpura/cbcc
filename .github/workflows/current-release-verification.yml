@@ -1,0 +1,98 @@
+name: current-release-verification
+
+on:
+  push:
+    paths:
+      - 'VERSION'
+      - 'scripts/build_plugin_dist_current.py'
+      - 'scripts/build_plugin_dist_v*.py'
+      - 'scripts/check_current_release_package.py'
+      - 'scripts/check_v0664_requirement_consumer_map.py'
+      - 'references/REQUIREMENT_CONSUMER_MAP_V0664.json'
+      - 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json'
+      - 'references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md'
+      - 'references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md'
+      - 'references/CURRENT_CANONICAL_SKILL_BUILD.md'
+      - 'prompts/canonical_authority_loading_map_CURRENT.md'
+      - 'runtime/**'
+      - '.github/workflows/current-release-verification.yml'
+  workflow_dispatch:
+
+jobs:
+  build-verify-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify CURRENT requirement accounting
+        run: |
+          python -m unittest discover -s tests -p 'test_current_requirement_consumer_freshness.py' -v
+          python -m unittest discover -s tests -p 'test_current_release_package_checker.py' -v
+          python scripts/check_v0664_requirement_consumer_map.py
+
+      - name: Build through stable CURRENT builder
+        run: python -m scripts.build_plugin_dist_current --output-dir dist_current
+
+      - name: Resolve exact CURRENT plugin ZIP
+        run: |
+          python - <<'PY'
+          import json, re
+          from pathlib import Path
+          authority = Path('VERSION').read_text(encoding='utf-8').strip()
+          m = re.match(r'^(\d+\.\d+\.\d+)', authority)
+          assert m, authority
+          version = m.group(1)
+          files = sorted(Path('dist_current').glob('cross-border-commerce-creative-plugin-v*.zip'))
+          assert len(files) == 1, [str(p) for p in files]
+          expected = f'cross-border-commerce-creative-plugin-v{version}.zip'
+          assert files[0].name == expected, (files[0].name, expected)
+          Path('dist_current/CURRENT_PLUGIN_PATH.txt').write_text(str(files[0]) + '\n', encoding='utf-8')
+          print(json.dumps({'version': version, 'authority': authority, 'plugin_zip': str(files[0])}, ensure_ascii=False))
+          PY
+
+      - name: Verify exact CURRENT plugin ZIP
+        run: |
+          PLUGIN_ZIP="$(cat dist_current/CURRENT_PLUGIN_PATH.txt)"
+          python scripts/check_current_release_package.py "$PLUGIN_ZIP"
+
+      - name: Write exact verified artifact metadata
+        run: |
+          python - <<'PY'
+          import hashlib, json, re
+          from pathlib import Path
+          authority = Path('VERSION').read_text(encoding='utf-8').strip()
+          version = re.match(r'^(\d+\.\d+\.\d+)', authority).group(1)
+          plugin = Path(Path('dist_current/CURRENT_PLUGIN_PATH.txt').read_text(encoding='utf-8').strip())
+          payload = {
+              'file': plugin.name,
+              'version': version,
+              'authority_version': authority,
+              'bytes': plugin.stat().st_size,
+              'sha256': hashlib.sha256(plugin.read_bytes()).hexdigest(),
+              'verified_by': 'scripts/check_current_release_package.py',
+              'verified': True,
+          }
+          Path('dist_current/VERIFIED_CURRENT_ARTIFACT.json').write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
+          )
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+
+      - name: Stage exact verified files
+        run: |
+          mkdir -p verified_current_artifact
+          cp "$(cat dist_current/CURRENT_PLUGIN_PATH.txt)" verified_current_artifact/
+          cp dist_current/VERIFIED_CURRENT_ARTIFACT.json verified_current_artifact/
+          cp dist_current/release_manifest.json verified_current_artifact/
+
+      - name: Upload exact verified CURRENT plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbcc-plugin-current-verified
+          path: verified_current_artifact/
+          if-no-files-found: error
+          compression-level: 0
+          overwrite: true
