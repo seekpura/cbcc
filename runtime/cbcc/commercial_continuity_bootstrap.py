@@ -4,11 +4,10 @@ _INSTALLED = False
 
 
 def install() -> None:
-    """Install final v0.6.46 compatibility/strictness patches exactly once.
+    """Install additive commercial continuity + FULL depth patches exactly once.
 
-    Kept in one bootstrap so future versions have one explicit place to verify that mature pricing field
-    names, prompt status and human asset cards remain connected. Multiple import paths may call this
-    function, therefore installation is deliberately idempotent.
+    v0.6.47 keeps the v0.6.46 decision-lineage / prompt stack and adds one more invariant:
+    FULL Host-native and Runtime deliveries must satisfy the same content-depth and materialization contract.
     """
     global _INSTALLED
     if _INSTALLED:
@@ -28,6 +27,35 @@ def install() -> None:
     context_module.compile_commerce_decision_context = rich_compile
     continuity_authority.compile_commerce_decision_context = rich_compile
     delivery_continuity.compile_commerce_decision_context = rich_compile
+
+    # FULL strategy authoring must project multidimensional market/culture, framework relationships,
+    # localization operations, resource tradeoffs and conditional inclusive-photography depth before audit.
+    from . import strategy_authority
+    from .strategy_depth_projection_v3 import wrap_build_master_strategy
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0647_full_depth_projection', False):
+        wrapped_strategy = wrap_build_master_strategy(strategy_authority.build_master_strategy)
+        setattr(wrapped_strategy, '_cbcc_v0647_full_depth_projection', True)
+        strategy_authority.build_master_strategy = wrapped_strategy
+
+    # Replace existence-level FULL validation with content-depth V3 while keeping all established V2 issues.
+    from . import delivery_contract
+    from .full_delivery_depth_v3 import audit_full_strategy_depth_v3
+    if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', False):
+        previous_validate = delivery_contract.validate_strategy_delivery
+
+        def strict_validate_strategy_delivery(strategy):
+            base = previous_validate(strategy)
+            if str(base.get('mode') or '').upper() != 'FULL':
+                return base
+            upgraded = audit_full_strategy_depth_v3(strategy, base)
+            # Preserve stable metadata expected by existing consumers.
+            for key in ('required_sections', 'evidence_levels', 'race_stages'):
+                if key in base and key not in upgraded:
+                    upgraded[key] = base[key]
+            return upgraded
+
+        setattr(strict_validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', True)
+        delivery_contract.validate_strategy_delivery = strict_validate_strategy_delivery
 
     existing_prompt_compile = prompt_compiler.compile_asset_prompt
 
