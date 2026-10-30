@@ -41,6 +41,16 @@ def install() -> None:
         setattr(wrapped_renderer, '_cbcc_v0662_long_requirement_human_projection', True)
         strategy_authority.render_master_strategy_cn = wrapped_renderer
 
+    # Open-world universe family sweep and Product Presence rhythm are current Agent-authoring consumers.
+    # The wrapper does not invent missing creative assets. It makes silent family omission explicit as
+    # TO_VERIFY until the Agent supplies COVERED or NOT_NEEDED/MISSING_INPUT + WHY.
+    from . import asset_universe_authority
+    from .asset_universe_family_audit import wrap_compile_asset_universe
+    if not getattr(asset_universe_authority.compile_asset_universe, '_cbcc_v0662_family_presence_audit', False):
+        wrapped_universe = wrap_compile_asset_universe(asset_universe_authority.compile_asset_universe)
+        setattr(wrapped_universe, '_cbcc_v0662_family_presence_audit', True)
+        asset_universe_authority.compile_asset_universe = wrapped_universe
+
     from . import delivery_contract
     from . import full_delivery_depth_v3 as full_depth
     from .long_requirement_full_audit import wrap_audit_full_strategy_depth_v3, wrap_audit_host_full_package
