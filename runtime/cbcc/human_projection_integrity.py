@@ -34,6 +34,24 @@ def _missing_renderer_tokens(renderer:str,tokens:list[str])->list[str]:
     return [t for t in tokens if t not in renderer]
 
 
+def _has_real_copy_binding(renderer:str)->bool:
+    # Direct per-control binding used by lightweight project-authored workspaces.
+    direct=bool(re.search(r'onclick=["\'][^"\']*copyText\s*\(',renderer,re.I))
+    # Mature routed workspace uses delegated .copy-btn / data-copy controls.
+    delegated=(
+        ('navigator.clipboard.writeText' in renderer or "document.execCommand('copy')" in renderer or 'document.execCommand("copy")' in renderer)
+        and ('.copy-btn' in renderer or 'data-copy' in renderer)
+        and bool(re.search(r'addEventListener\s*\(\s*["\']click["\']',renderer,re.I))
+    )
+    # Generic delegated implementation is acceptable only when a real clickable control selector is present.
+    generic=(
+        ('navigator.clipboard.writeText' in renderer or 'clipboard.writeText' in renderer)
+        and bool(re.search(r'addEventListener\s*\(\s*["\']click["\']',renderer,re.I))
+        and bool(re.search(r'(?:closest|matches|querySelector)\s*\([^)]*(?:copy|clipboard)',renderer,re.I))
+    )
+    return direct or delegated or generic
+
+
 def audit_human_projection_html(html:str)->list[dict[str,Any]]:
     """Audit visible Human Workspace projection, not mere presence inside embedded DATA.
 
@@ -130,8 +148,8 @@ def audit_human_projection_html(html:str)->list[dict[str,Any]]:
             tokens += ['product_presence.role','product_presence.why']
         add('HTML_ASSET_ART_DIRECTION_PROJECTION_INCOMPLETE',_missing_renderer_tokens(renderer,tokens),'Asset detail must expose all purchase-relevant Art Direction decisions, not only a summary subset.')
 
-    copy_bound=bool(re.search(r'onclick=["\'][^"\']*copyText\s*\(',renderer,re.I) or re.search(r'addEventListener\s*\([^)]*click[^;]{0,300}(?:clipboard|copyText)',renderer,re.I|re.S))
-    if not copy_bound:issues.append({'code':'WORKSPACE_COPY_BINDING_MISSING','why':'Copy capability is not considered implemented until a visible control invokes clipboard/copy behavior.'})
+    if not _has_real_copy_binding(renderer):
+        issues.append({'code':'WORKSPACE_COPY_BINDING_MISSING','why':'Copy capability is not considered implemented until a visible control is behaviorally bound to clipboard/copy execution.'})
 
     search_handlers=re.findall(r'addEventListener\s*\(\s*["\']input["\'][\s\S]{0,1800}',renderer,re.I)
     search_blob='\n'.join(search_handlers)
