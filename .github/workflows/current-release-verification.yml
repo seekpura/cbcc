@@ -8,11 +8,13 @@ on:
       - 'scripts/build_plugin_dist_v*.py'
       - 'scripts/check_current_release_package.py'
       - 'scripts/check_v0664_requirement_consumer_map.py'
+      - 'scripts/check_v0670_release_delta.py'
       - 'references/REQUIREMENT_CONSUMER_MAP_V0664.json'
       - 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json'
       - 'references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md'
       - 'references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md'
       - 'references/CURRENT_CANONICAL_SKILL_BUILD.md'
+      - 'references/V0670_CANONICAL_MATERIALIZATION_PARITY.md'
       - 'prompts/canonical_authority_loading_map_CURRENT.md'
       - 'runtime/**'
       - '.github/workflows/current-release-verification.yml'
@@ -57,6 +59,7 @@ jobs:
         run: |
           PLUGIN_ZIP="$(cat dist_current/CURRENT_PLUGIN_PATH.txt)"
           python scripts/check_current_release_package.py "$PLUGIN_ZIP"
+          python scripts/check_v0670_release_delta.py "$PLUGIN_ZIP"
 
       - name: Write exact verified artifact metadata
         run: |
@@ -72,7 +75,10 @@ jobs:
               'authority_version': authority,
               'bytes': plugin.stat().st_size,
               'sha256': hashlib.sha256(plugin.read_bytes()).hexdigest(),
-              'verified_by': 'scripts/check_current_release_package.py',
+              'verified_by': [
+                  'scripts/check_current_release_package.py',
+                  'scripts/check_v0670_release_delta.py'
+              ],
               'verified': True,
           }
           Path('dist_current/VERIFIED_CURRENT_ARTIFACT.json').write_text(
