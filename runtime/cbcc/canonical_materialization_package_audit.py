@@ -5,7 +5,7 @@ from typing import Any, Callable
 
 from .canonical_materialization_integrity import audit_asset_directory, COPY_ROUTES
 from .human_projection_integrity import audit_human_projection_html
-from .canonical_human_workspace_projection import apply_canonical_human_projection_to_existing_html
+from .canonical_human_workspace_completion import apply_complete_canonical_human_projection
 
 
 def _read_json(path:Path)->dict[str,Any]:
@@ -59,12 +59,10 @@ def _prompt_contract_route_issue(asset_dir:Path)->dict[str,Any]|None:
 def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
     def audited(package_dir:Path):
         package=Path(package_dir)
-        # Positive projection first: final FULL delivery is not allowed to freeze a lossy Human Workspace
-        # and merely report the defect afterward. Existing project-authored routes/world are retained.
         html=package/'index.html'
         human_projection={'status':'NOT_APPLICABLE'}
         if html.exists():
-            human_projection=apply_canonical_human_projection_to_existing_html(html)
+            human_projection=apply_complete_canonical_human_projection(html)
 
         result=fn(package);issues=list(result.get('issues') or [])
         if html.exists() and human_projection.get('status')!='PASS':
