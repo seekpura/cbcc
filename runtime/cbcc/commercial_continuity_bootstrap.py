@@ -46,6 +46,21 @@ def install() -> None:
         setattr(strict_validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', True)
         delivery_contract.validate_strategy_delivery = strict_validate_strategy_delivery
 
+    # Final package completion must validate object contents, not merely file names. The real v0.6.46
+    # Host-native package had nine headings and a PASS flag while losing strategy depth and language
+    # companions, so v0.6.47 re-runs the V3 strategy validator and audit-status checks on the package.
+    from .full_delivery_package_hardening import harden_full_package_audit
+    if not getattr(full_depth.audit_host_full_package, '_cbcc_v0647_content_hardened', False):
+        hardened_package_audit = harden_full_package_audit(
+            full_depth.audit_host_full_package,
+            delivery_contract.validate_strategy_delivery,
+        )
+        setattr(hardened_package_audit, '_cbcc_v0647_content_hardened', True)
+        full_depth.audit_host_full_package = hardened_package_audit
+    for rel in ('DELIVERY_MANIFEST.json', 'FULL_MATERIALIZATION_AUDIT.json'):
+        if rel not in full_depth.CORE_HOST_FULL_FILES:
+            full_depth.CORE_HOST_FULL_FILES.append(rel)
+
     # Video/Creator production is intentionally independent from image 00–13 packages. The Asset Universe
     # materialization audit therefore counts both asset_packages/<id> and video/<id> as real materialized
     # candidates; it must never force video back into a 7/9-image Gallery structure.
