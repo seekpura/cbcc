@@ -52,6 +52,16 @@ def install() -> None:
         setattr(wrapped_renderer, '_cbcc_v0669_strategy_culture_materialization', True)
         strategy_authority.render_master_strategy_cn = wrapped_renderer
 
+    from .strategy_culture_completion_v0670 import (
+        wrap_build_master_strategy as wrap_strategy_culture_completion,
+        wrap_render_master_strategy_cn as wrap_strategy_culture_completion_human,
+        wrap_audit_full_strategy_depth_v3 as wrap_strategy_culture_completion_audit,
+    )
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0670_strategy_culture_completion', False):
+        strategy_authority.build_master_strategy = wrap_strategy_culture_completion(strategy_authority.build_master_strategy)
+    if not getattr(strategy_authority.render_master_strategy_cn, '_cbcc_v0670_strategy_culture_completion', False):
+        strategy_authority.render_master_strategy_cn = wrap_strategy_culture_completion_human(strategy_authority.render_master_strategy_cn)
+
     # Open-world universe family sweep and Product Presence rhythm are current Agent-authoring consumers.
     # The wrapper does not invent missing creative assets. It makes silent family omission explicit as
     # TO_VERIFY until the Agent supplies COVERED or NOT_NEEDED/MISSING_INPUT + WHY.
@@ -73,6 +83,8 @@ def install() -> None:
         setattr(wrapped_depth_audit, '_cbcc_v0662_long_requirement_audit', True)
         setattr(wrapped_depth_audit, '_cbcc_v0669_strategy_culture_materialization_audit', True)
         full_depth.audit_full_strategy_depth_v3 = wrapped_depth_audit
+    if not getattr(full_depth.audit_full_strategy_depth_v3, '_cbcc_v0670_strategy_culture_completion', False):
+        full_depth.audit_full_strategy_depth_v3 = wrap_strategy_culture_completion_audit(full_depth.audit_full_strategy_depth_v3)
 
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', False):
         previous_validate = delivery_contract.validate_strategy_delivery
@@ -87,6 +99,7 @@ def install() -> None:
             return upgraded
         setattr(strict_validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', True)
         setattr(strict_validate_strategy_delivery, '_cbcc_v0669_strategy_culture_materialization_audit', True)
+        setattr(strict_validate_strategy_delivery, '_cbcc_v0670_strategy_culture_completion', True)
         delivery_contract.validate_strategy_delivery = strict_validate_strategy_delivery
 
     if not getattr(full_depth.audit_host_full_package, '_cbcc_v0662_long_requirement_package_audit', False):
