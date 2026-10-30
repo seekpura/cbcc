@@ -17,7 +17,11 @@ SOURCE_LOCK = ROOT / 'references' / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md'
 HOST_SNAPSHOT_LOCK = ROOT / 'references' / 'HOST_SKILL_SNAPSHOT_PARITY_LOCK_V0664.md'
 LOADING_ADDENDUM = ROOT / 'prompts' / 'canonical_authority_loading_map_v0665_addendum.md'
 CONSUMER_CHECKER = ROOT / 'scripts' / 'check_v0664_requirement_consumer_map.py'
+
+# Freeze all original non-versioned builder functions before monkey-patching. These immutable
+# references prevent the release customizations from recursively calling themselves.
 BASE_COPY_REPO_RESOURCES = base.copy_repo_resources
+BASE_PLUGIN_MANIFEST = base.plugin_manifest
 
 PATCH = r'''
 ## 0.15 Strict Requirement Consumer Accounting + Current Baseline Build — v0.6.66
@@ -25,7 +29,7 @@ Every cumulative requirement is now accounted for through a concrete implementat
 
 Installed-plugin parity and active Host Skill snapshot parity are separate evidence. Load `resources/references/HOST_SKILL_SNAPSHOT_PARITY_LOCK_V0664.md`. If an already-open Host context still resolves an older Skill after the plugin has been updated, record `HOST_SKILL_SNAPSHOT_STALE`; that context cannot supply positive FULL E2E proof for the new release.
 
-Current release construction no longer recursively regenerates the canonical Skill through historical v0.6.62/v0.6.59 builder markers. `resources/references/CURRENT_CANONICAL_SKILL_BUILD_V0666.md` defines the construction path: the exact installed v0.6.65 packaged Skill baseline is the additive textual floor; current GitHub resources are copied directly by the non-versioned base builder; the resulting current Skill is written byte-identically to top and deep Skill locations. Historical builders remain provenance only.
+Current release construction no longer recursively regenerates the canonical Skill through historical v0.6.62/v0.6.59 builder markers. `resources/references/CURRENT_CANONICAL_SKILL_BUILD_V0666.md` defines the construction path: the BOM-normalized decoded text of the installed v0.6.65 packaged Skill is the additive textual floor; current GitHub resources are copied directly by the non-versioned base builder; the resulting current Skill is written byte-identically to top and deep Skill locations. Historical builders remain provenance only.
 
 This build change does not weaken business Runtime. All prior requirements remain active: detailed/verbatim long requirements; Product Truth four-way+A/B/C; platform/region/audience/culture WHY; six-area P0 compliance; intersectionality and inclusive photography; platform/localization/UTM; seven tools; pricing/economics input integrity; open 12-family Asset Universe; structured Product Presence; integrated native product/copy render; complete structured Art Direction and concrete Prompt consumption; mature asset packages/four production objects; real K01 17-class negative-fixture rejection; project-authored routed workspace; and real Provider/Review/Revision/QA completion boundaries.
 
@@ -54,7 +58,7 @@ def skill_wrapper(version: str) -> str:
 
 
 def copy_repo_resources(dest: Path) -> None:
-    # Deliberately use only the non-versioned current-repository copier. Historical versioned
+    # Deliberately use only the frozen non-versioned current-repository copier. Historical versioned
     # builders remain provenance and are not allowed to regenerate the current Skill authority.
     BASE_COPY_REPO_RESOURCES(dest)
     current = canonical_skill('0.6.66')
@@ -85,7 +89,7 @@ policy:
 
 
 def plugin_manifest(version: str) -> dict:
-    manifest = base.plugin_manifest(version)
+    manifest = BASE_PLUGIN_MANIFEST(version)
     manifest['version'] = '0.6.66'
     manifest['description'] = 'Cross-border ecommerce Commerce Agent with strict REQ-001..060 consumer/proof accounting, current packaged Skill baseline construction, Host snapshot parity, integrated native render, full Art Direction and mature FULL delivery.'
     manifest['keywords'] = [
@@ -98,7 +102,7 @@ def plugin_manifest(version: str) -> dict:
     interface['shortDescription'] = '60条需求一一绑定具体Consumer/Proof；current Skill脱离历史marker链构建'
     interface['longDescription'] = (
         'v0.6.66 将REQ-001..060全部绑定到具体存在的Consumer与Proof Object，并由严格checker要求60/60、0缺口。'
-        '当前canonical Skill直接以实际installed v0.6.65成熟Skill为加法基线，不再递归依赖v0.6.62等历史builder marker。'
+        '当前canonical Skill直接以实际installed v0.6.65成熟Skill的BOM-normalized文本为加法基线，不再递归依赖v0.6.62等历史builder marker。'
         '继续保留累计/原文长要求、七工具、Economics完整性、开放资产宇宙、逐资产Product Presence、一体最终成图、完整Art Direction、'
         '成熟asset_packages、真实K01 17类阻断、项目作者化Workspace以及Provider/Review/Revision/真实输出QA完成边界。'
     )
