@@ -4,12 +4,7 @@ _INSTALLED = False
 
 
 def install() -> None:
-    """Install final v0.6.46 compatibility/strictness patches exactly once.
-
-    Kept in one bootstrap so future versions have one explicit place to verify that mature pricing field
-    names, prompt status and human asset cards remain connected. Multiple import paths may call this
-    function, therefore installation is deliberately idempotent.
-    """
+    """Install additive commercial continuity + FULL depth patches exactly once."""
     global _INSTALLED
     if _INSTALLED:
         return
@@ -22,15 +17,65 @@ def install() -> None:
     from . import prompt_compiler as prompt_compiler
     from .tools import seven_agent
 
-    rich_compile = compatibility.wrap_compile_commerce_decision_context(
-        context_module.compile_commerce_decision_context
-    )
+    rich_compile = compatibility.wrap_compile_commerce_decision_context(context_module.compile_commerce_decision_context)
     context_module.compile_commerce_decision_context = rich_compile
     continuity_authority.compile_commerce_decision_context = rich_compile
     delivery_continuity.compile_commerce_decision_context = rich_compile
 
-    existing_prompt_compile = prompt_compiler.compile_asset_prompt
+    from . import strategy_authority
+    from .strategy_depth_projection_v3 import wrap_build_master_strategy
+    from .claim_grade_safety_v0647 import wrap_build_master_strategy as wrap_claim_grade_safety
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0647_full_depth_projection', False):
+        wrapped_strategy = wrap_claim_grade_safety(wrap_build_master_strategy(strategy_authority.build_master_strategy))
+        setattr(wrapped_strategy, '_cbcc_v0647_full_depth_projection', True)
+        strategy_authority.build_master_strategy = wrapped_strategy
 
+    from . import delivery_contract
+    from . import full_delivery_depth_v3 as full_depth
+    if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', False):
+        previous_validate = delivery_contract.validate_strategy_delivery
+        def strict_validate_strategy_delivery(strategy):
+            base = previous_validate(strategy)
+            if str(base.get('mode') or '').upper() != 'FULL':
+                return base
+            upgraded = full_depth.audit_full_strategy_depth_v3(strategy, base)
+            for key in ('required_sections', 'evidence_levels', 'race_stages'):
+                if key in base and key not in upgraded:
+                    upgraded[key] = base[key]
+            return upgraded
+        setattr(strict_validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', True)
+        delivery_contract.validate_strategy_delivery = strict_validate_strategy_delivery
+
+    # Final package completion must validate object contents, not merely file names. The real v0.6.46
+    # Host-native package had nine headings and a PASS flag while losing strategy depth and language
+    # companions, so v0.6.47 re-runs the V3 strategy validator and audit-status checks on the package.
+    from .full_delivery_package_hardening import harden_full_package_audit
+    if not getattr(full_depth.audit_host_full_package, '_cbcc_v0647_content_hardened', False):
+        hardened_package_audit = harden_full_package_audit(
+            full_depth.audit_host_full_package,
+            delivery_contract.validate_strategy_delivery,
+        )
+        setattr(hardened_package_audit, '_cbcc_v0647_content_hardened', True)
+        full_depth.audit_host_full_package = hardened_package_audit
+    for rel in ('DELIVERY_MANIFEST.json', 'FULL_MATERIALIZATION_AUDIT.json'):
+        if rel not in full_depth.CORE_HOST_FULL_FILES:
+            full_depth.CORE_HOST_FULL_FILES.append(rel)
+
+    # Video/Creator production is intentionally independent from image 00–13 packages. The Asset Universe
+    # materialization audit therefore counts both asset_packages/<id> and video/<id> as real materialized
+    # candidates; it must never force video back into a 7/9-image Gallery structure.
+    def materialized_asset_ids(package_dir):
+        from pathlib import Path
+        package = Path(package_dir)
+        ids = set()
+        for root_name in ('asset_packages', 'video'):
+            root = package / root_name
+            if root.exists():
+                ids.update(p.name for p in root.iterdir() if p.is_dir())
+        return ids
+    full_depth._asset_ids_from_package = materialized_asset_ids
+
+    existing_prompt_compile = prompt_compiler.compile_asset_prompt
     def strict_prompt_compile(*args, **kwargs):
         out = existing_prompt_compile(*args, **kwargs)
         continuity = out.get('commerce_decision_consumption_audit') or (out.get('prompt_consumption_audit') or {}).get('commerce_decision_continuity') or {}
@@ -45,13 +90,10 @@ def install() -> None:
     prompt_compiler.compile_asset_prompt = strict_prompt_compile
     seven_agent.compile_asset_prompt = strict_prompt_compile
 
-    # Import after the strict prompt compiler is installed so asset_compiler captures the final compiler.
     from . import asset_compiler
     asset_compiler.compile_asset_prompt = strict_prompt_compile
     from . import human_asset_commercial_projection
     if not getattr(asset_compiler._human_asset_design_card_markdown, '_cbcc_v0646_commercial_projection', False):
-        wrapped = human_asset_commercial_projection.wrap_human_asset_design_card(
-            asset_compiler._human_asset_design_card_markdown
-        )
+        wrapped = human_asset_commercial_projection.wrap_human_asset_design_card(asset_compiler._human_asset_design_card_markdown)
         setattr(wrapped, '_cbcc_v0646_commercial_projection', True)
         asset_compiler._human_asset_design_card_markdown = wrapped

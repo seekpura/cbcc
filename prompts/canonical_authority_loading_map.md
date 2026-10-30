@@ -1,4 +1,4 @@
-# CBCC Canonical Authority Loading Map — v0.6.46
+# CBCC Canonical Authority Loading Map — v0.6.47
 
 ## Purpose
 CBCC does not prove capability depth by making one monolithic prompt arbitrarily large. The Host Skill is the routing authority; mature specialist authorities are mandatory inputs when their domain is active. A file existing in `resources/` without being selected/consumed does not count as preserved capability.
@@ -13,31 +13,41 @@ For FULL commerce work, before substantive strategy/curation/production authorin
    - executable photography/CMF depth;
    - 00–11 + 12/13 asset package continuity;
    - object-based SaaS human delivery.
-2. `resources/prompts/commercial_continuity_lineage_authority.md`
+2. `resources/prompts/full_delivery_materialization_authority.md`
+   - FULL content depth cannot pass by heading/boolean/file-count presence;
+   - explicit platform/region/audience/age/gender/income/language/race-ethnicity/religion/holiday/payment/logistics/regulation/platform-behavior/search/competition/price/intersectionality/taboo dimension status;
+   - Host-native FULL Materialization Contract = Runtime Export Contract;
+   - English + platform-primary + Chinese companion contract;
+   - explicit resource tradeoffs, framework relationships, complete object/file manifest;
+   - uncapped Asset Universe and active Video/Paid/Social/Test object materialization.
+3. `resources/prompts/commercial_continuity_lineage_authority.md`
    - Source → Analysis → Decision → Strategy → Curation → Asset → Prompt → HTML → Measurement lineage;
    - rich Market/Pricing/Audience/RACE/Listing/Ads/Review payload continuity;
    - Subject Presence System;
    - uncapped Commercial Asset Universe.
-3. `resources/prompts/dynamic_asset_curation.md`
+4. `resources/prompts/dynamic_asset_curation.md`
    - portfolio curation before Prompt compilation;
    - no fixed 6/7/9/12 asset target;
    - per-asset product presence, subject/action/environment/props, visual carrier, evidence, composition and portfolio delta.
-4. `resources/prompts/creative_direction_surface_prompt_compiler.md`
+5. `resources/prompts/creative_direction_surface_prompt_compiler.md`
    - lossless production-parameter closure;
    - concrete value consumption (`85mm`, working distance, CCT/WB, light ratio, negative fill, polarization, Prelight, CMF/material, finishing, etc. when selected);
    - four separated production objects;
    - model-native Prompt readiness and value-level consumption audit.
-5. `resources/prompts/commercial_visual_generation_authority.md`
+6. `resources/prompts/commercial_visual_generation_authority.md`
    - integrated finished-image authority;
    - product/copy/scene/subject/evidence/camera/light/CMF can be jointly authored;
    - actual-output commercial QA and smallest repair.
-6. `resources/prompts/commercial_video_generation_authority.md` when video/creator/live is active.
-7. `resources/prompts/operator_execution_density.md` when operator execution objects are active.
-8. `resources/prompts/commercial_delivery_stability_authority.md`
+7. `resources/prompts/commercial_video_generation_authority.md` when video/creator/live is active.
+8. `resources/prompts/operator_execution_density.md` when operator execution objects are active.
+9. `resources/prompts/commercial_delivery_stability_authority.md`
    - portable source media;
    - explicit platform/market only;
    - English + platform-primary + Chinese matrix;
    - frozen `cbcc-commercial-v1` shell.
+
+## FULL current-research rule
+When platform/market is explicit and a FULL decision depends on current external facts (platform mechanics, submission rules, regulation, religious/holiday calendar, local payment/logistics, market/search/competition/price context), use current public evidence when host tools are available. Do not replace a needed research pass with old project memory. If reliable current evidence is unavailable, preserve `TO_VERIFY / MISSING_INPUT` and explain exactly which downstream decision remains provisional.
 
 ## Domain-specific loading
 When the project activates the domain, also consume the matching knowledge/prompt authority rather than relying on generic prose:
