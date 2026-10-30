@@ -113,7 +113,9 @@ def wrap_export_delivery_package(fn: Callable[..., dict[str, Any]]):
     def exported(project_dir, output, *args, **kwargs):
         context = materialize_commerce_decision_context(project_dir)
         compile_continuity_audit(project_dir, context)
-        return fn(project_dir, output, *args, **kwargs)
+        manifest = fn(project_dir, output, *args, **kwargs)
+        from .full_delivery_materialization import finalize_full_delivery_materialization
+        return finalize_full_delivery_materialization(project_dir, manifest)
     return exported
 
 
@@ -176,7 +178,7 @@ def wrap_build_delivery_html(fn: Callable[..., Path]):
 
 
 # This module is imported as the final human-delivery layer from runtime.cbcc.__init__. Install the
-# strict compatibility/bootstrap here so mature Pricing field names, false-READY prevention and the
-# human asset commercial lineage projection are always active without replacing the existing authority stack.
+# strict compatibility/bootstrap here so mature commercial continuity and FULL depth V3 are active
+# without replacing the existing authority stack.
 from .commercial_continuity_bootstrap import install as _install_commercial_continuity
 _install_commercial_continuity()
