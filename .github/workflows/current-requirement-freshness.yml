@@ -26,6 +26,7 @@ on:
       - 'runtime/cbcc/long_requirement_full_audit.py'
       - 'runtime/cbcc/canonical_materialization_integrity.py'
       - 'runtime/cbcc/canonical_prompt_guard.py'
+      - 'runtime/cbcc/canonical_asset_package_lineage.py'
       - 'runtime/cbcc/canonical_materialization_package_audit.py'
       - 'runtime/cbcc/human_projection_integrity.py'
       - 'runtime/cbcc/delivery_export_continuity.py'
@@ -39,6 +40,7 @@ on:
       - 'tests/test_v0670_canonical_materialization_parity.py'
       - 'tests/test_v0670_human_projection_integrity.py'
       - 'tests/test_v0670_strategy_culture_completion.py'
+      - 'tests/test_v0670_asset_package_lineage_materialization.py'
       - 'tests/test_v0670_full_package_canonical_materialization_audit.py'
       - 'tests/test_v0670_release_architecture.py'
       - '.github/workflows/current-requirement-freshness.yml'
@@ -62,6 +64,7 @@ jobs:
       - run: python -m pytest tests/test_v0670_canonical_materialization_parity.py -q
       - run: python -m pytest tests/test_v0670_human_projection_integrity.py -q
       - run: python -m pytest tests/test_v0670_strategy_culture_completion.py -q
+      - run: python -m pytest tests/test_v0670_asset_package_lineage_materialization.py -q
       - run: python -m pytest tests/test_v0670_full_package_canonical_materialization_audit.py -q
       - run: python -m pytest tests/test_v0670_release_architecture.py -q
       - run: python scripts/check_v0664_requirement_consumer_map.py
