@@ -62,9 +62,6 @@ def install() -> None:
     if not getattr(strategy_authority.render_master_strategy_cn, '_cbcc_v0670_strategy_culture_completion', False):
         strategy_authority.render_master_strategy_cn = wrap_strategy_culture_completion_human(strategy_authority.render_master_strategy_cn)
 
-    # Open-world universe family sweep and Product Presence rhythm are current Agent-authoring consumers.
-    # The wrapper does not invent missing creative assets. It makes silent family omission explicit as
-    # TO_VERIFY until the Agent supplies COVERED or NOT_NEEDED/MISSING_INPUT + WHY.
     from . import asset_universe_authority
     from .asset_universe_family_audit import wrap_compile_asset_universe
     if not getattr(asset_universe_authority.compile_asset_universe, '_cbcc_v0662_family_presence_audit', False):
@@ -117,8 +114,6 @@ def install() -> None:
         setattr(hardened_package_audit, '_cbcc_v0662_long_requirement_package_audit', True)
         full_depth.audit_host_full_package = hardened_package_audit
 
-    # v0.6.70 is the final package boundary: Host-authored custom HTML or asset packages cannot bypass
-    # semantic field validation, single-source Prompt lineage, or Human projection completeness.
     from .canonical_materialization_package_audit import wrap_audit_host_full_package as wrap_canonical_materialization_package_audit
     if not getattr(full_depth.audit_host_full_package, '_cbcc_v0670_canonical_materialization_parity', False):
         full_depth.audit_host_full_package = wrap_canonical_materialization_package_audit(full_depth.audit_host_full_package)
@@ -138,12 +133,6 @@ def install() -> None:
         return ids
     full_depth._asset_ids_from_package = materialized_asset_ids
 
-    # Final public prompt boundary. The Agent-authored structured Art Direction remains authority.
-    # 1) normalize named Art Direction;
-    # 2) reject cross-domain/positional schema corruption before any Prompt is compiled;
-    # 3) run the mature Prompt compiler and restore the current per-asset integrated-render route;
-    # 4) apply the semantic membrane;
-    # 5) stamp the same canonical Art Direction hash onto the final CN/EN Prompt bundle.
     from .full_art_direction_preservation import normalize_full_art_direction
     from .integrated_render_route_authority import finalize_integrated_render_route
     from .model_prompt_semantic_membrane import finalize_model_prompt_bundle
@@ -184,6 +173,10 @@ def install() -> None:
 
     from . import asset_compiler
     asset_compiler.compile_asset_prompt = strict_prompt_compile
+    from .canonical_asset_package_lineage import wrap_compile_asset_packages
+    if not getattr(asset_compiler.compile_asset_packages, '_cbcc_v0670_prompt_lineage_materialization', False):
+        asset_compiler.compile_asset_packages = wrap_compile_asset_packages(asset_compiler.compile_asset_packages)
+
     from . import human_asset_commercial_projection
     if not getattr(asset_compiler._human_asset_design_card_markdown, '_cbcc_v0646_commercial_projection', False):
         wrapped = human_asset_commercial_projection.wrap_human_asset_design_card(asset_compiler._human_asset_design_card_markdown)
