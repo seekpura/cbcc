@@ -58,11 +58,16 @@ def required_release_paths() -> list[str]:
         'runtime/cbcc/long_requirement_runtime.py',
         'runtime/cbcc/long_requirement_human_projection.py',
         'runtime/cbcc/strategy_culture_materialization.py',
+        'runtime/cbcc/strategy_culture_completion_v0670.py',
         'runtime/cbcc/asset_universe_family_audit.py',
         'runtime/cbcc/integrated_render_route_authority.py',
         'runtime/cbcc/long_requirement_full_audit.py',
         'runtime/cbcc/full_art_direction_preservation.py',
         'runtime/cbcc/model_prompt_semantic_membrane.py',
+        'runtime/cbcc/canonical_materialization_integrity.py',
+        'runtime/cbcc/canonical_prompt_guard.py',
+        'runtime/cbcc/canonical_materialization_package_audit.py',
+        'runtime/cbcc/human_projection_integrity.py',
         'runtime/cbcc/commercial_continuity_bootstrap.py',
     ]
 
@@ -80,7 +85,6 @@ def _builder_target(text: str) -> str:
 
 
 def validate_override_release_version(document: dict[str, Any], expected: str) -> list[dict[str, Any]]:
-    """Validate the release family declared inside the packaged CURRENT override document itself."""
     actual = str(document.get('current_release_version') or '')
     if actual == expected:
         return []
@@ -225,55 +229,61 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
             full_audit = resources / 'runtime' / 'cbcc' / 'long_requirement_full_audit.py'
             if full_audit.exists():
                 text = full_audit.read_text(encoding='utf-8')
-                for token in (
-                    '_project_shortcut_audit',
-                    'PRODUCTION_OBJECTS_INCOMPLETE',
-                    'GLOBAL_POST_COMPOSITE_POLICY',
-                    'FIXED_CAPABILITY_ROUTE_TAXONOMY',
-                ):
-                    if token not in text:
-                        add('REAL_K01_AUDIT_TOKEN_MISSING', token=token)
+                for token in ('_project_shortcut_audit','PRODUCTION_OBJECTS_INCOMPLETE','GLOBAL_POST_COMPOSITE_POLICY','FIXED_CAPABILITY_ROUTE_TAXONOMY'):
+                    if token not in text:add('REAL_K01_AUDIT_TOKEN_MISSING', token=token)
 
             strategy_materialization = resources / 'runtime' / 'cbcc' / 'strategy_culture_materialization.py'
             if strategy_materialization.exists():
                 text = strategy_materialization.read_text(encoding='utf-8')
-                for token in (
-                    'product_truth_audit_table',
-                    'assumption_decision_log',
-                    'intersectionality_table',
-                    'framework_relationships',
-                    'visual_execution_checklist',
-                    'output_self_check_rows',
-                    'FULL_PRODUCT_TRUTH_AUDIT_TABLE_MISSING',
-                    'FULL_RESOURCE_TRADEOFF_PRIORITY_ROWS_MISSING',
-                ):
-                    if token not in text:
-                        add('STRATEGY_CULTURE_MATERIALIZATION_TOKEN_MISSING', token=token)
+                for token in ('product_truth_audit_table','assumption_decision_log','intersectionality_table','framework_relationships','visual_execution_checklist','output_self_check_rows','FULL_PRODUCT_TRUTH_AUDIT_TABLE_MISSING','FULL_RESOURCE_TRADEOFF_PRIORITY_ROWS_MISSING'):
+                    if token not in text:add('STRATEGY_CULTURE_MATERIALIZATION_TOKEN_MISSING', token=token)
+
+            strategy_completion = resources / 'runtime' / 'cbcc' / 'strategy_culture_completion_v0670.py'
+            if strategy_completion.exists():
+                text = strategy_completion.read_text(encoding='utf-8')
+                for token in ('FULL_RACE_PLATFORM_MISSING','FULL_CULTURE_EXECUTION_COLUMNS_MISSING_V0670','FULL_FRAMEWORK_MEASUREMENT_MISSING','inclusive_dimension_decisions','context_why'):
+                    if token not in text:add('STRATEGY_CULTURE_COMPLETION_TOKEN_MISSING', token=token)
+
+            integrity = resources / 'runtime' / 'cbcc' / 'canonical_materialization_integrity.py'
+            if integrity.exists():
+                text=integrity.read_text(encoding='utf-8')
+                for token in ('ASSET_SCHEMA_SEMANTIC_MISMATCH','VISIBLE_COPY_LANGUAGE_SLOT_MISMATCH','canonical_art_direction_sha256','audit_asset_directory'):
+                    if token not in text:add('CANONICAL_MATERIALIZATION_TOKEN_MISSING',token=token)
+
+            projection = resources / 'runtime' / 'cbcc' / 'human_projection_integrity.py'
+            if projection.exists():
+                text=projection.read_text(encoding='utf-8')
+                for token in ('HTML_LISTING_PROJECTION_INCOMPLETE','RACE_PLATFORM_FIELD_MISSING','CULTURE_EXECUTION_COLUMNS_MISSING','WORKSPACE_COPY_BINDING_MISSING','WORKSPACE_SEARCH_SCOPE_INCOMPLETE'):
+                    if token not in text:add('HUMAN_PROJECTION_INTEGRITY_TOKEN_MISSING',token=token)
+
+            package_audit = resources / 'runtime' / 'cbcc' / 'canonical_materialization_package_audit.py'
+            if package_audit.exists():
+                text=package_audit.read_text(encoding='utf-8')
+                for token in ('PROMPT_CANONICAL_LINEAGE_MISSING','PROMPT_CONTRACT_COPY_ROUTE_INVALID','audit_human_projection_html','audit_asset_directory'):
+                    if token not in text:add('CANONICAL_PACKAGE_AUDIT_TOKEN_MISSING',token=token)
 
             integrated = resources / 'runtime' / 'cbcc' / 'integrated_render_route_authority.py'
             if integrated.exists():
                 text = integrated.read_text(encoding='utf-8')
                 for token in ('MODEL_RENDER_INTEGRATED', 'REFERENCE_GUIDED_NATIVE_LOCK'):
-                    if token not in text:
-                        add('INTEGRATED_RENDER_TOKEN_MISSING', token=token)
+                    if token not in text:add('INTEGRATED_RENDER_TOKEN_MISSING', token=token)
 
             bootstrap = resources / 'runtime' / 'cbcc' / 'commercial_continuity_bootstrap.py'
             if bootstrap.exists():
                 text = bootstrap.read_text(encoding='utf-8')
-                offsets = [
-                    text.find('normalize_full_art_direction'),
-                    text.find('finalize_integrated_render_route'),
-                    text.find('finalize_model_prompt_bundle'),
+                ordered_tokens = [
+                    'normalize_full_art_direction(call_args[0] or {})',
+                    'validate_canonical_asset_or_raise(normalized_asset)',
+                    'existing_prompt_compile(*call_args, **kwargs)',
+                    'finalize_integrated_render_route(normalized_asset, out)',
+                    'finalize_model_prompt_bundle(out)',
+                    'finalize_prompt_lineage(normalized_asset, out)',
                 ]
-                if any(i < 0 for i in offsets) or not (offsets[0] < offsets[1] < offsets[2]):
-                    add('PROMPT_BOUNDARY_ORDER_INVALID', offsets=offsets)
-                for token in (
-                    'wrap_strategy_culture_materialization',
-                    'wrap_strategy_culture_human',
-                    'wrap_strategy_culture_audit',
-                ):
-                    if token not in text:
-                        add('STRATEGY_CULTURE_BOOTSTRAP_BINDING_MISSING', token=token)
+                offsets=[text.find(t) for t in ordered_tokens]
+                if any(i<0 for i in offsets) or offsets != sorted(offsets):
+                    add('PROMPT_CANONICAL_BOUNDARY_ORDER_INVALID', offsets=offsets, tokens=ordered_tokens)
+                for token in ('wrap_strategy_culture_materialization','wrap_strategy_culture_human','wrap_strategy_culture_audit','wrap_strategy_culture_completion','wrap_strategy_culture_completion_human','wrap_strategy_culture_completion_audit','wrap_canonical_materialization_package_audit','CanonicalMaterializationError' if False else 'validate_canonical_asset_or_raise'):
+                    if token not in text:add('CURRENT_BOOTSTRAP_BINDING_MISSING', token=token)
 
             return {
                 'status': 'PASS' if not issues else 'FAIL',
@@ -292,13 +302,7 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
     except Exception as exc:
         add('CURRENT_RELEASE_CHECK_EXCEPTION', error=str(exc))
 
-    return {
-        'status': 'FAIL',
-        'issue_count': len(issues),
-        'issues': issues,
-        'plugin_version': None,
-        'authority_version': authority,
-    }
+    return {'status':'FAIL','issue_count':len(issues),'issues':issues,'plugin_version':None,'authority_version':authority}
 
 
 def main() -> int:
