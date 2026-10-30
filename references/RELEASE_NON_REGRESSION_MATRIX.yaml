@@ -1,6 +1,115 @@
-version: 1
+version: 2
 policy: upgrades_are_additive_and_cross_dimension_regressions_block_release
 checks:
+  - id: business_object_density_without_summary_collapse
+    repair_dimension: any
+    must_preserve:
+      - product_truth
+      - market_audience_culture
+      - strategy_frameworks
+      - pricing_economics_offer
+      - listing_search
+      - content_matrix
+      - visual_master
+      - asset_universe_and_art_direction
+      - prompt_production
+      - video_creator_live
+      - ads
+      - reviews
+      - race_localization_compliance_measurement
+      - evidence_operations_workspace
+    failure_examples:
+      - replacing full business objects with a few conclusions
+      - preserving headings while thinning payload depth
+      - moving all detail to raw JSON while human objects become summaries
+
+  - id: strategy_depth_without_framework_theater
+    repair_dimension: strategy_or_frameworks
+    must_preserve:
+      - what_why_evidence_tradeoff_execution_measurement
+      - platform_region_audience_culture_why
+      - positioning_value_message_hierarchy
+      - stp_jtbd
+      - aida_fabe
+      - four_p_funnel
+      - race_connection
+      - resource_tradeoffs
+    failure_examples:
+      - listing framework definitions without changing decisions
+      - generic premium_young_conversion strategy
+      - no explicit basis tradeoff or measurement
+
+  - id: listing_depth_without_copy_stub
+    repair_dimension: listing_or_localization
+    must_preserve:
+      - search_intent
+      - keyword_clusters
+      - title
+      - bullets_or_key_benefits
+      - description
+      - attributes_and_specs
+      - usage_warning_package_contents
+      - faq_objection_handling
+      - claim_mapping
+      - exact_market_copy
+      - chinese_companion
+    failure_examples:
+      - returning only title plus three bullets
+      - removing platform fields while keeping marketing prose
+      - translating target-market copy into Chinese instead of preserving publishable copy
+
+  - id: visual_depth_without_prompt_only_substitution
+    repair_dimension: visual_or_prompt
+    must_preserve:
+      - visual_master
+      - moodboard_logic
+      - palette_hex_and_contrast
+      - composition_system
+      - photography_lighting_cmf
+      - human_scene_prop_logic
+      - shot_list
+      - per_asset_art_direction
+      - production_parameter_closure
+    failure_examples:
+      - replacing Visual Master with model prompts
+      - replacing per-asset Design Cards with one master prompt
+      - keeping camera parameters while dropping subject scene evidence typography or culture
+
+  - id: ads_reviews_economics_without_omission
+    repair_dimension: full_project_or_visual_focus
+    must_preserve:
+      - pricing_economics_offer
+      - advertising_optimization
+      - review_analysis
+      - break_even_logic
+      - attribution_and_tests
+      - review_learning_loop
+    failure_examples:
+      - omitting economics because the task includes visual assets
+      - giving ad copy without economics attribution or landing logic
+      - giving review sentiment without responsibility layer and repair route
+
+  - id: content_matrix_without_generic_topics
+    repair_dimension: platform_content
+    must_preserve:
+      - audience_state
+      - topic
+      - hook
+      - script_structure
+      - visual_form
+      - proof
+      - cta
+      - metric
+      - race_stage
+      - culture_check
+      - dimensions_duration_cover_subtitle
+      - traffic_landing_attribution
+      - why
+    failure_examples:
+      - reducing content matrix to educate_seed_convert
+      - generic hooks with no platform or audience logic
+      - no culture validation or attribution fields
+
   - id: language_without_strategy_loss
     repair_dimension: chinese_operator_language
     must_preserve:
@@ -32,11 +141,15 @@ checks:
     repair_dimension: model_prompt_language_or_cleanliness
     must_preserve:
       - production_parameter_closure
+      - people_subject_action_scene_props
       - composition_geometry
+      - evidence_and_typography
+      - culture_and_localization
       - camera_optical_values
       - lighting_program
       - cmf_material
       - color_management_finishing
+      - motion_timing_when_relevant
       - target_market_visible_copy_route
     failure_examples:
       - making EN prompt pure English by deleting selected visual values
@@ -130,9 +243,12 @@ checks:
 
 required_release_evidence:
   - master_construction_contract_loaded
+  - business_object_density_contract_loaded
+  - prompt_art_direction_contract_loaded
   - mature_capability_ledger_still_required
   - chinese_operator_surface_preserved
   - commercial_density_preserved
+  - all_business_domains_preserved
   - prompt_and_art_direction_density_preserved
   - standalone_media_preserved
   - routed_workspace_preserved
