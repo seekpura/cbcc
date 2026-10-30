@@ -177,3 +177,21 @@ def test_human_projection_exposes_all_first_class_strategy_tables():
 
     for token in ('RACE阶段', '族裔文化适配/禁忌校验', '音乐版权', 'UTM/归因', '深肤色', '反光板/柔光'):
         assert token in md, token
+
+
+def test_missing_first_class_strategy_objects_are_audited_as_incomplete():
+    issues = strategy_materialization_issues(_base_strategy())
+    codes = {row['code'] for row in issues}
+    required_codes = {
+        'FULL_PRODUCT_TRUTH_AUDIT_TABLE_MISSING',
+        'FULL_ASSUMPTION_DECISION_LOG_MISSING',
+        'FULL_INTERSECTIONALITY_TABLE_MISSING',
+        'FULL_FRAMEWORK_RELATIONSHIP_SHALLOW',
+        'FULL_VISUAL_EXECUTION_CHECKLIST_MISSING',
+        'FULL_CONTENT_MATRIX_EXECUTION_COLUMNS_MISSING',
+        'FULL_RACE_EXECUTION_ORDER_INVALID',
+        'FULL_CULTURE_ADAPTATION_ROW_SHALLOW',
+        'FULL_RESOURCE_TRADEOFF_PRIORITY_ROWS_MISSING',
+        'FULL_OUTPUT_SELF_CHECK_ROWS_MISSING',
+    }
+    assert required_codes <= codes
