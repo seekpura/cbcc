@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 # CURRENT_BUILDER_TARGET must match the semantic release family in ../VERSION.
-CURRENT_BUILDER_TARGET = '0.6.66'
+CURRENT_BUILDER_TARGET = '0.6.67'
 
-from scripts.build_plugin_dist_v0666 import build, main  # noqa: E402,F401
+from scripts.build_plugin_dist_v0667 import build, main  # noqa: E402,F401
 
 
 if __name__ == '__main__':
