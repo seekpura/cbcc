@@ -1,0 +1,65 @@
+name: v0666-verified-artifact
+
+on:
+  push:
+    paths:
+      - 'VERSION'
+      - 'scripts/build_plugin_dist_v0666.py'
+      - 'scripts/check_v0664_requirement_consumer_map.py'
+      - 'scripts/check_v0666_release_package.py'
+      - 'references/CURRENT_PACKAGED_SKILL_BASELINE_V0665.md'
+      - 'references/CURRENT_CANONICAL_SKILL_BUILD_V0666.md'
+      - 'references/REQUIREMENT_CONSUMER_MAP_V0664.json'
+      - 'references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md'
+      - 'references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md'
+      - 'references/HOST_SKILL_SNAPSHOT_PARITY_LOCK_V0664.md'
+      - 'prompts/canonical_authority_loading_map_v0665_addendum.md'
+      - '.github/workflows/v0666-verified-artifact.yml'
+  workflow_dispatch:
+
+jobs:
+  build-verify-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify strict REQ-001..060 consumer map
+        run: python scripts/check_v0664_requirement_consumer_map.py
+      - name: Verify normalized current packaged Skill baseline
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('references/CURRENT_PACKAGED_SKILL_BASELINE_V0665.md')
+          data=p.read_bytes(); text=data.decode('utf-8')
+          assert len(data)==38149, len(data)
+          assert '## 0.14 Current-Release Text Parity' in text
+          assert '## 1. FULL depth remains mandatory' in text
+          print({'status':'PASS','normalized_baseline_bytes':len(data)})
+          PY
+      - name: Build installable v0.6.66 plugin
+        run: python -m scripts.build_plugin_dist_v0666 --output-dir dist_v0666
+      - name: Verify exact plugin ZIP to be uploaded
+        run: python scripts/check_v0666_release_package.py dist_v0666/cross-border-commerce-creative-plugin-v0.6.66.zip
+      - name: Write verified artifact metadata
+        run: |
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          p=Path('dist_v0666/cross-border-commerce-creative-plugin-v0.6.66.zip')
+          h=hashlib.sha256(p.read_bytes()).hexdigest()
+          data={'file':p.name,'bytes':p.stat().st_size,'sha256':h,'verified':True,'version':'0.6.66'}
+          Path('dist_v0666/VERIFIED_ARTIFACT.json').write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(data,ensure_ascii=False))
+          PY
+      - name: Upload exact verified v0.6.66 plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: cbcc-plugin-v0.6.66-verified
+          path: |
+            dist_v0666/cross-border-commerce-creative-plugin-v0.6.66.zip
+            dist_v0666/VERIFIED_ARTIFACT.json
+            dist_v0666/release_manifest.json
+          if-no-files-found: error
+          compression-level: 0
