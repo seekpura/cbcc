@@ -28,6 +28,23 @@ def _full_data():
     }
 
 
+def _complete_renderer_body():
+    return '''
+    function renderAny(){let l=DATA.listing,m=DATA.market,v=DATA.visual,s=DATA.strategy.strategy,a=DATA.ads;
+      return l.description_en+l.key_points+l.attributes+l.package_contents+l.faq+
+      s.value_proposition+s.message_hierarchy+s.priority_tradeoff+
+      m.platform_rules+m.why+v.palette+v.contrast+v.typography+v.platform+v.inclusive+v.shot_list+
+      DATA.content.rows.map(x=>x.cover+x.subtitle+x.music+x.traffic+x.landing)+
+      DATA.race.rows.map(x=>x.platform)+DATA.culture.rows.map(x=>x.script_check+x.casting_check+x.wardrobe_grooming_check+x.color_check+x.cta_check+x.validation_result+x.modification_action)+
+      DATA.compliance.other_risks+a.objective+a.economics_boundary+a.landing+a.attribution+a.failure_diagnosis+
+      DATA.reviews.status+DATA.sources.sources.map(x=>x.url)+
+      DATA.assets.map(a=>a.card.visual_carrier+a.card.output_surface+a.card.culture_inclusion+a.card.truth_boundary+a.card.product_presence.role+a.card.product_presence.why);
+    }
+    const workspaceSearchIndex=[DATA.listing,DATA.strategy,DATA.compliance,DATA.sources,...DATA.assets];
+    $('#search').addEventListener('input',e=>workspaceSearchIndex.filter(x=>JSON.stringify(x).includes(e.target.value)));
+    '''
+
+
 def test_actual_v069_style_renderer_is_incomplete_even_when_data_contains_fields():
     data=_full_data()
     renderer='''
@@ -51,24 +68,33 @@ def test_actual_v069_style_renderer_is_incomplete_even_when_data_contains_fields
 
 def test_complete_project_authored_renderer_can_pass_without_fixed_page_taxonomy():
     data=_full_data()
-    # The checker cares about semantic consumption, not page names or fixed navigation.
-    renderer='''
-    function renderAny(){let l=DATA.listing,m=DATA.market,v=DATA.visual,s=DATA.strategy.strategy,a=DATA.ads;
-      return l.description_en+l.key_points+l.attributes+l.package_contents+l.faq+
-      s.value_proposition+s.message_hierarchy+s.priority_tradeoff+
-      m.platform_rules+m.why+v.palette+v.contrast+v.typography+v.platform+v.inclusive+v.shot_list+
-      DATA.content.rows.map(x=>x.cover+x.subtitle+x.music+x.traffic+x.landing)+
-      DATA.race.rows.map(x=>x.platform)+DATA.culture.rows.map(x=>x.script_check+x.casting_check+x.wardrobe_grooming_check+x.color_check+x.cta_check+x.validation_result+x.modification_action)+
-      DATA.compliance.other_risks+a.objective+a.economics_boundary+a.landing+a.attribution+a.failure_diagnosis+
-      DATA.reviews.status+DATA.sources.sources.map(x=>x.url)+
-      DATA.assets.map(a=>a.card.visual_carrier+a.card.output_surface+a.card.culture_inclusion+a.card.truth_boundary+a.card.product_presence.role+a.card.product_presence.why);
-    }
+    renderer=_complete_renderer_body()+'''
     function copyText(x){navigator.clipboard.writeText(x)}
     function block(){return `<button onclick="copyText('x')">Copy</button>`}
-    const workspaceSearchIndex=[DATA.listing,DATA.strategy,DATA.compliance,DATA.sources,...DATA.assets];
-    $('#search').addEventListener('input',e=>workspaceSearchIndex.filter(x=>JSON.stringify(x).includes(e.target.value)));
     '''
     assert audit_human_projection_html(_html(data,renderer))==[]
+
+
+def test_official_delegated_copy_button_behavior_counts_as_real_binding():
+    data=_full_data()
+    renderer=_complete_renderer_body()+'''
+    function block(){return `<button class="copy-btn" data-copy="hello">复制</button>`}
+    document.addEventListener('click', async e => {
+      const b=e.target.closest('.copy-btn');
+      if(!b)return;
+      await navigator.clipboard.writeText(b.dataset.copy || '');
+    });
+    '''
+    issues=audit_human_projection_html(_html(data,renderer))
+    assert 'WORKSPACE_COPY_BINDING_MISSING' not in {x['code'] for x in issues}
+    assert issues==[]
+
+
+def test_unbound_copy_helper_alone_is_not_implementation():
+    data=_full_data()
+    renderer=_complete_renderer_body()+'''function copyText(x){navigator.clipboard.writeText(x)}'''
+    codes={x['code'] for x in audit_human_projection_html(_html(data,renderer))}
+    assert 'WORKSPACE_COPY_BINDING_MISSING' in codes
 
 
 def test_race_platform_and_culture_execution_columns_are_data_contracts_not_just_html_labels():
