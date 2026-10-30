@@ -2,7 +2,12 @@ from __future__ import annotations
 
 from runtime.cbcc.strategy_depth_projection_v3 import wrap_build_master_strategy as wrap_depth
 from runtime.cbcc.long_requirement_runtime import wrap_build_master_strategy as wrap_long
-from runtime.cbcc.long_requirement_human_projection import wrap_render_master_strategy_cn
+from runtime.cbcc.long_requirement_human_projection import wrap_render_master_strategy_cn as wrap_long_human
+from runtime.cbcc.strategy_culture_materialization import (
+    wrap_build_master_strategy as wrap_materialization,
+    wrap_render_master_strategy_cn as wrap_materialization_human,
+    strategy_materialization_issues,
+)
 
 
 def _base_strategy():
@@ -85,7 +90,7 @@ def _request():
 def _build():
     def base(request, *args, **kwargs):
         return _base_strategy()
-    wrapped = wrap_long(wrap_depth(base))
+    wrapped = wrap_materialization(wrap_long(wrap_depth(base)))
     return wrapped(_request(), market={}, culture={}, compliance={'status': 'TO_VERIFY'}, asset_architecture={'assets': []})
 
 
@@ -149,11 +154,13 @@ def test_full_strategy_materializes_user_strategy_culture_execution_objects():
     self_check = last['output_self_check_rows']
     assert [row['check'] for row in self_check] == ['fabrication','why','culture','compliance','metric','assumption']
     assert all({'status','basis','action'} <= set(row) for row in self_check)
+    assert strategy_materialization_issues(_build()) == []
 
 
 def test_human_projection_exposes_all_first_class_strategy_tables():
     strategy = _build()
-    md = wrap_render_master_strategy_cn(lambda strategy: '# Base strategy\n')(strategy)
+    renderer = wrap_materialization_human(wrap_long_human(lambda strategy: '# Base strategy\n'))
+    md = renderer(strategy)
     required_titles = (
         '产品事实审计：真实卖点 / 可感知利益 / 情绪价值 / 不可宣称项',
         '假设与决策日志（事实 / 假设 / 决策）',
