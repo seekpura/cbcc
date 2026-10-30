@@ -1,4 +1,4 @@
-version: 3
+version: 4
 policy: upgrades_are_additive_and_cross_dimension_regressions_block_release
 checks:
   - id: business_object_density_without_summary_collapse
@@ -74,6 +74,32 @@ checks:
       - replacing Visual Master with model prompts
       - replacing per-asset Design Cards with one master prompt
       - keeping camera parameters while dropping subject scene evidence typography or culture
+
+  - id: full_art_direction_end_to_end_preservation
+    repair_dimension: visual_prompt_runtime_or_semantic_cleanup
+    must_preserve:
+      - consumer_decision_and_why
+      - people_casting_age_skin_hair_makeup_wardrobe_body_pose_expression_gaze_hands
+      - subject_action_decisive_moment
+      - scene_environment_foreground_midground_background_props
+      - visual_carrier_hook_emotional_rhythm
+      - product_presence_role_fidelity_reference_binding
+      - composition_spatial_geometry_scale_depth_focal_path_negative_space_safe_zone
+      - evidence_hierarchy
+      - exact_copy_typography_localized_layout
+      - culture_intersectionality_inclusion
+      - cmf_material_physical_response_color
+      - focal_length_lens_working_distance_camera_height_yaw_pitch_roll_shot_size
+      - focus_plane_aperture_dof_shutter_iso
+      - key_fill_negative_rim_modifier_cct_wb_light_ratio_reflection_polarization_prelight
+      - finishing_and_grade
+      - surface_output_mobile_behavior
+      - video_motion_timing_audio_when_relevant
+    failure_examples:
+      - selected people or scene exists upstream but disappears in final model prompt
+      - selected 85mm 1.2m f8 5200K 2to1 values exist in Design Card but disappear downstream
+      - semantic cleanup removes an entire dense line because it also contains QA or source-authority prose
+      - decimal camera or distance values are split or rewritten by prompt sanitation
 
   - id: ads_reviews_economics_without_omission
     repair_dimension: full_project_or_visual_focus
@@ -155,6 +181,19 @@ checks:
       - making EN prompt pure English by deleting selected visual values
       - reducing a production prompt to generic premium_editorial_soft_light prose
       - moving all pixel-changing decisions out of the provider prompt
+
+  - id: semantic_separation_without_review_loss
+    repair_dimension: model_prompt_semantic_membrane
+    must_preserve:
+      - product_truth_and_source_authority_upstream
+      - production_assembly_notes
+      - qa_review_contract
+      - local_revision_contract
+      - smallest_responsible_layer_repair
+    failure_examples:
+      - deleting QA and repair logic from the project instead of moving it outside model prompt
+      - telling the image model to consult Excel or local project files
+      - keeping orchestration clean by removing useful forward visual constraints
 
   - id: ui_without_business_object_loss
     repair_dimension: html_workspace_or_navigation
@@ -276,15 +315,22 @@ checks:
       - blocking normal creative choices that the agent should resolve
 
 required_release_evidence:
+  - source_requirement_non_regression_lock_loaded_before_release_change
   - master_construction_contract_loaded
   - business_object_density_contract_loaded
   - prompt_art_direction_contract_loaded
   - workspace_prompt_continuity_lock_loaded
+  - asset_universe_open_world_contract_loaded
   - mature_capability_ledger_still_required
   - chinese_operator_surface_preserved
   - commercial_density_preserved
   - all_business_domains_preserved
   - prompt_and_art_direction_density_preserved
+  - concrete_pixel_changing_values_survive_to_final_model_prompt
+  - people_scene_photography_light_cmf_finish_survive_when_selected
+  - semantic_membrane_runs_at_final_public_prompt_boundary
+  - semantic_membrane_preserves_decimal_and_camera_values
+  - qa_review_revision_remain_separate_and_preserved
   - prompt_files_human_projected
   - asset_detail_routes_preserved
   - standalone_media_preserved
