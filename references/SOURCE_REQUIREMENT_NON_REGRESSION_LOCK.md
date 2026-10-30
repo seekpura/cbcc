@@ -1,12 +1,12 @@
-# CBCC SOURCE REQUIREMENT NON-REGRESSION LOCK — v0.6.64
+# CBCC SOURCE REQUIREMENT NON-REGRESSION LOCK — CURRENT
 
 ## Mandatory authorities before any relevant release change
 Read and consume all current sources below before changing strategy, assets, Art Direction, Prompt, production, Human Workspace, language, compliance, economics, review or Runtime:
 - `CONVERSATION_REQUIREMENT_AUDIT.md` — **detailed** cumulative REQ-001..050 definitions; heading-only projection is invalid;
 - `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md` — REQ-051..060;
 - `USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` — verbatim long-form user authority; exact sequence, thresholds, table columns, P0/P1/P2 definitions, photography requirements and output-object requirements may not be summarized away;
-- `REQUIREMENT_IMPLEMENTATION_MATRIX_V0664.md` — current source → Consumer → Human/package evidence → proof status;
-- `AUTHORITY_PARITY_REPAIR_V0664.md` — installed v0.6.63 drift and v0.6.64 repair requirements;
+- `REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md` — stable current source → Consumer → Human/package evidence → proof status;
+- `AUTHORITY_PARITY_REPAIR_V0664.md` — installed authority-drift regression history and repair proof;
 - `REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md` — frozen real K01 shortcut regression authority;
 - `SOURCE_REQUIREMENT_NON_REGRESSION_LOCK_V0663_ADDENDUM.md`;
 - `MASTER_CONSTRUCTION_CONTRACT.md`;
@@ -44,11 +44,11 @@ For every touched requirement:
 11. require real Provider Result/media/Review/Revision before claiming actual-output QA;
 12. block own-SKU price recommendation when required unit-economics inputs are missing;
 13. preserve project-authored routed workspace and reject fixed capability-menu/route taxonomy regression;
-14. read back the **actual installed plugin** after update: manifests, top/deep Skill, VERSION, detailed ledger, current matrix, current source lock and changed Runtime;
+14. read back the **actual installed plugin** after update: manifests, top/deep Skill, VERSION, detailed ledger, CURRENT matrix, CURRENT source lock and changed Runtime;
 15. top/deep Skill and all release identity files must be one current release family;
 16. a fresh positive K01 FULL run through the actual host/plugin authoring path remains mandatory before FULL behavioral closure.
 
-## v0.6.64 installed-parity requirement
-The v0.6.63 installed plugin readback proved Runtime landed while authority files did not fully match the current source: the cumulative ledger was heading-only, the source lock stayed v0.6.62 and the v0.6.63 matrix was missing. v0.6.64 is incomplete unless those exact installed files are corrected and re-read after installation.
+## Version-string hygiene
+Current release-proof instructions use version-agnostic wording such as `current installed release`. Do not hard-code a historical release number into a forward-carried completion gate. Stable current authorities use `CURRENT` filenames where their semantics are release-independent; historical addenda retain versioned names only for traceability.
 
 Rules without consumed downstream evidence are intent, not completion. Negative-fixture success does not substitute for positive E2E.
