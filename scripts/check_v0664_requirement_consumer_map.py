@@ -2,16 +2,15 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MAP = ROOT / 'references' / 'REQUIREMENT_CONSUMER_MAP_V0664.json'
-FORBIDDEN = (
+GENERIC_PHRASES = (
     'current Skill/contract + relevant runtime/human/package consumer',
     'relevant runtime consumer',
     'current skill/contract',
-    'TBD',
-    'TODO',
 )
 PACKAGED_PREFIX = 'skills/cross-border-commerce-creative/'
 
@@ -25,6 +24,16 @@ def _consumer_exists(rel: str) -> bool:
         if source_equivalent.exists():
             return True
     return False
+
+
+def _has_generic_placeholder(consumers: list, proof: list) -> bool:
+    # Check implementation/proof fields only. Requirement names are allowed to contain legitimate
+    # terms such as JTBD, whose letters must never be mistaken for a standalone TBD placeholder.
+    blob = json.dumps({'consumers': consumers, 'proof_objects': proof}, ensure_ascii=False)
+    lowered = blob.casefold()
+    if any(phrase.casefold() in lowered for phrase in GENERIC_PHRASES):
+        return True
+    return bool(re.search(r'(?<![A-Za-z0-9_])(?:TBD|TODO)(?![A-Za-z0-9_])', blob, re.I))
 
 
 def audit() -> dict:
@@ -48,8 +57,7 @@ def audit() -> dict:
         consumers = row.get('consumers') or []
         proof = row.get('proof_objects') or []
         status = str(row.get('status') or '')
-        blob = json.dumps(row, ensure_ascii=False)
-        if any(token.casefold() in blob.casefold() for token in FORBIDDEN):
+        if _has_generic_placeholder(consumers, proof):
             issues.append({'code':'GENERIC_CONSUMER_PLACEHOLDER','req':req})
         if not isinstance(consumers, list) or not consumers:
             issues.append({'code':'CONSUMER_LIST_MISSING','req':req})
