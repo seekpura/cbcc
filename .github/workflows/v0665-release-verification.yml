@@ -25,7 +25,7 @@ jobs:
       - name: Verify 60 concrete requirement consumers
         run: python scripts/check_v0664_requirement_consumer_map.py
       - name: Build v0.6.65 package
-        run: python scripts/build_plugin_dist_v0665.py --output-dir dist_v0665
+        run: python -m scripts.build_plugin_dist_v0665 --output-dir dist_v0665
       - name: Verify packaged authority and runtime parity
         run: |
           python - <<'PY'
