@@ -10,7 +10,9 @@ on:
       - 'prompts/canonical_authority_loading_map_CURRENT.md'
       - 'scripts/build_plugin_dist_current.py'
       - 'scripts/check_v0664_requirement_consumer_map.py'
+      - 'scripts/check_current_release_package.py'
       - 'tests/test_current_requirement_consumer_freshness.py'
+      - 'tests/test_current_release_package_checker.py'
       - '.github/workflows/current-requirement-freshness.yml'
   workflow_dispatch:
 
@@ -23,4 +25,5 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m unittest discover -s tests -p 'test_current_requirement_consumer_freshness.py' -v
+      - run: python -m unittest discover -s tests -p 'test_current_release_package_checker.py' -v
       - run: python scripts/check_v0664_requirement_consumer_map.py
