@@ -1,0 +1,62 @@
+{
+  "authority": "CURRENT release-process overrides for REQUIREMENT_CONSUMER_MAP_V0664.json",
+  "rules": {
+    "overrides_base_rows": ["REQ-046", "REQ-047", "REQ-048"],
+    "release_status_must_be_version_agnostic": true,
+    "current_builder_launcher_must_match_VERSION": true
+  },
+  "overrides": [
+    {
+      "req": "REQ-046",
+      "requirement": "Re-read cumulative requirements every release",
+      "consumers": [
+        "references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md",
+        "references/CURRENT_CANONICAL_SKILL_BUILD.md",
+        "scripts/build_plugin_dist_current.py",
+        "prompts/canonical_authority_loading_map_CURRENT.md"
+      ],
+      "proof_objects": [
+        "current mandatory authority set",
+        "current builder authority load",
+        "strict consumer-map verification",
+        "release package authority readback"
+      ],
+      "status": "RELEASE_PROCESS_ENFORCED_CURRENT"
+    },
+    {
+      "req": "REQ-047",
+      "requirement": "GitHub main is ongoing source of truth",
+      "consumers": [
+        "VERSION",
+        "scripts/build_plugin_dist_current.py",
+        "references/CURRENT_CANONICAL_SKILL_BUILD.md",
+        "references/AUTHORITY_SOURCE_PARITY_LOCK.md"
+      ],
+      "proof_objects": [
+        "GitHub VERSION",
+        "current builder target",
+        "CI-built verified artifact",
+        "installed release readback"
+      ],
+      "status": "RELEASE_PROCESS_ENFORCED_CURRENT"
+    },
+    {
+      "req": "REQ-048",
+      "requirement": "Installed-plugin parity is real evidence",
+      "consumers": [
+        "scripts/check_v0659_authority_source_parity.py",
+        "references/AUTHORITY_SOURCE_PARITY_LOCK.md",
+        "references/HOST_SKILL_SNAPSHOT_PARITY_LOCK_V0664.md",
+        "references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md"
+      ],
+      "proof_objects": [
+        "actual installed plugin manifest",
+        "actual installed top/deep Skill byte parity",
+        "actual installed resources/VERSION",
+        "changed Runtime readback",
+        "active Host Skill snapshot release-family comparison"
+      ],
+      "status": "RELEASE_EVIDENCE_REQUIRED_CURRENT"
+    }
+  ]
+}
