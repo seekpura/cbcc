@@ -15,6 +15,7 @@ on:
       - 'references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md'
       - 'references/CURRENT_CANONICAL_SKILL_BUILD.md'
       - 'references/V0670_CANONICAL_MATERIALIZATION_PARITY.md'
+      - 'references/V0670_REQUIREMENT_IMPLEMENTATION_DELTA.json'
       - 'prompts/canonical_authority_loading_map_CURRENT.md'
       - 'runtime/**'
       - '.github/workflows/current-release-verification.yml'
