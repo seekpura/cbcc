@@ -33,7 +33,12 @@ def _normalize_version(text: str) -> str:
     text = re.sub(r'(?m)^# Cross-Border Commerce Creative v[^\n]+$', '# Cross-Border Commerce Creative v0.6.64', text, count=1)
     text = text.replace('REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md', 'REQUIREMENT_IMPLEMENTATION_MATRIX_V0664.md')
     text = text.replace('REQUIREMENT_IMPLEMENTATION_MATRIX_V0663.md', 'REQUIREMENT_IMPLEMENTATION_MATRIX_V0664.md')
-    text = text.replace('Before claiming v0.6.63 behavior complete:', 'Before claiming v0.6.64 behavior complete:')
+    # Release-proof wording must never carry a hard-coded historical version forward.
+    text = re.sub(
+        r'Before claiming v0\.6\.\d+ behavior complete:',
+        'Before claiming current installed release behavior complete:',
+        text,
+    )
     return text
 
 
@@ -58,7 +63,6 @@ def copy_repo_resources(dest: Path) -> None:
 
     refs = dest / 'references'
     refs.mkdir(parents=True, exist_ok=True)
-    # Explicitly overwrite all current authority files to prevent stale installed projections.
     (refs / 'CONVERSATION_REQUIREMENT_AUDIT.md').write_text(LEDGER + '\n', encoding='utf-8')
     (refs / 'CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md').write_text(EXT + '\n', encoding='utf-8')
     (refs / 'USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md').write_text(VERBATIM + '\n', encoding='utf-8')
@@ -112,6 +116,7 @@ def build(output_dir: Path) -> dict:
         'post_install_actual_plugin_readback_required': True,
         'v0663_real_k01_17_structural_failures_preserved': True,
         'fresh_positive_k01_full_e2e_still_required': True,
+        'release_proof_wording_version_agnostic': True,
     })
     manifest_path.write_text(json.dumps(release, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     return release
