@@ -10,6 +10,7 @@ import zipfile
 
 from .asset_portfolio_taxonomy import enrich_asset_portfolio_taxonomy, portfolio_taxonomy_summary
 from .full_delivery_depth_v3 import audit_host_full_package
+from .video_delivery_workspace import apply_video_workspace_to_existing_html
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -75,7 +76,6 @@ def _copy_machine_authorities(project: Path, package: Path) -> list[str]:
             dst = support / src.name
             shutil.copy2(src, dst)
             copied.append(str(dst.relative_to(package)).replace('\\', '/'))
-    # Stable strategy authority aliases used by human delivery and downstream consumers.
     strategy = package / 'strategy'
     strategy.mkdir(parents=True, exist_ok=True)
     aliases = {
@@ -114,7 +114,6 @@ def materialize_video_objects(project: Path, package: Path) -> dict[str, Any]:
         folder.mkdir(parents=True, exist_ok=True)
         _write_json(folder / 'video_design_card.json', row)
         paths.append(str((folder / 'video_design_card.json').relative_to(package)).replace('\\', '/'))
-        # Human-readable shot object without inventing a translation. Values remain exactly authored upstream.
         lines = [
             f'# {video_id}｜视频生产对象', '',
             f'- Family：{row.get("family") or "—"}',
@@ -204,7 +203,6 @@ def _rewrite_delivery_manifest(package: Path, zip_path: Path, materialization: d
     manifest['zip_sha256'] = _sha256(zip_path)
     manifest['zip_bytes'] = zip_path.stat().st_size
     _write_json(path, manifest)
-    # Rewrite one final time so the ZIP contains the same manifest fields as the folder.
     if zip_path.exists():
         zip_path.unlink()
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -228,9 +226,11 @@ def finalize_full_delivery_materialization(project_dir: Path | str, export_manif
     universe = compile_export_asset_universe(project)
     _write_json(package / 'ASSET_UNIVERSE.json', universe)
     video = materialize_video_objects(project, package)
+    # Video/Creator objects are materialized after the legacy HTML builder. Mount them now into the
+    # existing frozen cbcc-commercial-v1 document so "file exists" also has a real human consumer.
+    apply_video_workspace_to_existing_html(package, package / 'index.html')
     obj_manifest = _object_manifest(project, package, universe, video)
     _write_json(package / 'FULL_DELIVERY_OBJECT_MANIFEST.json', obj_manifest)
-    # Create the audit artifact before auditing because the FULL contract requires its own visible file.
     _write_json(package / 'FULL_MATERIALIZATION_AUDIT.json', {'status': 'AUDIT_IN_PROGRESS', 'contract': 'HOST_NATIVE_FULL_MATERIALIZATION_EQUALS_RUNTIME_EXPORT_V3'})
 
     audit = audit_host_full_package(package)
