@@ -26,7 +26,7 @@
 ## 2. 真实内容合同，不接受占位/标题式 PASS
 
 - Domain 01：信息审计 → 最多10个待确认 → 明确假设 → 决策日志 → 继续执行。
-- Domain 02：必须同时出现真实卖点 / 可感知利益 / 情绪价值 / 不可宣称项，使用 A/B/C 证据；任何 C 级 `hard_claim_allowed` 必须为 false。
+- Domain 02：必须同时出现真实卖点 / 可感知利益 / 情绪价值 / 不可宣称项，并显式定义完整证据等级 A/B/C：A=检测报告/官方认证/可复现实测；B=供应链/配方/成分机理等有边界支持；C=主观体验/创意假设/待验证。任何 C 级 `hard_claim_allowed` 必须为 false；不能因为当前项目没有 A 级材料就删掉 A 级定义。
 - Domain 03：平台 / 区域 / 人群 / 族裔文化 WHY 必须可见；交叉性至少覆盖 `族裔 × 性别 × 年龄 × 收入 × 地域`；本地化至少覆盖语言回译、节日、支付、物流、宗教/禁忌、法规。FULL 中 `race_ethnicity=NOT_RELEVANT` 不能作为逃避文化校验的默认值；没有细分证据应写 `TO_VERIFY / ASSUMPTION / REQUIRED_CULTURAL_VALIDATION` 并保持非标签化。
 - Domain 04：每条重大策略必须有 `decision + basis + tradeoff + why_platform_region_audience_culture + execution + metric`；明确 RACE / STP+JTBD / AIDA/FABE / 4P/Funnel 的角色；资源取舍显式 P0/P1/P2。
 - Domain 05：风格、情绪板、构图、HEX/对比、灯光、焦段/景别/机位、场景、道具、模特/服化道、平台规格、Shot List 必须实际物化。人物相关时 Inclusive Photography 为 P0：深肤色曝光/暗部保护、neutral bounce/reflector/diffusion、发质、体型、残障、年龄、AI bias。具体曝光值若给出，必须标明是 Prelight 起始值/条件，而不是把肤色变成固定曝光公式。
