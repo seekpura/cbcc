@@ -12,19 +12,29 @@ on:
       - 'scripts/build_plugin_dist_v0667.py'
       - 'scripts/build_plugin_dist_v0668.py'
       - 'scripts/build_plugin_dist_v0669.py'
+      - 'scripts/build_plugin_dist_v0670.py'
       - 'scripts/check_v0664_requirement_consumer_map.py'
       - 'scripts/check_current_release_package.py'
       - 'runtime/cbcc/strategy_depth_projection_v3.py'
       - 'runtime/cbcc/long_requirement_runtime.py'
       - 'runtime/cbcc/long_requirement_human_projection.py'
       - 'runtime/cbcc/strategy_culture_materialization.py'
+      - 'runtime/cbcc/strategy_culture_completion_v0670.py'
       - 'runtime/cbcc/long_requirement_full_audit.py'
+      - 'runtime/cbcc/canonical_materialization_integrity.py'
+      - 'runtime/cbcc/canonical_prompt_guard.py'
+      - 'runtime/cbcc/canonical_materialization_package_audit.py'
+      - 'runtime/cbcc/human_projection_integrity.py'
+      - 'runtime/cbcc/commercial_continuity_bootstrap.py'
       - 'tests/test_current_requirement_consumer_freshness.py'
       - 'tests/test_current_release_package_checker.py'
       - 'tests/test_v0667_current_release_architecture.py'
       - 'tests/test_v0668_packaged_override_release_proof.py'
       - 'tests/test_v0669_strategy_culture_materialization.py'
       - 'tests/test_v0669_strategy_culture_release.py'
+      - 'tests/test_v0670_canonical_materialization_parity.py'
+      - 'tests/test_v0670_human_projection_integrity.py'
+      - 'tests/test_v0670_strategy_culture_completion.py'
       - '.github/workflows/current-requirement-freshness.yml'
   workflow_dispatch:
 
@@ -43,4 +53,7 @@ jobs:
       - run: python -m unittest discover -s tests -p 'test_v0668_packaged_override_release_proof.py' -v
       - run: python -m pytest tests/test_v0669_strategy_culture_materialization.py -q
       - run: python -m unittest discover -s tests -p 'test_v0669_strategy_culture_release.py' -v
+      - run: python -m pytest tests/test_v0670_canonical_materialization_parity.py -q
+      - run: python -m pytest tests/test_v0670_human_projection_integrity.py -q
+      - run: python -m pytest tests/test_v0670_strategy_culture_completion.py -q
       - run: python scripts/check_v0664_requirement_consumer_map.py
