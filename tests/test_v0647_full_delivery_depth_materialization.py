@@ -31,7 +31,7 @@ def _base_full_strategy() -> dict:
             '03_platform_region_audience_culture_insight': {
                 'platform_audience_culture_rows': [{'platform': 'P', 'region': 'R', 'audience': 'A', 'adaptation': 'D', 'stereotype_taboo_check': 'PASS', 'why': 'W'}],
                 'intersectionality_table': [{'dimensions': ['age', 'income', 'geography'], 'implication': 'I', 'evidence_or_assumption': 'E', 'stereotype_guard': 'G', 'execution': 'X'}],
-                'adaptation_rows': [{'dimension': 'language', 'status': 'EVIDENCED', 'action': 'A', 'why': 'W'}],
+                'adaptation_rows': [{'dimension': 'language', 'status': 'EVIDENCED', 'action': 'A', 'why': 'W', 'evidence_or_assumption': 'E'}],
                 'dimension_status': {},
             },
             '04_marketing_core_strategy': {
@@ -41,7 +41,11 @@ def _base_full_strategy() -> dict:
                 'framework_relationships': {},
             },
             '05_visual_photography_strategy': {
+                'style_keywords': ['truthful', 'decision-led'], 'moodboard_direction': 'evidence-led commerce editorial',
                 'palette_hex': {'background': '#FFFFFF'}, 'composition': {'rule': 'R'}, 'color_management': {'output': 'sRGB'},
+                'lighting_framework': {'key': 'large soft source'}, 'camera': {'height': 'decision plane'}, 'lens': {'focal_length_mm': 70},
+                'scene': {'role': 'minimal decision context'}, 'props': ['only decision-relevant props'],
+                'subject_system': {'subject_type': 'PRODUCT_OR_OBJECT'},
                 'platform_dimensions': [{'surface': 'PDP', 'size': '1600x1600'}],
                 'asset_parameter_reasoning': [{'asset_id': 'A1', 'visual_carrier': 'INFORMATION', 'why': 'W'}],
                 'people_applicability': 'NOT_USED',
@@ -75,9 +79,21 @@ def _base_full_strategy() -> dict:
     }
 
 
+def _make_dimensions() -> dict:
+    dims = [
+        'platform', 'market_region', 'subregion_geography', 'audience_segments', 'age', 'gender', 'income_spend',
+        'language', 'race_ethnicity', 'religion', 'holiday_calendar', 'payment', 'logistics', 'local_regulation',
+        'platform_behavior', 'search_demand', 'competition', 'price_band', 'intersectionality', 'stereotype_taboo',
+    ]
+    return {k: {'status': 'TO_VERIFY', 'why': 'not silently omitted'} for k in dims}
+
+
+def _make_framework_relations() -> dict:
+    return {k: {'role': 'selected lens', 'why': 'explicit relation'} for k in ['RACE', 'STP', 'JTBD', 'AIDA', 'FABE', '4P', 'FUNNEL']}
+
+
 def test_heading_or_boolean_presence_is_not_full_depth():
     s = _base_full_strategy()
-    # The previous regression effectively treated one generic culture paragraph as sufficient.
     s['sections']['03_platform_region_audience_culture_insight']['dimension_status'] = {
         'platform': {'status': 'EVIDENCED'}
     }
@@ -89,31 +105,16 @@ def test_heading_or_boolean_presence_is_not_full_depth():
 
 def test_full_depth_requires_explicit_multidimensional_market_culture_status():
     s = _base_full_strategy()
-    dims = [
-        'platform', 'market_region', 'subregion_geography', 'audience_segments', 'age', 'gender', 'income_spend',
-        'language', 'race_ethnicity', 'religion', 'holiday_calendar', 'payment', 'logistics', 'local_regulation',
-        'platform_behavior', 'search_demand', 'competition', 'price_band', 'intersectionality', 'stereotype_taboo',
-    ]
-    s['sections']['03_platform_region_audience_culture_insight']['dimension_status'] = {
-        k: {'status': 'TO_VERIFY', 'why': 'not silently omitted'} for k in dims
-    }
-    rels = {}
-    for key in ['RACE', 'STP', 'JTBD', 'AIDA', 'FABE', '4P', 'FUNNEL']:
-        rels[key] = {'role': 'selected lens', 'why': 'explicit relation'}
-    s['sections']['04_marketing_core_strategy']['framework_relationships'] = rels
+    s['sections']['03_platform_region_audience_culture_insight']['dimension_status'] = _make_dimensions()
+    s['sections']['04_marketing_core_strategy']['framework_relationships'] = _make_framework_relations()
     result = audit_full_strategy_depth_v3(s)
     assert result['status'] == 'PASS', result
 
 
 def test_people_are_optional_but_inclusive_execution_is_required_when_used():
     s = _base_full_strategy()
-    dims = [
-        'platform', 'market_region', 'subregion_geography', 'audience_segments', 'age', 'gender', 'income_spend',
-        'language', 'race_ethnicity', 'religion', 'holiday_calendar', 'payment', 'logistics', 'local_regulation',
-        'platform_behavior', 'search_demand', 'competition', 'price_band', 'intersectionality', 'stereotype_taboo',
-    ]
-    s['sections']['03_platform_region_audience_culture_insight']['dimension_status'] = {k: {'status': 'TO_VERIFY', 'why': 'x'} for k in dims}
-    s['sections']['04_marketing_core_strategy']['framework_relationships'] = {k: {'role': 'x', 'why': 'y'} for k in ['RACE','STP','JTBD','AIDA','FABE','4P','FUNNEL']}
+    s['sections']['03_platform_region_audience_culture_insight']['dimension_status'] = _make_dimensions()
+    s['sections']['04_marketing_core_strategy']['framework_relationships'] = _make_framework_relations()
     v = s['sections']['05_visual_photography_strategy']
     v['people_applicability'] = 'PERSON_PRESENT'
     v['casting'] = {'subject_type': 'PERSON'}
@@ -132,7 +133,6 @@ def test_people_are_optional_but_inclusive_execution_is_required_when_used():
 
 
 def test_host_full_package_cannot_omit_machine_authorities_or_chinese_language_audits(tmp_path: Path):
-    # Mimics the observed regression: attractive ZIP with strategy headings and nine LST folders, but no formal machine objects/audits.
     (tmp_path / 'index.html').write_text('<html>九域</html>', encoding='utf-8')
     (tmp_path / '00_PROJECT_HUB.md').write_text('hub', encoding='utf-8')
     (tmp_path / '01_LISTING_UPLOAD_READY.md').write_text('title_en: x\ntitle_bm: y', encoding='utf-8')
