@@ -27,18 +27,29 @@ def install() -> None:
     from .long_requirement_runtime import wrap_build_master_strategy as wrap_long_requirements
     from .long_requirement_human_projection import wrap_render_master_strategy_cn
     from .claim_grade_safety_v0647 import wrap_build_master_strategy as wrap_claim_grade_safety
-    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0662_long_requirement_runtime', False):
-        wrapped_strategy = wrap_claim_grade_safety(
-            wrap_long_requirements(
-                wrap_build_master_strategy(strategy_authority.build_master_strategy)
+    from .strategy_culture_materialization import (
+        wrap_build_master_strategy as wrap_strategy_culture_materialization,
+        wrap_render_master_strategy_cn as wrap_strategy_culture_human,
+        wrap_audit_full_strategy_depth_v3 as wrap_strategy_culture_audit,
+    )
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0669_strategy_culture_materialization', False):
+        wrapped_strategy = wrap_strategy_culture_materialization(
+            wrap_claim_grade_safety(
+                wrap_long_requirements(
+                    wrap_build_master_strategy(strategy_authority.build_master_strategy)
+                )
             )
         )
         setattr(wrapped_strategy, '_cbcc_v0647_full_depth_projection', True)
         setattr(wrapped_strategy, '_cbcc_v0662_long_requirement_runtime', True)
+        setattr(wrapped_strategy, '_cbcc_v0669_strategy_culture_materialization', True)
         strategy_authority.build_master_strategy = wrapped_strategy
-    if not getattr(strategy_authority.render_master_strategy_cn, '_cbcc_v0662_long_requirement_human_projection', False):
-        wrapped_renderer = wrap_render_master_strategy_cn(strategy_authority.render_master_strategy_cn)
+    if not getattr(strategy_authority.render_master_strategy_cn, '_cbcc_v0669_strategy_culture_materialization', False):
+        wrapped_renderer = wrap_strategy_culture_human(
+            wrap_render_master_strategy_cn(strategy_authority.render_master_strategy_cn)
+        )
         setattr(wrapped_renderer, '_cbcc_v0662_long_requirement_human_projection', True)
+        setattr(wrapped_renderer, '_cbcc_v0669_strategy_culture_materialization', True)
         strategy_authority.render_master_strategy_cn = wrapped_renderer
 
     # Open-world universe family sweep and Product Presence rhythm are current Agent-authoring consumers.
@@ -55,9 +66,12 @@ def install() -> None:
     from . import full_delivery_depth_v3 as full_depth
     from .long_requirement_full_audit import wrap_audit_full_strategy_depth_v3, wrap_audit_host_full_package
 
-    if not getattr(full_depth.audit_full_strategy_depth_v3, '_cbcc_v0662_long_requirement_audit', False):
-        wrapped_depth_audit = wrap_audit_full_strategy_depth_v3(full_depth.audit_full_strategy_depth_v3)
+    if not getattr(full_depth.audit_full_strategy_depth_v3, '_cbcc_v0669_strategy_culture_materialization_audit', False):
+        wrapped_depth_audit = wrap_strategy_culture_audit(
+            wrap_audit_full_strategy_depth_v3(full_depth.audit_full_strategy_depth_v3)
+        )
         setattr(wrapped_depth_audit, '_cbcc_v0662_long_requirement_audit', True)
+        setattr(wrapped_depth_audit, '_cbcc_v0669_strategy_culture_materialization_audit', True)
         full_depth.audit_full_strategy_depth_v3 = wrapped_depth_audit
 
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', False):
@@ -72,6 +86,7 @@ def install() -> None:
                     upgraded[key] = base[key]
             return upgraded
         setattr(strict_validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', True)
+        setattr(strict_validate_strategy_delivery, '_cbcc_v0669_strategy_culture_materialization_audit', True)
         delivery_contract.validate_strategy_delivery = strict_validate_strategy_delivery
 
     if not getattr(full_depth.audit_host_full_package, '_cbcc_v0662_long_requirement_package_audit', False):
