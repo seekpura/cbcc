@@ -5,7 +5,8 @@ This is the release-construction lock for Cross-Border Commerce Creative. It exi
 
 **The mandatory authorities below must be read before every release change that touches strategy, asset curation, Art Direction, Prompt compilation, production, Human Workspace, language, compliance or runtime behavior.** A release is not valid merely because the new local bug is fixed.
 
-Mandatory original authorities:
+Mandatory original/current authorities:
+- `references/CONVERSATION_REQUIREMENT_AUDIT.md` — cumulative user-requirement ledger; new long-form requirements must be merged here or into an explicitly referenced successor in the same release;
 - `references/MASTER_CONSTRUCTION_CONTRACT.md`
 - `references/PROMPT_ART_DIRECTION_MASTER_CONTRACT.md`
 - `references/BUSINESS_OBJECT_DENSITY_MASTER_CONTRACT.md`
@@ -15,6 +16,11 @@ Mandatory original authorities:
 - current canonical loading map and current Skill authority
 
 `AUTHORITY_SOURCE_PARITY_LOCK.md` is mandatory because an additive release is still invalid when the current top-level Skill advances but packaged `resources/SKILL.md` remains on an older authority. The actually installed plugin must be re-read after update; source/package intent alone is not proof.
+
+## Conversation-requirement continuity
+The latest user turn is never treated as the whole specification unless the user explicitly replaces prior requirements. Before coding a fix, determine which cumulative requirement IDs from `CONVERSATION_REQUIREMENT_AUDIT.md` the change touches and which adjacent capabilities could regress.
+
+A release that adds a new rule but leaves the cumulative requirement ledger stale is incomplete. A release that updates the ledger but does not prove the affected rules in the actual downstream objects is also incomplete.
 
 ## Additive release invariant
 Every change must preserve the complete existing capability set unless the user explicitly replaces a requirement. A fix is a regression if it improves one local dimension by deleting, compressing, hiding or bypassing another established dimension.
@@ -49,15 +55,20 @@ For commercial visual assets, the following authored dimensions are independentl
 语义隔离只能移除不属于 Model Prompt 的治理 / 生产 / Review 信息；**不得删除同一段中已经选定的人物、场景、道具、构图、摄影、灯光、CMF、材质、文案、文化或动态执行内容。**
 
 ## Required release proof
-Any release that changes Prompt or visual production must prove all of the following on a representative high-density asset:
+Any release that changes Prompt, asset curation, materialization, Human Workspace or visual production must prove all of the following on a representative high-density asset/project:
 1. upstream Art Direction actually contains the relevant human / scene / composition / evidence / copy / culture / CMF / photography / lighting / finishing decisions;
 2. compatibility projection preserves those concrete values;
-3. final Model Prompt still contains every selected pixel-changing value relevant to the chosen route;
+3. final Model Prompt still contains every selected pixel/frame/audio-changing value relevant to the chosen route;
 4. Excel/source-authority/QA labels/minimum-repair/provider-internal prose do not leak into Model Prompt;
 5. Production Notes and Review still contain the orchestration / QA information that was intentionally separated;
 6. final public compiler/provider path is tested, not only an intermediate helper;
 7. previous Asset Universe, business-object density, Chinese Human Workspace and routed interaction contracts remain intact;
 8. top-level packaged Skill, packaged `resources/SKILL.md`, `resources/VERSION`, plugin manifests and latest builder identify the same current release family;
-9. the actually installed plugin is re-read and passes the same authority-parity check.
+9. the actually installed plugin is re-read and passes the same authority-parity check;
+10. the actual FULL project materialization path is used; a Host-authored five-file shortcut cannot substitute for the mature asset compiler/export package;
+11. Product Presence and copy-render route are demonstrably per-asset decisions rather than global product-everywhere / no-text / post-composite defaults;
+12. a real FULL project is inspected after generation/materialization. If Provider execution is unavailable, the project must say so and must not claim actual-output QA or FULL production completion.
+
+The 2026-10-30 KIYUU K01 Malaysia TikTok package is a negative regression fixture for this rule. An equivalent simplified output must fail release acceptance even if unit tests and source-contract checks pass.
 
 A heading check, field-name check or self-authored PASS flag is insufficient. Use concrete-value regression fixtures and inspect the final object actually sent downstream.
