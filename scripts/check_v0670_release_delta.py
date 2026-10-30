@@ -8,11 +8,12 @@ REQUIRED={
  'references/V0670_REQUIREMENT_IMPLEMENTATION_DELTA.json':('REQ-014','REQ-030','REQ-033','REQ-042','REQ-060','FRESH_HOST_E2E_PENDING'),
  'runtime/cbcc/canonical_materialization_integrity.py':('ASSET_SCHEMA_SEMANTIC_MISMATCH','VISIBLE_COPY_LANGUAGE_SLOT_MISMATCH','canonical_art_direction_sha256'),
  'runtime/cbcc/canonical_prompt_guard.py':('CanonicalMaterializationError','validate_canonical_asset_or_raise','finalize_prompt_lineage'),
+ 'runtime/cbcc/canonical_asset_package_lineage.py':('canonical_prompt_lineage','canonical_art_direction_sha256','wrap_compile_asset_packages'),
  'runtime/cbcc/canonical_materialization_package_audit.py':('PROMPT_CANONICAL_LINEAGE_MISSING','audit_human_projection_html','audit_asset_directory'),
  'runtime/cbcc/human_projection_integrity.py':('HTML_LISTING_PROJECTION_INCOMPLETE','WORKSPACE_COPY_BINDING_MISSING','WORKSPACE_SEARCH_SCOPE_INCOMPLETE'),
  'runtime/cbcc/strategy_culture_completion_v0670.py':('FULL_RACE_PLATFORM_MISSING','FULL_CULTURE_EXECUTION_COLUMNS_MISSING_V0670','inclusive_dimension_decisions'),
  'runtime/cbcc/delivery_export_continuity.py':('_canonical_materialization_export_audit','CANONICAL_MATERIALIZATION_PARITY_AUDIT.json','BLOCKED canonical materialization / Human projection parity failed'),
- 'runtime/cbcc/commercial_continuity_bootstrap.py':('validate_canonical_asset_or_raise','finalize_prompt_lineage','wrap_canonical_materialization_package_audit','wrap_strategy_culture_completion'),
+ 'runtime/cbcc/commercial_continuity_bootstrap.py':('validate_canonical_asset_or_raise','finalize_prompt_lineage','wrap_compile_asset_packages','wrap_canonical_materialization_package_audit','wrap_strategy_culture_completion'),
 }
 
 def _root(extracted:Path)->Path:
