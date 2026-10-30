@@ -46,9 +46,6 @@ def install() -> None:
         setattr(strict_validate_strategy_delivery, '_cbcc_v0647_full_depth_v3', True)
         delivery_contract.validate_strategy_delivery = strict_validate_strategy_delivery
 
-    # Final package completion must validate object contents, not merely file names. The real v0.6.46
-    # Host-native package had nine headings and a PASS flag while losing strategy depth and language
-    # companions, so v0.6.47 re-runs the V3 strategy validator and audit-status checks on the package.
     from .full_delivery_package_hardening import harden_full_package_audit
     if not getattr(full_depth.audit_host_full_package, '_cbcc_v0647_content_hardened', False):
         hardened_package_audit = harden_full_package_audit(
@@ -61,9 +58,6 @@ def install() -> None:
         if rel not in full_depth.CORE_HOST_FULL_FILES:
             full_depth.CORE_HOST_FULL_FILES.append(rel)
 
-    # Video/Creator production is intentionally independent from image 00–13 packages. The Asset Universe
-    # materialization audit therefore counts both asset_packages/<id> and video/<id> as real materialized
-    # candidates; it must never force video back into a 7/9-image Gallery structure.
     def materialized_asset_ids(package_dir):
         from pathlib import Path
         package = Path(package_dir)
@@ -75,27 +69,31 @@ def install() -> None:
         return ids
     full_depth._asset_ids_from_package = materialized_asset_ids
 
-    # v0.6.58 final public prompt boundary. Normalize the complete Agent-authored Art Direction before
-    # the historical wrapper chain sees it, then apply the semantic membrane AFTER every later prompt
-    # mutation. This prevents two opposite regressions: (1) camera/people/scene/CMF values being dropped
-    # before prompt compilation; (2) later wrappers re-introducing Excel/QA/revision prose after an early
-    # membrane pass.
+    # Final public prompt boundary. The Agent-authored structured Art Direction remains authority.
+    # 1) normalize it before the historical chain;
+    # 2) restore the current per-asset integrated render route so legacy deterministic-copy behavior
+    #    cannot silently turn the image model into a background generator;
+    # 3) apply the semantic membrane last so source/QA/revision prose stays out without deleting
+    #    people/scene/composition/camera/light/CMF/material/copy decisions.
     from .full_art_direction_preservation import normalize_full_art_direction
+    from .integrated_render_route_authority import finalize_integrated_render_route
     from .model_prompt_semantic_membrane import finalize_model_prompt_bundle
 
     existing_prompt_compile = prompt_compiler.compile_asset_prompt
     def strict_prompt_compile(*args, **kwargs):
         if args:
             call_args = list(args)
-            call_args[0] = normalize_full_art_direction(call_args[0] or {})
+            normalized_asset = normalize_full_art_direction(call_args[0] or {})
+            call_args[0] = normalized_asset
             out = existing_prompt_compile(*call_args, **kwargs)
         else:
             call_kwargs = dict(kwargs)
+            normalized_asset = normalize_full_art_direction(call_kwargs.get('asset') or {}) if 'asset' in call_kwargs else {}
             if 'asset' in call_kwargs:
-                call_kwargs['asset'] = normalize_full_art_direction(call_kwargs.get('asset') or {})
+                call_kwargs['asset'] = normalized_asset
             out = existing_prompt_compile(**call_kwargs)
 
-        # No wrapper/provider path may mutate Model Prompt after this point.
+        out = finalize_integrated_render_route(normalized_asset, out)
         out = finalize_model_prompt_bundle(out)
 
         continuity = out.get('commerce_decision_consumption_audit') or (out.get('prompt_consumption_audit') or {}).get('commerce_decision_continuity') or {}
