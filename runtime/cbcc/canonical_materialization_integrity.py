@@ -19,21 +19,19 @@ _CMF_TOKENS=re.compile(r'(?:ivory|forest|sage|acrylic|plastic|satin|matte|gloss|
 _OUTPUT_TOKENS=re.compile(r'(?:\b\d{3,4}\s*[×x]\s*\d{3,4}\b|\b\d+\s*:\s*\d+\b|sRGB|Display P3|dpi|px|MP4|MOV|WEBM|≤?\s*\d+\s*MB|fps|static|video|image|方图|竖版|横版)',re.I)
 _METRIC_TOKENS=re.compile(r'\b(?:CTR|CVR|CPA|ROAS|CPC|CPM|ATC|dwell|hold|completion|save|share|click|conversion|retention|swipe|FAQ|comments?|reviews?|support|tickets?|orders?|revenue|margin)\b|转化|点击|停留|完播|收藏|分享|加购|订单|评论|归因|指标',re.I)
 _HYPOTHESIS_TOKENS=re.compile(r'如果|若|将|能够|能否|是否|预期|相比|降低|提高|提升|测试|假设|because|if |whether|should|could|increase|reduce|improve|test',re.I)
+_RHYTHM_TOKENS=re.compile(r'进入|切换|转入|从.+到|节奏|场景|构图|开场|收尾|rhythm|scene|composition|transition|switch|first\s+human|after\s+',re.I)
 
 
 def _text(v:Any)->str:
     if v in (None,'',[],{}): return ''
     if isinstance(v,(dict,list)): return json.dumps(v,ensure_ascii=False,sort_keys=True,default=str)
     return str(v)
-
 def _issue(code:str, field:str, value:Any, why:str)->dict[str,Any]:
     return {'code':code,'field':field,'value':_text(value)[:500],'why':why}
-
 def _presence_state(card:Mapping[str,Any])->str:
     p=card.get('product_presence')
     if isinstance(p,Mapping): return str(p.get('state') or p.get('planning_state') or '').upper().strip()
     return str(p or '').upper().strip()
-
 def audit_asset_semantics(card:Mapping[str,Any]) -> list[dict[str,Any]]:
     """Reject cross-domain field shifts before Prompt/package/HTML compilation.
 
@@ -68,8 +66,8 @@ def audit_asset_semantics(card:Mapping[str,Any]) -> list[dict[str,Any]]:
     if hyp and _METRIC_TOKENS.search(hyp) and not _HYPOTHESIS_TOKENS.search(hyp) and len(hyp)<80:
         issues.append(_issue('ASSET_SCHEMA_SEMANTIC_MISMATCH','business_hypothesis',hyp,'business_hypothesis is metric-only; likely shifted from success_metric'))
     metric=_text(card.get('success_metric'))
-    if metric and not _METRIC_TOKENS.search(metric) and len(metric)>20:
-        issues.append(_issue('ASSET_SCHEMA_SEMANTIC_MISMATCH','success_metric',metric,'success_metric is narrative prose without measurement semantics'))
+    if metric and not _METRIC_TOKENS.search(metric) and (len(metric)>20 or _RHYTHM_TOKENS.search(metric)):
+        issues.append(_issue('ASSET_SCHEMA_SEMANTIC_MISMATCH','success_metric',metric,'success_metric is narrative/rhythm prose without measurement semantics'))
     rhythm=_text(card.get('portfolio_rhythm_delta')).strip().upper()
     if rhythm in SOURCE_ROUTE_WORDS or rhythm in COPY_ROUTES or rhythm in PRESENCE_STATES:
         issues.append(_issue('ASSET_SCHEMA_SEMANTIC_MISMATCH','portfolio_rhythm_delta',card.get('portfolio_rhythm_delta'),'portfolio rhythm contains a production/source/presence enum'))
@@ -96,7 +94,6 @@ def parse_visible_copy_markdown(text:str)->dict[str,str]:
       'en': section('English semantic baseline',['中文释义 / 用途']),
       'cn': section('中文释义 / 用途',[]),
     }
-
 def audit_visible_copy_markdown(text:str)->list[dict[str,Any]]:
     b=parse_visible_copy_markdown(text);issues=[]
     route=b['render_route'].strip().upper()
@@ -127,15 +124,13 @@ def canonical_art_direction_payload(asset:Mapping[str,Any])->dict[str,Any]:
       'lighting': art.get('lighting') or asset.get('lighting'),
       'cmf': art.get('cmf') or art.get('material') or asset.get('cmf_material_color'),
       'typography': art.get('typography'),
-      'output': art.get('output_spec') or asset.get('output_surface'),
+      'output': art.get('output_spec') or art.get('output_surface') or asset.get('output_surface'),
       'culture_inclusion': art.get('culture_inclusion') or asset.get('culture_inclusion'),
       'truth_boundary': art.get('truth_boundary') or asset.get('truth_boundary'),
     }
-
 def canonical_art_direction_hash(asset:Mapping[str,Any])->str:
     raw=json.dumps(canonical_art_direction_payload(asset),ensure_ascii=False,sort_keys=True,separators=(',',':'),default=str).encode('utf-8')
     return hashlib.sha256(raw).hexdigest()
-
 def stamp_prompt_lineage(asset:Mapping[str,Any], bundle:Mapping[str,Any])->dict[str,Any]:
     out=deepcopy(dict(bundle)); h=canonical_art_direction_hash(asset)
     lineage={'schema_version':'cbcc-canonical-art-direction-v1','canonical_art_direction_sha256':h,'source':'normalized_named_asset_art_direction'}
@@ -143,7 +138,6 @@ def stamp_prompt_lineage(asset:Mapping[str,Any], bundle:Mapping[str,Any])->dict[
     card=out.setdefault('design_card',{}); card['canonical_prompt_lineage']=lineage
     contract=out.setdefault('prompt_contract',{}); contract['canonical_prompt_lineage']=lineage
     return out
-
 def audit_prompt_lineage(asset:Mapping[str,Any], bundle:Mapping[str,Any])->list[dict[str,Any]]:
     line=bundle.get('canonical_prompt_lineage') if isinstance(bundle,Mapping) else None
     if not isinstance(line,Mapping): return [_issue('PROMPT_CANONICAL_LINEAGE_MISSING','canonical_prompt_lineage','', 'CN and EN prompts must be projections of one canonical Art Direction')]
