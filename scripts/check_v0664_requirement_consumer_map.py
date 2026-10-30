@@ -13,6 +13,18 @@ FORBIDDEN = (
     'TBD',
     'TODO',
 )
+PACKAGED_PREFIX = 'skills/cross-border-commerce-creative/'
+
+
+def _consumer_exists(rel: str) -> bool:
+    direct = ROOT / rel
+    if direct.exists():
+        return True
+    if rel.startswith(PACKAGED_PREFIX):
+        source_equivalent = ROOT / rel[len(PACKAGED_PREFIX):]
+        if source_equivalent.exists():
+            return True
+    return False
 
 
 def audit() -> dict:
@@ -42,18 +54,14 @@ def audit() -> dict:
         if not isinstance(consumers, list) or not consumers:
             issues.append({'code':'CONSUMER_LIST_MISSING','req':req})
             continue
-        missing_paths = []
-        for rel in consumers:
-            p = ROOT / str(rel)
-            if not p.exists():
-                missing_paths.append(str(rel))
+        missing_paths = [str(rel) for rel in consumers if not _consumer_exists(str(rel))]
         if missing_paths:
             issues.append({'code':'CONSUMER_PATH_MISSING','req':req,'paths':missing_paths})
         if not isinstance(proof, list) or not proof:
             issues.append({'code':'PROOF_OBJECT_MISSING','req':req})
         if not status:
             issues.append({'code':'STATUS_MISSING','req':req})
-        if status == 'IMPLEMENTED' or status == 'PASS':
+        if status in {'IMPLEMENTED','PASS'}:
             issues.append({'code':'AMBIGUOUS_STATUS_FORBIDDEN','req':req,'status':status})
 
     return {
