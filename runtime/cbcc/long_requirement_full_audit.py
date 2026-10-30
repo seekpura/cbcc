@@ -12,6 +12,11 @@ P0_AREAS = {
 CULTURE_CHECK_FIELDS = {
     'script_check', 'casting_check', 'wardrobe_grooming_check', 'color_check', 'cta_check'
 }
+FAMILY_KEYS = {
+    'gallery_identity', 'benefit_proof_detail', 'scenario_human_context', 'howto_objection_comparison',
+    'rich_pdp_source', 'paid_media', 'social_seeding', 'creator_affiliate', 'video_live',
+    'store_campaign', 'lifecycle', 'test_rotation'
+}
 
 
 def _p(v: Any) -> bool:
@@ -42,6 +47,18 @@ def _dedupe(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
+def _pricing_recommendation_present(product_strategy: dict[str, Any]) -> bool:
+    keys = ('recommended_test', 'recommended_price', 'price_recommendation', 'pricing_decision', 'recommended_range')
+    for key in keys:
+        value = product_strategy.get(key)
+        if not _p(value):
+            continue
+        text = json.dumps(value, ensure_ascii=False).upper() if isinstance(value, (dict, list)) else str(value).upper()
+        if any(token in text for token in ('RECOMMEND', '建议', '测试价', 'PRICE', 'RM', '$', 'AED', 'USD')):
+            return True
+    return False
+
+
 def wrap_audit_full_strategy_depth_v3(fn: Callable[..., dict[str, Any]]):
     def audited(strategy: dict[str, Any], base_result=None):
         result = fn(strategy, base_result)
@@ -67,7 +84,10 @@ def wrap_audit_full_strategy_depth_v3(fn: Callable[..., dict[str, Any]]):
             if missing:
                 issues.append({'code': 'FULL_DECISION_CONTEXT_WHY_MISSING', 'row': i, 'fields': missing})
             else:
-                shallow = [k for k in ('platform', 'region', 'audience', 'race_ethnicity_culture') if not _p(_d(context.get(k)).get('why')) or not _p(_d(context.get(k)).get('status'))]
+                shallow = [
+                    k for k in ('platform', 'region', 'audience', 'race_ethnicity_culture')
+                    if not _p(_d(context.get(k)).get('why')) or not _p(_d(context.get(k)).get('status'))
+                ]
                 if shallow:
                     issues.append({'code': 'FULL_DECISION_CONTEXT_WHY_SHALLOW', 'row': i, 'fields': shallow})
 
@@ -102,6 +122,16 @@ def wrap_audit_full_strategy_depth_v3(fn: Callable[..., dict[str, Any]]):
                 if row.get('priority') != 'P0':
                     issues.append({'code': 'FULL_P0_COMPLIANCE_PRIORITY_INVALID', 'row': i, 'value': row.get('priority')})
 
+        core = _d(sections.get('04_marketing_core_strategy'))
+        product_strategy = _d(core.get('product_strategy'))
+        economics_status = str(product_strategy.get('economics_status') or '').upper()
+        if economics_status in {'', 'MISSING_INPUT', 'INSUFFICIENT_DATA', 'NOT_SUPPLIED', 'UNKNOWN'} and _pricing_recommendation_present(product_strategy):
+            issues.append({
+                'code': 'FULL_PRICING_RECOMMENDATION_AHEAD_OF_ECONOMICS',
+                'economics_status': economics_status or 'UNKNOWN',
+                'rule': '市场价格带证据与自身Pricing Decision必须分离；缺关键单位经济输入时保持UNKNOWN/MISSING_INPUT。',
+            })
+
         result['issues'] = _dedupe(issues)
         result['status'] = 'PASS' if not result['issues'] else 'INCOMPLETE'
         result['verbatim_long_requirement_audit'] = {
@@ -128,6 +158,47 @@ def _has_production_ready_assets(package: Path) -> bool:
     return any((d / '05_prompt_CN.txt').exists() or (d / '06_prompt_EN.txt').exists() for d in root.iterdir() if d.is_dir())
 
 
+def _prompt_route_contradictions(asset_dir: Path) -> list[dict[str, Any]]:
+    issues = []
+    card = _read_json(asset_dir / '12_design_card.json')
+    prompt = ''
+    for name in ('05_prompt_CN.txt', '06_prompt_EN.txt'):
+        p = asset_dir / name
+        if p.exists():
+            prompt += p.read_text(encoding='utf-8', errors='ignore') + '\n'
+    if not prompt:
+        return issues
+
+    copy_route = str(_d(card.get('information_design')).get('copy_render_route') or '').upper()
+    locked_copy = _d(card.get('information_design')).get('locked_visible_copy')
+    no_text = bool(re.search(
+        r'不生成[^。\n]{0,40}(?:文字|数字)|不要生成[^。\n]{0,40}(?:文字|数字)|do not generate[^.\n]{0,50}(?:text|numbers)',
+        prompt, re.I,
+    ))
+    explicit_post = copy_route in {'POST_COMPOSITE', 'NO_VISIBLE_COPY', 'DETERMINISTIC_COMPOSITION_AFTER_RENDER'}
+    if _p(locked_copy) and no_text and not explicit_post:
+        issues.append({
+            'code': 'PROMPT_COPY_ROUTE_CONTRADICTION', 'asset_id': asset_dir.name,
+            'copy_render_route': copy_route or 'UNRESOLVED',
+        })
+
+    presence = _d(card.get('product_presence'))
+    presence_state = str(presence.get('planning_state') or '').upper()
+    fidelity = str(_d(card.get('product_identity')).get('product_fidelity') or '').upper()
+    no_product = bool(re.search(
+        r'不生成[^。\n]{0,40}(?:商品|产品)|不要生成[^。\n]{0,40}(?:商品|产品)|do not generate[^.\n]{0,50}(?:product)',
+        prompt, re.I,
+    ))
+    visible = presence_state in {'HERO_REQUIRED', 'REQUIRED', 'SUPPORTING', 'DETAIL_ONLY', 'OPTIONAL'}
+    explicit_pixel = fidelity in {'EXACT_PIXEL_COMPOSITE', 'LOCKED_PIXEL', 'LOCKED_SOURCE_COMPOSITE', 'COMPOSITE'}
+    if visible and no_product and not explicit_pixel:
+        issues.append({
+            'code': 'PROMPT_PRODUCT_ROUTE_CONTRADICTION', 'asset_id': asset_dir.name,
+            'product_presence': presence_state, 'product_fidelity': fidelity,
+        })
+    return issues
+
+
 def wrap_audit_host_full_package(fn: Callable[[Path], dict[str, Any]]):
     def audited(package_dir: Path):
         package = Path(package_dir)
@@ -147,6 +218,28 @@ def wrap_audit_host_full_package(fn: Callable[[Path], dict[str, Any]]):
         if active_assets and not mature.exists():
             issues.append({'code': 'MATURE_ASSET_PACKAGES_REQUIRED', 'active_asset_count': len(active_assets)})
 
+        family_audit = [x for x in _l(universe.get('opportunity_family_audit')) if isinstance(x, dict)]
+        if active_assets and not family_audit:
+            issues.append({'code': 'ASSET_OPPORTUNITY_FAMILY_AUDIT_MISSING'})
+        elif family_audit:
+            seen = {str(x.get('family_key') or '') for x in family_audit}
+            missing = sorted(FAMILY_KEYS - seen)
+            if missing:
+                issues.append({'code': 'ASSET_OPPORTUNITY_FAMILY_AUDIT_INCOMPLETE', 'missing_family_keys': missing})
+            for row in family_audit:
+                if str(row.get('status') or '').upper() not in {'COVERED', 'NOT_NEEDED', 'TO_VERIFY', 'MISSING_INPUT'} or not _p(row.get('why')):
+                    issues.append({'code': 'ASSET_OPPORTUNITY_FAMILY_DECISION_INVALID', 'family_key': row.get('family_key')})
+
+        presence_audit = _d(universe.get('product_presence_portfolio_audit'))
+        if active_assets and not presence_audit:
+            issues.append({'code': 'PRODUCT_PRESENCE_PORTFOLIO_AUDIT_MISSING'})
+        elif presence_audit and presence_audit.get('structured_presence_decisions') != presence_audit.get('total_assets'):
+            issues.append({
+                'code': 'PRODUCT_PRESENCE_DECISION_NOT_STRUCTURED',
+                'structured': presence_audit.get('structured_presence_decisions'),
+                'total': presence_audit.get('total_assets'),
+            })
+
         if mature.exists():
             try:
                 from .asset_compiler import validate_asset_packages
@@ -160,10 +253,9 @@ def wrap_audit_host_full_package(fn: Callable[[Path], dict[str, Any]]):
                 manifest = asset_dir / '00_asset_manifest.yaml'
                 if manifest.exists():
                     text = manifest.read_text(encoding='utf-8', errors='ignore')
-                    # YAML parser is optional here; a non-empty serialized art-direction mapping is enough
-                    # to distinguish a real structured authority from the old five-file shortcut.
                     if not re.search(r'(?m)^asset_art_direction:\s*(?!\{\}\s*$|null\s*$)', text):
                         issues.append({'code': 'STRUCTURED_ASSET_ART_DIRECTION_NOT_MATERIALIZED', 'asset_id': asset_dir.name})
+                issues.extend(_prompt_route_contradictions(asset_dir))
 
         # FULL production completion requires real downstream evidence, not prompts alone.
         if _has_production_ready_assets(package):
@@ -174,6 +266,14 @@ def wrap_audit_host_full_package(fn: Callable[[Path], dict[str, Any]]):
                 issues.append({'code': 'FULL_ACTUAL_OUTPUT_REVIEW_MISSING'})
             if not any('revision' in p.name.casefold() for p in files):
                 issues.append({'code': 'FULL_LOCAL_REVISION_LINEAGE_MISSING'})
+            media_ext = {'.png', '.jpg', '.jpeg', '.webp', '.mp4', '.mov', '.webm'}
+            generated = [
+                p for p in files
+                if p.suffix.casefold() in media_ext
+                and not any(part.casefold() in {'sources', 'source', 'input', 'inputs', 'references'} for part in p.parts)
+            ]
+            if not generated:
+                issues.append({'code': 'FULL_ACTUAL_GENERATED_OUTPUT_MISSING'})
 
         html_path = package / 'index.html'
         if html_path.exists():
