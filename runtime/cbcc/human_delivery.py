@@ -340,7 +340,11 @@ def build_project_hub_md(center:dict[str,Any], strategy_path:str='strategy/MASTE
         lines.append('')
     if assets:
         lines += ['## 资产速览','', '| 资产 ID | 展示位置（Surface） | 角色 | 状态 |','|---|---|---|---|']
-        for a in assets[:30]: lines.append(f"| {a.get('asset_id') or '—'} | {a.get('surface') or '—'} | {_clean_text(a.get('role') or a.get('title') or '—').replace('|','\\|')} | {a.get('status') or '—'} |")
+        for a in assets[:30]:
+            role = _clean_text(a.get('role') or a.get('title') or '—').replace('|', '\\|')
+            lines.append(
+                f"| {a.get('asset_id') or '—'} | {a.get('surface') or '—'} | {role} | {a.get('status') or '—'} |"
+            )
         lines.append('')
     if risks:
         lines += ['## 当前风险 / 待查证','']
