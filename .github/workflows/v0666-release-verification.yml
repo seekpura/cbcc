@@ -31,7 +31,9 @@ jobs:
           p = Path('references/CURRENT_PACKAGED_SKILL_BASELINE_V0665.md')
           data = p.read_bytes()
           text = data.decode('utf-8')
-          assert len(data) == 38152, len(data)
+          # Installed raw Skill is 38,152 bytes; Plugin Creator exposes decoded text without the
+          # 3-byte UTF-8 BOM. Canonical source stores the BOM-normalized 38,149-byte text.
+          assert len(data) == 38149, len(data)
           assert 'version: 0.6.65-current-release-text-parity' in text
           assert '# Cross-Border Commerce Creative v0.6.65' in text
           for marker in (
@@ -43,7 +45,7 @@ jobs:
               '## 1. FULL depth remains mandatory',
           ):
               assert marker in text, marker
-          print({'status':'PASS','baseline_bytes':len(data)})
+          print({'status':'PASS','normalized_baseline_bytes':len(data),'installed_raw_bytes':38152,'bom_bytes':3})
           PY
       - name: Verify 60 concrete requirement consumers
         run: python scripts/check_v0664_requirement_consumer_map.py
