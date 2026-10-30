@@ -5,6 +5,7 @@ from typing import Any, Callable
 
 from .canonical_materialization_integrity import audit_asset_directory, COPY_ROUTES
 from .human_projection_integrity import audit_human_projection_html
+from .canonical_human_workspace_projection import apply_canonical_human_projection_to_existing_html
 
 
 def _read_json(path:Path)->dict[str,Any]:
@@ -36,6 +37,11 @@ def _prompt_lineage_issue(asset_dir:Path)->dict[str,Any]|None:
     lineage=_extract_prompt_lineage(contract)
     if not lineage:
         return {'code':'PROMPT_CANONICAL_LINEAGE_MISSING','asset_id':asset_dir.name,'why':'CN/EN Prompt package has no persisted canonical Art Direction lineage hash at contract or design_card level.'}
+    h=str(lineage.get('canonical_art_direction_sha256') or '')
+    for field in ('prompt_cn_source_sha256','prompt_en_source_sha256','design_card_source_sha256'):
+        value=lineage.get(field)
+        if value and str(value)!=h:
+            return {'code':'PROMPT_CANONICAL_LINEAGE_MISMATCH','asset_id':asset_dir.name,'field':field,'expected':h,'value':value}
     return None
 
 
@@ -52,7 +58,17 @@ def _prompt_contract_route_issue(asset_dir:Path)->dict[str,Any]|None:
 
 def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
     def audited(package_dir:Path):
-        package=Path(package_dir);result=fn(package);issues=list(result.get('issues') or [])
+        package=Path(package_dir)
+        # Positive projection first: final FULL delivery is not allowed to freeze a lossy Human Workspace
+        # and merely report the defect afterward. Existing project-authored routes/world are retained.
+        html=package/'index.html'
+        human_projection={'status':'NOT_APPLICABLE'}
+        if html.exists():
+            human_projection=apply_canonical_human_projection_to_existing_html(html)
+
+        result=fn(package);issues=list(result.get('issues') or [])
+        if html.exists() and human_projection.get('status')!='PASS':
+            issues.append({'code':'CANONICAL_HUMAN_POSITIVE_PROJECTION_FAILED','detail':human_projection})
         root=package/'asset_packages'
         if root.exists():
             for asset_dir in sorted(x for x in root.iterdir() if x.is_dir()):
@@ -61,7 +77,6 @@ def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
                 if route_issue:issues.append(route_issue)
                 lineage_issue=_prompt_lineage_issue(asset_dir)
                 if lineage_issue:issues.append(lineage_issue)
-        html=package/'index.html'
         if html.exists():
             issues.extend(audit_human_projection_html(html.read_text(encoding='utf-8',errors='ignore')))
         out=[];seen=set()
@@ -75,6 +90,7 @@ def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
             'asset_semantic_guard':True,
             'prompt_single_source_lineage_required':True,
             'human_projection_integrity_required':True,
+            'human_positive_projection':human_projection,
         }
         return result
     setattr(audited,'_cbcc_v0670_canonical_materialization_parity',True)
