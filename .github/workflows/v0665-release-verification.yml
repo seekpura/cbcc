@@ -1,0 +1,69 @@
+name: v0665-release-verification
+
+on:
+  push:
+    paths:
+      - 'VERSION'
+      - 'scripts/build_plugin_dist_v0665.py'
+      - 'scripts/check_v0664_requirement_consumer_map.py'
+      - 'references/REQUIREMENT_CONSUMER_MAP_V0664.json'
+      - 'references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md'
+      - 'references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md'
+      - 'references/HOST_SKILL_SNAPSHOT_PARITY_LOCK_V0664.md'
+      - 'prompts/canonical_authority_loading_map_v0665_addendum.md'
+      - '.github/workflows/v0665-release-verification.yml'
+  workflow_dispatch:
+
+jobs:
+  verify-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify 60 concrete requirement consumers
+        run: python scripts/check_v0664_requirement_consumer_map.py
+      - name: Build v0.6.65 package
+        run: python scripts/build_plugin_dist_v0665.py --output-dir dist_v0665
+      - name: Verify packaged authority and runtime parity
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('dist_v0665')
+          top = root / 'skills' / 'cross-border-commerce-creative' / 'SKILL.md'
+          res = root / 'skills' / 'cross-border-commerce-creative' / 'resources'
+          deep = res / 'SKILL.md'
+          manifest = json.loads((root / 'plugin.json').read_text(encoding='utf-8'))
+          assert manifest['version'] == '0.6.65', manifest['version']
+          assert top.read_bytes() == deep.read_bytes(), 'top/deep Skill drift'
+          assert '0.6.65-current-release-text-parity' in top.read_text(encoding='utf-8')
+          assert (res / 'VERSION').read_text(encoding='utf-8').strip() == '0.6.65-current-release-text-parity'
+          required = [
+              res / 'references' / 'CONVERSATION_REQUIREMENT_AUDIT.md',
+              res / 'references' / 'CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md',
+              res / 'references' / 'USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md',
+              res / 'references' / 'REQUIREMENT_CONSUMER_MAP_V0664.json',
+              res / 'references' / 'REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md',
+              res / 'references' / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md',
+              res / 'references' / 'HOST_SKILL_SNAPSHOT_PARITY_LOCK_V0664.md',
+              res / 'references' / 'REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md',
+              res / 'prompts' / 'canonical_authority_loading_map_v0665_addendum.md',
+              res / 'scripts' / 'check_v0664_requirement_consumer_map.py',
+              res / 'runtime' / 'cbcc' / 'long_requirement_full_audit.py',
+              res / 'runtime' / 'cbcc' / 'integrated_render_route_authority.py',
+              res / 'runtime' / 'cbcc' / 'commercial_continuity_bootstrap.py',
+          ]
+          missing = [str(p) for p in required if not p.exists()]
+          assert not missing, missing
+          consumer = json.loads((res / 'references' / 'REQUIREMENT_CONSUMER_MAP_V0664.json').read_text(encoding='utf-8'))
+          assert len(consumer['requirements']) == 60
+          text = top.read_text(encoding='utf-8')
+          assert 'Strict Requirement Consumer Accounting' in text
+          assert 'HOST_SKILL_SNAPSHOT_STALE' in text
+          audit = (res / 'runtime' / 'cbcc' / 'long_requirement_full_audit.py').read_text(encoding='utf-8')
+          assert '_project_shortcut_audit' in audit
+          assert 'PRODUCTION_OBJECTS_INCOMPLETE' in audit
+          print(json.dumps({'status':'PASS','requirements':60,'top_skill_bytes':len(top.read_bytes()),'required_files':len(required)}, ensure_ascii=False))
+          PY
