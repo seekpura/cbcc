@@ -1,4 +1,4 @@
-# CBCC Canonical Authority Loading Map — v0.6.54
+# CBCC Canonical Authority Loading Map — v0.6.55
 
 ## Purpose
 CBCC does not prove capability depth by making one monolithic prompt arbitrarily large. The Host Skill is the routing authority; mature specialist authorities are mandatory inputs when their domain is active. A file existing in `resources/` without being selected/consumed does not count as preserved capability.
@@ -22,51 +22,63 @@ For FULL commerce work, before substantive strategy/curation/production authorin
    - Source → Analysis → Decision → Strategy → Curation → Asset → Prompt → HTML → Measurement lineage;
    - Market/Pricing/Audience/RACE/Listing/Ads/Review payload continuity.
 4. `resources/prompts/dynamic_asset_curation.md`
-   - portfolio curation before Prompt compilation;
-   - no fixed asset count;
+   - **complete Asset Opportunity Universe before Activation Set selection**;
+   - no fixed asset count and no `smallest sufficient / fewest assets` optimization;
+   - relevant Gallery/Scenario/A+/Paid/Social/Creator/Video/Store/Lifecycle/Test/Rotation families inspected before pruning;
+   - distinct A/B / creative / audience / offer / evidence / surface hypotheses survive even when shopper question is the same;
    - per-asset product presence, subject/action/environment/props, carrier, evidence, composition and portfolio delta.
-5. `resources/prompts/creative_direction_surface_prompt_compiler.md`
+5. `resources/references/ASSET_UNIVERSE_OPEN_WORLD_CONTRACT.md`
+   - separate Asset Opportunity Universe, Production Portfolio and Activation Set(s);
+   - platform slot capacity is activation-only and cannot backflow into total candidate generation;
+   - FULL materializes production-ready Test/Rotation/Paid/A+/PDP/Social/Creator/Video objects instead of Live-only output;
+   - relevant-family omission must be explicit, not silent.
+6. `resources/prompts/creative_direction_surface_prompt_compiler.md`
    - lossless production-parameter closure;
    - four separated production objects;
    - model-native Prompt readiness and concrete-value consumption.
-6. `resources/prompts/commercial_visual_generation_authority.md`
+7. `resources/prompts/commercial_visual_generation_authority.md`
    - integrated finished-image authority;
    - product/copy/scene/subject/evidence/camera/light/CMF authored together when appropriate;
    - actual-output QA and smallest repair.
-7. `resources/prompts/commercial_video_generation_authority.md` when video/creator/live is active.
-8. `resources/prompts/operator_execution_density.md` when operator execution objects are active.
-9. `resources/prompts/commercial_delivery_stability_authority.md`
+8. `resources/prompts/commercial_video_generation_authority.md` when video/creator/live is active.
+9. `resources/prompts/operator_execution_density.md` when operator execution objects are active.
+10. `resources/prompts/commercial_delivery_stability_authority.md`
    - portable source media;
    - explicit platform/market only;
    - language matrix;
    - frozen `cbcc-commercial-v1` shell.
-10. `resources/prompts/human_language_asset_continuity_authority.md`
+11. `resources/prompts/human_language_asset_continuity_authority.md`
    - Chinese operator base;
    - exact target-market copy + English baseline where needed + same-object Chinese companion;
    - per-asset Model Prompt CN/EN continuity.
-11. `resources/prompts/human_surface_rendering_media_portability_authority.md`
+12. `resources/prompts/human_surface_rendering_media_portability_authority.md`
    - rendered Chinese-canonical operator values;
    - standalone-safe displayed media;
    - surface-level verification instead of field-presence audit.
-12. `resources/references/MASTER_CONSTRUCTION_CONTRACT.md`
+13. `resources/references/MASTER_CONSTRUCTION_CONTRACT.md`
    - additive-upgrade master contract;
    - repair one dimension without thinning another;
    - preserve hard rules, mature commercial/creative/production depth and workspace.
-13. `resources/references/BUSINESS_OBJECT_DENSITY_MASTER_CONTRACT.md`
+14. `resources/references/BUSINESS_OBJECT_DENSITY_MASTER_CONTRACT.md`
    - full-depth Product Truth, Research, Market/Audience/Culture, Strategy, Pricing/Economics/Offer, Listing/Search, Content Matrix, Visual Master, Assets, Prompt/Production, Video/Creator/LIVE, Ads, Reviews, RACE/Localization/Compliance/Measurement, Evidence/Operations/Human Workspace;
    - headings/cards/summaries cannot substitute real business objects.
-14. `resources/references/PROMPT_ART_DIRECTION_MASTER_CONTRACT.md`
+15. `resources/references/PROMPT_ART_DIRECTION_MASTER_CONTRACT.md`
    - Prompt is a lossless compile of a complete per-asset commercial world, not a photography-parameter dump;
    - people/subject/action/elements/scene/props/spatial/evidence/copy/type/localization/culture/CMF/material/motion/platform/QA when relevant.
-15. `resources/references/HUMAN_WORKSPACE_PROMPT_CONTINUITY_LOCK.md`
+16. `resources/references/HUMAN_WORKSPACE_PROMPT_CONTINUITY_LOCK.md`
    - highest materialization continuity authority;
    - runtime-first when packaged delivery runtime is executable;
    - repair cannot hand-author a replacement `index.html`;
    - preserve `cbcc-commercial-v1`, mature routed work surfaces, `asset/<id>`, Prompt workspace/lens, search/copy/back/hash, responsive and print/PDF;
    - prompt files must be projected to Human HTML;
    - nine domains are completeness semantics, not fixed nine pages/sections.
-16. `resources/references/RELEASE_NON_REGRESSION_MATRIX.yaml`
+17. `resources/references/RELEASE_NON_REGRESSION_MATRIX.yaml`
    - cross-dimension release regressions block completion.
+
+## Asset Universe consumer rule
+FULL authoring must expose at least two distinct scopes: the complete candidate universe and one or more activation subsets. If target/platform contains a Gallery/Video capacity, that number may constrain only the selected activation subset. It cannot be used as an upstream generation target, top-N cutoff, slice, or stopping criterion.
+
+The candidate universe is allowed to be much larger than the current activation set. It is also allowed to be small when the product/surface/business logic genuinely supports few candidates. The proof is explicit opportunity-family coverage and distinct hypotheses, not a numeric minimum.
 
 ## Materialization consumer rule
 When `resources/runtime/cbcc/delivery_export.py`, `delivery_workspace.py`, `delivery_html.py` and `commercial_workspace_shell.py` are executable, FULL generation/repair is runtime-first. Host-native materialization is fallback, not permission to invent a replacement shell. Existing-package repairs patch underlying business objects and rerender through the mature consumer, or surgically preserve the existing shell if runtime execution is truly unavailable.
