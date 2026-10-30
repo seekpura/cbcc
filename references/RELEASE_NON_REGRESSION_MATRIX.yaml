@@ -1,4 +1,4 @@
-version: 2
+version: 3
 policy: upgrades_are_additive_and_cross_dimension_regressions_block_release
 checks:
   - id: business_object_density_without_summary_collapse
@@ -172,6 +172,40 @@ checks:
       - flattening all project content into one long page
       - hiding business content only in raw JSON inspector
 
+  - id: workspace_continuity_without_prompt_projection_loss
+    repair_dimension: human_html_materialization
+    must_preserve:
+      - cbcc_commercial_v1
+      - routed_primary_surface
+      - project_authored_object_navigation
+      - asset_detail_routes
+      - prompt_workspace
+      - per_asset_prompt_lens
+      - model_prompt_cn_visibility
+      - model_prompt_en_visibility
+      - search_copy_back_hash
+      - responsive_print
+    failure_examples:
+      - preserving prompt files but removing them from Human HTML
+      - removing asset detail routes while asset packages still exist
+      - hiding prompts only in raw files or JSON
+      - replacing prompt workspace with a static summary
+
+  - id: repair_without_shell_replacement
+    repair_dimension: language_compliance_density_media_or_hard_rule_repair
+    must_preserve:
+      - mature_workspace_shell
+      - top_level_route_model
+      - local_subviews_lenses
+      - asset_detail_routes
+      - prompt_access
+      - existing_layout_unless_user_requests_redesign
+    failure_examples:
+      - regenerating index.html from scratch for language or compliance fixes
+      - replacing mature workspace with a fixed nine-section report
+      - using exact heading checks to drive a new global navigation shell
+      - changing top-level IA when the user did not request redesign
+
   - id: media_portability_without_source_truth_loss
     repair_dimension: standalone_html_media
     must_preserve:
@@ -245,11 +279,14 @@ required_release_evidence:
   - master_construction_contract_loaded
   - business_object_density_contract_loaded
   - prompt_art_direction_contract_loaded
+  - workspace_prompt_continuity_lock_loaded
   - mature_capability_ledger_still_required
   - chinese_operator_surface_preserved
   - commercial_density_preserved
   - all_business_domains_preserved
   - prompt_and_art_direction_density_preserved
+  - prompt_files_human_projected
+  - asset_detail_routes_preserved
   - standalone_media_preserved
   - routed_workspace_preserved
   - no_platform_slot_pruning
