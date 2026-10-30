@@ -6,13 +6,15 @@ The v0.6.65 verification run proved the strict REQ-001..060 Consumer Map, but th
 A current release must not depend on historical施工节点 successfully re-generating today's canonical Skill. Historical builders remain provenance, not current authority.
 
 ## Current Skill baseline
-`references/CURRENT_PACKAGED_SKILL_BASELINE_V0665.md` is the exact textual baseline copied from the actual installed v0.6.65 top Skill after installed top/deep parity was observed. It contains the mature current authority through section 0.14.
+`references/CURRENT_PACKAGED_SKILL_BASELINE_V0665.md` is the **UTF-8 text-normalized baseline** copied from the actual installed v0.6.65 top Skill after installed top/deep parity was observed. The actual plugin file list reports 38,152 raw bytes, while the decoded Skill text exposed by Plugin Creator and committed here is 38,149 UTF-8 bytes. The exact 3-byte difference is the UTF-8 BOM representation boundary; the committed canonical source intentionally stores the decoded text without re-inserting a BOM.
+
+The baseline contains the mature current authority through section 0.14. We preserve semantic/text content rather than polluting the source with artificial trailing bytes to mimic transport encoding.
 
 v0.6.66 canonical Skill generation is additive:
 1. read `CURRENT_PACKAGED_SKILL_BASELINE_V0665.md`;
 2. normalize only release identity to v0.6.66;
 3. insert the v0.6.66 current authority section before `## 1. FULL depth remains mandatory`;
-4. write the exact resulting text to both packaged top `SKILL.md` and `resources/SKILL.md`;
+4. write the exact resulting normalized UTF-8 text to both packaged top `SKILL.md` and `resources/SKILL.md`;
 5. copy the current GitHub repository resources directly using the non-versioned base builder resource copier;
 6. do not call any historical versioned `canonical_skill()` or `copy_repo_resources()` function.
 
@@ -27,7 +29,8 @@ v0.6.66 canonical Skill generation is additive:
 ## Build proof
 Before release publication:
 - strict Consumer Map: exactly 60 requirements / zero issues;
-- frozen v0.6.65 baseline byte size must remain the observed 38,152 bytes;
+- frozen v0.6.65 normalized textual baseline byte size = 38,149 bytes; installed raw file size = 38,152 bytes because of the 3-byte BOM representation boundary;
+- baseline retains all protected authority markers through section 0.14;
 - final top/deep Skill byte-identical;
 - manifest, top/deep Skill and `resources/VERSION` share v0.6.66 family;
 - current Runtime files for long requirements, integrated render, full Art Direction, family/Presence audit and real-K01 shortcut audit are present in the final package;
