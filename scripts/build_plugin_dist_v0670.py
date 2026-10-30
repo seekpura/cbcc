@@ -23,27 +23,31 @@ V0670_PATCH = r'''
 ## 0.19 Canonical Materialization + Human Projection Parity — v0.6.70
 The exact verified v0.6.69 packaged Skill is the additive capability floor. This release closes real K01 delivery drift without redesigning the mature routed workspace or weakening any v0.6.68/v0.6.69 business capability.
 
-### Named canonical Art Direction is the single source for both Prompts
-Production assets may no longer enter compilation through a semantically shifted positional object. Before Prompt compilation, `resources/runtime/cbcc/canonical_prompt_guard.py` validates named Art Direction domains. Cross-domain values such as Product Presence enums in `visual_carrier`, `POST_COMPOSITE` in evidence, visible copy in `copy_render_route`, Kelvin lighting prose in camera, output dimensions in CMF, or source-route enums in portfolio rhythm are `ASSET_SCHEMA_SEMANTIC_MISMATCH` and block generation. Runtime never guesses how to shift corrupted values back; the Agent must re-materialize the named canonical object.
+### Named canonical Art Direction is the positive single source for Design Card + both Prompts
+Production assets may no longer enter compilation through a semantically shifted positional object. `resources/runtime/cbcc/canonical_art_direction_projection.py` projects named `asset_art_direction` fields by semantic key into the mature compiler contract and derives the photography contract from that same object. It never guesses positional shifts and never overwrites an already-authored structured value.
+
+Before Prompt compilation, `resources/runtime/cbcc/canonical_prompt_guard.py` installs that positive projector, injects the same canonical photography contract into the mature Prompt compiler, then validates semantic domains. Cross-domain values such as Product Presence enums in `visual_carrier`, `POST_COMPOSITE` in evidence, visible copy in `copy_render_route`, Kelvin lighting prose in camera, output dimensions in CMF, or source-route enums in portfolio rhythm are `ASSET_SCHEMA_SEMANTIC_MISMATCH` and block generation. Runtime never guesses how to shift corrupted values back; the Agent must re-materialize the named canonical object.
 
 The final Prompt chain is:
-`named Agent Art Direction → normalize_full_art_direction → semantic asset guard → mature Prompt compiler → per-asset integrated render authority → final semantic membrane → canonical Art Direction lineage stamp`.
-`Model Prompt CN` and `Model Prompt EN` therefore share one `canonical_art_direction_sha256`. A changed Art Direction with a stale Prompt bundle is `PROMPT_CANONICAL_LINEAGE_MISMATCH`.
+`named Agent Art Direction → positive named projection → normalize_full_art_direction → semantic asset guard → mature Prompt compiler with canonical photography contract → per-asset integrated render authority → final semantic membrane → canonical Art Direction lineage stamp`.
+`Model Prompt CN`, `Model Prompt EN` and machine Design Card share one `canonical_art_direction_sha256`; their `prompt_cn_source_sha256`, `prompt_en_source_sha256` and `design_card_source_sha256` all resolve to that same canonical object. A changed Art Direction with a stale Prompt bundle is `PROMPT_CANONICAL_LINEAGE_MISMATCH`.
 
 `Visible Copy Block` language slots are also semantic contracts. Render route must be a recognized route enum; exact target-market copy, English semantic baseline and Chinese meaning/use cannot be shifted into each other's slots. A language-slot shift is `VISIBLE_COPY_LANGUAGE_SLOT_MISMATCH`.
 
-### Human Workspace must consume authored canonical objects, not merely embed them in JSON
-`resources/runtime/cbcc/human_projection_integrity.py` audits visible renderer consumption separately from embedded DATA. When canonical objects exist, Human HTML must expose the authored Listing, Strategy, Market, Visual, Content Matrix, RACE, Culture, Compliance, Ads, Review, Sources and per-asset Art Direction fields. In particular, Listing English description, key points, attributes, package contents and FAQ may not silently disappear while remaining hidden in DATA.
+### Human Workspace is positively completed from canonical DATA before final audit
+`resources/runtime/cbcc/canonical_human_workspace_projection.py` mounts a lossless Human projection onto the existing project-authored `cbcc-commercial-v1` world; it does not replace routes with a fixed report taxonomy. `resources/runtime/cbcc/canonical_human_workspace_completion.py` closes compatible culture-result aliases and visible Review evidence status. The positive layer may only render already-authored canonical DATA; it cannot invent missing strategy, evidence, culture or platform decisions.
 
-The Content Matrix retains cover, subtitles, music rights, traffic mechanism and landing handoff. RACE rows carry platform. Culture rows independently expose script, casting, wardrobe/grooming, color, CTA, validation result and modification action. Output self-check explicitly covers fabrication, WHY, culture, compliance, metrics and assumptions. Source URLs, review evidence status, P0/P1/P2 tradeoff and visual execution detail remain human-visible when authored.
+When canonical objects exist, Human HTML exposes the authored Listing, Strategy, Market, Visual, Content Matrix, RACE, Culture, Compliance, Ads, Review, Sources and per-asset Art Direction fields. Listing English description, key points, attributes, package contents and FAQ may not silently disappear. `HTML_LISTING_PROJECTION_INCOMPLETE` and the other `HTML_*_PROJECTION_INCOMPLETE` codes remain final-package blockers when authored canonical fields still fail to become visible after the positive projection.
 
-Copy/search are behavioral, not self-declared booleans: a visible copy control must invoke clipboard/copy behavior; workspace search must cover business objects beyond `DATA.assets` when those objects are present.
+The Content Matrix retains cover, subtitles, music rights, traffic mechanism, landing handoff and attribution. RACE rows carry platform. Culture rows independently expose script, casting, wardrobe/grooming, color, CTA, validation/verification result and modification action. Output self-check explicitly covers fabrication, WHY, culture, compliance, metrics and assumptions. Source URLs, review evidence status, P0/P1/P2 tradeoff and visual execution detail remain human-visible when authored.
+
+Copy/search are behavioral, not self-declared booleans: Prompt CN, Prompt EN, Visible Copy and Production panes have visible controls bound to actual clipboard behavior; project search builds `CBCC_GLOBAL_SEARCH_INDEX` across canonical business objects instead of filtering only `DATA.assets`.
 
 ### Strategy/culture completion is relevance-aware, not stereotype padding
 FULL strategy completion preserves the v0.6.69 first-class objects and closes missing execution fields. Every major decision carries separate platform/region/audience/race-ethnicity-culture Context WHY; missing external evidence stays `TO_VERIFY`. Framework rows carry measurement. Inclusive photography keeps explicit relevance decisions for deep skin, hair texture/style, body representation, disability, age and AI bias. Disability or other identity dimensions are not inserted tokenistically: relevant human assets require an explicit decision + WHY; non-human/not-relevant cases remain `NOT_NEEDED + WHY`.
 
 ### Final package / ZIP boundary
-`resources/runtime/cbcc/canonical_materialization_package_audit.py` is the final FULL package boundary. It audits mature asset directories, Visible Copy slots, Prompt contract route + canonical lineage, and Human Workspace projection. `resources/runtime/cbcc/delivery_export_continuity.py` runs this parity audit **before re-zipping**. Validation never rewrites corrupted fields or hides missing content; it blocks export and returns the work to the responsible authoring layer.
+`resources/runtime/cbcc/canonical_materialization_package_audit.py` is the final FULL package boundary. It first invokes the complete canonical Human projection, then audits mature asset directories, Visible Copy slots, Prompt contract route + canonical lineage and Human Workspace projection. `resources/runtime/cbcc/delivery_export_continuity.py` runs this parity audit **before re-zipping**. Validation never heuristically rewrites corrupted asset fields or hides missing canonical decisions; unrecoverable defects block export and return work to the responsible authoring layer.
 
 The 2026-10-31 v0.6.69 K01 package is a frozen semantic negative fixture for this release: the known G08/V01/A01/A02/S01/S02/R01/L01/T01/T02 positional-shift family and the observed Human HTML omissions must no longer pass FULL materialization.
 
@@ -98,16 +102,20 @@ def plugin_manifest(version: str) -> dict:
     manifest = BASE_PLUGIN_MANIFEST(VERSION)
     manifest['version'] = VERSION
     manifest['description'] = (
-        'Cross-border ecommerce Commerce Agent with frozen v0.6.69 maturity floor plus canonical Art Direction→CN/EN Prompt lineage, '
+        'Cross-border ecommerce Commerce Agent with frozen v0.6.69 maturity floor plus positive canonical Art Direction→Design Card/CN/EN Prompt projection, '
         'semantic field-shift blocking, complete Human Workspace projection and strategy/culture execution completion.'
     )
     dc = manifest.setdefault('delivery_contract', {})
     dc.update({
         'v069_exact_skill_floor_required': True,
         'canonical_named_art_direction_required': True,
+        'canonical_art_direction_positive_projection_required': True,
+        'canonical_photography_contract_from_art_direction_required': True,
         'asset_semantic_domain_guard_required': True,
         'visible_copy_language_slot_guard_required': True,
         'prompt_cn_en_single_canonical_lineage_required': True,
+        'design_card_same_canonical_lineage_required': True,
+        'human_positive_projection_before_final_audit_required': True,
         'human_projection_field_consumption_required': True,
         'listing_en_description_keypoints_attributes_package_faq_human_visible_when_authored': True,
         'content_matrix_full_platform_execution_human_visible': True,
@@ -116,7 +124,7 @@ def plugin_manifest(version: str) -> dict:
         'output_self_check_six_dimensions_required': True,
         'inclusive_dimension_relevance_decisions_required': True,
         'copy_behavior_must_be_bound': True,
-        'workspace_search_business_object_scope_required': True,
+        'workspace_global_business_object_search_required': True,
         'canonical_materialization_audit_before_final_zip': True,
         'fresh_host_k01_full_still_required_for_behavioral_closure': True,
     })
