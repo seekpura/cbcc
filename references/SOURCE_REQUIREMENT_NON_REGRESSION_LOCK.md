@@ -1,7 +1,9 @@
 # CBCC SOURCE REQUIREMENT NON-REGRESSION LOCK — CURRENT
 
 ## Mandatory authorities before any relevant release change
-Read and consume all current sources below before changing strategy, assets, Art Direction, Prompt, production, Human Workspace, language, compliance, economics, review or Runtime:
+These authorities must be **read before every release change** affecting strategy, assets, Art Direction, Prompt, production, Human Workspace, language, compliance, economics, review or Runtime. A newer wording or summary may not erase an older semantic requirement.
+
+Read and consume all current sources below:
 - `CONVERSATION_REQUIREMENT_AUDIT.md` — **detailed** cumulative REQ-001..050 definitions; heading-only projection is invalid;
 - `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md` — REQ-051..060;
 - `USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` — verbatim long-form user authority; exact sequence, thresholds, table columns, P0/P1/P2 definitions, photography requirements and output-object requirements may not be summarized away;
@@ -35,6 +37,8 @@ Generic entries such as `relevant Runtime consumer`, `current Skill/contract`, `
 ## Additive invariant
 A local fix is invalid if it deletes, compresses, hides or bypasses another mature capability. Protected dimensions include Product Truth, seven tools, pricing/economics, complete Listing, open Asset Universe, structured Art Direction, people/action/scene/props/composition/evidence/copy/culture/CMF/material, full camera/focus/exposure/lighting/prelight/finishing, dynamic Video/Creator/LIVE, integrated final render, Product Presence/Fidelity independence, four production objects, real Provider/Review/Revision/QA lineage, Chinese-first human delivery, mature routed workspace, and measurement/learning.
 
+Historical Chinese capability anchors remain explicit and protected: **人物、场景、道具、摄影、灯光、CMF、材质、构图、文案、文化、视频**. A cleanup or modernization may not delete these dimensions from planning, structured Art Direction, Prompt/production projection, Human Workspace or review where they are relevant.
+
 ## Semantic planes
 - Model Prompt: selected model-visible pixel/frame/audio-changing execution only.
 - Visible Copy Block: exact consumer-visible copy + Chinese meaning/use.
@@ -61,7 +65,8 @@ For every touched requirement:
 15. top/deep Skill and all release identity files must be one current release family;
 16. read the active Host Skill resource used by the execution context and compare its release family to the installed release;
 17. if the Host Skill snapshot is stale, record `HOST_SKILL_SNAPSHOT_STALE` and keep positive Host-native FULL E2E pending rather than treating stale execution as evidence;
-18. a fresh positive K01 FULL run through a Host context that actually loaded the current installed Skill remains mandatory before FULL behavioral closure.
+18. a fresh positive K01 FULL run through a Host context that actually loaded the current installed Skill remains mandatory before FULL behavioral closure;
+19. inspect the **actual FULL project materialization path** end to end; source contracts, unit tests, helper output or a hand-authored replacement package cannot substitute for the real Host/Runtime materialization path.
 
 ## Version-string hygiene
 Current release-proof instructions use version-agnostic wording such as `current installed release`. Do not hard-code a historical release number into a forward-carried completion gate. Stable current authorities use `CURRENT` filenames where their semantics are release-independent; historical addenda retain versioned names only for traceability.
