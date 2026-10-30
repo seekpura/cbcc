@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / 'runtime') not in sys.path:
     sys.path.insert(0, str(ROOT / 'runtime'))
 
-from cbcc.delivery_export import export_delivery_package
+from cbcc.delivery_export_continuity import export_delivery_package
 
 
 def main() -> int:
