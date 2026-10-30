@@ -53,6 +53,32 @@ def test_master_contract_preserves_commercial_density_and_production_depth():
         assert token in text, token
 
 
+def test_prompt_contract_is_full_commercial_world_not_camera_parameter_dump():
+    text = (ROOT / 'references' / 'MASTER_CONSTRUCTION_CONTRACT.md').read_text(encoding='utf-8')
+    required = [
+        'Prompt ≠ 摄影参数集合',
+        '人物 / 主体', '人物角色', '年龄', '肤色', '发型 / 发质', '妆容', '服装 / 配饰',
+        '姿态', '表情', '视线', '手部动作', '人物与产品交互',
+        '动作', '行为', '时间瞬间', 'decisive moment',
+        '元素', '场景', '环境', '前景', '中景', '背景', '道具', '表面 / 承托',
+        '视觉钩子', '情绪节奏', '信息密度', '视觉载体',
+        '商品角色', '商品出现节奏', '产品占画', '身份锚点',
+        '构图语法', '空间关系', '尺度层级', '深度关系', '焦点路径', '负空间',
+        '证据层级', '主证据', '次级证据', 'Proof Hierarchy',
+        '文案', '字体', '字重', '字号层级', '行数', '对齐', '排版关系', 'safe zone',
+        '目标市场语言', '本地化排版', 'RTL', 'CJK', '文化语境', '禁忌', '包容性表征',
+        'CMF', '材质', '微表面', '透明 / 半透明', '反射', '高光', '颜色系统', 'HEX',
+        '平台', '站点', 'Surface', '设备', '画幅', '尺寸', '色彩空间', '缩略图可读性',
+        '动态', '镜头序列', 'beat', '主体运动', '相机运动', '转场', '字幕', 'VO', '音频',
+        '商业决策', '购买障碍', '信念转变', '增量信息', '商业假设', '成功指标',
+        '差异化签名', '与相邻资产的 rhythm delta',
+        'QA', '最小责任层修复', 'Local Revision',
+        '只含摄影参数', '必须判为不合格',
+    ]
+    for token in required:
+        assert token in text, token
+
+
 def test_v0652_builder_consumes_master_contract_and_preserves_previous_authorities():
     p = ROOT / 'scripts' / 'build_plugin_dist_v0652.py'
     assert p.exists()
