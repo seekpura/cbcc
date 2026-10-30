@@ -90,16 +90,12 @@ def test_photographic_route_projects_selected_camera_light_values_not_only_view(
 
 def test_final_public_compiler_normalizes_art_direction_then_runs_semantic_membrane_last():
     text = (ROOT / 'runtime' / 'cbcc' / 'commercial_continuity_bootstrap.py').read_text(encoding='utf-8')
-    for token in [
-        'normalize_full_art_direction',
-        'finalize_model_prompt_bundle',
-        'existing_prompt_compile',
-    ]:
+    for token in ['normalize_full_art_direction', 'finalize_model_prompt_bundle', 'existing_prompt_compile']:
         assert token in text, token
-    normalize_pos = text.index('normalize_full_art_direction')
-    compile_pos = text.index('existing_prompt_compile')
-    finalize_pos = text.index('finalize_model_prompt_bundle')
-    assert normalize_pos < compile_pos < finalize_pos
+    normalize_call = text.index('call_args[0] = normalize_full_art_direction')
+    compile_call = text.index('out = existing_prompt_compile', normalize_call)
+    finalize_call = text.index('out = finalize_model_prompt_bundle(out)', compile_call)
+    assert normalize_call < compile_call < finalize_call
 
 
 def test_source_requirement_lock_is_mandatory_and_names_original_authorities():
