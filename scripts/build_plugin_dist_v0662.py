@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 
 from scripts import build_plugin_dist_v0661 as v0661
+from scripts import build_plugin_dist_v0659 as v0659
 
 ROOT = Path(__file__).resolve().parents[1]
 MATRIX = (ROOT / 'references' / 'REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md').read_text(encoding='utf-8').strip()
@@ -17,6 +18,66 @@ TESTS = [
     ROOT / 'tests' / 'test_v0662_long_requirements_runtime_enforcement.py',
     ROOT / 'tests' / 'test_v0662_asset_universe_and_package_regressions.py',
 ]
+
+CURRENT_AUTHORITY = r'''
+## 0.9 Cumulative User Requirements + Real FULL Output Lock — current highest release authority
+The latest local bug, latest user turn, or latest test is never the whole CBCC specification. FULL/release work must load and consume:
+- `resources/references/CONVERSATION_REQUIREMENT_AUDIT.md` — cumulative REQ-001..050 ledger;
+- `resources/references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md` — REQ-051..060;
+- `resources/references/USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` — verbatim long-form user authority; exact sequencing, thresholds, table columns and execution details may not be replaced by a summary;
+- `resources/references/REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md` — source → Runtime/Consumer → Human/package evidence → proof status for REQ-001..060;
+- `resources/references/K01_2026-10-30_REAL_OUTPUT_REGRESSION.md` — real negative FULL fixture;
+- `resources/prompts/canonical_authority_loading_map.md` plus the v0.6.62 Runtime consumer addendum.
+
+Rules without a consumed downstream object are intent, not completion. `E2E_PENDING` rows remain pending until the named real output exists.
+
+The 2026-10-30 K01 failure pattern is explicitly prohibited: no Host-authored five-file `assets/` shortcut, no global background-generator / post-composite / no-text / no-product route, no product-everywhere default, no thin asset rows in place of structured Art Direction, no fixed capability-menu shell, no prompts-only claim of produced assets, and no price recommendation ahead of required unit-economics inputs.
+
+## 0.10 One-to-One Long-Requirement Runtime Enforcement
+For FULL projects the verbatim user requirements are real Runtime/Human/package contracts:
+- Information audit → pending confirmations → explicit assumptions → continue. Human/operator clarification questions are capped at **10**; the complete unresolved count/overflow remains recorded as `TO_VERIFY / MISSING_INPUT / assumption` rather than stopping unrelated work.
+- Product Truth separates **真实卖点 / 可感知利益 / 情绪价值 / 不可宣称项**, with A/B/C evidence. C remains subjective/pending and cannot become a hard claim.
+- Major decisions expose separate **platform / region / audience / race-ethnicity-culture WHY** with status, basis/assumption, tradeoff, execution and measurement.
+- P0 claim/compliance review is materialized separately for **efficacy, ingredients/formula, certifications, price, sales volume, regulated category**. Unknown current law/platform mechanics remain `TO_VERIFY`; missing evidence is never fabricated.
+- Intersectionality covers **race/ethnicity × gender × age × income × geography**, with language/religion/lifestyle when relevant. Culture checklist rows separately inspect **script / casting / wardrobe-grooming / color / CTA**.
+- When people appear, inclusive photography is an execution object: deep-skin metering/exposure compensation is **Prelight-dependent**, with neutral reflector/bounce/diffusion planning; hair texture, body, disability, age, beauty-standard risk and AI-bias review remain active.
+- Platform execution includes dimensions/aspect, duration, cover/first frame, subtitles, music rights, traffic mechanism, CTA, landing handoff, UTM/attribution; regional localization includes back-translation, holiday calendar, payment/logistics, religious taboos and local law.
+- P0/P1/P2 resource tradeoff must state what is kept, cut/deferred, why, and restoration condition. “Do everything” is not a tradeoff.
+- RACE execution and ethnicity/culture adaptation are explicit tables; Content Matrix carries RACE stage and culture/taboo validation.
+- The nine requested output areas are semantic business objects, never permission to make nine fixed pages or a permanent capability taxonomy.
+
+### Asset Universe / Product Presence implementation
+FULL Asset Universe performs a 12-family opportunity sweep: Gallery/Hero/Search/PDP; Benefit/Proof/Ingredient/Material/Detail; Scenario/Lifestyle/Human-use; How-to/Routine/Comparison/Objection; A+/Rich/PDP longform/source; Paid; Social/Seeding; Creator/UGC/Affiliate; Video/LIVE; Store/Banner/Landing/Campaign/Seasonal; Lifecycle/Post-purchase; Test/Rotation/A-B. An absent family needs `NOT_NEEDED / TO_VERIFY / MISSING_INPUT + WHY`.
+
+Product Presence is independently authored per asset with `planning_state + presence_why`; real references do not imply visible product on every asset. A portfolio where every asset shows product triggers a portfolio review rather than becoming a default.
+
+### Integrated final-render implementation
+Integrated commercial final render is the normal route. When the Agent selects integrated/model-render or hybrid:
+- exact target-market visible copy and typography/layout may be rendered in the final image;
+- a visible real product uses `REFERENCE_GUIDED_NATIVE_LOCK` with actual provider reference binding unless immutable source pixels are explicitly required;
+- legacy “reserve a product/text zone; do not generate product/text; compose later” instructions are a route contradiction unless the asset explicitly selects `POST_COMPOSITE / NO_VISIBLE_COPY / EXACT_PIXEL_COMPOSITE`.
+
+Prompt compilation order is protected:
+`structured Agent Art Direction → normalize full Art Direction → historical compiler → per-asset integrated render authority → final semantic membrane`.
+The final membrane removes source/Excel/QA/revision/provider orchestration only; it must preserve selected people/scene/composition/copy/camera/light/CMF/material/motion values.
+
+### Mature materialization and real-output completion
+FULL production uses mature `asset_packages/<id>` materialization and preserves manifest, strategy, visual spec, photography/layout contracts, source/strategy trace, Design Card, Prompt contract, Visible Copy and Production Notes. A five-file shortcut is rejected.
+
+A production-ready prompt is not a produced asset. Claiming produced/FULL production completion requires the appropriate real chain:
+`Provider Job → Provider Result → actual media → Review → smallest Local Revision when needed → provenance/hash`.
+If provider execution is unavailable, say so and do not claim actual-output QA.
+
+Human delivery must expose the complete strategy/Art Direction/Prompt/Production/Review objects in Chinese-first routed workspace. `cbcc-commercial-v1` interaction mechanics remain, but Product/Market/Listing/Strategy/Visual/Assets cannot become a permanent global capability menu.
+
+## 0.11 Release Proof Boundary
+Before claiming v0.6.62 behavior complete:
+1. installed `plugin.json`, top Skill, `resources/SKILL.md`, `resources/VERSION` and changed Runtime files must be re-read from the actual plugin;
+2. top and deep Skills must be byte-identical and current;
+3. focused/unit/package tests prove local behavior only;
+4. a fresh real K01 FULL project must still be run through the installed plugin and inspected against REQ-001..060 plus the K01 negative fixture;
+5. actual Provider/Review/Revision/QA rows stay `E2E_PENDING` until real outputs exist.
+'''.strip()
 
 
 def _normalize_version(text: str) -> str:
@@ -36,27 +97,14 @@ def _current_canonical_map() -> str:
 
 
 def canonical_skill(version: str) -> str:
-    text = _normalize_version(v0661.canonical_skill(version))
-    header = '''
-## 0.10 ONE-TO-ONE LONG-REQUIREMENT RUNTIME ENFORCEMENT — current highest precedence
-
-The verbatim long-requirement source is now consumed by Runtime, Human Projection and FULL package audits, not only by release documentation.
-
-For FULL projects:
-- pending clarification questions are capped at 10 in the human/operator list; the complete unresolved count/overflow remains recorded and the Agent continues under explicit assumptions / `TO_VERIFY / MISSING_INPUT` instead of stopping;
-- major decision logs expose separate `platform / region / audience / race_ethnicity_culture` WHY objects with status + basis/assumption;
-- people-inclusive routes expose deep-skin exposure handling plus neutral reflector/bounce/diffusion planning, with final EV/lighting values explicitly Prelight-dependent rather than fabricated;
-- the ethnicity/culture checklist carries per-row script, casting, wardrobe/grooming, color and CTA checks;
-- P0 compliance is materialized as separate efficacy / ingredients-formula / certification / price / sales-volume / regulated-category checks; missing evidence stays HOLD/TO_VERIFY/MISSING_INPUT;
-- the Human Strategy exposes those context-WHY, platform execution/localization/UTM, culture execution and P0 compliance objects directly;
-- Asset Universe contains a 12-family opportunity sweep with `COVERED / NOT_NEEDED / TO_VERIFY / MISSING_INPUT + WHY`, never silent omission;
-- Product Presence is a structured per-asset decision and the Universe exposes portfolio presence rhythm; real references do not imply product on every asset;
-- FULL package acceptance rejects the historical five-file `assets/` shortcut, missing structured Art Direction, integrated-route prompts that still say no-text/no-product, missing Provider Result/Review/Revision/real output, fixed capability-menu shells and missing full Art Direction HTML projection;
-- pricing recommendations are blocked when required unit-economics inputs remain missing/unknown.
-
-`resources/references/REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md` maps REQ-001..060 to source, Runtime consumer, Human/package evidence and current proof status. Rows requiring a fresh real FULL project remain `E2E_PENDING`; tests/source presence cannot promote them to complete.
-'''
-    return text + '\n' + header + '\n\n' + MATRIX + '\n'
+    # Deliberately use the verified v0.6.59 canonical Skill as the mature additive floor.
+    # v0.6.60-62 source authorities remain independent packaged files and are loaded by the current
+    # authority block below instead of repeatedly embedding every ledger/fixture into the Skill body.
+    text = _normalize_version(v0659.canonical_skill(version))
+    marker = '\n## 1. FULL depth remains mandatory'
+    if marker not in text:
+        raise RuntimeError('v0.6.59 canonical Skill lost expected FULL-depth marker')
+    return text.replace(marker, '\n' + CURRENT_AUTHORITY + '\n\n## 1. FULL depth remains mandatory', 1)
 
 
 def skill_wrapper(version: str) -> str:
@@ -64,6 +112,7 @@ def skill_wrapper(version: str) -> str:
 
 
 def copy_repo_resources(dest: Path) -> None:
+    # Use v0.6.61 resource copying so the cumulative/verbatim authorities remain packaged.
     v0661.copy_repo_resources(dest)
     current = canonical_skill('0.6.62')
     (dest / 'SKILL.md').write_text(current, encoding='utf-8')
