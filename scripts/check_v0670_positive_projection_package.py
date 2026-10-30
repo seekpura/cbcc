@@ -13,9 +13,11 @@ REQUIRED={
  'runtime/cbcc/canonical_prompt_guard.py':(
    '_install_positive_prompt_projection','project_named_art_direction','canonical_photography_contract','prompt_cn_source_sha256','prompt_en_source_sha256','design_card_source_sha256'),
  'runtime/cbcc/canonical_materialization_package_audit.py':(
-   'apply_complete_canonical_human_projection','audit_human_projection_html','PROMPT_CANONICAL_LINEAGE_MISMATCH'),
+   'apply_complete_canonical_human_projection','audit_human_projection_html','audit_html_asset_package_parity','PROMPT_CANONICAL_LINEAGE_MISMATCH'),
  'runtime/cbcc/human_projection_integrity.py':(
    'HTML_LISTING_PROJECTION_INCOMPLETE','HTML_ASSET_PRODUCT_PRESENCE_PROJECTION_INCOMPLETE','CBCC_GLOBAL_SEARCH_INDEX','data-copy-payload'),
+ 'runtime/cbcc/html_asset_package_parity.py':(
+   'audit_html_asset_package_parity','HTML_ASSET_PACKAGE_TEXT_DRIFT','HTML_ASSET_PACKAGE_DESIGN_CARD_DRIFT','HTML_ASSET_PACKAGE_PARITY_MISSING_ASSET'),
 }
 
 def _plugin_root(extracted:Path)->Path:
@@ -34,13 +36,11 @@ def audit(plugin_zip:Path)->dict:
             bad=zf.testzip()
             if bad:issues.append({'code':'ZIP_CORRUPT','member':bad})
             zf.extractall(root)
-        plugin=_plugin_root(root); resources=plugin/'skills'/'cross-border-commerce-creative'/'resources'
+        plugin=_plugin_root(root);resources=plugin/'skills'/'cross-border-commerce-creative'/'resources'
         for rel,tokens in REQUIRED.items():
             path=resources/rel
-            if not path.exists():
-                issues.append({'code':'POSITIVE_PROJECTION_FILE_MISSING','path':rel});continue
-            text=path.read_text(encoding='utf-8',errors='ignore')
-            missing=[t for t in tokens if t not in text]
+            if not path.exists():issues.append({'code':'POSITIVE_PROJECTION_FILE_MISSING','path':rel});continue
+            text=path.read_text(encoding='utf-8',errors='ignore');missing=[t for t in tokens if t not in text]
             if missing:issues.append({'code':'POSITIVE_PROJECTION_TOKEN_MISSING','path':rel,'tokens':missing})
         bootstrap=resources/'runtime/cbcc/commercial_continuity_bootstrap.py'
         if bootstrap.exists():
