@@ -1,46 +1,63 @@
 from pathlib import Path
+import importlib.util
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _load(path: Path):
+    spec = importlib.util.spec_from_file_location('model_prompt_semantic_membrane', path)
+    mod = importlib.util.module_from_spec(spec)
+    assert spec and spec.loader
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def test_model_prompt_authority_explicitly_separates_generation_from_orchestration():
-    compiler = (ROOT / 'prompts' / 'creative_direction_surface_prompt_compiler.md').read_text(encoding='utf-8')
-    visual = (ROOT / 'prompts' / 'commercial_visual_generation_authority.md').read_text(encoding='utf-8')
-    joined = compiler + '\n' + visual
+    contract = (ROOT / 'references' / 'MODEL_PROMPT_SEMANTIC_MEMBRANE_CONTRACT.md').read_text(encoding='utf-8')
     for token in [
-        'Model Prompt Semantic Membrane',
+        'Model Prompt',
         'source-of-truth hierarchy',
         'Excel',
         'QA checklist',
-        'minimum-repair route',
+        'minimum repair',
         'Production / Assembly Notes',
         'Review / QA',
         'provider-bound reference',
     ]:
-        assert token in joined, token
+        assert token in contract, token
 
 
-def test_runtime_model_prompt_does_not_render_editability_or_internal_reference_mode_sections():
-    text = (ROOT / 'runtime' / 'cbcc' / 'prompt_compiler.py').read_text(encoding='utf-8')
-    render_start = text.index('def _render_lines')
-    render_end = text.index('def _parameter_trace')
-    render = text[render_start:render_end]
-    assert '[VISUAL EXECUTION BOUNDARIES / EDITABILITY]' not in render
-    assert '【视觉执行边界 / 可编辑性】' not in render
-    assert 'Product reference mode:' not in render
-    assert '产品参考模式：' not in render
-    assert 'Editable layers:' not in render
-    assert 'Frozen layers:' not in render
+def test_runtime_semantic_membrane_removes_orchestration_but_keeps_pixel_constraints():
+    mod = _load(ROOT / 'runtime' / 'cbcc' / 'model_prompt_semantic_membrane.py')
+    raw = '''Create a finished ecommerce image.\nUse the user-provided KIYUU K01 full-view package image as product identity reference; Excel is the highest authority.\nQA: product geometry must match; hands anatomically natural; safe-zone readability passes.\nMinimum repair: text layer -> pump reflection -> full regeneration.\nKeep hands anatomically natural and keep the headline inside the mobile-safe area.\n'''
+    cleaned = mod.sanitize_model_prompt(raw, language='EN', reference_bound=True)
+    assert 'Excel is the highest authority' not in cleaned
+    assert 'QA:' not in cleaned
+    assert 'Minimum repair' not in cleaned
+    assert 'KIYUU K01' not in cleaned
+    assert 'hands anatomically natural' in cleaned
+    assert 'mobile-safe area' in cleaned
+    assert 'attached product reference images' in cleaned
+    assert mod.model_prompt_orchestration_leaks(cleaned) == []
 
 
-def test_runtime_has_orchestration_leak_detector_for_model_prompt():
-    text = (ROOT / 'runtime' / 'cbcc' / 'prompt_compiler.py').read_text(encoding='utf-8')
+def test_runtime_detects_orchestration_leaks():
+    mod = _load(ROOT / 'runtime' / 'cbcc' / 'model_prompt_semantic_membrane.py')
+    bad = 'Excel 为最高权威。QA：检查拼写。最小修复：文字层→整图。source/a.xlsx'
+    codes = {x['code'] for x in mod.model_prompt_orchestration_leaks(bad)}
+    assert 'EXCEL_SOURCE_AUTHORITY' in codes
+    assert 'QA_CHECKLIST' in codes
+    assert 'MINIMUM_REPAIR_ROUTE' in codes
+    assert 'LOCAL_FILE_OR_INTERNAL_SOURCE' in codes
+
+
+def test_agent_authority_compiler_applies_semantic_membrane_after_rendering():
+    text = (ROOT / 'runtime' / 'cbcc' / 'agent_authority_prompt_compiler.py').read_text(encoding='utf-8')
     for token in [
-        'def _model_prompt_orchestration_leaks',
-        'EXCEL_SOURCE_AUTHORITY',
-        'QA_CHECKLIST',
-        'MINIMUM_REPAIR_ROUTE',
-        'LOCAL_FILE_OR_INTERNAL_SOURCE',
+        'model_prompt_semantic_membrane',
+        'sanitize_model_prompt',
+        'model_prompt_orchestration_leaks',
+        "'model_prompt_semantic_membrane'",
     ]:
         assert token in text, token
 
