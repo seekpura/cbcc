@@ -34,6 +34,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: python -m pip install pyyaml
       - run: python -m unittest discover -s tests -p 'test_current_requirement_consumer_freshness.py' -v
       - run: python -m unittest discover -s tests -p 'test_current_release_package_checker.py' -v
       - run: python -m unittest discover -s tests -p 'test_v0667_current_release_architecture.py' -v
