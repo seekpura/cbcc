@@ -1,0 +1,20 @@
+name: v0664-requirement-consumer-map
+
+on:
+  push:
+    paths:
+      - 'references/REQUIREMENT_CONSUMER_MAP_V0664.json'
+      - 'scripts/check_v0664_requirement_consumer_map.py'
+      - '.github/workflows/v0664-requirement-consumer-map.yml'
+  workflow_dispatch:
+
+jobs:
+  verify-consumer-map:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify REQ-001..060 concrete consumers
+        run: python scripts/check_v0664_requirement_consumer_map.py
