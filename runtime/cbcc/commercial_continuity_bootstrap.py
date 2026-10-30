@@ -103,6 +103,13 @@ def install() -> None:
         setattr(hardened_package_audit, '_cbcc_v0647_content_hardened', True)
         setattr(hardened_package_audit, '_cbcc_v0662_long_requirement_package_audit', True)
         full_depth.audit_host_full_package = hardened_package_audit
+
+    # v0.6.70 is the final package boundary: Host-authored custom HTML or asset packages cannot bypass
+    # semantic field validation, single-source Prompt lineage, or Human projection completeness.
+    from .canonical_materialization_package_audit import wrap_audit_host_full_package as wrap_canonical_materialization_package_audit
+    if not getattr(full_depth.audit_host_full_package, '_cbcc_v0670_canonical_materialization_parity', False):
+        full_depth.audit_host_full_package = wrap_canonical_materialization_package_audit(full_depth.audit_host_full_package)
+
     for rel in ('DELIVERY_MANIFEST.json', 'FULL_MATERIALIZATION_AUDIT.json'):
         if rel not in full_depth.CORE_HOST_FULL_FILES:
             full_depth.CORE_HOST_FULL_FILES.append(rel)
@@ -119,31 +126,35 @@ def install() -> None:
     full_depth._asset_ids_from_package = materialized_asset_ids
 
     # Final public prompt boundary. The Agent-authored structured Art Direction remains authority.
-    # 1) normalize it before the historical chain;
-    # 2) restore the current per-asset integrated render route so legacy deterministic-copy behavior
-    #    cannot silently turn the image model into a background generator;
-    # 3) apply the semantic membrane last so source/QA/revision prose stays out without deleting
-    #    people/scene/composition/camera/light/CMF/material/copy decisions.
+    # 1) normalize named Art Direction;
+    # 2) reject cross-domain/positional schema corruption before any Prompt is compiled;
+    # 3) run the mature Prompt compiler and restore the current per-asset integrated-render route;
+    # 4) apply the semantic membrane;
+    # 5) stamp the same canonical Art Direction hash onto the final CN/EN Prompt bundle.
     from .full_art_direction_preservation import normalize_full_art_direction
     from .integrated_render_route_authority import finalize_integrated_render_route
     from .model_prompt_semantic_membrane import finalize_model_prompt_bundle
+    from .canonical_prompt_guard import validate_canonical_asset_or_raise, finalize_prompt_lineage
 
     existing_prompt_compile = prompt_compiler.compile_asset_prompt
     def strict_prompt_compile(*args, **kwargs):
         if args:
             call_args = list(args)
             normalized_asset = normalize_full_art_direction(call_args[0] or {})
+            validate_canonical_asset_or_raise(normalized_asset)
             call_args[0] = normalized_asset
             out = existing_prompt_compile(*call_args, **kwargs)
         else:
             call_kwargs = dict(kwargs)
             normalized_asset = normalize_full_art_direction(call_kwargs.get('asset') or {}) if 'asset' in call_kwargs else {}
             if 'asset' in call_kwargs:
+                validate_canonical_asset_or_raise(normalized_asset)
                 call_kwargs['asset'] = normalized_asset
             out = existing_prompt_compile(**call_kwargs)
 
         out = finalize_integrated_render_route(normalized_asset, out)
         out = finalize_model_prompt_bundle(out)
+        out = finalize_prompt_lineage(normalized_asset, out)
 
         continuity = out.get('commerce_decision_consumption_audit') or (out.get('prompt_consumption_audit') or {}).get('commerce_decision_continuity') or {}
         if continuity and continuity.get('status') not in {'PASS', 'NOT_BOUND'}:
@@ -154,6 +165,7 @@ def install() -> None:
             card['commercial_continuity_status'] = 'INCOMPLETE'
         return out
 
+    setattr(strict_prompt_compile, '_cbcc_v0670_canonical_materialization_parity', True)
     prompt_compiler.compile_asset_prompt = strict_prompt_compile
     seven_agent.compile_asset_prompt = strict_prompt_compile
 
