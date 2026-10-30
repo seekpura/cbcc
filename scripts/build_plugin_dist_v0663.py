@@ -10,6 +10,7 @@ from scripts import build_plugin_dist_v0662 as v0662
 
 ROOT = Path(__file__).resolve().parents[1]
 CLOSURE = (ROOT / 'references' / 'REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md').read_text(encoding='utf-8').strip()
+ADDENDUM = (ROOT / 'prompts' / 'canonical_authority_loading_map_v0663_addendum.md').read_text(encoding='utf-8').strip()
 TEST = ROOT / 'tests' / 'test_v0663_real_k01_host_shortcut_audit.py'
 
 CURRENT_PATCH = r'''
@@ -48,6 +49,9 @@ def copy_repo_resources(dest: Path) -> None:
     refs = dest / 'references'
     refs.mkdir(parents=True, exist_ok=True)
     (refs / 'REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md').write_text(CLOSURE + '\n', encoding='utf-8')
+    prompts = dest / 'prompts'
+    prompts.mkdir(parents=True, exist_ok=True)
+    (prompts / 'canonical_authority_loading_map_v0663_addendum.md').write_text(ADDENDUM + '\n', encoding='utf-8')
     tests = dest / 'tests'
     tests.mkdir(parents=True, exist_ok=True)
     (tests / TEST.name).write_text(TEST.read_text(encoding='utf-8'), encoding='utf-8')
