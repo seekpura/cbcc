@@ -78,6 +78,18 @@ def _builder_target(text: str) -> str:
     return match.group(1) if match else ''
 
 
+def validate_override_release_version(document: dict[str, Any], expected: str) -> list[dict[str, Any]]:
+    """Validate the release family declared inside the packaged CURRENT override document itself."""
+    actual = str(document.get('current_release_version') or '')
+    if actual == expected:
+        return []
+    return [{
+        'code': 'PACKAGED_CURRENT_OVERRIDE_RELEASE_VERSION_MISMATCH',
+        'actual': actual or 'MISSING',
+        'expected': expected,
+    }]
+
+
 def _effective_requirement_rows(resources: Path) -> list[dict[str, Any]]:
     base = _load_json(resources / 'references' / 'REQUIREMENT_CONSUMER_MAP_V0664.json')
     current = _load_json(resources / CURRENT_OVERRIDE_FILE)
@@ -190,6 +202,8 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
             base_map_path = resources / 'references' / 'REQUIREMENT_CONSUMER_MAP_V0664.json'
             override_path = resources / CURRENT_OVERRIDE_FILE
             if base_map_path.exists() and override_path.exists():
+                override_doc = _load_json(override_path)
+                issues.extend(validate_override_release_version(override_doc, version))
                 rows = _effective_requirement_rows(resources)
                 ids = [str(row.get('req') or '') for row in rows]
                 expected_ids = [f'REQ-{i:03d}' for i in range(1, 61)]
