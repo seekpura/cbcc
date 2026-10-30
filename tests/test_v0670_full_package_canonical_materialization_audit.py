@@ -33,7 +33,6 @@ def test_final_package_boundary_rejects_k01_style_semantic_copy_lineage_and_html
 ## 中文释义 / 用途
 60mm; f/7.1; 15-degree top-down
 ''',encoding='utf-8')
-    # Contract intentionally lacks canonical_prompt_lineage and carries a corrupt route.
     (d/'12_prompt_contract.json').write_text(json.dumps({'copy_render_route':'3 LANGKAH MUDAH'},ensure_ascii=False),encoding='utf-8')
 
     data={
@@ -64,3 +63,16 @@ def test_final_package_boundary_rejects_k01_style_semantic_copy_lineage_and_html
     assert 'CULTURE_EXECUTION_COLUMNS_MISSING' in codes
     assert 'WORKSPACE_COPY_BINDING_MISSING' in codes
     assert 'WORKSPACE_SEARCH_SCOPE_INCOMPLETE' in codes
+
+
+def test_persisted_lineage_inside_prompt_contract_design_card_counts_as_same_source_proof(tmp_path:Path):
+    d=tmp_path/'asset_packages'/'G01';d.mkdir(parents=True)
+    lineage={'schema_version':'cbcc-canonical-art-direction-v1','canonical_art_direction_sha256':'a'*64,'source':'normalized_named_asset_art_direction'}
+    card={
+      'asset_id':'G01','visual_carrier':'source product portrait','product_presence':{'state':'HERO_REQUIRED','role':'hero','why':'identity'},
+      'evidence_hierarchy':'pack geometry','copy_render_route':'NO_VISIBLE_COPY','camera_optics':'85mm; f/8; focus on pack','lighting':'5200K soft key + fill','cmf_material_color':'warm-white satin tube + clear pump','output_surface':'1600×1600 sRGB','business_hypothesis':'source packshot should improve identity confidence','success_metric':'PDP CTR','portfolio_rhythm_delta':'quiet factual opener'
+    }
+    (d/'12_design_card.json').write_text(json.dumps(card,ensure_ascii=False),encoding='utf-8')
+    (d/'13_prompt_contract.json').write_text(json.dumps({'design_card':{'canonical_prompt_lineage':lineage}},ensure_ascii=False),encoding='utf-8')
+    result=wrap_audit_host_full_package(_base)(tmp_path)
+    assert 'PROMPT_CANONICAL_LINEAGE_MISSING' not in {x['code'] for x in result['issues']}
