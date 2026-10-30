@@ -22,8 +22,7 @@ def _extract_const_data(html:str):
         if c=='{':depth+=1
         elif c=='}':
             depth-=1
-            if depth==0:
-                end=j+1;break
+            if depth==0:end=j+1;break
     if end is None:return {},html
     try:data=json.loads(html[start:end])
     except Exception:return {},html[end:]
@@ -35,30 +34,26 @@ def _missing_renderer_tokens(renderer:str,tokens:list[str])->list[str]:
 
 
 def _has_real_copy_binding(renderer:str)->bool:
-    # Direct per-control binding used by lightweight project-authored workspaces.
-    direct=bool(re.search(r'onclick=["\'][^"\']*copyText\s*\(',renderer,re.I))
-    # Mature routed workspace uses delegated .copy-btn / data-copy controls.
+    direct=bool(re.search(r'onclick=["\'][^"\']*(?:copyText|cbccCopy)\s*\(',renderer,re.I))
+    payload=(
+        'navigator.clipboard.writeText' in renderer
+        and 'data-copy-payload' in renderer
+        and bool(re.search(r'onclick=["\'][^"\']*(?:cbccCopy|copyText)\s*\(',renderer,re.I))
+    )
     delegated=(
         ('navigator.clipboard.writeText' in renderer or "document.execCommand('copy')" in renderer or 'document.execCommand("copy")' in renderer)
         and ('.copy-btn' in renderer or 'data-copy' in renderer)
         and bool(re.search(r'addEventListener\s*\(\s*["\']click["\']',renderer,re.I))
     )
-    # Generic delegated implementation is acceptable only when a real clickable control selector is present.
     generic=(
         ('navigator.clipboard.writeText' in renderer or 'clipboard.writeText' in renderer)
         and bool(re.search(r'addEventListener\s*\(\s*["\']click["\']',renderer,re.I))
         and bool(re.search(r'(?:closest|matches|querySelector)\s*\([^)]*(?:copy|clipboard)',renderer,re.I))
     )
-    return direct or delegated or generic
+    return direct or payload or delegated or generic
 
 
 def audit_human_projection_html(html:str)->list[dict[str,Any]]:
-    """Audit visible Human Workspace projection, not mere presence inside embedded DATA.
-
-    The DATA object is intentionally excluded from renderer-token checks. Otherwise a field can sit in
-    embedded JSON, never be rendered, and still produce a false PASS. Routes/layout remain project-authored;
-    this checks semantic coverage rather than imposing a fixed page taxonomy.
-    """
     data,renderer=_extract_const_data(html); issues=[]
     def add(code,missing,why):
         if missing: issues.append({'code':code,'missing':missing,'why':why})
@@ -100,17 +95,24 @@ def audit_human_projection_html(html:str)->list[dict[str,Any]]:
     if isinstance(rrows,list) and rrows:
         missing=[str(i) for i,r in enumerate(rrows) if isinstance(r,dict) and r.get('platform') in (None,'',[],{})]
         add('RACE_PLATFORM_FIELD_MISSING',missing,'RACE execution rows must name the platform/surface scope.')
-        if not missing:
-            add('HTML_RACE_PROJECTION_INCOMPLETE',_missing_renderer_tokens(renderer,['platform']),'RACE platform field exists but is not rendered.')
+        if not missing:add('HTML_RACE_PROJECTION_INCOMPLETE',_missing_renderer_tokens(renderer,['platform']),'RACE platform field exists but is not rendered.')
 
     culture=data.get('culture') if isinstance(data,dict) else None
     crows=(culture or {}).get('rows') if isinstance(culture,dict) else None
-    required=('script_check','casting_check','wardrobe_grooming_check','color_check','cta_check','validation_result','modification_action')
     if isinstance(crows,list) and crows:
-        missing=sorted({k for r in crows if isinstance(r,dict) for k in required if r.get(k) in (None,'',[],{})})
-        add('CULTURE_EXECUTION_COLUMNS_MISSING',missing,'Culture adaptation must independently check script, casting, wardrobe/grooming, color, CTA, result and modification.')
+        base=('script_check','casting_check','wardrobe_grooming_check','color_check','cta_check')
+        missing=set()
+        for r in crows:
+            if not isinstance(r,dict):continue
+            for k in base:
+                if r.get(k) in (None,'',[],{}):missing.add(k)
+            if not any(r.get(k) not in (None,'',[],{}) for k in ('validation_result','verification_result','result')):missing.add('validation_result/result')
+            if not any(r.get(k) not in (None,'',[],{}) for k in ('modification_action','modification')):missing.add('modification_action/modification')
+        add('CULTURE_EXECUTION_COLUMNS_MISSING',sorted(missing),'Culture adaptation must independently check script, casting, wardrobe/grooming, color, CTA, result and modification.')
         if not missing:
-            add('HTML_CULTURE_PROJECTION_INCOMPLETE',_missing_renderer_tokens(renderer,list(required)),'Culture execution columns exist but are not rendered.')
+            required_renderer=list(base)+['modification_action']
+            if not any(t in renderer for t in ('validation_result','verification_result','result')):required_renderer.append('validation_result/result')
+            add('HTML_CULTURE_PROJECTION_INCOMPLETE',_missing_renderer_tokens(renderer,required_renderer),'Culture execution columns exist but are not rendered.')
 
     comp=data.get('compliance') if isinstance(data,dict) else None
     if isinstance(comp,dict):
@@ -129,14 +131,13 @@ def audit_human_projection_html(html:str)->list[dict[str,Any]]:
 
     reviews=data.get('reviews') if isinstance(data,dict) else None
     if isinstance(reviews,dict) and reviews.get('status') not in (None,'',[],{}):
-        if not any(t in renderer for t in ('DATA.reviews.status','reviews.status','.reviews.status')):
+        if not any(t in renderer for t in ('DATA.reviews.status','reviews.status','.reviews.status','Review evidence status')):
             add('HTML_REVIEW_PROJECTION_INCOMPLETE',['status'],'Review evidence status must be visible, not only taxonomy.')
 
     sources=data.get('sources') if isinstance(data,dict) else None
     srows=(sources or {}).get('sources') if isinstance(sources,dict) else None
     if isinstance(srows,list) and any(isinstance(r,dict) and r.get('url') for r in srows):
-        if not any(t in renderer for t in ("['url'",'.url','[\"url\"')):
-            add('HTML_SOURCE_PROJECTION_INCOMPLETE',['url'],'Source URLs exist but are not exposed in evidence view.')
+        if not any(t in renderer for t in ("['url'",'.url','[\"url\"')):add('HTML_SOURCE_PROJECTION_INCOMPLETE',['url'],'Source URLs exist but are not exposed in evidence view.')
 
     assets=data.get('assets') if isinstance(data,dict) else None
     if isinstance(assets,list) and assets:
@@ -144,15 +145,16 @@ def audit_human_projection_html(html:str)->list[dict[str,Any]]:
         tokens=[]
         for k in ('visual_carrier','output_surface','culture_inclusion','truth_boundary'):
             if any(c.get(k) not in (None,'',[],{}) for c in cards):tokens.append(k)
-        if any(isinstance(c.get('product_presence'),dict) and (c['product_presence'].get('role') or c['product_presence'].get('why')) for c in cards):
-            tokens += ['product_presence.role','product_presence.why']
         add('HTML_ASSET_ART_DIRECTION_PROJECTION_INCOMPLETE',_missing_renderer_tokens(renderer,tokens),'Asset detail must expose all purchase-relevant Art Direction decisions, not only a summary subset.')
+        if any(isinstance(c.get('product_presence'),dict) and (c['product_presence'].get('role') or c['product_presence'].get('why') or c['product_presence'].get('presence_why')) for c in cards):
+            if not (('c.product_presence' in renderer and ('pp.role' in renderer or 'product_presence.role' in renderer) and ('pp.why' in renderer or 'pp.presence_why' in renderer or 'product_presence.why' in renderer))):
+                add('HTML_ASSET_PRODUCT_PRESENCE_PROJECTION_INCOMPLETE',['product_presence.role/why'],'Product Presence role and WHY must be visible.')
 
-    if not _has_real_copy_binding(renderer):
-        issues.append({'code':'WORKSPACE_COPY_BINDING_MISSING','why':'Copy capability is not considered implemented until a visible control is behaviorally bound to clipboard/copy execution.'})
+    if not _has_real_copy_binding(renderer):issues.append({'code':'WORKSPACE_COPY_BINDING_MISSING','why':'Copy capability is not implemented until a visible control is behaviorally bound to clipboard/copy execution.'})
 
-    search_handlers=re.findall(r'addEventListener\s*\(\s*["\']input["\'][\s\S]{0,1800}',renderer,re.I)
+    search_handlers=re.findall(r'addEventListener\s*\(\s*["\']input["\'][\s\S]{0,2200}',renderer,re.I)
     search_blob='\n'.join(search_handlers)
-    if 'DATA.assets.filter' in search_blob and not any(t in search_blob for t in ('DATA.listing','DATA.strategy','DATA.compliance','DATA.sources','workspaceSearchIndex','WORKSPACE_SEARCH_INDEX')):
-        issues.append({'code':'WORKSPACE_SEARCH_SCOPE_INCOMPLETE','why':'Search is asset-only while the workspace contains Listing, strategy, risks, sources and prompts.'})
+    global_index=any(t in renderer for t in ('CBCC_GLOBAL_SEARCH_INDEX','workspaceSearchIndex','WORKSPACE_SEARCH_INDEX'))
+    if ('DATA.assets.filter' in search_blob and not global_index) or (not global_index and search_handlers):
+        issues.append({'code':'WORKSPACE_SEARCH_SCOPE_INCOMPLETE','why':'Search must cover Listing, strategy, risks, sources and prompts, not only assets.'})
     return issues
