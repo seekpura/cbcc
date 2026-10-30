@@ -57,6 +57,7 @@ def required_release_paths() -> list[str]:
         'scripts/check_current_release_package.py',
         'runtime/cbcc/long_requirement_runtime.py',
         'runtime/cbcc/long_requirement_human_projection.py',
+        'runtime/cbcc/strategy_culture_materialization.py',
         'runtime/cbcc/asset_universe_family_audit.py',
         'runtime/cbcc/integrated_render_route_authority.py',
         'runtime/cbcc/long_requirement_full_audit.py',
@@ -233,6 +234,22 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
                     if token not in text:
                         add('REAL_K01_AUDIT_TOKEN_MISSING', token=token)
 
+            strategy_materialization = resources / 'runtime' / 'cbcc' / 'strategy_culture_materialization.py'
+            if strategy_materialization.exists():
+                text = strategy_materialization.read_text(encoding='utf-8')
+                for token in (
+                    'product_truth_audit_table',
+                    'assumption_decision_log',
+                    'intersectionality_table',
+                    'framework_relationships',
+                    'visual_execution_checklist',
+                    'output_self_check_rows',
+                    'FULL_PRODUCT_TRUTH_AUDIT_TABLE_MISSING',
+                    'FULL_RESOURCE_TRADEOFF_PRIORITY_ROWS_MISSING',
+                ):
+                    if token not in text:
+                        add('STRATEGY_CULTURE_MATERIALIZATION_TOKEN_MISSING', token=token)
+
             integrated = resources / 'runtime' / 'cbcc' / 'integrated_render_route_authority.py'
             if integrated.exists():
                 text = integrated.read_text(encoding='utf-8')
@@ -250,6 +267,13 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
                 ]
                 if any(i < 0 for i in offsets) or not (offsets[0] < offsets[1] < offsets[2]):
                     add('PROMPT_BOUNDARY_ORDER_INVALID', offsets=offsets)
+                for token in (
+                    'wrap_strategy_culture_materialization',
+                    'wrap_strategy_culture_human',
+                    'wrap_strategy_culture_audit',
+                ):
+                    if token not in text:
+                        add('STRATEGY_CULTURE_BOOTSTRAP_BINDING_MISSING', token=token)
 
             return {
                 'status': 'PASS' if not issues else 'FAIL',
