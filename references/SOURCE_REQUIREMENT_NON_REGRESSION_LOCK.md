@@ -11,7 +11,10 @@ Mandatory original authorities:
 - `references/BUSINESS_OBJECT_DENSITY_MASTER_CONTRACT.md`
 - `references/HUMAN_WORKSPACE_PROMPT_CONTINUITY_LOCK.md`
 - `references/ASSET_UNIVERSE_OPEN_WORLD_CONTRACT.md`
+- `references/AUTHORITY_SOURCE_PARITY_LOCK.md`
 - current canonical loading map and current Skill authority
+
+`AUTHORITY_SOURCE_PARITY_LOCK.md` is mandatory because an additive release is still invalid when the current top-level Skill advances but packaged `resources/SKILL.md` remains on an older authority. The actually installed plugin must be re-read after update; source/package intent alone is not proof.
 
 ## Additive release invariant
 Every change must preserve the complete existing capability set unless the user explicitly replaces a requirement. A fix is a regression if it improves one local dimension by deleting, compressing, hiding or bypassing another established dimension.
@@ -53,6 +56,8 @@ Any release that changes Prompt or visual production must prove all of the follo
 4. Excel/source-authority/QA labels/minimum-repair/provider-internal prose do not leak into Model Prompt;
 5. Production Notes and Review still contain the orchestration / QA information that was intentionally separated;
 6. final public compiler/provider path is tested, not only an intermediate helper;
-7. previous Asset Universe, business-object density, Chinese Human Workspace and routed interaction contracts remain intact.
+7. previous Asset Universe, business-object density, Chinese Human Workspace and routed interaction contracts remain intact;
+8. top-level packaged Skill, packaged `resources/SKILL.md`, `resources/VERSION`, plugin manifests and latest builder identify the same current release family;
+9. the actually installed plugin is re-read and passes the same authority-parity check.
 
 A heading check, field-name check or self-authored PASS flag is insufficient. Use concrete-value regression fixtures and inspect the final object actually sent downstream.
