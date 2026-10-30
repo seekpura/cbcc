@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-import argparse,json,re,tempfile,zipfile
+import argparse,json,tempfile,zipfile
 from pathlib import Path
 
 REQUIRED={
  'references/V0670_CANONICAL_MATERIALIZATION_PARITY.md':('A01, A02, G08, L01, R01, S01, S02, T01, T02, V01','48517','f3ed58aa'),
+ 'references/V0670_REQUIREMENT_IMPLEMENTATION_DELTA.json':('REQ-014','REQ-030','REQ-033','REQ-042','REQ-060','FRESH_HOST_E2E_PENDING'),
  'runtime/cbcc/canonical_materialization_integrity.py':('ASSET_SCHEMA_SEMANTIC_MISMATCH','VISIBLE_COPY_LANGUAGE_SLOT_MISMATCH','canonical_art_direction_sha256'),
  'runtime/cbcc/canonical_prompt_guard.py':('CanonicalMaterializationError','validate_canonical_asset_or_raise','finalize_prompt_lineage'),
  'runtime/cbcc/canonical_materialization_package_audit.py':('PROMPT_CANONICAL_LINEAGE_MISSING','audit_human_projection_html','audit_asset_directory'),
@@ -41,13 +42,13 @@ def audit(zip_path:Path)->dict:
             text=p.read_text(encoding='utf-8-sig',errors='replace')
             for token in tokens:
                 if token not in text:add('V0670_REQUIRED_TOKEN_MISSING',path=rel,token=token)
-        bootstrap=(resources/'runtime/cbcc/commercial_continuity_bootstrap.py')
+        bootstrap=resources/'runtime/cbcc/commercial_continuity_bootstrap.py'
         if bootstrap.exists():
             text=bootstrap.read_text(encoding='utf-8')
             order=['normalize_full_art_direction(call_args[0] or {})','validate_canonical_asset_or_raise(normalized_asset)','existing_prompt_compile(*call_args, **kwargs)','finalize_integrated_render_route(normalized_asset, out)','finalize_model_prompt_bundle(out)','finalize_prompt_lineage(normalized_asset, out)']
             offsets=[text.find(x) for x in order]
             if any(i<0 for i in offsets) or offsets!=sorted(offsets):add('V0670_PROMPT_ORDER_INVALID',offsets=offsets)
-        skill=(plugin/'skills/cross-border-commerce-creative/SKILL.md')
+        skill=plugin/'skills/cross-border-commerce-creative/SKILL.md'
         if skill.exists():
             text=skill.read_text(encoding='utf-8-sig')
             for token in ('## 0.19 Canonical Materialization + Human Projection Parity','canonical_art_direction_sha256','HTML_LISTING_PROJECTION_INCOMPLETE'):
