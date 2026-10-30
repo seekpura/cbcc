@@ -3,11 +3,11 @@
 ## Current rule
 The canonical packaged Skill is built from the last verified mature textual floor plus current additive authority sections. Current releases do **not** recursively regenerate today's Skill through historical versioned builder chains or historical marker assumptions.
 
-For the current v0.6.67 family, construction first reconstructs the exact verified v0.6.66 packaged Skill floor and hard-checks:
-- UTF-8 bytes: `40612`;
-- SHA256: `c9ac4577e38ef50cdfc033fae08f96f8b3d749583de89d360f35d390f684e06a`.
+For the current v0.6.68 family, construction first reconstructs the exact verified v0.6.67 packaged Skill floor and hard-checks:
+- UTF-8 bytes: `43534`;
+- SHA256: `5840e24d590c075e5682336fb76c9a0b38655486a4d17bf3bdec8bb60cfe4fa5`.
 
-Any mismatch blocks the build before v0.6.67 authority is added.
+Any mismatch blocks the build before v0.6.68 authority is added.
 
 ## Stable construction contract
 1. `VERSION` identifies the current semantic release family and full authority version.
@@ -18,7 +18,8 @@ Any mismatch blocks the build before v0.6.67 authority is added.
 6. Current cumulative/verbatim requirements, strict requirement-consumer accounting, Source Lock, Product Truth/strategy/Asset/Art Direction/Prompt/production/workspace authorities and current Runtime are packaged from current GitHub main.
 7. Manifest, top/deep Skill, `resources/VERSION`, CURRENT requirement override family and CURRENT builder target must belong to the same semantic release family.
 8. The final plugin ZIP is validated by `scripts/check_current_release_package.py`, whose expectations derive from CURRENT `VERSION`, not a hard-coded historical release.
-9. The exact validated ZIP is hashed (SHA256 + bytes) and that exact artifact is the only installable release candidate.
+9. The package checker directly reads the packaged `REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json.current_release_version`; missing/stale values fail with `PACKAGED_CURRENT_OVERRIDE_RELEASE_VERSION_MISMATCH`.
+10. The exact validated ZIP is hashed (SHA256 + bytes) and that exact artifact is the only installable release candidate.
 
 ## Strict requirement accounting
 The effective REQ-001..060 map is:
@@ -28,11 +29,12 @@ The effective REQ-001..060 map is:
 The strict checker merges these sources before validation. Base rows REQ-046/047/048 are historical fallbacks and must be replaced by the CURRENT overrides in the effective map.
 
 ## Current release freshness
-The strict checker must verify:
+The strict checker and final package checker together verify:
 - effective IDs are exactly REQ-001..060;
 - concrete Consumer paths exist;
 - no generic/TBD/TODO consumer placeholders;
-- `REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json.current_release_version` equals the semantic family in `VERSION`;
+- repository CURRENT override `current_release_version` equals the semantic family in `VERSION`;
+- packaged CURRENT override `current_release_version` also equals the exact plugin ZIP release family;
 - `scripts/build_plugin_dist_current.py.CURRENT_BUILDER_TARGET` equals the same semantic family;
 - REQ-046/047 use CURRENT release-process consumers;
 - REQ-048 uses version-agnostic `RELEASE_EVIDENCE_REQUIRED_CURRENT`, not a historical `PROVED_####` status;
