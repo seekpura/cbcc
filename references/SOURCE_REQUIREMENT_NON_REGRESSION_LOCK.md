@@ -55,18 +55,19 @@ For every touched requirement:
 5. preserve structured Art Direction before Prompt and concrete selected-value continuity;
 6. preserve integrated render as normal route; post-composite/no-copy/product-absent/exact-pixel remain per-asset professional choices;
 7. preserve 12-family Asset Opportunity sweep and structured Product Presence with WHY;
-8. audit both mature `ASSET_UNIVERSE.json + asset_packages/` and Host shortcut `data/project.json + assets/` shapes;
-9. reject the historical real K01 package for the frozen 17 structural regression classes;
-10. require active mature assets to contain Prompt CN, Prompt EN, machine Design Card, Visible Copy Block and Production/Assembly Notes;
-11. require real Provider Result/media/Review/Revision before claiming actual-output QA;
-12. block own-SKU price recommendation when required unit-economics inputs are missing;
-13. preserve project-authored routed workspace and reject fixed capability-menu/route taxonomy regression;
-14. read back the **actual installed plugin** after update: manifests, top/deep Skill, VERSION, detailed ledger, strict Consumer Map, CURRENT matrix, CURRENT source lock and changed Runtime;
-15. top/deep Skill and all release identity files must be one current release family;
-16. read the active Host Skill resource used by the execution context and compare its release family to the installed release;
-17. if the Host Skill snapshot is stale, record `HOST_SKILL_SNAPSHOT_STALE` and keep positive Host-native FULL E2E pending rather than treating stale execution as evidence;
-18. a fresh positive K01 FULL run through a Host context that actually loaded the current installed Skill remains mandatory before FULL behavioral closure;
-19. inspect the **actual FULL project materialization path** end to end; source contracts, unit tests, helper output or a hand-authored replacement package cannot substitute for the real Host/Runtime materialization path.
+8. **Product Presence and copy-render route** must remain independent per-asset decisions; a real product reference, visible copy block, or historical composite workflow cannot silently force product-everywhere, no-text, no-product or post-composite behavior across the portfolio;
+9. audit both mature `ASSET_UNIVERSE.json + asset_packages/` and Host shortcut `data/project.json + assets/` shapes;
+10. reject the historical real K01 package for the frozen 17 structural regression classes;
+11. require active mature assets to contain Prompt CN, Prompt EN, machine Design Card, Visible Copy Block and Production/Assembly Notes;
+12. require real Provider Result/media/Review/Revision before claiming actual-output QA;
+13. block own-SKU price recommendation when required unit-economics inputs are missing;
+14. preserve project-authored routed workspace and reject fixed capability-menu/route taxonomy regression;
+15. read back the **actual installed plugin** after update: manifests, top/deep Skill, VERSION, detailed ledger, strict Consumer Map, CURRENT matrix, CURRENT source lock and changed Runtime;
+16. top/deep Skill and all release identity files must be one current release family;
+17. read the active Host Skill resource used by the execution context and compare its release family to the installed release;
+18. if the Host Skill snapshot is stale, record `HOST_SKILL_SNAPSHOT_STALE` and keep positive Host-native FULL E2E pending rather than treating stale execution as evidence;
+19. a fresh positive K01 FULL run through a Host context that actually loaded the current installed Skill remains mandatory before FULL behavioral closure;
+20. inspect the **actual FULL project materialization path** end to end; source contracts, unit tests, helper output or a hand-authored replacement package cannot substitute for the real Host/Runtime materialization path.
 
 ## Version-string hygiene
 Current release-proof instructions use version-agnostic wording such as `current installed release`. Do not hard-code a historical release number into a forward-carried completion gate. Stable current authorities use `CURRENT` filenames where their semantics are release-independent; historical addenda retain versioned names only for traceability.
