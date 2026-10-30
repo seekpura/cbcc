@@ -4,6 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable
 import json
+import re
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -22,6 +23,68 @@ def _issue(issues: list[dict[str, Any]], code: str, **extra: Any) -> None:
     issues.append({'code': code, **extra})
 
 
+def _has_cjk(value: Any) -> bool:
+    return bool(re.search(r'[\u3400-\u4dbf\u4e00-\u9fff]', str(value or '')))
+
+
+def _foreign_human_copy(value: Any) -> bool:
+    if value in (None, '', [], {}):
+        return False
+    text = str(value).strip()
+    if _has_cjk(text):
+        return False
+    # Avoid treating short IDs / codes / locale names as copy. This is intentionally conservative.
+    return bool(re.search(r'[A-Za-z]{3,}(?:[\s,.;:!?/&+\-]+[A-Za-z]{2,}){1,}', text))
+
+
+def _companion(row: dict[str, Any], field: str) -> Any:
+    direct = row.get(field + '_zh') or row.get(field + '_cn')
+    if direct not in (None, '', [], {}):
+        return direct
+    translation = row.get('delivery_translation_zh')
+    if isinstance(translation, dict):
+        return translation.get(field) or translation.get('meaning') or translation.get('use')
+    if translation not in (None, '', [], {}):
+        return translation
+    return None
+
+
+def _audit_video_language_and_consumer(package: Path, issues: list[dict[str, Any]]) -> None:
+    universe = _read_json(package / 'video' / 'VIDEO_UNIVERSE.json')
+    rows = [x for x in universe.get('assets') or [] if isinstance(x, dict)]
+    if not rows:
+        return
+
+    html_path = package / 'index.html'
+    if html_path.exists() and 'data-route="video"' not in html_path.read_text(encoding='utf-8', errors='ignore'):
+        _issue(issues, 'VIDEO_OBJECTS_HAVE_NO_PRIMARY_HTML_CONSUMER', count=len(rows))
+
+    for i, row in enumerate(rows, start=1):
+        vid = str(row.get('video_id') or row.get('id') or f'VID-{i:02d}')
+        for field in ('hook', 'first_frame_copy', 'cta', 'on_screen_text', 'voiceover', 'vo', 'script'):
+            value = row.get(field)
+            if _foreign_human_copy(value) and not _companion(row, field):
+                _issue(issues, 'VIDEO_HUMAN_COPY_CHINESE_COMPANION_MISSING', video_id=vid, field=field)
+        for sidx, shot in enumerate(row.get('shots') or row.get('shot_program') or [], start=1):
+            if not isinstance(shot, dict):
+                continue
+            value = shot.get('visible_copy') or shot.get('on_screen_text') or shot.get('copy') or shot.get('dialogue') or shot.get('subtitle')
+            if _foreign_human_copy(value):
+                companion = (
+                    shot.get('delivery_translation_zh') or shot.get('visible_copy_zh') or
+                    shot.get('on_screen_text_zh') or shot.get('copy_zh') or
+                    shot.get('dialogue_zh') or shot.get('subtitle_zh')
+                )
+                if not companion:
+                    _issue(
+                        issues,
+                        'VIDEO_HUMAN_COPY_CHINESE_COMPANION_MISSING',
+                        video_id=vid,
+                        shot=sidx,
+                        field='shot_visible_copy',
+                    )
+
+
 def harden_full_package_audit(
     base_fn: Callable[[Path | str], dict[str, Any]],
     strategy_validator: Callable[[dict[str, Any]], dict[str, Any]],
@@ -36,14 +99,10 @@ def harden_full_package_audit(
         base = base_fn(package)
         issues = list(base.get('issues') or [])
 
-        # A FULL package is not complete merely because these artifacts are named in an authority doc.
-        # They must physically exist in the package at final audit time.
         for rel in ('DELIVERY_MANIFEST.json', 'FULL_MATERIALIZATION_AUDIT.json'):
             if not (package / rel).exists():
                 _issue(issues, 'FULL_DELIVERY_OBJECT_MISSING', path=rel)
 
-        # Re-run the actual V3 strategy validator against the packaged machine authority. This closes
-        # the Host-native loophole where shallow 01–09 Markdown headings could coexist with a PASS flag.
         strategy = _read_json(package / 'strategy' / 'strategy_authority.json')
         if not strategy:
             _issue(issues, 'PACKAGED_STRATEGY_AUTHORITY_MISSING_OR_INVALID')
@@ -58,7 +117,6 @@ def harden_full_package_audit(
                     strategy_issues=deepcopy(strategy_depth.get('issues') or []),
                 )
 
-        # Do not trust the presence of audit filenames. Their declared result must also be acceptable.
         depth_artifact = _read_json(package / 'FULL_DELIVERY_DEPTH_AUDIT.json')
         if depth_artifact and _status(depth_artifact) not in {'PASS', 'PASS_WITH_SUBMISSION_HOLDS'}:
             _issue(issues, 'FULL_DELIVERY_DEPTH_AUDIT_NOT_PASS', status=_status(depth_artifact))
@@ -83,8 +141,6 @@ def harden_full_package_audit(
                     market_status=market_status,
                 )
 
-        # The manifest must name inactive/missing-input domains explicitly. Required machine objects may
-        # never disappear behind NOT_ACTIVE_OR_MISSING_INPUT.
         object_manifest = _read_json(package / 'FULL_DELIVERY_OBJECT_MANIFEST.json')
         if object_manifest:
             for row in object_manifest.get('objects') or []:
@@ -101,7 +157,8 @@ def harden_full_package_audit(
                             path=row.get('path'),
                         )
 
-        # Deduplicate because the base audit and hardening can correctly report the same physical gap.
+        _audit_video_language_and_consumer(package, issues)
+
         unique: list[dict[str, Any]] = []
         seen: set[str] = set()
         for row in issues:
@@ -116,6 +173,7 @@ def harden_full_package_audit(
         out['strategy_depth_v3'] = strategy_depth
         out['content_validation_required'] = True
         out['file_presence_alone_is_insufficient'] = True
+        out['video_language_and_html_consumer_audited'] = True
         out['contract'] = 'HOST_NATIVE_FULL_MATERIALIZATION_EQUALS_RUNTIME_EXPORT_V3_CONTENT_VALIDATED'
         return out
     return audited
