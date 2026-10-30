@@ -1,4 +1,4 @@
-# CBCC Canonical Authority Loading Map — v0.6.55
+# CBCC Canonical Authority Loading Map — v0.6.56
 
 ## Purpose
 CBCC does not prove capability depth by making one monolithic prompt arbitrarily large. The Host Skill is the routing authority; mature specialist authorities are mandatory inputs when their domain is active. A file existing in `resources/` without being selected/consumed does not count as preserved capability.
@@ -22,7 +22,7 @@ For FULL commerce work, before substantive strategy/curation/production authorin
    - Source → Analysis → Decision → Strategy → Curation → Asset → Prompt → HTML → Measurement lineage;
    - Market/Pricing/Audience/RACE/Listing/Ads/Review payload continuity.
 4. `resources/prompts/dynamic_asset_curation.md`
-   - **complete Asset Opportunity Universe before Activation Set selection**;
+   - complete Asset Opportunity Universe before Activation Set selection;
    - no fixed asset count and no `smallest sufficient / fewest assets` optimization;
    - relevant Gallery/Scenario/A+/Paid/Social/Creator/Video/Store/Lifecycle/Test/Rotation families inspected before pruning;
    - distinct A/B / creative / audience / offer / evidence / surface hypotheses survive even when shopper question is the same;
@@ -36,44 +36,60 @@ For FULL commerce work, before substantive strategy/curation/production authorin
    - lossless production-parameter closure;
    - four separated production objects;
    - model-native Prompt readiness and concrete-value consumption.
-7. `resources/prompts/commercial_visual_generation_authority.md`
+7. `resources/references/MODEL_PROMPT_SEMANTIC_MEMBRANE_CONTRACT.md`
+   - **only model-visible, pixel-changing instructions belong in Model Prompt**;
+   - source-of-truth hierarchy, Excel/project-file authority, provider routing, editable/frozen-layer workflow, QA checklist and minimum-repair chain stay outside Model Prompt;
+   - model prompt may reference supplied/attached product images only when the Provider Job actually binds them;
+   - orchestration facts are compiled into direct visual constraints rather than dumped as project-management prose;
+   - QA criteria may become forward-generation constraints only when they directly change pixels/frames, e.g. natural hands or safe-zone placement.
+8. `resources/prompts/commercial_visual_generation_authority.md`
    - integrated finished-image authority;
    - product/copy/scene/subject/evidence/camera/light/CMF authored together when appropriate;
-   - actual-output QA and smallest repair.
-8. `resources/prompts/commercial_video_generation_authority.md` when video/creator/live is active.
-9. `resources/prompts/operator_execution_density.md` when operator execution objects are active.
-10. `resources/prompts/commercial_delivery_stability_authority.md`
+   - actual-output QA and smallest repair happen **after generation / outside Model Prompt**.
+9. `resources/prompts/commercial_video_generation_authority.md` when video/creator/live is active.
+10. `resources/prompts/operator_execution_density.md` when operator execution objects are active.
+11. `resources/prompts/commercial_delivery_stability_authority.md`
    - portable source media;
    - explicit platform/market only;
    - language matrix;
    - frozen `cbcc-commercial-v1` shell.
-11. `resources/prompts/human_language_asset_continuity_authority.md`
+12. `resources/prompts/human_language_asset_continuity_authority.md`
    - Chinese operator base;
    - exact target-market copy + English baseline where needed + same-object Chinese companion;
    - per-asset Model Prompt CN/EN continuity.
-12. `resources/prompts/human_surface_rendering_media_portability_authority.md`
+13. `resources/prompts/human_surface_rendering_media_portability_authority.md`
    - rendered Chinese-canonical operator values;
    - standalone-safe displayed media;
    - surface-level verification instead of field-presence audit.
-13. `resources/references/MASTER_CONSTRUCTION_CONTRACT.md`
+14. `resources/references/MASTER_CONSTRUCTION_CONTRACT.md`
    - additive-upgrade master contract;
    - repair one dimension without thinning another;
    - preserve hard rules, mature commercial/creative/production depth and workspace.
-14. `resources/references/BUSINESS_OBJECT_DENSITY_MASTER_CONTRACT.md`
+15. `resources/references/BUSINESS_OBJECT_DENSITY_MASTER_CONTRACT.md`
    - full-depth Product Truth, Research, Market/Audience/Culture, Strategy, Pricing/Economics/Offer, Listing/Search, Content Matrix, Visual Master, Assets, Prompt/Production, Video/Creator/LIVE, Ads, Reviews, RACE/Localization/Compliance/Measurement, Evidence/Operations/Human Workspace;
    - headings/cards/summaries cannot substitute real business objects.
-15. `resources/references/PROMPT_ART_DIRECTION_MASTER_CONTRACT.md`
-   - Prompt is a lossless compile of a complete per-asset commercial world, not a photography-parameter dump;
-   - people/subject/action/elements/scene/props/spatial/evidence/copy/type/localization/culture/CMF/material/motion/platform/QA when relevant.
-16. `resources/references/HUMAN_WORKSPACE_PROMPT_CONTINUITY_LOCK.md`
+16. `resources/references/PROMPT_ART_DIRECTION_MASTER_CONTRACT.md`
+   - Prompt is a lossless compile of the **generation-relevant projection** of a complete per-asset commercial world, not a photography-parameter dump;
+   - people/subject/action/elements/scene/props/spatial/evidence/copy/type/localization/culture/CMF/material/motion/platform values enter Model Prompt when they can change the generated pixels/frames;
+   - source governance, QA and repair workflow remain separate production/review objects rather than being copied into Model Prompt.
+17. `resources/references/HUMAN_WORKSPACE_PROMPT_CONTINUITY_LOCK.md`
    - highest materialization continuity authority;
    - runtime-first when packaged delivery runtime is executable;
    - repair cannot hand-author a replacement `index.html`;
    - preserve `cbcc-commercial-v1`, mature routed work surfaces, `asset/<id>`, Prompt workspace/lens, search/copy/back/hash, responsive and print/PDF;
    - prompt files must be projected to Human HTML;
    - nine domains are completeness semantics, not fixed nine pages/sections.
-17. `resources/references/RELEASE_NON_REGRESSION_MATRIX.yaml`
+18. `resources/references/RELEASE_NON_REGRESSION_MATRIX.yaml`
    - cross-dimension release regressions block completion.
+
+## Model Prompt semantic membrane rule
+Model Prompt CN/EN is the generation-model instruction, not the whole production dossier. Before finalizing any prompt:
+- remove project filenames, Excel/source authority hierarchy, local paths, internal SKU/asset IDs unless they are visible consumer copy or disambiguate an actually bound reference;
+- remove QA/acceptance labels, post-generation checklists and minimum-repair order;
+- remove provider-routing / machine-contract / audit prose;
+- keep or translate the **visual consequence**: exact approved copy, product geometry, natural hands, safe-zone placement, no extra marketing text, no unrelated logos, etc.;
+- if the prompt says `attached/supplied reference image`, the Provider Job must actually bind that reference;
+- Product Truth remains authoritative upstream, but the image model receives the resolved facts, not instructions to consult an Excel/source file it cannot access.
 
 ## Asset Universe consumer rule
 FULL authoring must expose at least two distinct scopes: the complete candidate universe and one or more activation subsets. If target/platform contains a Gallery/Video capacity, that number may constrain only the selected activation subset. It cannot be used as an upstream generation target, top-N cutoff, slice, or stopping criterion.
