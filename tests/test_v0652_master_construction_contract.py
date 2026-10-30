@@ -54,7 +54,9 @@ def test_master_contract_preserves_commercial_density_and_production_depth():
 
 
 def test_prompt_contract_is_full_commercial_world_not_camera_parameter_dump():
-    text = (ROOT / 'references' / 'MASTER_CONSTRUCTION_CONTRACT.md').read_text(encoding='utf-8')
+    p = ROOT / 'references' / 'PROMPT_ART_DIRECTION_MASTER_CONTRACT.md'
+    assert p.exists()
+    text = p.read_text(encoding='utf-8')
     required = [
         'Prompt ≠ 摄影参数集合',
         '人物 / 主体', '人物角色', '年龄', '肤色', '发型 / 发质', '妆容', '服装 / 配饰',
@@ -85,9 +87,11 @@ def test_v0652_builder_consumes_master_contract_and_preserves_previous_authoriti
     text = p.read_text(encoding='utf-8')
     for token in [
         'MASTER_CONSTRUCTION_CONTRACT.md',
+        'PROMPT_ART_DIRECTION_MASTER_CONTRACT.md',
         'build_plugin_dist_v0651',
         '0.6.52',
         'master_construction_contract_required',
+        'prompt_art_direction_master_contract_required',
         'commercial_density_non_regression_required',
         'prompt_and_art_direction_density_non_regression_required',
         'v0651_chinese_canonical_preserved',
