@@ -72,16 +72,17 @@ def audit_package(package_dir: str | Path) -> dict[str, Any]:
     present_categories = {str(x.get("category") or "") for x in rows if isinstance(x, dict)}
     if not required_categories.issubset(present_categories):
         issues.append("PRODUCT_FACT_CATEGORY_COVERAGE_INCOMPLETE")
-    grades = set()
+    scale = fact.get("evidence_scale") or {}
+    if not isinstance(scale, dict) or not {"A", "B", "C"}.issubset(set(scale)):
+        issues.append("EVIDENCE_GRADE_SCALE_A_B_C_MISSING")
     for i, row in enumerate(rows):
         if not isinstance(row, dict): continue
         grade = str(row.get("evidence_grade") or row.get("grade") or "").upper()
-        grades.add(grade[:1])
+        if not grade.startswith(("A", "B", "C")):
+            issues.append(f"FACT_ROW_{i}_INVALID_EVIDENCE_GRADE:{grade or 'EMPTY'}")
         _need(row, ["item", "category", "source", "publish_rule"], f"FACT_ROW_{i}", issues)
         if grade.startswith("C") and row.get("hard_claim_allowed") is not False:
             issues.append(f"C_GRADE_HARD_CLAIM:{i}")
-    if not {"A", "B", "C"}.intersection(grades):
-        issues.append("EVIDENCE_GRADE_SYSTEM_MISSING")
 
     # 03: WHY + intersectionality + localization. race/ethnicity must not be silently dismissed in FULL.
     ctx = data["03"]
