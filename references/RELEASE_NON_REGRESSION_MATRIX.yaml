@@ -1,0 +1,139 @@
+version: 1
+policy: upgrades_are_additive_and_cross_dimension_regressions_block_release
+checks:
+  - id: language_without_strategy_loss
+    repair_dimension: chinese_operator_language
+    must_preserve:
+      - strategy_depth
+      - market_audience_culture_depth
+      - pricing_economics_offer
+      - visual_photography_depth
+      - asset_art_direction_depth
+      - prompt_density
+    failure_examples:
+      - translating by summarizing
+      - replacing detailed strategy with short Chinese bullets
+      - dropping evidence_tradeoff_execution_measurement
+
+  - id: compliance_without_creative_loss
+    repair_dimension: claim_compliance
+    must_preserve:
+      - creative_authorship
+      - dynamic_asset_curation
+      - integrated_final_image_generation
+      - product_presence_choice
+      - video_creator_ads
+    failure_examples:
+      - turning the agent into a gate/checker
+      - globally forcing no text or no product
+      - replacing creative decisions with prohibitions
+
+  - id: prompt_cleanliness_without_parameter_loss
+    repair_dimension: model_prompt_language_or_cleanliness
+    must_preserve:
+      - production_parameter_closure
+      - composition_geometry
+      - camera_optical_values
+      - lighting_program
+      - cmf_material
+      - color_management_finishing
+      - target_market_visible_copy_route
+    failure_examples:
+      - making EN prompt pure English by deleting selected visual values
+      - reducing a production prompt to generic premium_editorial_soft_light prose
+      - moving all pixel-changing decisions out of the provider prompt
+
+  - id: ui_without_business_object_loss
+    repair_dimension: html_workspace_or_navigation
+    must_preserve:
+      - nine_domain_depth
+      - listing_final_copy
+      - pricing_economics
+      - visual_master
+      - content_matrix
+      - race_culture_tables
+      - asset_detail_design_cards
+      - ads_reviews_evidence
+    failure_examples:
+      - dashboard cards replacing real payload
+      - flattening all project content into one long page
+      - hiding business content only in raw JSON inspector
+
+  - id: media_portability_without_source_truth_loss
+    repair_dimension: standalone_html_media
+    must_preserve:
+      - original_sources
+      - product_reference_roles
+      - source_hashes_and_provenance
+      - editable_source_files
+      - reference_guided_native_product_fidelity
+    failure_examples:
+      - embedding a preview but deleting source media
+      - using a placeholder preview unrelated to the real source
+
+  - id: full_density_without_fixed_template
+    repair_dimension: full_project_completeness
+    must_preserve:
+      - project_authored_information_architecture
+      - dynamic_asset_universe
+      - per_asset_visual_mechanism_diversity
+      - surface_native_execution
+      - agent_creative_authority
+    failure_examples:
+      - fixed nine pages because nine domains exist
+      - fixed seven_or_nine_assets
+      - same left_text_right_product layout across assets
+
+  - id: localization_without_foreign_copy_loss
+    repair_dimension: chinese_operator_projection
+    must_preserve:
+      - exact_target_market_listing_copy
+      - exact_visible_asset_copy
+      - english_semantic_baseline_for_non_english_markets
+      - model_prompt_en
+    failure_examples:
+      - translating publishable Malay Arabic or English copy into Chinese as final copy
+      - removing provider English layer
+
+  - id: source_fidelity_without_presence_forcing
+    repair_dimension: product_fidelity
+    must_preserve:
+      - product_presence_is_per_asset
+      - truth_reference_only_routes
+      - product_absent_assets_when_strategically_stronger
+      - reference_guided_native_lock_default_when_visible
+    failure_examples:
+      - forcing product into every asset
+      - forcing exact_pixel_composite globally
+
+  - id: platform_capacity_without_asset_universe_pruning
+    repair_dimension: platform_gallery_limits
+    must_preserve:
+      - test_pool
+      - rotation_pool
+      - paid_assets
+      - creator_assets
+      - video_assets
+      - pdp_longform_assets
+    failure_examples:
+      - pruning asset universe to platform maximum gallery count
+
+  - id: validation_without_productization
+    repair_dimension: regression_prevention
+    must_preserve:
+      - agentic_delivery
+      - commercial_decision_making
+      - human_facing_finished_outputs
+    failure_examples:
+      - exposing validators as the main UX
+      - blocking normal creative choices that the agent should resolve
+
+required_release_evidence:
+  - master_construction_contract_loaded
+  - mature_capability_ledger_still_required
+  - chinese_operator_surface_preserved
+  - commercial_density_preserved
+  - prompt_and_art_direction_density_preserved
+  - standalone_media_preserved
+  - routed_workspace_preserved
+  - no_platform_slot_pruning
