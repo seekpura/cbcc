@@ -1,0 +1,38 @@
+name: v0.6.48 final ZIP hard-rule lock
+
+on:
+  push:
+    paths:
+      - 'prompts/full_delivery_final_zip_hard_rule_lock.md'
+      - 'scripts/check_v0648_user_hard_rule_final_zip.py'
+      - 'scripts/build_plugin_dist_v0648.py'
+      - 'tests/test_v0648_final_zip_user_hard_rule_lock.py'
+      - 'VERSION'
+  pull_request:
+    paths:
+      - 'prompts/full_delivery_final_zip_hard_rule_lock.md'
+      - 'scripts/check_v0648_user_hard_rule_final_zip.py'
+      - 'scripts/build_plugin_dist_v0648.py'
+      - 'tests/test_v0648_final_zip_user_hard_rule_lock.py'
+      - 'VERSION'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile validator and builder
+        run: python -m py_compile scripts/check_v0648_user_hard_rule_final_zip.py scripts/build_plugin_dist_v0648.py
+      - name: Focused regression tests
+        run: pytest -q tests/test_v0648_final_zip_user_hard_rule_lock.py
+      - name: Build plugin release
+        run: python scripts/build_plugin_dist_v0648.py --output-dir dist_v0648
+      - name: Confirm final ZIP lock is in shipped Skill
+        run: |
+          grep -q 'FULL Final ZIP Hard-Rule Completion Lock' dist_v0648/SKILL.md
+          grep -q 'USER_HARD_RULE_VALIDATION.json' dist_v0648/SKILL.md
+          grep -q 'final_zip_reextract_validation_required' dist_v0648/release_manifest.json
