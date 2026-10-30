@@ -8,7 +8,7 @@ from runtime.cbcc.canonical_materialization_package_audit import wrap_audit_host
 def _base(_package:Path): return {'status':'PASS','issues':[]}
 
 
-def test_final_package_boundary_rejects_k01_style_semantic_copy_lineage_and_html_regressions(tmp_path:Path):
+def test_final_package_boundary_repairs_human_projection_but_rejects_semantic_copy_and_lineage_regressions(tmp_path:Path):
     d=tmp_path/'asset_packages'/'G08';d.mkdir(parents=True)
     card={
       'asset_id':'G08','visual_carrier':'REQUIRED','product_presence':{'state':'REQUIRED','role':'routine','why':'reduce friction'},
@@ -36,7 +36,7 @@ def test_final_package_boundary_rejects_k01_style_semantic_copy_lineage_and_html
     (d/'12_prompt_contract.json').write_text(json.dumps({'copy_render_route':'3 LANGKAH MUDAH'},ensure_ascii=False),encoding='utf-8')
 
     data={
-      'listing':{'description_en':'English','key_points':[{'en':'x'}],'attributes':{'Brand':'X'},'package_contents':{'en':'x'},'faq':[{'q_bm':'q'}]},
+      'listing':{'description_bm':'BM','description_en':'English','description_cn':'中文','key_points':[{'bm':'bm','en':'x','cn':'中'}],'attributes':{'Brand':'X'},'package_contents':{'bm':'bm','en':'x','cn':'中'},'faq':[{'q_bm':'q','a_bm':'a','cn':'中'}]},
       'strategy':{'strategy':{'value_proposition':'v','message_hierarchy':['m'],'priority_tradeoff':[{'level':'P0'}]}},
       'market':{'platform_rules':[{'rule':'r'}],'why':{'platform':'p'}},
       'visual':{'palette':{'x':'#fff'},'contrast':'c','typography':'t','platform':'p','inclusive':'i','shot_list':['s']},
@@ -46,23 +46,32 @@ def test_final_package_boundary_rejects_k01_style_semantic_copy_lineage_and_html
       'compliance':{'other_risks':[{'risk':'r'}],'self_check':[{'item':'是否编造事实'}]},
       'ads':{'objective':'o','economics_boundary':'e','landing':'l','attribution':'a','failure_diagnosis':['f']},
       'reviews':{'status':'NO_DATA'},'sources':{'sources':[{'url':'https://example.com'}]},
-      'assets':[{'id':'G08','card':card}],
+      'assets':[{'id':'G08','card':card,'prompt_cn':'CN','prompt_en':'EN','visible_copy':'VC','production_notes':'PN','review':{}}],
     }
     renderer="function malaysia(){return DATA.listing.description_bm}; $('#search').addEventListener('input',e=>DATA.assets.filter(x=>x.id)); function copyText(x){navigator.clipboard.writeText(x)}"
-    (tmp_path/'index.html').write_text('<script>const DATA='+json.dumps(data,ensure_ascii=False)+';'+renderer+'</script>',encoding='utf-8')
+    html=tmp_path/'index.html'
+    html.write_text('<body><input id="search"><div id="searchResults"></div><script>const DATA='+json.dumps(data,ensure_ascii=False)+';'+renderer+'</script></body>',encoding='utf-8')
 
     result=wrap_audit_host_full_package(_base)(tmp_path)
     codes={x['code'] for x in result['issues']}
+    rewritten=html.read_text(encoding='utf-8')
     assert result['status']=='INCOMPLETE'
+    # Irrecoverable source defects remain blocking. The runtime does not guess positional repairs.
     assert 'ASSET_SCHEMA_SEMANTIC_MISMATCH' in codes
     assert 'VISIBLE_COPY_LANGUAGE_SLOT_MISMATCH' in codes
     assert 'PROMPT_CONTRACT_COPY_ROUTE_INVALID' in codes
     assert 'PROMPT_CANONICAL_LINEAGE_MISSING' in codes
-    assert 'HTML_LISTING_PROJECTION_INCOMPLETE' in codes
+    # Human projection defects with canonical DATA are positively repaired before the final audit.
+    assert 'HTML_LISTING_PROJECTION_INCOMPLETE' not in codes
+    assert 'WORKSPACE_COPY_BINDING_MISSING' not in codes
+    assert 'WORKSPACE_SEARCH_SCOPE_INCOMPLETE' not in codes
+    assert 'CBCC_CANONICAL_HUMAN_PROJECTION_V0670' in rewritten
+    assert 'Description / EN' in rewritten and 'English' in rewritten
+    assert 'CBCC_GLOBAL_SEARCH_INDEX' in rewritten
+    assert 'data-copy-payload' in rewritten
+    # Missing canonical business decisions still block; the Human projector cannot invent them.
     assert 'RACE_PLATFORM_FIELD_MISSING' in codes
     assert 'CULTURE_EXECUTION_COLUMNS_MISSING' in codes
-    assert 'WORKSPACE_COPY_BINDING_MISSING' in codes
-    assert 'WORKSPACE_SEARCH_SCOPE_INCOMPLETE' in codes
 
 
 def test_persisted_lineage_inside_prompt_contract_design_card_counts_as_same_source_proof(tmp_path:Path):
