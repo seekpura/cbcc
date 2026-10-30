@@ -28,8 +28,8 @@ def model_prompt_orchestration_leaks(prompt: str) -> list[dict[str, Any]]:
 
 
 def _split_clauses(line: str) -> list[str]:
-    """Split orchestration from visual instructions without treating the whole line as disposable."""
-    parts = re.split(r'(?<=[。.!?；;])\s*', str(line or ''))
+    """Split on real clause boundaries without splitting decimal values such as 1.2m or f/2.8."""
+    parts = re.split(r'(?<=[。!?；;])\s*', str(line or ''))
     return [p.strip() for p in parts if p and p.strip()]
 
 
@@ -49,9 +49,7 @@ def _strip_source_authority(text: str) -> str:
 
 def _strip_internal_labels(text: str) -> str:
     out = str(text or '')
-    # QA can contain forward-generation constraints. Remove the QA label, not the visual requirement.
     out = re.sub(r'^\s*(?:QA|quality assurance|acceptance checklist|验收|质量验收|质量检查)\s*[:：]\s*', '', out, flags=re.I)
-    # Remove project/process nouns while preserving the rest of a mixed visual clause.
     out = re.sub(r'\bAgent Art Direction\b', '', out, flags=re.I)
     out = re.sub(r'\bProduct Truth\b', 'verified product facts', out, flags=re.I)
     out = re.sub(r'产品真源', '已验证商品事实', out)
@@ -64,7 +62,6 @@ def _pure_orchestration_clause(text: str) -> bool:
     stripped = str(text or '').strip()
     if not stripped:
         return True
-    # Repair routing is always post-generation workflow. Drop the repair clause only.
     if re.search(r'(?:minimum|minimal|smallest)\s+repair|最小修复|最小责任层|修复优先|repair\s+(?:priority|route|order)', stripped, flags=re.I):
         return True
     if re.match(r'^(?:editable layers|frozen layers|local edit rule|可编辑层|冻结层|局部编辑规则|product reference mode|产品参考模式)\s*[:：]', stripped, flags=re.I):
@@ -102,12 +99,7 @@ def sanitize_model_prompt(
     reference_bound: bool = False,
     locked_source: bool = False,
 ) -> str:
-    """Strip orchestration without deleting authored people/scene/camera/light/CMF/copy instructions.
-
-    The membrane works clause-by-clause. A line is never discarded merely because one neighboring
-    clause contains QA/source/revision language. This is critical for dense Art Direction prose where
-    commercial, human, camera, lighting and material instructions often share one paragraph.
-    """
+    """Strip orchestration without deleting authored people/scene/camera/light/CMF/copy instructions."""
     raw_lines = str(prompt or '').replace('\r\n', '\n').replace('\r', '\n').split('\n')
     out: list[str] = []
     reference_instruction_needed = False
@@ -116,8 +108,6 @@ def sanitize_model_prompt(
         stripped_line = str(raw or '').strip()
         if not stripped_line:
             continue
-        # Suppress only the mixed editability section label. Pixel-visible approved elements and
-        # precision boundaries on following lines are preserved; editable/frozen workflow lines are dropped individually.
         if stripped_line in {'[VISUAL EXECUTION BOUNDARIES / EDITABILITY]', '【视觉执行边界 / 可编辑性】'}:
             continue
 
@@ -132,7 +122,6 @@ def sanitize_model_prompt(
                 if reference_bound:
                     reference_instruction_needed = True
                 continue
-            # A literal project filename that survived source-authority stripping still cannot help the model.
             if re.search(r'\b[^\s]{1,120}\.(?:xlsx?|csv|json|ya?ml|psd|ai|zip)\b', clause, flags=re.I):
                 continue
             out.append(clause)
