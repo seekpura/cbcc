@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,7 +27,7 @@ def test_mature_runtime_still_exposes_routed_workspace_and_prompts():
     assert 'one routed primary work surface at a time' in delivery_workspace
     for token in ['05_prompt_CN.txt', '06_prompt_EN.txt', '_prompt_workspace', 'data-route="prompts"', 'Model Prompt CN', 'Model Prompt EN', 'asset/']:
         assert token in delivery_html, token
-    assert "WORKSPACE_SHELL_VERSION='cbcc-commercial-v1'" in shell
+    assert re.search(r"WORKSPACE_SHELL_VERSION\s*=\s*['\"]cbcc-commercial-v1['\"]", shell)
     assert 'from .delivery_workspace import build_delivery_html' in export
 
 
