@@ -10,6 +10,9 @@ from scripts import build_plugin_dist_v0661 as v0661
 
 ROOT = Path(__file__).resolve().parents[1]
 MATRIX = (ROOT / 'references' / 'REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md').read_text(encoding='utf-8').strip()
+SOURCE_LOCK = (ROOT / 'references' / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md').read_text(encoding='utf-8').strip()
+CANONICAL_BASE = (ROOT / 'prompts' / 'canonical_authority_loading_map.md').read_text(encoding='utf-8').strip()
+CANONICAL_ADDENDUM = (ROOT / 'prompts' / 'canonical_authority_loading_map_v0662_addendum.md').read_text(encoding='utf-8').strip()
 TESTS = [
     ROOT / 'tests' / 'test_v0662_long_requirements_runtime_enforcement.py',
     ROOT / 'tests' / 'test_v0662_asset_universe_and_package_regressions.py',
@@ -20,6 +23,16 @@ def _normalize_version(text: str) -> str:
     text = re.sub(r'(?m)^version:\s*[^\n]+$', 'version: 0.6.62-one-to-one-long-requirement-runtime', text, count=1)
     text = re.sub(r'(?m)^# Cross-Border Commerce Creative v[^\n]+$', '# Cross-Border Commerce Creative v0.6.62', text, count=1)
     return text
+
+
+def _current_canonical_map() -> str:
+    base = re.sub(
+        r'(?m)^# CBCC Canonical Authority Loading Map — v[^\n]+$',
+        '# CBCC Canonical Authority Loading Map — v0.6.62',
+        CANONICAL_BASE,
+        count=1,
+    )
+    return base + '\n\n' + CANONICAL_ADDENDUM + '\n'
 
 
 def canonical_skill(version: str) -> str:
@@ -58,6 +71,12 @@ def copy_repo_resources(dest: Path) -> None:
     refs = dest / 'references'
     refs.mkdir(parents=True, exist_ok=True)
     (refs / 'REQUIREMENT_IMPLEMENTATION_MATRIX_V0662.md').write_text(MATRIX + '\n', encoding='utf-8')
+    (refs / 'SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md').write_text(SOURCE_LOCK + '\n', encoding='utf-8')
+
+    prompts = dest / 'prompts'
+    prompts.mkdir(parents=True, exist_ok=True)
+    (prompts / 'canonical_authority_loading_map.md').write_text(_current_canonical_map(), encoding='utf-8')
+    (prompts / 'canonical_authority_loading_map_v0662_addendum.md').write_text(CANONICAL_ADDENDUM + '\n', encoding='utf-8')
 
     tests = dest / 'tests'
     tests.mkdir(parents=True, exist_ok=True)
