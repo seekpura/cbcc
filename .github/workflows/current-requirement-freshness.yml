@@ -35,6 +35,7 @@ on:
       - 'tests/test_v0670_canonical_materialization_parity.py'
       - 'tests/test_v0670_human_projection_integrity.py'
       - 'tests/test_v0670_strategy_culture_completion.py'
+      - 'tests/test_v0670_full_package_canonical_materialization_audit.py'
       - '.github/workflows/current-requirement-freshness.yml'
   workflow_dispatch:
 
@@ -56,4 +57,5 @@ jobs:
       - run: python -m pytest tests/test_v0670_canonical_materialization_parity.py -q
       - run: python -m pytest tests/test_v0670_human_projection_integrity.py -q
       - run: python -m pytest tests/test_v0670_strategy_culture_completion.py -q
+      - run: python -m pytest tests/test_v0670_full_package_canonical_materialization_audit.py -q
       - run: python scripts/check_v0664_requirement_consumer_map.py
