@@ -36,8 +36,6 @@ def _consumer_exists(rel: str) -> bool:
 
 
 def _has_generic_placeholder(consumers: list, proof: list) -> bool:
-    # Check implementation/proof fields only. Requirement names are allowed to contain legitimate
-    # terms such as JTBD, whose letters must never be mistaken for a standalone TBD placeholder.
     blob = json.dumps({'consumers': consumers, 'proof_objects': proof}, ensure_ascii=False)
     lowered = blob.casefold()
     if any(phrase.casefold() in lowered for phrase in GENERIC_PHRASES):
@@ -64,13 +62,21 @@ def _current_builder_target() -> str:
     return match.group(1) if match else ''
 
 
+def _override_document() -> dict:
+    return _load_json(CURRENT_OVERRIDES)
+
+
+def _override_release_version() -> str:
+    return str(_override_document().get('current_release_version') or '')
+
+
 def effective_requirement_rows() -> list[dict]:
     """Return the one effective REQ-001..060 map after CURRENT release-process overrides."""
     base = _load_json(MAP)
     rows = [dict(row) for row in (base.get('requirements') or []) if isinstance(row, dict)]
     by_req = {str(row.get('req') or ''): row for row in rows}
 
-    overrides_doc = _load_json(CURRENT_OVERRIDES)
+    overrides_doc = _override_document()
     overrides = overrides_doc.get('overrides') or []
     for row in overrides:
         if not isinstance(row, dict):
@@ -79,12 +85,11 @@ def effective_requirement_rows() -> list[dict]:
         if req:
             by_req[req] = dict(row)
 
-    # Preserve canonical REQ order rather than JSON-file order in either source.
     return [by_req[f'REQ-{i:03d}'] for i in range(1, 61) if f'REQ-{i:03d}' in by_req]
 
 
 def _override_ids() -> list[str]:
-    doc = _load_json(CURRENT_OVERRIDES)
+    doc = _override_document()
     return [str(row.get('req') or '') for row in (doc.get('overrides') or []) if isinstance(row, dict)]
 
 
@@ -94,6 +99,7 @@ def audit() -> dict:
     try:
         rows = effective_requirement_rows()
         override_ids = _override_ids()
+        override_release_version = _override_release_version()
     except Exception as exc:
         return {
             'status': 'FAIL',
@@ -102,6 +108,7 @@ def audit() -> dict:
             'issues': [{'code': 'CURRENT_REQUIREMENT_MAP_LOAD_FAILED', 'error': str(exc)}],
             'current_overrides_applied': [],
             'current_version_family': _current_version_family() if VERSION_FILE.exists() else '',
+            'current_override_release_version': '',
             'current_builder_target': _current_builder_target() if CURRENT_BUILDER.exists() else '',
         }
 
@@ -116,24 +123,24 @@ def audit() -> dict:
 
     expected_overrides = list(CURRENT_RELEASE_REQS)
     if override_ids != expected_overrides:
-        issues.append({
-            'code':'CURRENT_OVERRIDE_SET_MISMATCH',
-            'expected':expected_overrides,
-            'actual':override_ids,
-        })
+        issues.append({'code':'CURRENT_OVERRIDE_SET_MISMATCH','expected':expected_overrides,'actual':override_ids})
 
     version_family = _current_version_family()
     builder_target = _current_builder_target()
     if not version_family:
         issues.append({'code':'CURRENT_VERSION_FAMILY_UNRESOLVED'})
+    if not override_release_version:
+        issues.append({'code':'CURRENT_OVERRIDE_RELEASE_VERSION_UNRESOLVED'})
+    elif version_family and override_release_version != version_family:
+        issues.append({
+            'code':'CURRENT_OVERRIDE_RELEASE_VERSION_MISMATCH',
+            'version_family':version_family,
+            'override_release_version':override_release_version,
+        })
     if not builder_target:
         issues.append({'code':'CURRENT_BUILDER_TARGET_UNRESOLVED'})
     elif version_family and builder_target != version_family:
-        issues.append({
-            'code':'CURRENT_BUILDER_VERSION_MISMATCH',
-            'version_family':version_family,
-            'builder_target':builder_target,
-        })
+        issues.append({'code':'CURRENT_BUILDER_VERSION_MISMATCH','version_family':version_family,'builder_target':builder_target})
 
     rows_by_req = {str(row.get('req') or ''): row for row in rows if isinstance(row, dict)}
     for req, expected_status in CURRENT_RELEASE_STATUSES.items():
@@ -141,12 +148,7 @@ def audit() -> dict:
         status = str(row.get('status') or '')
         consumers = [str(x) for x in (row.get('consumers') or [])]
         if status != expected_status:
-            issues.append({
-                'code':'CURRENT_RELEASE_STATUS_STALE',
-                'req':req,
-                'expected':expected_status,
-                'actual':status,
-            })
+            issues.append({'code':'CURRENT_RELEASE_STATUS_STALE','req':req,'expected':expected_status,'actual':status})
         if re.search(r'(?:PROVED|ENFORCED)[_-]?\d{3,4}', status, re.I):
             issues.append({'code':'HISTORICAL_RELEASE_STATUS_FORBIDDEN','req':req,'status':status})
         if req in {'REQ-046','REQ-047'} and 'scripts/build_plugin_dist_current.py' not in consumers:
@@ -184,6 +186,7 @@ def audit() -> dict:
         'issues':issues,
         'current_overrides_applied':override_ids,
         'current_version_family':version_family,
+        'current_override_release_version':override_release_version,
         'current_builder_target':builder_target,
     }
 
