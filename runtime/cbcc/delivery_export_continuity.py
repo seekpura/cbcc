@@ -115,8 +115,19 @@ def _rezip(package_dir: Path, zip_path: Path) -> None:
                 zf.write(f, Path(package_dir.name) / f.relative_to(package_dir))
 
 
+def _canonical_materialization_export_audit(package_dir: Path) -> dict[str, Any]:
+    """Run the same semantic boundary before the final ZIP is re-created.
+
+    Validation never rewrites the workspace or guesses shifted fields. A failed package returns to the
+    Agent/runtime authoring layer so the canonical business objects are corrected and re-rendered.
+    """
+    from .canonical_materialization_package_audit import wrap_audit_host_full_package
+    empty = lambda _p: {'status': 'PASS', 'issues': []}
+    return wrap_audit_host_full_package(empty)(Path(package_dir))
+
+
 def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
-    """Run mature export, replacing only the bad exact-heading acceptance check, then audit surface continuity."""
+    """Run mature export, then block final ZIP on workspace + canonical materialization parity."""
     original = legacy._full_html_depth_check
     legacy._full_html_depth_check = _semantic_full_html_depth_check
     try:
@@ -126,17 +137,28 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
 
     package_dir = Path(manifest['package_dir'])
     zip_path = Path(manifest['zip_path'])
-    audit = audit_workspace_prompt_continuity(package_dir)
-    audit_path = package_dir / 'WORKSPACE_PROMPT_CONTINUITY_AUDIT.json'
-    audit_path.write_text(json.dumps(audit, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    if audit.get('status') != 'PASS':
-        raise RuntimeError('BLOCKED workspace/prompt continuity failed: ' + json.dumps(audit.get('issues') or [], ensure_ascii=False))
+
+    workspace_audit = audit_workspace_prompt_continuity(package_dir)
+    workspace_audit_path = package_dir / 'WORKSPACE_PROMPT_CONTINUITY_AUDIT.json'
+    workspace_audit_path.write_text(json.dumps(workspace_audit, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    if workspace_audit.get('status') != 'PASS':
+        raise RuntimeError('BLOCKED workspace/prompt continuity failed: ' + json.dumps(workspace_audit.get('issues') or [], ensure_ascii=False))
+
+    canonical_audit = _canonical_materialization_export_audit(package_dir)
+    canonical_audit_path = package_dir / 'CANONICAL_MATERIALIZATION_PARITY_AUDIT.json'
+    canonical_audit_path.write_text(json.dumps(canonical_audit, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    if canonical_audit.get('status') != 'PASS':
+        raise RuntimeError('BLOCKED canonical materialization / Human projection parity failed: ' + json.dumps(canonical_audit.get('issues') or [], ensure_ascii=False))
 
     manifest_path = package_dir / 'DELIVERY_MANIFEST.json'
     latest = json.loads(manifest_path.read_text(encoding='utf-8')) if manifest_path.exists() else dict(manifest)
     latest['workspace_prompt_continuity_audit'] = 'WORKSPACE_PROMPT_CONTINUITY_AUDIT.json'
+    latest['canonical_materialization_parity_audit'] = 'CANONICAL_MATERIALIZATION_PARITY_AUDIT.json'
     latest.setdefault('workspace_contract', {}).update({
         'workspace_prompt_continuity': 'PASS',
+        'canonical_human_projection_parity': 'PASS',
+        'asset_semantic_domain_integrity': 'PASS',
+        'prompt_canonical_lineage': 'PASS',
         'prompt_files_human_projected': True,
         'asset_detail_routes_preserved': True,
         'exact_heading_layout_lock_removed': True,
