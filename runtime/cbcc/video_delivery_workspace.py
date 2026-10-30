@@ -97,37 +97,50 @@ def video_workspace_css() -> str:
 '''
 
 
+def apply_video_workspace_to_existing_html(package_dir: Path | str, html_path: Path | str | None = None) -> Path | None:
+    """Mount already-materialized Video/Creator objects after base HTML export.
+
+    v0.6.47 materializes video after the legacy HTML builder, so a build-wrapper alone is insufficient.
+    This function patches the existing frozen cbcc-commercial-v1 document additively.
+    """
+    package = Path(package_dir)
+    target = Path(html_path) if html_path else package / 'index.html'
+    if not target.exists():
+        return None
+    body = render_video_workspace(package)
+    if not body:
+        return target
+    page = target.read_text(encoding='utf-8')
+    if 'data-route="video"' in page:
+        return target
+    nav_marker = '</div><div class="sidebar-foot">'
+    nav = '<a href="#video" data-route="video" class="route-link"><span class="ico">▶</span>视频 / Creator</a>'
+    if nav_marker in page:
+        page = page.replace(nav_marker, nav + nav_marker, 1)
+    route = (
+        '<section class="page" data-route="video"><div class="page-head"><div>'
+        '<div class="kicker">VIDEO · CREATOR · LIVE</div><h1>视频 / Creator 工作台</h1>'
+        '<p>视频、Creator、UGC 与 Live 是独立商业资产对象，不受 Gallery 图片槽位限制；逐镜头、屏显、字幕、声音、版权、CTA 与落地承接按当前对象展开。</p>'
+        '</div></div><div class="vd-grid">' + body + '</div></section>'
+    )
+    end = page.rfind('</div></div><script>')
+    if end != -1:
+        page = page[:end] + route + page[end:]
+    elif '</body>' in page:
+        page = page.replace('</body>', route + '</body>', 1)
+    css = video_workspace_css()
+    if '</style>' in page:
+        page = page.replace('</style>', css + '</style>', 1)
+    elif '</head>' in page:
+        page = page.replace('</head>', '<style>' + css + '</style></head>', 1)
+    target.write_text(page, encoding='utf-8')
+    return target
+
+
 def wrap_build_delivery_html(fn: Callable[..., Path]):
     """Add Video/Creator as an additive routed object inside cbcc-commercial-v1 when active."""
     def built(package_dir, output=None, title='CBCC Delivery', *args, **kwargs):
         result = fn(package_dir, output, title=title, *args, **kwargs)
-        package = Path(package_dir)
-        body = render_video_workspace(package)
-        if not body:
-            return result
-        page = result.read_text(encoding='utf-8')
-        if 'data-route="video"' in page:
-            return result
-        nav_marker = '</div><div class="sidebar-foot">'
-        nav = '<a href="#video" data-route="video" class="route-link"><span class="ico">▶</span>视频 / Creator</a>'
-        if nav_marker in page:
-            page = page.replace(nav_marker, nav + nav_marker, 1)
-        route = (
-            '<section class="page" data-route="video"><div class="page-head"><div>'
-            '<div class="kicker">VIDEO · CREATOR · LIVE</div><h1>视频 / Creator 工作台</h1>'
-            '<p>视频、Creator、UGC 与 Live 是独立商业资产对象，不受 Gallery 图片槽位限制；逐镜头、屏显、字幕、声音、版权、CTA 与落地承接按当前对象展开。</p>'
-            '</div></div><div class="vd-grid">' + body + '</div></section>'
-        )
-        end = page.rfind('</div></div><script>')
-        if end != -1:
-            page = page[:end] + route + page[end:]
-        elif '</body>' in page:
-            page = page.replace('</body>', route + '</body>', 1)
-        css = video_workspace_css()
-        if '</style>' in page:
-            page = page.replace('</style>', css + '</style>', 1)
-        elif '</head>' in page:
-            page = page.replace('</head>', '<style>' + css + '</style></head>', 1)
-        result.write_text(page, encoding='utf-8')
+        apply_video_workspace_to_existing_html(package_dir, result)
         return result
     return built
