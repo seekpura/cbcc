@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from . import prompt_compiler as legacy
+from .model_prompt_semantic_membrane import sanitize_model_prompt, model_prompt_orchestration_leaks
 
 _VISIBLE_STATES = {'HERO_REQUIRED', 'REQUIRED', 'SUPPORTING', 'DETAIL_ONLY'}
 _ABSENT_STATES = {'FORBIDDEN', 'ABSENT', 'NOT_APPLICABLE'}
@@ -70,6 +71,7 @@ def _art_direction_missing(asset: dict[str, Any]) -> bool:
 
 
 def _product_rule(asset: dict[str, Any], presence: dict[str, Any], product_fidelity: str) -> str:
+    """Design-card / production rule. Semantic membrane decides what part reaches Model Prompt."""
     state = _presence_state(presence)
     role = str(presence.get('source_reference_role') or '').upper()
     if _presence_unresolved(presence):
@@ -149,19 +151,37 @@ def _renderer_layer_plan(card: dict[str, Any], locked_copy: dict[str, Any]) -> l
     return list(dict.fromkeys(layers))
 
 
-def _presence_consumption(card: dict[str, Any], prompt_cn: str, prompt_en: str) -> dict[str, Any]:
+def _presence_consumption(card: dict[str, Any], prompt_cn: str, prompt_en: str, reference_bound: bool) -> dict[str, Any]:
     presence = card.get('product_presence') or {}
     state = _presence_state(presence)
-    rule = str((card.get('product_identity') or {}).get('rule') or '')
-    projected = bool(rule and rule in prompt_en)
-    if state in _ABSENT_STATES or _presence_unresolved(presence):
-        projected = projected and ('Do not place' in prompt_en or 'intentionally absent' in prompt_en or 'truth references only' in prompt_en)
+    locked = str((card.get('product_identity') or {}).get('product_fidelity') or '').upper() in {'LOCKED_PIXEL', 'LOCKED_SOURCE_COMPOSITE', 'COMPOSITE'}
+    if state in _ABSENT_STATES or str(presence.get('production_state') or '').upper() == 'ABSENT':
+        projected = ('Keep the product absent' in prompt_en) or ('不出现商品主体' in prompt_cn)
+    elif _product_visible(presence) and reference_bound:
+        if locked:
+            projected = ('locked product layer' in prompt_en) or ('锁定商品图层' in prompt_cn)
+        else:
+            projected = ('attached product reference images' in prompt_en) or ('附带的商品参考图' in prompt_cn)
+    else:
+        # Product may be visible without an external source binding only when the authored prompt can
+        # express its visual role without pretending the model can inspect an unavailable file.
+        projected = not _presence_unresolved(presence)
     return {
         'decision': 'product_presence_and_role',
         'required': True,
-        'projected': projected,
+        'projected': bool(projected),
         'value': presence,
     }
+
+
+def _reference_binding_ready(source_bindings: list[dict[str, Any]]) -> bool:
+    for row in source_bindings:
+        if not row.get('visible_subject_binding'):
+            continue
+        locator = row.get('locator') or {}
+        if str(locator.get('kind') or '').upper() in {'PROVIDER_ASSET_HANDLE', 'LOCAL_FILE_PATH'} and locator.get('value'):
+            return True
+    return False
 
 
 def compile_asset_prompt(
@@ -234,11 +254,42 @@ def compile_asset_prompt(
             'identity_features': list(row.get('identity_features') or []),
         })
 
-    prompt_cn = '\n'.join(legacy._render_lines(card, 'CN')).strip() + '\n'
-    prompt_en = '\n'.join(legacy._render_lines(card, 'EN')).strip() + '\n'
+    provider_reference_bound = _reference_binding_ready(source_bindings)
+    raw_prompt_cn = '\n'.join(legacy._render_lines(card, 'CN')).strip() + '\n'
+    raw_prompt_en = '\n'.join(legacy._render_lines(card, 'EN')).strip() + '\n'
+    prompt_cn = sanitize_model_prompt(
+        raw_prompt_cn,
+        language='CN',
+        reference_bound=provider_reference_bound,
+        locked_source=real_master_required,
+    )
+    prompt_en = sanitize_model_prompt(
+        raw_prompt_en,
+        language='EN',
+        reference_bound=provider_reference_bound,
+        locked_source=real_master_required,
+    )
+
+    membrane_cn = model_prompt_orchestration_leaks(prompt_cn)
+    membrane_en = model_prompt_orchestration_leaks(prompt_en)
+    membrane_issues = membrane_cn + membrane_en
+    semantic_membrane = {
+        'status': 'PASS' if not membrane_issues else 'FAIL',
+        'principle': 'Only model-visible, pixel-changing instructions belong in Model Prompt; source authority, QA and repair routing stay outside.',
+        'reference_bound': provider_reference_bound,
+        'cn_issues': membrane_cn,
+        'en_issues': membrane_en,
+    }
+
     consumption = legacy._prompt_consumption_audit(card, prompt_cn, prompt_en)
-    checks = list(consumption.get('checks') or [])
-    checks.append(_presence_consumption(card, prompt_cn, prompt_en))
+    checks = [x for x in list(consumption.get('checks') or []) if x.get('decision') != 'visual_boundaries_editability']
+    checks.append(_presence_consumption(card, prompt_cn, prompt_en, provider_reference_bound))
+    checks.append({
+        'decision': 'model_prompt_semantic_membrane',
+        'required': True,
+        'projected': not membrane_issues,
+        'value': semantic_membrane,
+    })
     missing = [x.get('decision') for x in checks if x.get('required') and not x.get('projected')]
     consumption = {
         **consumption,
@@ -249,11 +300,21 @@ def compile_asset_prompt(
     }
 
     decision_missing = _art_direction_missing(asset) or _presence_unresolved(card.get('product_presence') or {})
-    status = 'AGENT_ART_DIRECTION_REQUIRED' if decision_missing else 'CANONICAL_PROMPT_COMPILED_AGENT_AUTHORITY'
+    reference_missing = bool(visible_product and source_assets and not provider_reference_bound)
+    ready_for_generation = not decision_missing and not reference_missing and not membrane_issues
+    status = 'AGENT_ART_DIRECTION_REQUIRED' if decision_missing else (
+        'PROVIDER_REFERENCE_BINDING_REQUIRED' if reference_missing else (
+            'MODEL_PROMPT_ORCHESTRATION_LEAK' if membrane_issues else 'CANONICAL_PROMPT_COMPILED_AGENT_AUTHORITY'
+        )
+    )
     renderer = {
         'route': asset.get('production_mode'),
-        'ready_for_generation': not decision_missing,
-        'blocked_reason': 'MISSING_AGENT_ART_DIRECTION_OR_PRODUCT_PRESENCE' if decision_missing else None,
+        'ready_for_generation': ready_for_generation,
+        'blocked_reason': (
+            'MISSING_AGENT_ART_DIRECTION_OR_PRODUCT_PRESENCE' if decision_missing else
+            'VISIBLE_PRODUCT_REFERENCE_NOT_BOUND_TO_PROVIDER_JOB' if reference_missing else
+            'MODEL_PROMPT_ORCHESTRATION_LEAK' if membrane_issues else None
+        ),
         'single_asset_single_canvas': True,
         'contact_sheet': False,
         'real_product_master_required': real_master_required,
@@ -284,6 +345,16 @@ def compile_asset_prompt(
         'photography_checks': legacy._dynamic_photography_checks(card),
     }
 
+    production_notes_contract = {
+        'source_product_bindings': source_bindings,
+        'source_truth_and_evidence_authority': 'Resolved upstream from Product Truth / evidence sources; never instruct the generation model to consult Excel or project files.',
+        'product_fidelity': asset.get('product_fidelity'),
+        'editable_layer_contract': asset.get('editable_layer_contract') or {},
+        'copy_render_mode': (asset.get('copy_render_mode') or (card.get('information_design') or {}).get('copy_render_mode')),
+        'qa_target_contract_location': 'qa_target_contract',
+        'local_revision_contract_location': 'renderer_recipe.local_revision_contract',
+    }
+
     return {
         'status': status,
         'design_card': card,
@@ -292,8 +363,10 @@ def compile_asset_prompt(
         'deterministic_copy_overlay': locked_copy,
         'parameter_trace': legacy._parameter_trace(card),
         'prompt_consumption_audit': consumption,
+        'model_prompt_semantic_membrane': semantic_membrane,
         'machine_visual_contract': machine,
         'renderer_recipe': renderer,
+        'production_notes_contract': production_notes_contract,
         'qa_target_contract': qa,
     }
 
