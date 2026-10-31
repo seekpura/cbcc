@@ -1,19 +1,40 @@
 # CBCC Canonical Authority Loading Map — CURRENT
 
 For FULL / repair / release work, load current authorities in this order:
-1. detailed cumulative REQ-001..060 + verbatim user authority;
-2. effective `REQUIREMENT_CONSUMER_MAP_V0664.json` + CURRENT overrides;
-3. CURRENT implementation/source locks and canonical Skill build authority;
-4. v0.6.70–v0.6.74 canonical materialization, package, fresh-K01, bilingual and cross-scope authorities;
-5. MASTER / Art Direction / Business Density / Workspace / Asset Universe / Semantic Membrane authorities;
-6. `runtime/cbcc/v0674_regression_closure.py` after the mature bootstrap;
-7. CURRENT builder + v0.6.75 builder + cumulative package checkers + `check_v0675_release_delta.py`;
-8. current canonical Skill and Runtime.
+1. detailed cumulative REQ-001..050 + REQ-051..060 + **REQ-061..090** + verbatim user authority;
+2. `references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md` + `references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json`;
+3. effective historical `REQUIREMENT_CONSUMER_MAP_V0664.json` + CURRENT overrides, then the cumulative 001..090 map when implemented;
+4. CURRENT implementation/source locks and canonical Skill build authority;
+5. v0.6.70–v0.6.74 canonical materialization, package, fresh-K01, bilingual and cross-scope authorities;
+6. MASTER / Art Direction / Business Density / Final Output / Workspace / Asset Universe / Semantic Membrane authorities;
+7. explicit historical opportunity-family lock from `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md` — scene/lifestyle, negative/counterexample, brand IP/memory/world, packaging trust, material/texture/detail, how-to/FAQ/comparison, A+/PDP/longform, Paid, Social, Creator/UGC/Affiliate, Video, LIVE, Store/Banner/Landing, Campaign/Seasonal, Lifecycle, Test/Rotation;
+8. `runtime/cbcc/v0674_regression_closure.py` after the mature bootstrap;
+9. CURRENT builder + cumulative package checkers;
+10. current canonical Skill and Runtime.
 
-Public path remains:
-`requirements → research/strategy → named Art Direction → semantic guard → Asset Universe/Presence → Prompt compile → integrated render → final semantic membrane → v0.6.74 provenance-only cleanup → lineage → mature package → Provider/Review/Revision → Human projection → FULL audit → final ZIP`.
+## Locked public path
+The public FULL path is no longer allowed to begin from an asset quota or HTML template. It is:
 
-v0.6.75 changes release identity/materialization only. It must not change v0.6.74 business behavior. The exact v0.6.74 canonical Skill floor is 71,400 bytes / SHA256 `8d5e62a0486c83712b61c31010b83b7bc59af0439e7546ba02f48627caecefc8`.
+`requirements 001..090 → source/evidence → information audit → Product Truth → research/market/audience/culture → economics/offer → strategy/frameworks → Listing/Search → content matrix/RACE/culture → Visual Master → explicit opportunity-family evaluation → Asset Opportunity Universe / production portfolio / activation set → route-specific Art Direction → semantic guard → Prompt/Visible Copy/Production projection → integrated image/video/creator/LIVE production route → Provider/Result/Review/Revision when executed → canonical JSON → MD projection → routed HTML projection → FULL materialization audit → final ZIP`.
 
-Release proof:
-`requirement freshness → v0.6.74 focused regressions → v0.6.73/v0.6.72 runtime floors → v0.6.71/v0.6.70 floors → CURRENT build → v0.6.74 floor-mode check → v0.6.75 exact ZIP check → SHA256/bytes → exact full artifact → installed readback → Host snapshot parity → fresh real K01 FULL`.
+## Same-source rule
+- canonical JSON business graph is the single machine authority;
+- MD and HTML are complete projections of the same objects;
+- Prompt/Visible Copy/Production/Review project from the same locked object graph;
+- independent hand-authored summary HTML/MD/Prompt is prohibited for FULL completion;
+- parity checks must compare concrete object IDs/values/signatures, not headings or file counts.
+
+## Implementation rule
+All new implementation follows `LOCKED_IMPLEMENTATION_PLAN_CURRENT.md` Phase 0→11. Production-code tasks use RED → GREEN → focused verification → cross-scope verification → ledger update. A requirement remains `LOCKED_NOT_YET_FULLY_IMPLEMENTED` until its concrete consumer/proof path exists.
+
+## Release package rule
+Every complete plugin package must contain under `resources/references/`:
+- `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md`;
+- `LOCKED_IMPLEMENTATION_PLAN_CURRENT.md`;
+- `REQUIREMENT_EXECUTION_LEDGER_CURRENT.json`;
+- the CURRENT source lock and existing cumulative authorities.
+
+Omission of any of these is a release failure.
+
+## Behavioral closure rule
+Source/contracts/tests/package structure are not sufficient behavioral proof. A fresh real K01 FULL run through the actual public Host/Runtime materialization path remains mandatory, and actual Provider/Result/Review/Revision remains `E2E_PENDING` until real media is produced.
