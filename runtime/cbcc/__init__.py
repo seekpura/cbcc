@@ -210,3 +210,8 @@ _delivery_export.export_delivery_package = _commercial_delivery_continuity.wrap_
 # silently weakening commercial-continuity readiness.
 from . import commercial_continuity_bootstrap as _commercial_continuity_bootstrap
 _commercial_continuity_bootstrap.install()
+
+# v0.6.74 is deliberately installed last.  It closes cross-scope consumer regressions discovered by
+# deep v0.6.73 audit without rebasing or replacing any mature authority above.
+from . import v0674_regression_closure as _v0674_regression_closure
+_v0674_regression_closure.apply_v0674_patches()
