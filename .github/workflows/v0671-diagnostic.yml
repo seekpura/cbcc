@@ -14,54 +14,35 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install pyyaml pytest
-      - name: Aggregate with JUnit
+      - name: hash seed 0
         continue-on-error: true
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q --junitxml=v0671.xml
-      - name: Aggregate failure is static Human projection
+        env: {PYTHONHASHSEED: '0'}
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
+      - name: hash seed 1
         continue-on-error: true
-        run: python - <<'PY'
-          import sys, xml.etree.ElementTree as ET
-          root=ET.parse('v0671.xml').getroot(); target='test_real_delivery_html_receives_canonical_payload_and_visible_static_projection'
-          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
-          sys.exit(1 if failed else 0)
-          PY
-      - name: Aggregate failure is Listing MD parity
+        env: {PYTHONHASHSEED: '1'}
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
+      - name: hash seed 2
         continue-on-error: true
-        run: python - <<'PY'
-          import sys, xml.etree.ElementTree as ET
-          root=ET.parse('v0671.xml').getroot(); target='test_listing_markdown_is_field_parity_checked_against_human_delivery'
-          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
-          sys.exit(1 if failed else 0)
-          PY
-      - name: Aggregate failure is full asset lineage
+        env: {PYTHONHASHSEED: '2'}
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
+      - name: hash seed 3
         continue-on-error: true
-        run: python - <<'PY'
-          import sys, xml.etree.ElementTree as ET
-          root=ET.parse('v0671.xml').getroot(); target='test_full_asset_package_lineage_covers_every_mature_file_and_detects_mutation'
-          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
-          sys.exit(1 if failed else 0)
-          PY
-      - name: Aggregate failure is major WHY and intersectionality
+        env: {PYTHONHASHSEED: '3'}
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
+      - name: hash seed 4
         continue-on-error: true
-        run: python - <<'PY'
-          import sys, xml.etree.ElementTree as ET
-          root=ET.parse('v0671.xml').getroot(); target='test_strategy_completion_adds_major_decision_four_axis_why_and_real_interaction_rows'
-          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
-          sys.exit(1 if failed else 0)
-          PY
-      - name: Aggregate failure is human typography relevance
+        env: {PYTHONHASHSEED: '4'}
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
+      - name: hash seed 5
         continue-on-error: true
-        run: python - <<'PY'
-          import sys, xml.etree.ElementTree as ET
-          root=ET.parse('v0671.xml').getroot(); target='test_human_asset_and_typography_relevance_is_explicit_without_inventing_identity'
-          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
-          sys.exit(1 if failed else 0)
-          PY
-      - name: Aggregate failure is independent production objects
+        env: {PYTHONHASHSEED: '5'}
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
+      - name: hash seed 6
         continue-on-error: true
-        run: python - <<'PY'
-          import sys, xml.etree.ElementTree as ET
-          root=ET.parse('v0671.xml').getroot(); target='test_human_payload_exposes_independent_asset_production_objects'
-          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
-          sys.exit(1 if failed else 0)
-          PY
+        env: {PYTHONHASHSEED: '6'}
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
+      - name: hash seed 7
+        continue-on-error: true
+        env: {PYTHONHASHSEED: '7'}
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
