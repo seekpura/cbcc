@@ -97,13 +97,19 @@ def project_named_art_direction(asset:Mapping[str,Any])->dict[str,Any]:
     if _meaningful(safe) and not _meaningful(surface.get('safe_zone')): surface['safe_zone']=deepcopy(safe)
     if surface: out['surface_native_contract']=surface
 
-    # Exact copy stays one canonical object. Copy route is a route enum, never copy prose.
+    # Exact copy stays one canonical object. Project the named Art Direction visible-copy object
+    # by semantic keys; never reduce it to the route enum or shift language slots positionally.
     visible=deepcopy(out.get('visible_copy') or {})
-    route=_first(art,'copy_render_route')
+    art_visible=art.get('visible_copy') if isinstance(art.get('visible_copy'),Mapping) else {}
+    route=_first(art,'copy_render_route') or (art_visible.get('copy_render_route') if isinstance(art_visible,Mapping) else None)
     if isinstance(visible,Mapping):
         visible=dict(visible)
+        if isinstance(art_visible,Mapping):
+            for key,value in art_visible.items():
+                if _meaningful(value) and not _meaningful(visible.get(key)):
+                    visible[key]=deepcopy(value)
         if _meaningful(route) and not _meaningful(visible.get('copy_render_route')): visible['copy_render_route']=route
-        out['visible_copy']=visible
+        if visible: out['visible_copy']=visible
 
     # Structured photography contract from the same named Art Direction.
     cam_pos=dict(art.get('camera_position') or {})
