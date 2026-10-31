@@ -72,6 +72,9 @@ jobs:
       - name: Verify v0.6.72 fresh K01 materialization closure
         env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
         run: python -m pytest tests/test_v0672_fresh_k01_materialization_closure.py -q
+      - name: Verify v0.6.72 fresh K01 final export closure
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
+        run: python -m pytest tests/test_v0672_fresh_k01_final_export_closure.py -q
       - name: Verify v0.6.71 acceptance aggregate
         env: {PYTHONHASHSEED: '0'}
         run: |
@@ -119,7 +122,7 @@ jobs:
           version = re.match(r'^(\d+\.\d+\.\d+)', authority).group(1)
           plugin = Path(Path('dist_current/CURRENT_PLUGIN_PATH.txt').read_text(encoding='utf-8').strip())
           verified_by = [
-              'tests/test_v0672_fresh_k01_portfolio_delta.py','tests/test_v0672_fresh_k01_projection_closure.py','tests/test_v0672_global_language_closure.py','tests/test_v0672_canonical_human_compaction.py','tests/test_v0672_fresh_k01_materialization_closure.py',
+              'tests/test_v0672_fresh_k01_portfolio_delta.py','tests/test_v0672_fresh_k01_projection_closure.py','tests/test_v0672_global_language_closure.py','tests/test_v0672_canonical_human_compaction.py','tests/test_v0672_fresh_k01_materialization_closure.py','tests/test_v0672_fresh_k01_final_export_closure.py',
               'tests/test_v0671_full_canonical_parity.py','tests/test_v0671_canonical_search_security.py','tests/test_v0670_positive_canonical_projection.py',
               'scripts/check_v0664_requirement_consumer_map.py','scripts/check_current_release_package.py','scripts/check_v0670_release_delta.py','scripts/check_v0670_positive_projection_package.py','scripts/check_v0671_release_delta.py --floor-mode','scripts/check_v0672_release_delta.py'
           ]
