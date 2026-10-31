@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-import json,re
+import json
 from typing import Any, Callable
 
 from .canonical_materialization_integrity import audit_asset_directory, COPY_ROUTES
@@ -14,6 +14,7 @@ def _read_json(path:Path)->dict[str,Any]:
         value=json.loads(path.read_text(encoding='utf-8'))
         return value if isinstance(value,dict) else {}
     except Exception:return {}
+
 def _extract_prompt_lineage(contract:dict[str,Any])->dict[str,Any]:
     direct=contract.get('canonical_prompt_lineage')
     if isinstance(direct,dict) and direct.get('canonical_art_direction_sha256'):return direct
@@ -43,33 +44,17 @@ def _prompt_contract_route_issue(asset_dir:Path)->dict[str,Any]|None:
         if route and route not in COPY_ROUTES:return {'code':'PROMPT_CONTRACT_COPY_ROUTE_INVALID','asset_id':asset_dir.name,'value':route[:500]}
     return None
 
-def _current_human_projection_status(package:Path, html:Path)->dict[str,Any]|None:
-    """Recognize either v0.6.72 embedded Human shape without rerunning the v0.6.70 const-DATA projector."""
-    text=html.read_text(encoding='utf-8',errors='ignore')
-    shapes=(
-        ('CBCC_CANONICAL_STATIC_PROJECTION_V0672','cbcc-canonical-payload-v0672','CURRENT_STATIC_SINGLE_PAYLOAD'),
-        ('CBCC_CANONICAL_LAZY_PROJECTION_V0672','cbcc-canonical-data-v0672','LAZY_CANONICAL_ALREADY_MATERIALIZED'),
-    )
-    for marker,payload_id,mode in shapes:
-        if marker not in text:continue
-        m=re.search(rf'<script[^>]+id=["\']{re.escape(payload_id)}["\'][^>]*>(.*?)</script>',text,flags=re.S)
-        if m:
-            try:value=json.loads(m.group(1))
-            except Exception:return {'status':'INCOMPLETE','mode':mode,'issues':['CANONICAL_DATA_INVALID_JSON']}
-            if not isinstance(value,dict):return {'status':'INCOMPLETE','mode':mode,'issues':['CANONICAL_DATA_NOT_OBJECT']}
-            return {'status':'PASS','mode':mode,'path':str(html),'canonical_data_script':payload_id}
-        # Final static workspace may rely on its persisted exact machine authority during compatibility checks.
-        current=package/'CANONICAL_HUMAN_DATA.json'
-        if marker=='CBCC_CANONICAL_STATIC_PROJECTION_V0672' and current.exists() and _read_json(current):
-            return {'status':'PASS','mode':mode,'path':str(html),'canonical_data_file':'CANONICAL_HUMAN_DATA.json'}
-        return {'status':'INCOMPLETE','mode':mode,'issues':['CANONICAL_DATA_SCRIPT_MISSING']}
-    return None
-
 def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
     def audited(package_dir:Path):
         package=Path(package_dir);html=package/'index.html';human_projection={'status':'NOT_APPLICABLE'}
         if html.exists():
-            human_projection=_current_human_projection_status(package,html) or apply_complete_canonical_human_projection(html,_read_json(package/'CANONICAL_HUMAN_DATA.json') or None)
+            page=html.read_text(encoding='utf-8',errors='ignore')
+            current_data=package/'CANONICAL_HUMAN_DATA.json'
+            if 'CBCC_CANONICAL_STATIC_PROJECTION_V0672' in page and current_data.exists():
+                human_projection={'status':'PASS','path':str(html),'mode':'CURRENT_STATIC_PROJECTION_ALREADY_APPLIED'}
+            else:
+                payload=_read_json(current_data) if current_data.exists() else None
+                human_projection=apply_complete_canonical_human_projection(html,payload)
         result=fn(package);issues=list(result.get('issues') or [])
         if html.exists() and human_projection.get('status')!='PASS':issues.append({'code':'CANONICAL_HUMAN_POSITIVE_PROJECTION_FAILED','detail':human_projection})
         root=package/'asset_packages'
