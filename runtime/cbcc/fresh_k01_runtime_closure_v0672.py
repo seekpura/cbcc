@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from pathlib import Path
 from typing import Any, Mapping
 import re
 
@@ -40,6 +41,15 @@ def _explicit_no_visible_copy_instruction(text: str) -> bool:
     return False
 
 
+def _prompt_text(asset_dir: Path) -> str:
+    text = ''
+    for name in ('05_prompt_CN.txt', '06_prompt_EN.txt'):
+        p = Path(asset_dir) / name
+        if p.exists():
+            text += p.read_text(encoding='utf-8', errors='ignore') + '\n'
+    return text
+
+
 def _patch_production_parameters() -> None:
     from . import production_parameter_closure as pp
     if getattr(pp, '_cbcc_v0672_fresh_k01_closure', False):
@@ -51,7 +61,6 @@ def _patch_production_parameters() -> None:
     def route_flags(asset, card, art):
         photo, video, source_only = previous_route(asset, card, art)
         carrier = str(art.get('visual_carrier') or card.get('visual_carrier') or '').strip()
-        # Token semantics: GRAPHIC_EVIDENCE_AXIS is graphic; PHOTOGRAPHIC_PRODUCT_HERO is not.
         if _GRAPHIC_TOKEN.search(carrier):
             photo = False
         return photo, video, source_only
@@ -61,7 +70,6 @@ def _patch_production_parameters() -> None:
         art = pp._art(asset, card)
         route = params.get('_route') or {}
         if not route.get('photographic'):
-            # Canonical video/creator timing may still be authored on a non-photographic motion carrier.
             if route.get('video') and not _meaningful(params.get('duration_timing')) and _meaningful(art.get('motion_timing')):
                 params['duration_timing'] = deepcopy(art.get('motion_timing'))
             return params
@@ -79,7 +87,6 @@ def _patch_production_parameters() -> None:
         fill('yaw_pitch_roll', orientation)
         fill('shot_size', camera.get('shot_size'))
         fill('focus_plane', focus.get('focus_plane'))
-        # Never let the whole focus_dof object masquerade as aperture. Consume the authored scalar intent.
         aperture = focus.get('aperture') or focus.get('aperture_dof_intent') or focus.get('dof')
         fill('aperture_dof', aperture, replace=_meaningful(aperture))
         fill('shutter', focus.get('shutter') or focus.get('shutter_speed'))
@@ -102,8 +109,6 @@ def _patch_production_parameters() -> None:
         groups = deepcopy(previous_required(params, asset, card))
         if not groups:
             return groups
-        # Only parameters actually selected by this asset can be mandatory. Global/system defaults
-        # must not manufacture missing work for a graphic, no-human or no-motion asset.
         finish = groups.get('visual_finish')
         if isinstance(finish, list) and not _meaningful(params.get('post_look')):
             groups['visual_finish'] = [k for k in finish if k != 'post_look']
@@ -156,9 +161,6 @@ def _patch_model_native() -> None:
         if _all_not_needed(art.get('human_relevance_decisions')):
             fields.pop('inclusive_human', None)
             fields.pop('human_context', None)
-
-        # A project-level Photography color-management contract must not create missing EN prose
-        # on an explicitly graphic asset. Only asset-authored color management applies there.
         carrier = str(art.get('visual_carrier') or '').strip()
         if _GRAPHIC_TOKEN.search(carrier) and not _meaningful(art.get('color_management')):
             fields.pop('color_management', None)
@@ -172,7 +174,37 @@ def _patch_model_native() -> None:
 
 def _patch_copy_route_audit() -> None:
     from . import long_requirement_full_audit as audit
+    if getattr(audit, '_cbcc_v0672_fresh_k01_copy_semantics', False):
+        return
+    previous_route = audit._prompt_route_contradictions
+    previous_project = audit._project_shortcut_audit
+
+    def prompt_route_contradictions(asset_dir):
+        issues = previous_route(asset_dir)
+        if _explicit_no_visible_copy_instruction(_prompt_text(Path(asset_dir))):
+            return issues
+        return [row for row in issues if row.get('code') != 'PROMPT_COPY_ROUTE_CONTRADICTION']
+
+    def project_shortcut_audit(package):
+        package = Path(package)
+        issues = previous_project(package)
+        prompt_root = package / 'assets' if (package / 'assets').exists() else package / 'asset_packages'
+        texts = []
+        if prompt_root.exists():
+            for d in sorted(x for x in prompt_root.iterdir() if x.is_dir()):
+                text = _prompt_text(d)
+                if text:
+                    texts.append((d.name, text))
+        explicit = [aid for aid, text in texts if _explicit_no_visible_copy_instruction(text)]
+        threshold = max(3, int(len(texts) * 0.6)) if texts else 3
+        out = [row for row in issues if row.get('code') != 'GLOBAL_NO_VISIBLE_COPY_PATTERN']
+        if texts and len(explicit) >= threshold:
+            out.append({'code':'GLOBAL_NO_VISIBLE_COPY_PATTERN','affected':len(explicit),'total':len(texts),'assets':explicit})
+        return out
+
     audit._explicit_no_visible_copy_instruction = _explicit_no_visible_copy_instruction
+    audit._prompt_route_contradictions = prompt_route_contradictions
+    audit._project_shortcut_audit = project_shortcut_audit
     audit._cbcc_v0672_fresh_k01_copy_semantics = True
 
 
