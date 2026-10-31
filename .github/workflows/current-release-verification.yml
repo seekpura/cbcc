@@ -58,16 +58,16 @@ jobs:
           assert has_marker(fn, '_cbcc_v0671_strategy_execution_completion')
           PY
       - name: Verify v0.6.72 portfolio delta
-        env: {PYTHONHASHSEED: '0'}
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
         run: python -m pytest tests/test_v0672_fresh_k01_portfolio_delta.py -q
       - name: Verify v0.6.72 projection closure
-        env: {PYTHONHASHSEED: '0'}
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
         run: python -m pytest tests/test_v0672_fresh_k01_projection_closure.py -q
       - name: Verify v0.6.72 global language closure
-        env: {PYTHONHASHSEED: '0'}
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
         run: python -m pytest tests/test_v0672_global_language_closure.py -q
       - name: Verify v0.6.72 Human compaction
-        env: {PYTHONHASHSEED: '0'}
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
         run: python -m pytest tests/test_v0672_canonical_human_compaction.py -q
       - name: Verify v0.6.71 acceptance aggregate
         env: {PYTHONHASHSEED: '0'}
