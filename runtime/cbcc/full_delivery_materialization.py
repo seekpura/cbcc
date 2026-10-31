@@ -9,6 +9,7 @@ import shutil
 import zipfile
 
 from .asset_portfolio_taxonomy import enrich_asset_portfolio_taxonomy, portfolio_taxonomy_summary
+from .asset_universe_family_audit import _presence_state
 from .full_delivery_depth_v3 import audit_host_full_package
 from .video_delivery_workspace import apply_video_workspace_to_existing_html
 
@@ -41,12 +42,33 @@ def _target(project: Path) -> dict[str, Any]:
     return raw.get('target') if isinstance(raw.get('target'), dict) else raw
 
 
+def _refresh_product_presence_portfolio_audit(universe: dict[str, Any], assets: list[dict[str, Any]]) -> dict[str, Any]:
+    rows=[];structured=0;visible=0;absent=0
+    for asset in assets:
+        state,is_structured,why=_presence_state(asset)
+        if is_structured:structured+=1
+        if state in {'FORBIDDEN','ABSENT','PRODUCT_ABSENT','NOT_NEEDED'}:absent+=1
+        elif state!='UNRESOLVED':visible+=1
+        rows.append({'asset_id':asset.get('asset_id') or asset.get('id'),'planning_state':state,'structured_decision':is_structured,'presence_why':why})
+    out=deepcopy(universe or {})
+    out['product_presence_portfolio_audit']={
+        'status':'PASS' if structured==len(assets) else 'INCOMPLETE',
+        'total_assets':len(assets),'structured_presence_decisions':structured,
+        'visible_or_optional_count':visible,'absent_or_forbidden_count':absent,
+        'all_visible_review_required':bool(assets and visible==len(assets)),
+        'all_visible_review_rule':'全资产都显示商品并非绝对禁止，但不能来自默认值。若全部可见，每个资产必须有独立 presence_why，且组合层说明为何不存在更强的产品缺席/证据/人物/信息载体方案。',
+        'assets':rows,
+        'projection_source':'FINAL_AUTHORED_ASSET_ARCHITECTURE',
+    }
+    return out
+
 def compile_export_asset_universe(project: Path) -> dict[str, Any]:
     arch = _read_json(project / 'artifacts/asset_architecture.json')
     assets = enrich_asset_portfolio_taxonomy(arch.get('assets') or [])
     target = _target(project)
     summary = portfolio_taxonomy_summary(assets, target)
     base = deepcopy(arch.get('asset_universe') or {})
+    base = _refresh_product_presence_portfolio_audit(base, assets)
     base.update({
         'status': base.get('status') or 'DYNAMIC_ASSET_UNIVERSE',
         'fixed_total_asset_limit': False,

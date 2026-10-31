@@ -3,6 +3,11 @@ from pathlib import Path
 import json, re
 from typing import Any, Callable
 
+try:
+    import yaml
+except Exception:
+    yaml = None
+
 QUESTION_LIMIT=10
 P0_AREAS={'efficacy_claims','ingredients_formula','certifications','price','sales_volume','regulated_category'}
 CULTURE_CHECK_FIELDS={'script_check','casting_check','wardrobe_grooming_check','color_check','cta_check'}
@@ -70,6 +75,11 @@ def _read_json(path:Path)->dict[str,Any]:
     try:
         v=json.loads(path.read_text(encoding='utf-8')); return v if isinstance(v,dict) else {}
     except Exception:return {}
+def _read_yaml(path:Path)->dict[str,Any]:
+    if not path.exists() or yaml is None:return {}
+    try:
+        v=yaml.safe_load(path.read_text(encoding='utf-8')); return v if isinstance(v,dict) else {}
+    except Exception:return {}
 def _has_production_ready_assets(package:Path)->bool:
     root=package/'asset_packages'; return root.exists() and any((d/'05_prompt_CN.txt').exists() or (d/'06_prompt_EN.txt').exists() for d in root.iterdir() if d.is_dir())
 def _prompt_route_contradictions(asset_dir:Path)->list[dict[str,Any]]:
@@ -105,7 +115,7 @@ def _project_shortcut_audit(package: Path) -> list[dict[str, Any]]:
         if incomplete:
             issues.append({'code':'MATURE_ASSET_PACKAGE_INCOMPLETE','affected':len(incomplete),'examples':incomplete[:3]})
 
-    if assets:
+    if assets and not mature_root.exists():
         missing_art = [str(a.get('id') or a.get('asset_id') or '') for a in assets if not isinstance(a.get('asset_art_direction'), dict) or not a.get('asset_art_direction')]
         if missing_art:
             issues.append({'code':'STRUCTURED_ASSET_ART_DIRECTION_MISSING','affected':len(missing_art),'assets':missing_art})
@@ -156,10 +166,11 @@ def _project_shortcut_audit(package: Path) -> list[dict[str, Any]]:
     files=[x for x in package.rglob('*') if x.is_file()]
     media_ext={'.png','.jpg','.jpeg','.webp','.mp4','.mov','.webm'}
     generated=[x for x in files if x.suffix.casefold() in media_ext and not any(part.casefold() in {'source','sources','input','inputs','reference','references'} for part in x.parts)]
-    if assets and not generated: issues.append({'code':'ACTUAL_GENERATED_OUTPUT_MISSING'})
-    if assets and not any('provider' in x.name.casefold() and 'result' in x.name.casefold() for x in files): issues.append({'code':'PROVIDER_RESULT_MISSING'})
-    if assets and not any('review' in x.name.casefold() for x in files): issues.append({'code':'ACTUAL_OUTPUT_REVIEW_MISSING'})
-    if assets and not any('revision' in x.name.casefold() for x in files): issues.append({'code':'LOCAL_REVISION_LINEAGE_MISSING'})
+    if assets and _production_media_e2e_required(package):
+        if not generated: issues.append({'code':'ACTUAL_GENERATED_OUTPUT_MISSING'})
+        if not any('provider' in x.name.casefold() and 'result' in x.name.casefold() for x in files): issues.append({'code':'PROVIDER_RESULT_MISSING'})
+        if not any('review' in x.name.casefold() for x in files): issues.append({'code':'ACTUAL_OUTPUT_REVIEW_MISSING'})
+        if not any('revision' in x.name.casefold() for x in files): issues.append({'code':'LOCAL_REVISION_LINEAGE_MISSING'})
 
     if project and not any(k in project for k in ('information_completeness','assumptions','decision_log','unknowns')):
         issues.append({'code':'INFORMATION_ASSUMPTION_DECISION_LOG_MISSING'})
@@ -180,6 +191,43 @@ def _production_object_audit(mature: Path, active_ids: list[str]) -> list[dict[s
             issues.append({'code':'PRODUCTION_OBJECTS_INCOMPLETE','asset_id':aid,'missing':missing})
     return issues
 
+def _production_execution_status(package:Path)->str:
+    execution=_read_json(package/'supporting_analysis/execution_contract.json')
+    run=_d(execution.get('production_run'))
+    return str(run.get('status') or '').upper()
+
+def _production_media_e2e_required(package:Path)->bool:
+    scope=_read_json(package/'supporting_analysis/gate_scope.json')
+    production=_d(_d(scope.get('gates')).get('PRODUCTION'))
+    if production:
+        return production.get('required_for_current_scope') is True
+    status=_production_execution_status(package)
+    return status not in {'NOT_REQUESTED','PLANNING_ONLY','NOT_ACTIVE','SKIPPED_BY_SCOPE'}
+
+def _canonical_product_presence_audit(mature:Path,active:list[dict[str,Any]])->dict[str,Any]:
+    if not mature.exists() or not active:return {}
+    active_ids=[str(x.get('asset_id') or x.get('id') or '') for x in active if str(x.get('asset_id') or x.get('id') or '')]
+    rows=[];structured=visible=absent=0
+    for aid in active_ids:
+        manifest=_read_yaml(mature/aid/'00_asset_manifest.yaml')
+        art=_d(manifest.get('asset_art_direction'))
+        presence=_d(manifest.get('product_presence')) or _d(art.get('product_presence'))
+        state=str(presence.get('planning_state') or '').upper() or 'UNRESOLVED'
+        why=str(presence.get('presence_why') or '')
+        ok=bool(presence.get('planning_state') and why)
+        if ok:structured+=1
+        if state in {'FORBIDDEN','ABSENT','PRODUCT_ABSENT','NOT_NEEDED'}:absent+=1
+        elif state!='UNRESOLVED':visible+=1
+        rows.append({'asset_id':aid,'planning_state':state,'structured_decision':ok,'presence_why':why})
+    return {
+        'status':'PASS' if structured==len(active_ids) else 'INCOMPLETE',
+        'total_assets':len(active_ids),'structured_presence_decisions':structured,
+        'visible_or_optional_count':visible,'absent_or_forbidden_count':absent,
+        'all_visible_review_required':bool(active_ids and visible==len(active_ids)),
+        'all_visible_review_rule':'全资产都显示商品并非绝对禁止，但不能来自默认值。若全部可见，每个资产必须有独立 presence_why，且组合层说明为何不存在更强的产品缺席/证据/人物/信息载体方案。',
+        'assets':rows,'source':'CANONICAL_ASSET_PACKAGE_MANIFESTS',
+    }
+
 def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
     def audited(package_dir:Path):
         package=Path(package_dir);result=fn(package);issues=list(result.get('issues') or []);issues.extend(_project_shortcut_audit(package));shortcut=package/'assets';mature=package/'asset_packages'
@@ -195,6 +243,12 @@ def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
             for row in family:
                 if str(row.get('status') or '').upper() not in {'COVERED','NOT_NEEDED','TO_VERIFY','MISSING_INPUT'} or not _p(row.get('why')):issues.append({'code':'ASSET_OPPORTUNITY_FAMILY_DECISION_INVALID','family_key':row.get('family_key')})
         pa=_d(universe.get('product_presence_portfolio_audit'))
+        canonical_pa=_canonical_product_presence_audit(mature,active) if mature.exists() else {}
+        if canonical_pa:
+            pa=canonical_pa
+            universe['product_presence_portfolio_audit']=canonical_pa
+            try:(package/'ASSET_UNIVERSE.json').write_text(json.dumps(universe,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+            except Exception:pass
         if active and not pa:issues.append({'code':'PRODUCT_PRESENCE_PORTFOLIO_AUDIT_MISSING'})
         elif pa and pa.get('structured_presence_decisions')!=pa.get('total_assets'):issues.append({'code':'PRODUCT_PRESENCE_DECISION_NOT_STRUCTURED','structured':pa.get('structured_presence_decisions'),'total':pa.get('total_assets')})
         if mature.exists():
@@ -207,19 +261,29 @@ def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
                 manifest=d/'00_asset_manifest.yaml'
                 if manifest.exists() and not re.search(r'(?m)^asset_art_direction:\s*(?!\{\}\s*$|null\s*$)',manifest.read_text(encoding='utf-8',errors='ignore')):issues.append({'code':'STRUCTURED_ASSET_ART_DIRECTION_NOT_MATERIALIZED','asset_id':d.name})
                 issues.extend(_prompt_route_contradictions(d))
+        provider_media_e2e={'status':'NOT_APPLICABLE'}
         if _has_production_ready_assets(package):
             files=[p for p in package.rglob('*') if p.is_file()]
-            if not any('provider' in p.name.casefold() and 'result' in p.name.casefold() for p in files):issues.append({'code':'FULL_PROVIDER_RESULT_MISSING'})
-            if not any('review' in p.name.casefold() for p in files):issues.append({'code':'FULL_ACTUAL_OUTPUT_REVIEW_MISSING'})
-            if not any('revision' in p.name.casefold() for p in files):issues.append({'code':'FULL_LOCAL_REVISION_LINEAGE_MISSING'})
-            media_ext={'.png','.jpg','.jpeg','.webp','.mp4','.mov','.webm'};generated=[p for p in files if p.suffix.casefold() in media_ext and not any(part.casefold() in {'sources','source','input','inputs','references'} for part in p.parts)]
-            if not generated:issues.append({'code':'FULL_ACTUAL_GENERATED_OUTPUT_MISSING'})
+            if _production_media_e2e_required(package):
+                provider_media_e2e={'status':'REQUIRED','production_run_status':_production_execution_status(package) or 'UNSPECIFIED'}
+                if not any('provider' in p.name.casefold() and 'result' in p.name.casefold() for p in files):issues.append({'code':'FULL_PROVIDER_RESULT_MISSING'})
+                if not any('review' in p.name.casefold() for p in files):issues.append({'code':'FULL_ACTUAL_OUTPUT_REVIEW_MISSING'})
+                if not any('revision' in p.name.casefold() for p in files):issues.append({'code':'FULL_LOCAL_REVISION_LINEAGE_MISSING'})
+                media_ext={'.png','.jpg','.jpeg','.webp','.mp4','.mov','.webm'};generated=[p for p in files if p.suffix.casefold() in media_ext and not any(part.casefold() in {'sources','source','input','inputs','references'} for part in p.parts)]
+                if not generated:issues.append({'code':'FULL_ACTUAL_GENERATED_OUTPUT_MISSING'})
+            else:
+                provider_media_e2e={
+                    'status':'E2E_PENDING_NOT_REQUESTED',
+                    'production_run_status':_production_execution_status(package) or 'NOT_REQUESTED',
+                    'principle':'Prompt/package structural readiness does not imply Provider Result, actual generated media, pixel QA or local revision. Those remain pending until production is explicitly requested.',
+                }
         html=package/'index.html'
         if html.exists():
             page=html.read_text(encoding='utf-8',errors='ignore');fixed=['产品事实','马来市场','成交策略','上架文案','视觉系统','资产宇宙','合规证据','研究来源'];hits=[x for x in fixed if x in page]
             if len(hits)>=7:issues.append({'code':'FIXED_CAPABILITY_MENU_SHELL','labels':hits})
             routes=set(re.findall(r'data-route=["\']([^"\']+)',page,re.I)); capability={'product','market','strategy','listing','visual','assets','compliance','sources','research'}; taxonomy=sorted(r for r in routes if r.casefold() in capability)
-            if len(taxonomy)>=6: issues.append({'code':'FIXED_CAPABILITY_ROUTE_TAXONOMY','routes':taxonomy})
+            current_object_workspace=('data-workspace-shell="cbcc-commercial-v1"' in page or "data-workspace-shell='cbcc-commercial-v1'" in page)
+            if len(taxonomy)>=6 and not current_object_workspace: issues.append({'code':'FIXED_CAPABILITY_ROUTE_TAXONOMY','routes':taxonomy})
             if mature.exists() and not any(t in page for t in ('完整逐资产 Art Direction','asset_art_direction','Art Direction')):issues.append({'code':'FULL_ART_DIRECTION_NOT_PROJECTED_TO_HTML'})
-        result['issues']=_dedupe(issues);result['status']='PASS' if not result['issues'] else 'INCOMPLETE';result['verbatim_long_requirement_package_audit']=True;return result
+        result['issues']=_dedupe(issues);result['status']='PASS' if not result['issues'] else 'INCOMPLETE';result['verbatim_long_requirement_package_audit']=True;result['provider_media_e2e']=provider_media_e2e;return result
     return audited
