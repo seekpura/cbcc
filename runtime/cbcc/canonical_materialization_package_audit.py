@@ -52,6 +52,10 @@ def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
             current_data=package/'CANONICAL_HUMAN_DATA.json'
             if 'CBCC_CANONICAL_STATIC_PROJECTION_V0672' in page and current_data.exists():
                 human_projection={'status':'PASS','path':str(html),'mode':'CURRENT_STATIC_PROJECTION_ALREADY_APPLIED'}
+            elif 'id="cbcc-canonical-data-v0672"' in page and 'CBCC_CANONICAL_LAZY_PROJECTION_V0672' in page:
+                # v0.6.72 lazy Human projection already embeds the canonical payload in HTML.
+                # Do not send it back through the older const-DATA positive projector.
+                human_projection={'status':'PASS','path':str(html),'mode':'LAZY_CANONICAL_ALREADY_MATERIALIZED'}
             else:
                 payload=_read_json(current_data) if current_data.exists() else None
                 human_projection=apply_complete_canonical_human_projection(html,payload)
