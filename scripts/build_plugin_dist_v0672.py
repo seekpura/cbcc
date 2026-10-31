@@ -17,7 +17,7 @@ V0671_FLOOR_BYTES = 60081
 V0671_FLOOR_SHA256 = '07008d4d41a3e5a2736110fa54b3fdfe4da5be3190ff2eb3f307d491b6705aab'
 
 BASE_COPY_REPO_RESOURCES = base.copy_repo_resources
-BASE_PLUGIN_MANIFEST = base.plugin_manifest
+BASE_PLUGIN_MANIFEST = previous.plugin_manifest
 
 V0672_PATCH = r'''
 ## 0.21 Fresh K01 Runtime Projection Closure — v0.6.72
