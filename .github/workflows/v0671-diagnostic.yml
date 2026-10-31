@@ -1,0 +1,67 @@
+name: v0671-diagnostic
+
+on:
+  push:
+    branches: ['v0.6.71-full-canonical-parity']
+  workflow_dispatch:
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pyyaml pytest
+      - name: Aggregate with JUnit
+        continue-on-error: true
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q --junitxml=v0671.xml
+      - name: Aggregate failure is static Human projection
+        continue-on-error: true
+        run: python - <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          root=ET.parse('v0671.xml').getroot(); target='test_real_delivery_html_receives_canonical_payload_and_visible_static_projection'
+          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
+          sys.exit(1 if failed else 0)
+          PY
+      - name: Aggregate failure is Listing MD parity
+        continue-on-error: true
+        run: python - <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          root=ET.parse('v0671.xml').getroot(); target='test_listing_markdown_is_field_parity_checked_against_human_delivery'
+          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
+          sys.exit(1 if failed else 0)
+          PY
+      - name: Aggregate failure is full asset lineage
+        continue-on-error: true
+        run: python - <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          root=ET.parse('v0671.xml').getroot(); target='test_full_asset_package_lineage_covers_every_mature_file_and_detects_mutation'
+          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
+          sys.exit(1 if failed else 0)
+          PY
+      - name: Aggregate failure is major WHY and intersectionality
+        continue-on-error: true
+        run: python - <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          root=ET.parse('v0671.xml').getroot(); target='test_strategy_completion_adds_major_decision_four_axis_why_and_real_interaction_rows'
+          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
+          sys.exit(1 if failed else 0)
+          PY
+      - name: Aggregate failure is human typography relevance
+        continue-on-error: true
+        run: python - <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          root=ET.parse('v0671.xml').getroot(); target='test_human_asset_and_typography_relevance_is_explicit_without_inventing_identity'
+          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
+          sys.exit(1 if failed else 0)
+          PY
+      - name: Aggregate failure is independent production objects
+        continue-on-error: true
+        run: python - <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          root=ET.parse('v0671.xml').getroot(); target='test_human_payload_exposes_independent_asset_production_objects'
+          failed=any(x.attrib.get('name')==target and x.find('failure') is not None for x in root.iter('testcase'))
+          sys.exit(1 if failed else 0)
+          PY
