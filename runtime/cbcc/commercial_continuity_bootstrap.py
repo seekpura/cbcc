@@ -62,6 +62,16 @@ def install() -> None:
     if not getattr(strategy_authority.render_master_strategy_cn, '_cbcc_v0670_strategy_culture_completion', False):
         strategy_authority.render_master_strategy_cn = wrap_strategy_culture_completion_human(strategy_authority.render_master_strategy_cn)
 
+    from .strategy_execution_completion_v0671 import (
+        wrap_build_master_strategy as wrap_strategy_execution_completion_v0671,
+        wrap_render_master_strategy_cn as wrap_strategy_execution_human_v0671,
+        completion_issues_v0671,
+    )
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0671_strategy_execution_completion', False):
+        strategy_authority.build_master_strategy = wrap_strategy_execution_completion_v0671(strategy_authority.build_master_strategy)
+    if not getattr(strategy_authority.render_master_strategy_cn, '_cbcc_v0671_strategy_execution_completion', False):
+        strategy_authority.render_master_strategy_cn = wrap_strategy_execution_human_v0671(strategy_authority.render_master_strategy_cn)
+
     from . import asset_universe_authority
     from .asset_universe_family_audit import wrap_compile_asset_universe
     if not getattr(asset_universe_authority.compile_asset_universe, '_cbcc_v0662_family_presence_audit', False):
@@ -99,6 +109,27 @@ def install() -> None:
         setattr(strict_validate_strategy_delivery, '_cbcc_v0670_strategy_culture_completion', True)
         delivery_contract.validate_strategy_delivery = strict_validate_strategy_delivery
 
+    if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0671_strategy_execution_completion', False):
+        previous_v0671_validate = delivery_contract.validate_strategy_delivery
+        def strict_validate_strategy_delivery_v0671(strategy):
+            result = previous_v0671_validate(strategy)
+            mode = str(result.get('mode') or (strategy.get('human_projection') or {}).get('mode') or strategy.get('delivery_mode') or '').upper()
+            if mode != 'FULL':
+                return result
+            issues = list(result.get('issues') or []) + completion_issues_v0671(strategy)
+            seen = set(); deduped = []
+            import json
+            for row in issues:
+                key = json.dumps(row, ensure_ascii=False, sort_keys=True, default=str)
+                if key not in seen:
+                    seen.add(key); deduped.append(row)
+            result['issues'] = deduped
+            result['status'] = 'PASS' if not deduped else 'INCOMPLETE'
+            result['strategy_execution_completion_v0671_audit'] = {'status': 'PASS' if not completion_issues_v0671(strategy) else 'INCOMPLETE'}
+            return result
+        setattr(strict_validate_strategy_delivery_v0671, '_cbcc_v0671_strategy_execution_completion', True)
+        delivery_contract.validate_strategy_delivery = strict_validate_strategy_delivery_v0671
+
     if not getattr(full_depth.audit_host_full_package, '_cbcc_v0662_long_requirement_package_audit', False):
         wrapped_package_audit = wrap_audit_host_full_package(full_depth.audit_host_full_package)
         setattr(wrapped_package_audit, '_cbcc_v0662_long_requirement_package_audit', True)
@@ -117,6 +148,10 @@ def install() -> None:
     from .canonical_materialization_package_audit import wrap_audit_host_full_package as wrap_canonical_materialization_package_audit
     if not getattr(full_depth.audit_host_full_package, '_cbcc_v0670_canonical_materialization_parity', False):
         full_depth.audit_host_full_package = wrap_canonical_materialization_package_audit(full_depth.audit_host_full_package)
+
+    from .canonical_full_package_audit_v0671 import wrap_audit_host_full_package as wrap_full_canonical_parity_v0671
+    if not getattr(full_depth.audit_host_full_package, '_cbcc_v0671_full_canonical_parity', False):
+        full_depth.audit_host_full_package = wrap_full_canonical_parity_v0671(full_depth.audit_host_full_package)
 
     for rel in ('DELIVERY_MANIFEST.json', 'FULL_MATERIALIZATION_AUDIT.json'):
         if rel not in full_depth.CORE_HOST_FULL_FILES:
@@ -137,18 +172,21 @@ def install() -> None:
     from .integrated_render_route_authority import finalize_integrated_render_route
     from .model_prompt_semantic_membrane import finalize_model_prompt_bundle
     from .canonical_prompt_guard import validate_canonical_asset_or_raise, finalize_prompt_lineage
+    from .asset_execution_relevance_v0671 import complete_asset_execution_relevance
 
     existing_prompt_compile = prompt_compiler.compile_asset_prompt
     def strict_prompt_compile(*args, **kwargs):
         if args:
             call_args = list(args)
-            normalized_asset = normalize_full_art_direction(call_args[0] or {})
+            completed_asset = complete_asset_execution_relevance(call_args[0] or {})
+            normalized_asset = normalize_full_art_direction(completed_asset)
             validate_canonical_asset_or_raise(normalized_asset)
             call_args[0] = normalized_asset
             out = existing_prompt_compile(*call_args, **kwargs)
         else:
             call_kwargs = dict(kwargs)
-            normalized_asset = normalize_full_art_direction(call_kwargs.get('asset') or {}) if 'asset' in call_kwargs else {}
+            completed_asset = complete_asset_execution_relevance(call_kwargs.get('asset') or {}) if 'asset' in call_kwargs else {}
+            normalized_asset = normalize_full_art_direction(completed_asset) if 'asset' in call_kwargs else {}
             if 'asset' in call_kwargs:
                 validate_canonical_asset_or_raise(normalized_asset)
                 call_kwargs['asset'] = normalized_asset
@@ -168,6 +206,7 @@ def install() -> None:
         return out
 
     setattr(strict_prompt_compile, '_cbcc_v0670_canonical_materialization_parity', True)
+    setattr(strict_prompt_compile, '_cbcc_v0671_asset_execution_relevance', True)
     prompt_compiler.compile_asset_prompt = strict_prompt_compile
     seven_agent.compile_asset_prompt = strict_prompt_compile
 
@@ -176,6 +215,11 @@ def install() -> None:
     from .canonical_asset_package_lineage import wrap_compile_asset_packages
     if not getattr(asset_compiler.compile_asset_packages, '_cbcc_v0670_prompt_lineage_materialization', False):
         asset_compiler.compile_asset_packages = wrap_compile_asset_packages(asset_compiler.compile_asset_packages)
+
+    from .asset_package_full_lineage_v0671 import wrap_compile_asset_packages as wrap_full_asset_lineage_v0671
+    from .asset_execution_relevance_v0671 import complete_asset_rows
+    if not getattr(asset_compiler.compile_asset_packages, '_cbcc_v0671_full_asset_lineage', False):
+        asset_compiler.compile_asset_packages = wrap_full_asset_lineage_v0671(asset_compiler.compile_asset_packages, complete_asset_rows)
 
     from . import human_asset_commercial_projection
     if not getattr(asset_compiler._human_asset_design_card_markdown, '_cbcc_v0646_commercial_projection', False):
