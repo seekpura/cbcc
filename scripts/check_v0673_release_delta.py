@@ -35,7 +35,7 @@ REQUIRED_RUNTIME = {
     ),
     'runtime/cbcc/model_native_prompt_contract.py': (
         'MODEL_RENDER_INTEGRATED', 'INTEGRATED_MODEL_RENDER', 'MODEL_NATIVE_RENDER',
-        'resolve each child', "props_value", "status') or '').upper() == 'NOT_NEEDED'",
+        'Resolve each child', "props_value", "status') or '').upper() == 'NOT_NEEDED'",
     ),
 }
 
