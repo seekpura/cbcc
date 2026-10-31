@@ -123,7 +123,12 @@ def _wrap_video_creator_plan(fn: Callable[..., dict[str, Any]]):
             # A hook inherited from the source shopper question may reuse that question's authored CN companion.
             hook_cn = job.get('hook_cn')
             if not _meaningful(hook_cn) and not _meaningful(job.get('hook')):
-                hook_cn = job.get('shopper_question_cn') or source.get('consumer_question_cn') or source.get('shopper_question_cn')
+                hook_cn = (
+                    job.get('shopper_question_cn')
+                    or source.get('consumer_question_cn')
+                    or source.get('shopper_question_cn')
+                    or ((source.get('asset_art_direction') or {}).get('consumer_question_cn') if isinstance(source.get('asset_art_direction'), Mapping) else None)
+                )
             if _meaningful(hook_cn):
                 row['hook_cn'] = deepcopy(hook_cn)
 
