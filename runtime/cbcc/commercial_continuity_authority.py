@@ -3,6 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Callable
 import json
+import re
 
 from .commerce_decision_context import (
     compile_commerce_decision_context,
@@ -95,47 +96,77 @@ def _argument(args, kwargs, index: int, name: str, default=None):
     return args[index] if len(args) > index else default
 
 
+def _english_safe(value: Any) -> Any:
+    """Project only already-English/non-CJK lineage into the EN model prompt.
+
+    Runtime must never machine-translate canonical business context. If an upstream leaf exists only
+    in Chinese, the CN prompt may consume it while the EN prompt omits that leaf and keeps any
+    already-authored English siblings/keys. This preserves one canonical source without leaking
+    Chinese into the English provider prompt.
+    """
+    cjk = re.compile(r'[\u3400-\u4dbf\u4e00-\u9fff]')
+    if isinstance(value, dict):
+        out = {}
+        for key, child in value.items():
+            if cjk.search(str(key)):
+                continue
+            projected = _english_safe(child)
+            if _nonempty(projected):
+                out[key] = projected
+        return out
+    if isinstance(value, list):
+        out = [_english_safe(child) for child in value]
+        return [child for child in out if _nonempty(child)]
+    if isinstance(value, tuple):
+        return _english_safe(list(value))
+    if isinstance(value, str):
+        return None if cjk.search(value) else value
+    return value
+
+
+def _prompt_context_value(value: Any, is_cn: bool) -> Any:
+    return value if is_cn else _english_safe(value)
+
+
+def _append_context_line(lines: list[str], label: str, value: Any, is_cn: bool, *, json_value: bool = False) -> None:
+    projected = _prompt_context_value(value, is_cn)
+    if not _nonempty(projected):
+        return
+    rendered = json.dumps(projected, ensure_ascii=False) if json_value else str(projected)
+    lines.append(label + rendered)
+
+
 def _commercial_prompt_lines(lineage: dict[str, Any], locale: str) -> list[str]:
     is_cn = locale.upper() == 'CN'
     title = '【商业决策上下文】' if is_cn else '[COMMERCE DECISION CONTEXT]'
     lines = [title]
     positioning = _dict(lineage.get('positioning'))
     proposition = positioning.get('primary_conversion_proposition')
-    if proposition:
-        lines.append(('核心转化主张：' if is_cn else 'Primary conversion proposition: ') + str(proposition))
+    _append_context_line(lines, '核心转化主张：' if is_cn else 'Primary conversion proposition: ', proposition, is_cn)
     audience = _dict(lineage.get('audience_culture'))
     segments = audience.get('segments') or []
-    if segments:
-        lines.append(('目标人群 / 区域上下文：' if is_cn else 'Audience / regional context: ') + json.dumps(segments, ensure_ascii=False))
+    _append_context_line(lines, '目标人群 / 区域上下文：' if is_cn else 'Audience / regional context: ', segments, is_cn, json_value=True)
     visual_implications = audience.get('visual_implications') or []
-    if visual_implications:
-        lines.append(('人群/文化视觉含义：' if is_cn else 'Audience/culture visual implications: ') + json.dumps(visual_implications, ensure_ascii=False))
+    _append_context_line(lines, '人群/文化视觉含义：' if is_cn else 'Audience/culture visual implications: ', visual_implications, is_cn, json_value=True)
     market = _dict(lineage.get('market'))
     for key, label_cn, label_en in (
         ('customer_voice', 'Customer Voice：', 'Customer voice: '),
         ('opportunities', '市场机会：', 'Market opportunity: '),
         ('keyword_signals', '搜索/需求信号：', 'Search/demand signal: '),
     ):
-        if market.get(key):
-            lines.append((label_cn if is_cn else label_en) + json.dumps(market.get(key), ensure_ascii=False))
+        _append_context_line(lines, label_cn if is_cn else label_en, market.get(key), is_cn, json_value=True)
     race = lineage.get('race') or []
-    if race:
-        lines.append(('RACE / Journey：' if is_cn else 'RACE / journey: ') + json.dumps(race, ensure_ascii=False))
+    _append_context_line(lines, 'RACE / Journey：' if is_cn else 'RACE / journey: ', race, is_cn, json_value=True)
     listing = _dict(lineage.get('listing'))
-    if listing.get('objections'):
-        lines.append(('需解决的 Listing 异议：' if is_cn else 'Listing objection to resolve: ') + json.dumps(listing.get('objections'), ensure_ascii=False))
+    _append_context_line(lines, '需解决的 Listing 异议：' if is_cn else 'Listing objection to resolve: ', listing.get('objections'), is_cn, json_value=True)
     pricing = _dict(lineage.get('pricing_economics'))
     decision = _dict(pricing.get('pricing_decision'))
-    if decision.get('decision') not in (None, ''):
-        lines.append(('本资产相关的已选价格 / Offer：' if is_cn else 'Selected price / offer relevant to this asset: ') + str(decision.get('decision')))
-        if decision.get('why'):
-            lines.append(('价格 / Offer WHY：' if is_cn else 'Price / offer WHY: ') + str(decision.get('why')))
+    _append_context_line(lines, '本资产相关的已选价格 / Offer：' if is_cn else 'Selected price / offer relevant to this asset: ', decision.get('decision'), is_cn)
+    _append_context_line(lines, '价格 / Offer WHY：' if is_cn else 'Price / offer WHY: ', decision.get('why'), is_cn)
     ads = _dict(lineage.get('ads'))
-    if ads.get('diagnosis'):
-        lines.append(('广告诊断：' if is_cn else 'Paid-media diagnosis: ') + json.dumps(ads.get('diagnosis'), ensure_ascii=False))
+    _append_context_line(lines, '广告诊断：' if is_cn else 'Paid-media diagnosis: ', ads.get('diagnosis'), is_cn, json_value=True)
     reviews = _dict(lineage.get('reviews'))
-    if reviews.get('issues'):
-        lines.append(('评论 / 客服信号：' if is_cn else 'Review / customer-service signal: ') + json.dumps(reviews.get('issues'), ensure_ascii=False))
+    _append_context_line(lines, '评论 / 客服信号：' if is_cn else 'Review / customer-service signal: ', reviews.get('issues'), is_cn, json_value=True)
     lines.append('只消费会改变当前画面/信息层级/证据/文案/场景的商业决策；经济公式、审计状态和无关数据不要堆入画面。' if is_cn else 'Consume only commercial decisions that change this image/frame, information hierarchy, proof, copy or scene. Do not dump accounting formulas, audit states or irrelevant data into the visual.')
     return lines
 
