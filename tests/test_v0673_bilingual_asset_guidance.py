@@ -1,0 +1,45 @@
+from __future__ import annotations
+
+from cbcc.asset_compiler import compile_asset_packages
+
+
+def test_asset_package_accepts_bilingual_strategic_job_without_string_type_crash(tmp_path):
+    asset = {
+        'asset_id': 'AST-BILINGUAL',
+        'asset_name': 'Bilingual strategic job',
+        'asset_type': 'IMAGE',
+        'status': 'ACTIVATE',
+        'surface': 'GALLERY',
+        'family': 'VISUAL',
+        'consumer_question': 'What is this product?',
+        'strategic_job': {
+            'cn': '解决消费者对商品身份与规格的确认问题。',
+            'en': 'Resolve the shopper question about product identity and pack size.',
+        },
+        'reason_to_exist': {'cn': '这是独立的购买决策问题。', 'en': 'This is a distinct buyer decision.'},
+        'incremental_information': {'cn': '30g 泵式软管。', 'en': '30g pump-style tube.'},
+        'production_mode': 'GRAPHIC_DESIGN',
+        'product_fidelity': 'REFERENCE_GUIDED_NATIVE_LOCK',
+        'priority': 'P0',
+        'dependencies': [],
+        'source_ids': ['SRC-XLSX'],
+        'claim_ids': [],
+        'listing_reference': [],
+        'success_metric': 'decision clarity',
+        'approved_visual_elements': ['warm ivory field'],
+        'precision_boundaries': ['do not invent packaging facts'],
+    }
+    result = compile_asset_packages(
+        tmp_path,
+        [asset],
+        {'name': 'KIYUU K01'},
+        {'platform_family': 'tiktok_shop', 'site': 'MY', 'market': 'Malaysia'},
+        {'visual_implications': []},
+        {'visible_copy_locales': ['ms-MY', 'en-MY'], 'delivery_locale': 'zh-CN'},
+        {'profiles': []},
+    )
+    assert result['asset_count'] == 1
+    guidance = (tmp_path / 'AST-BILINGUAL' / '07_generation_guidance.txt').read_text(encoding='utf-8')
+    assert '解决消费者对商品身份与规格的确认问题。' in guidance
+    manifest = (tmp_path / 'AST-BILINGUAL' / '00_asset_manifest.yaml').read_text(encoding='utf-8')
+    assert 'Resolve the shopper question about product identity and pack size.' in manifest

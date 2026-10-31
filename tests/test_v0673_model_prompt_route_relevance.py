@@ -1,0 +1,56 @@
+from __future__ import annotations
+
+import re
+
+from cbcc.model_native_prompt_contract import apply_model_native_prompt_contract
+
+
+def _bundle(typography=None, props=None):
+    return {'design_card': {
+        'surface_contract': {'output_spec': '1600x1600'},
+        'subject_action_environment_props': {'subject': '30g tube', 'props': props},
+        'information_design': {'typography': typography or {}},
+        'product_presence': {'planning_state': 'HERO_REQUIRED', 'presence_why': 'product identity'},
+    }}
+
+
+def test_model_render_integrated_alias_consumes_visible_copy_and_typography():
+    typography = {'weight': '700 headline', 'hierarchy': 'one dominant headline'}
+    asset = {
+        'visible_copy': {'target_copy': 'KAWAL MINYAK', 'chinese_meaning': '油脂护理'},
+        'asset_art_direction': {
+            'copy_render_mode': 'MODEL_RENDER_INTEGRATED',
+            'typography': typography,
+        },
+    }
+    out = apply_model_native_prompt_contract(_bundle(typography=typography), asset)
+    assert out['production_assembly_notes']['copy_render_mode'] == 'MODEL_RENDER'
+    assert 'KAWAL MINYAK' in out['prompt_cn'] and 'KAWAL MINYAK' in out['prompt_en']
+    assert '700 headline' in out['prompt_cn'] and '700 headline' in out['prompt_en']
+    assert 'typography' not in out['prompt_consumption_audit']['missing_decisions']
+    assert 'copy_render_mode' not in out['prompt_consumption_audit']['missing_decisions']
+
+
+def test_nested_bilingual_selected_props_project_language_specific_leaves():
+    props = {
+        'status': 'SELECTED',
+        'elements': {'cn': ['细分隔线', '证据轴线'], 'en': ['fine divider rules', 'evidence axis']},
+    }
+    asset = {'asset_art_direction': {'props': props}}
+    out = apply_model_native_prompt_contract(_bundle(props=props), asset)
+    assert '细分隔线' in out['prompt_cn']
+    assert 'fine divider rules' in out['prompt_en']
+    assert not re.search(r'[\u3400-\u9fff]', out['prompt_en'])
+    assert 'props' not in out['prompt_consumption_audit']['missing_decisions']
+
+
+def test_not_needed_props_are_relevance_decision_not_model_prompt_content():
+    props = {
+        'status': 'NOT_NEEDED',
+        'why': {'cn': '商品独立主视觉无需辅助道具。', 'en': 'The product-only hero needs no auxiliary props.'},
+    }
+    asset = {'asset_art_direction': {'props': props}}
+    out = apply_model_native_prompt_contract(_bundle(props=props), asset)
+    assert 'NOT_NEEDED' not in out['prompt_cn']
+    assert 'NOT_NEEDED' not in out['prompt_en']
+    assert 'props' not in out['prompt_consumption_audit']['missing_decisions']

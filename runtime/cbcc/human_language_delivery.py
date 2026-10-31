@@ -27,6 +27,9 @@ _COMMON_FIELD_LABELS = {
     'attributes': '商品属性',
     'attribute': '商品属性',
     'highlights': '核心卖点',
+    'selling_points': '卖点短句',
+    'specification': '规格',
+    'key_ingredients': '关键成分',
     'bullets': '卖点',
     'bullet_points': '卖点',
     'description': '商品描述',
@@ -129,6 +132,12 @@ def _looks_machineish(value: Any) -> bool:
     if re.fullmatch(r'[A-Z0-9_.:/+\-]{2,}', text) and ' ' not in text:
         return True
     if re.fullmatch(r'[\d\s.,%+\-/×x]+(?:mm|cm|m|ml|l|g|kg|oz|fl\.\s*oz|px|dpi|fps|hz)?', text, re.I):
+        return True
+    # Language-neutral compound specifications such as `30 g / 1.01 oz` or `1600 px × 1600 px`.
+    # Each alphabetic token must be a known measurement unit; arbitrary Latin prose remains human copy.
+    unit = r'(?:%|mcg|μg|mg|g|kg|ml|mL|l|L|oz|fl\.?\s*oz|mm|cm|m|in|inch(?:es)?|px|dpi|fps|hz)'
+    quantity = rf'(?:\d+(?:\.\d+)?|\.\d+)\s*{unit}?'
+    if re.fullmatch(rf'{quantity}(?:\s*(?:/|×|x|X|by|,|;)\s*{quantity})+', text, re.I):
         return True
     return False
 
