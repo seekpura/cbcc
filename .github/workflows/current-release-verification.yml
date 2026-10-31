@@ -14,6 +14,7 @@ on:
       - 'scripts/check_v0672_release_delta.py'
       - 'scripts/check_v0673_release_delta.py'
       - 'scripts/check_v0674_release_delta.py'
+      - 'scripts/check_v0675_release_delta.py'
       - 'scripts/check_v0664_requirement_consumer_map.py'
       - 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json'
       - 'references/CURRENT_CANONICAL_SKILL_BUILD.md'
@@ -37,6 +38,8 @@ jobs:
         with: {python-version: '3.12'}
       - name: Install verification dependencies
         run: python -m pip install pyyaml pytest
+      - name: Verify v0.6.75 identity source compiles
+        run: python -m py_compile scripts/build_plugin_dist_v0675.py scripts/check_v0675_release_delta.py
       - name: Verify v0.6.74 cross-scope regression closure
         env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
         run: python -m pytest -q tests/test_v0674_regression_closure.py
@@ -121,8 +124,10 @@ jobs:
         run: python scripts/check_v0672_release_delta.py "$(cat dist_current/CURRENT_PLUGIN_PATH.txt)" --floor-mode
       - name: Check exact ZIP — v0.6.73 cumulative floor
         run: python scripts/check_v0673_release_delta.py "$(cat dist_current/CURRENT_PLUGIN_PATH.txt)" --floor-mode
-      - name: Check exact ZIP — v0.6.74 release
-        run: python scripts/check_v0674_release_delta.py "$(cat dist_current/CURRENT_PLUGIN_PATH.txt)"
+      - name: Check exact ZIP — v0.6.74 cumulative floor
+        run: python scripts/check_v0674_release_delta.py "$(cat dist_current/CURRENT_PLUGIN_PATH.txt)" --floor-mode
+      - name: Check exact ZIP — v0.6.75 release
+        run: python scripts/check_v0675_release_delta.py "$(cat dist_current/CURRENT_PLUGIN_PATH.txt)"
       - name: Write exact verified artifact metadata
         run: |
           python - <<'PY'
@@ -130,7 +135,7 @@ jobs:
           from pathlib import Path
           authority=Path('VERSION').read_text(encoding='utf-8').strip();version=re.match(r'^(\d+\.\d+\.\d+)',authority).group(1)
           plugin=Path(Path('dist_current/CURRENT_PLUGIN_PATH.txt').read_text(encoding='utf-8').strip())
-          payload={'file':plugin.name,'version':version,'authority_version':authority,'bytes':plugin.stat().st_size,'sha256':hashlib.sha256(plugin.read_bytes()).hexdigest(),'verified':True,'verified_by':['v0674 regression suite','v0673/v0672 floors','v0671/v0670 floors','CURRENT package checker','v0674 exact ZIP checker']}
+          payload={'file':plugin.name,'version':version,'authority_version':authority,'bytes':plugin.stat().st_size,'sha256':hashlib.sha256(plugin.read_bytes()).hexdigest(),'verified':True,'verified_by':['v0675 identity source','v0674 regression suite','v0674/v0673/v0672 floors','v0671/v0670 floors','CURRENT package checker','v0675 exact ZIP checker']}
           Path('dist_current/VERIFIED_CURRENT_ARTIFACT.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(json.dumps(payload,ensure_ascii=False))
           PY
