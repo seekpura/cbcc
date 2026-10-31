@@ -37,6 +37,7 @@ REQUIRED_RUNTIME = {
     'runtime/cbcc/canonical_human_compaction_v0672.py': (
         'CBCC_CANONICAL_STATIC_PROJECTION_V0672', 'deduplicated_heavy_object_families',
         'single embedded canonical payload + lazy DOM inspector', 'textContent', 'replaceChildren',
+        'finalize_static_human_projection',
     ),
     'runtime/cbcc/canonical_human_lazy_projection_v0672.py': (
         'CBCC_CANONICAL_LAZY_PROJECTION_V0672', 'data-canonical-mount', 'cbcc-canonical-data-v0672',
@@ -51,7 +52,7 @@ REQUIRED_RUNTIME = {
         'research_blocking_pending', 'PLANNING_ONLY_RESEARCH_PENDING',
     ),
     'runtime/cbcc/canonical_full_package_audit_v0671.py': (
-        'canonical_human_lazy_projection_v0672', 'build_canonical_human_payload', 'finalize_static_human_projection',
+        'canonical_human_compaction_v0672', 'build_canonical_human_payload', 'finalize_static_human_projection',
     ),
     'runtime/cbcc/html_asset_package_parity.py': (
         'cbcc-canonical-data-v0672', 'CANONICAL_HUMAN_DATA.json',
@@ -143,22 +144,13 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
             if payload.get('current_release_version') != VERSION:
                 issues.append({'code': 'V0672_CURRENT_OVERRIDE_VERSION_MISMATCH', 'actual': payload.get('current_release_version')})
 
-    return {
-        'status': 'PASS' if not issues else 'FAIL',
-        'issue_count': len(issues),
-        'issues': issues,
-        'version': VERSION,
-        'authority_version': AUTHORITY,
-    }
+    return {'status':'PASS' if not issues else 'FAIL','issue_count':len(issues),'issues':issues,'version':VERSION,'authority_version':AUTHORITY}
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('plugin_zip')
-    args = parser.parse_args()
-    result = audit(Path(args.plugin_zip))
-    print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0 if result['status'] == 'PASS' else 1
+    parser=argparse.ArgumentParser(); parser.add_argument('plugin_zip'); args=parser.parse_args()
+    result=audit(Path(args.plugin_zip)); print(json.dumps(result,ensure_ascii=False,indent=2))
+    return 0 if result['status']=='PASS' else 1
 
 
 if __name__ == '__main__':
