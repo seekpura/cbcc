@@ -34,10 +34,27 @@ def _cell(value: Any) -> str:
     return text.replace('|', '\\|').replace('\n', '<br>')
 
 
+def _raw(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, indent=2) if isinstance(value, (dict, list)) else ('' if value is None else str(value))
+
+
 def render_multilingual_listing_appendix(center: Mapping[str, Any]) -> str:
     rows = [dict(x) for x in center.get('localized_copy') or [] if isinstance(x, Mapping) and _p(x.get('value'))]
     if not rows: return ''
-    lines = ['', '## 多语言 Listing Canonical 对照', '', '> 该表直接投影 `HUMAN_DELIVERY.localized_copy`。目标市场原文、EN语义基线与中文释义不得在 MD 中静默消失。', '', '| Locale | 字段 | 目标市场 / 基线内容 | 中文释义 / 用途 | 状态 |', '|---|---|---|---|---|']
+    lines = [
+        '', '## 多语言 Listing Canonical 对照', '',
+        '> 该区域直接投影 `HUMAN_DELIVERY.localized_copy`。原文复制区保持 exact text；下方表格用于中文释义与状态对照。', '',
+        '### 原文复制区 / Exact Copy', '', '```text',
+    ]
+    for row in rows:
+        lines.append(f"[{row.get('locale') or '—'} · {row.get('field') or '—'}]")
+        lines.append(_raw(row.get('value')))
+        lines.append('')
+    lines += [
+        '```', '',
+        '| Locale | 字段 | 目标市场 / 基线内容 | 中文释义 / 用途 | 状态 |',
+        '|---|---|---|---|---|',
+    ]
     for row in rows:
         zh = row.get('delivery_translation') or row.get('delivery_note') or '待补中文释义 / 用途'
         lines.append(f"| {_cell(row.get('locale') or '—')} | {_cell(row.get('field') or '—')} | {_cell(row.get('value'))} | {_cell(zh)} | {_cell(row.get('status') or row.get('release_status') or '—')} |")
