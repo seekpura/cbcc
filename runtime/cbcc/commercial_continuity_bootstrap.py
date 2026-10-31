@@ -52,6 +52,18 @@ def install() -> None:
         setattr(wrapped_renderer, '_cbcc_v0669_strategy_culture_materialization', True)
         strategy_authority.render_master_strategy_cn = wrapped_renderer
 
+    # v0.6.72 positive projections discovered by the fresh K01 FULL E2E.
+    # They only consume already-authored data and never invent missing creative/language content.
+    from . import strategy_depth as strategy_depth_module
+    from .canonical_visual_master_projection_v0672 import wrap_build_visual_depth as wrap_visual_master_projection_v0672
+    if not getattr(strategy_depth_module.build_visual_depth, '_cbcc_v0672_visual_master_projection', False):
+        strategy_depth_module.build_visual_depth = wrap_visual_master_projection_v0672(strategy_depth_module.build_visual_depth)
+
+    from .tools import listing as listing_module
+    from .delivery_companion_projection_v0672 import wrap_final_copy_release_workflow as wrap_delivery_companion_projection_v0672
+    if not getattr(listing_module.final_copy_release_workflow, '_cbcc_v0672_delivery_companion_projection', False):
+        listing_module.final_copy_release_workflow = wrap_delivery_companion_projection_v0672(listing_module.final_copy_release_workflow)
+
     from .strategy_culture_completion_v0670 import (
         wrap_build_master_strategy as wrap_strategy_culture_completion,
         wrap_render_master_strategy_cn as wrap_strategy_culture_completion_human,
