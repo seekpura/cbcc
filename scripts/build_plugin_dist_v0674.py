@@ -14,9 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = '0.6.74'
 AUTHORITY_VERSION = '0.6.74-cross-scope-regression-closure'
 V0673_FLOOR_BYTES = 67365
-# Bootstrap proof pass discovers the exact v0.6.73 canonical Skill digest.
-# The final release MUST hard-lock the observed SHA256 before publication.
-V0673_FLOOR_SHA256 = ''
+V0673_FLOOR_SHA256 = '2e9bc6a6a0d9a002b3616df02a0c1ec92d7fdf7da1cb725afb1c714b0f7b2cb4'
 
 BASE_COPY_REPO_RESOURCES = base.copy_repo_resources
 BASE_PLUGIN_MANIFEST = previous.plugin_manifest
@@ -58,7 +56,7 @@ def current_v0673_floor() -> str:
         raise RuntimeError(f'v0.6.73 Skill floor drift: bytes={len(data)} expected={V0673_FLOOR_BYTES}')
     digest = hashlib.sha256(data).hexdigest()
     print(json.dumps({'v0673_skill_floor_bytes': len(data), 'v0673_skill_floor_sha256': digest}, ensure_ascii=False))
-    if V0673_FLOOR_SHA256 and digest != V0673_FLOOR_SHA256:
+    if digest != V0673_FLOOR_SHA256:
         raise RuntimeError(f'v0.6.73 Skill floor drift: sha256={digest} expected={V0673_FLOOR_SHA256}')
     for token in (
         '## 0.22 Bilingual Business-Object Delivery + Model Prompt Consumption Closure',

@@ -3,7 +3,7 @@
 ## Current rule
 The canonical packaged Skill is built additively from the last verified mature Skill floor plus current authorities. `CURRENT` never means “whatever the latest source file happens to say”; VERSION, current builder, packaged override family, top/deep Skill and final ZIP proof must converge on one release family.
 
-For current **v0.6.74**, `scripts/build_plugin_dist_v0674.py` calls the v0.6.73 canonical builder. v0.6.73 is the exact additive capability floor. The builder locks its UTF-8 bytes and SHA256 before adding the v0.6.74 authority section. During the bootstrap proof pass the digest is printed, then the observed digest must be hard-locked before final release publication.
+For current **v0.6.74**, `scripts/build_plugin_dist_v0674.py` calls the v0.6.73 canonical builder. v0.6.73 is the exact additive capability floor and is hard-locked to **67,365 UTF-8 bytes / SHA256 `2e9bc6a6a0d9a002b3616df02a0c1ec92d7fdf7da1cb725afb1c714b0f7b2cb4`** before the v0.6.74 authority section may be added.
 
 The immutable lineage remains: v0.6.69 exact maturity floor → v0.6.70 semantic/prompt/Human parity → v0.6.71 final-package/Human/00–15 lineage parity → v0.6.72 fresh-K01 Runtime projection closure → v0.6.73 bilingual business-object/model-prompt consumption closure → v0.6.74 cross-scope regression closure. v0.6.74 is additive, not a rebase.
 
@@ -15,7 +15,7 @@ The immutable lineage remains: v0.6.69 exact maturity floor → v0.6.70 semantic
 5. Current GitHub resources are copied from the current release head; historical versioned builders remain provenance/regression evidence.
 6. Canonical Skill is written byte-identically to packaged top `SKILL.md` and `resources/SKILL.md`.
 7. Manifest, both Skills, `resources/VERSION`, CURRENT override and CURRENT builder target belong to one family.
-8. `scripts/check_current_release_package.py`, `scripts/check_v0674_release_delta.py` and every cumulative floor checker validate the exact built ZIP before installation.
+8. `scripts/check_current_release_package.py`, v0.6.70–v0.6.73 floor-mode checkers, and `scripts/check_v0674_release_delta.py` validate the exact built ZIP before installation.
 9. CI records exact ZIP SHA256 + bytes and uploads that exact artifact; installation uses that verified artifact.
 10. Installed plugin parity, active Host Skill snapshot parity, and fresh real K01 FULL behavior remain separate evidence.
 

@@ -9,6 +9,7 @@ from pathlib import Path
 
 VERSION='0.6.74'
 AUTHORITY='0.6.74-cross-scope-regression-closure'
+V0673_FLOOR_SHA256='2e9bc6a6a0d9a002b3616df02a0c1ec92d7fdf7da1cb725afb1c714b0f7b2cb4'
 
 
 def _root(extracted: Path) -> Path:
@@ -54,10 +55,12 @@ def audit(path: Path) -> dict:
                 if token not in mod:add('V0674_RUNTIME_TOKEN_MISSING',token=token)
             current=(res/'scripts/build_plugin_dist_current.py').read_text(encoding='utf-8') if (res/'scripts/build_plugin_dist_current.py').exists() else ''
             if "CURRENT_BUILDER_TARGET = '0.6.74'" not in current or 'build_plugin_dist_v0674' not in current:add('CURRENT_BUILDER_NOT_V0674')
+            builder=(res/'scripts/build_plugin_dist_v0674.py').read_text(encoding='utf-8') if (res/'scripts/build_plugin_dist_v0674.py').exists() else ''
+            if f"V0673_FLOOR_SHA256 = '{V0673_FLOOR_SHA256}'" not in builder:add('V0673_FLOOR_SHA256_NOT_HARD_LOCKED')
             override=json.loads((res/'references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json').read_text(encoding='utf-8')) if (res/'references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json').exists() else {}
             if str(override.get('current_release_version') or '')!=VERSION:add('CURRENT_OVERRIDE_NOT_V0674',actual=override.get('current_release_version'))
     except Exception as exc:add('V0674_CHECK_EXCEPTION',error=str(exc))
-    return {'status':'PASS' if not issues else 'FAIL','issue_count':len(issues),'issues':issues,'version':VERSION,'authority':AUTHORITY}
+    return {'status':'PASS' if not issues else 'FAIL','issue_count':len(issues),'issues':issues,'version':VERSION,'authority':AUTHORITY,'v0673_floor_sha256':V0673_FLOOR_SHA256}
 
 
 def main():
