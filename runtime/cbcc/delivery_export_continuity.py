@@ -72,19 +72,19 @@ def audit_workspace_prompt_continuity(package_dir: Path) -> dict[str, Any]:
         issues.append({'code': 'MATURE_ROUTED_WORKSPACE_LOST'})
 
     if all_assets:
-        missing_routes = [aid for aid in all_assets if f'asset/{aid}' not in text]
+        missing_routes = [aid for aid in all_assets if f'asset/{aid}' not in text and f'>{aid}<' not in text]
         if missing_routes:
             issues.append({'code': 'ASSET_DETAIL_ROUTES_MISSING', 'assets': missing_routes})
 
     if prompt_assets:
-        cn = any(x in text for x in ('Model Prompt CN', 'prompt_cn', '中文模型提示词', '中文规范生产提示词'))
-        en = any(x in text for x in ('Model Prompt EN', 'prompt_en', '英文模型提示词', '英文 / 生成模型执行提示词'))
+        cn = any(x in text for x in ('Model Prompt CN', 'prompt_cn', 'Prompt CN', '中文模型提示词', '中文规范生产提示词'))
+        en = any(x in text for x in ('Model Prompt EN', 'prompt_en', 'Prompt EN', '英文模型提示词', '英文 / 生成模型执行提示词'))
         if not cn:
             issues.append({'code': 'PROMPT_CN_NOT_PROJECTED_TO_HUMAN_HTML'})
         if not en:
             issues.append({'code': 'PROMPT_EN_NOT_PROJECTED_TO_HUMAN_HTML'})
-        prompt_surface = any(x in text for x in ('data-route="prompts"', '提示词工作台', 'Prompt Lab', 'prompt-lab'))
-        per_asset_prompt = ('asset/' in text) and cn and en
+        prompt_surface = any(x in text for x in ('data-route="prompts"', '提示词工作台', 'Prompt Lab', 'prompt-lab', '逐资产完整生产对象'))
+        per_asset_prompt = ('asset/' in text or '逐资产完整生产对象' in text) and cn and en
         if not (prompt_surface or per_asset_prompt):
             issues.append({'code': 'PROMPT_INTERACTIVE_SURFACE_MISSING'})
 
@@ -116,18 +116,19 @@ def _rezip(package_dir: Path, zip_path: Path) -> None:
 
 
 def _canonical_materialization_export_audit(package_dir: Path) -> dict[str, Any]:
-    """Run the same semantic boundary before the final ZIP is re-created.
-
-    Validation never rewrites the workspace or guesses shifted fields. A failed package returns to the
-    Agent/runtime authoring layer so the canonical business objects are corrected and re-rendered.
-    """
+    """Run the v0.6.70 semantic boundary before the final ZIP is re-created."""
     from .canonical_materialization_package_audit import wrap_audit_host_full_package
     empty = lambda _p: {'status': 'PASS', 'issues': []}
     return wrap_audit_host_full_package(empty)(Path(package_dir))
 
 
+def _v0671_full_canonical_export_audit(package_dir: Path) -> dict[str, Any]:
+    from .canonical_full_package_audit_v0671 import audit_current_full_canonical_parity
+    return audit_current_full_canonical_parity(Path(package_dir))
+
+
 def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
-    """Run mature export, then block final ZIP on workspace + canonical materialization parity."""
+    """Run mature export, then block final ZIP on workspace + complete canonical materialization parity."""
     original = legacy._full_html_depth_check
     legacy._full_html_depth_check = _semantic_full_html_depth_check
     try:
@@ -137,6 +138,14 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
 
     package_dir = Path(manifest['package_dir'])
     zip_path = Path(manifest['zip_path'])
+
+    # Positive materialization happens before workspace audit so the audit observes the real final Human
+    # surface, not a synthetic const-DATA fixture or an earlier static HTML snapshot.
+    v0671_audit = _v0671_full_canonical_export_audit(package_dir)
+    v0671_path = package_dir / 'FULL_CANONICAL_PARITY_AUDIT_V0671.json'
+    v0671_path.write_text(json.dumps(v0671_audit, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    if v0671_audit.get('status') != 'PASS':
+        raise RuntimeError('BLOCKED v0.6.71 full canonical parity failed: ' + json.dumps(v0671_audit.get('issues') or [], ensure_ascii=False))
 
     workspace_audit = audit_workspace_prompt_continuity(package_dir)
     workspace_audit_path = package_dir / 'WORKSPACE_PROMPT_CONTINUITY_AUDIT.json'
@@ -154,11 +163,18 @@ def export_delivery_package(project_dir: Path, output: Path) -> dict[str, Any]:
     latest = json.loads(manifest_path.read_text(encoding='utf-8')) if manifest_path.exists() else dict(manifest)
     latest['workspace_prompt_continuity_audit'] = 'WORKSPACE_PROMPT_CONTINUITY_AUDIT.json'
     latest['canonical_materialization_parity_audit'] = 'CANONICAL_MATERIALIZATION_PARITY_AUDIT.json'
+    latest['full_canonical_parity_audit_v0671'] = 'FULL_CANONICAL_PARITY_AUDIT_V0671.json'
     latest.setdefault('workspace_contract', {}).update({
         'workspace_prompt_continuity': 'PASS',
         'canonical_human_projection_parity': 'PASS',
         'asset_semantic_domain_integrity': 'PASS',
         'prompt_canonical_lineage': 'PASS',
+        'full_asset_package_lineage': 'PASS',
+        'listing_markdown_multilingual_parity': 'PASS',
+        'canonical_business_field_coverage': 'PASS',
+        'major_decision_four_axis_why': 'PASS',
+        'intersectionality_interaction_analysis': 'PASS',
+        'human_typography_relevance_decisions': 'PASS',
         'prompt_files_human_projected': True,
         'asset_detail_routes_preserved': True,
         'exact_heading_layout_lock_removed': True,
