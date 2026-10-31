@@ -157,7 +157,7 @@ def _wrap_video_creator_plan(fn: Callable[..., dict[str, Any]]):
 
 
 def _install_global_language_closure() -> None:
-    """Patch captured Runtime references during the existing v0.6.72 bootstrap call."""
+    """Patch captured Runtime references without importing later bootstrap consumers early."""
     from . import global_chinese_interpretation as global_cn
     global_cn._asset_visible_copy_companion_present = _visible_copy_companion_present
 
@@ -165,18 +165,14 @@ def _install_global_language_closure() -> None:
     wrapped = _wrap_video_creator_plan(video_module.build_video_creator_plan)
     video_module.build_video_creator_plan = wrapped
 
-    # compiler / seven_agent imported the function by value in mature releases, so update those
-    # already-loaded references as part of the same additive bootstrap installation.
-    try:
-        from . import compiler as compiler_module
-        compiler_module.build_video_creator_plan = wrapped
-    except Exception:
-        pass
-    try:
-        from .tools import seven_agent as seven_agent_module
-        seven_agent_module.build_video_creator_plan = wrapped
-    except Exception:
-        pass
+    # Some mature consumers import the function by value. Patch only modules already loaded.
+    # Importing compiler here would freeze an intermediate Strategy builder before later wrappers install.
+    import sys
+    package = __package__ or 'cbcc'
+    for module_name in (f'{package}.compiler', f'{package}.tools.seven_agent'):
+        module = sys.modules.get(module_name)
+        if module is not None:
+            module.build_video_creator_plan = wrapped
 
 
 def wrap_final_copy_release_workflow(fn: Callable[..., dict[str, Any]]):
