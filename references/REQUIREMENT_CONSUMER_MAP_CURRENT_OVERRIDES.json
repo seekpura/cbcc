@@ -1,6 +1,6 @@
 {
   "authority": "CURRENT release-process overrides for REQUIREMENT_CONSUMER_MAP_V0664.json",
-  "current_release_version": "0.6.72",
+  "current_release_version": "0.6.73",
   "rules": {
     "overrides_base_rows": ["REQ-046", "REQ-047", "REQ-048"],
     "release_status_must_be_version_agnostic": true,
