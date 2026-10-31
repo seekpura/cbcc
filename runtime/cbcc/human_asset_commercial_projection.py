@@ -109,3 +109,10 @@ def wrap_human_asset_design_card(fn: Callable[..., str]):
             return base.replace(marker, '\n\n' + section + '\n' + marker, 1)
         return base.rstrip() + '\n\n' + section + '\n'
     return rendered
+
+
+# Late bootstrap hook: this module is imported at the end of commercial_continuity_bootstrap.install(),
+# after v0.6.70/v0.6.71/v0.6.72 prompt/package/Human wrappers are already installed. This prevents
+# v0.6.73 from freezing an intermediate strategy or compiler authority.
+from .final_export_closure_v0673 import install as _install_v0673_final_export_closure
+_install_v0673_final_export_closure()
