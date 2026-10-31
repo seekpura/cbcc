@@ -32,17 +32,32 @@ REQUIRED_RUNTIME = {
     'runtime/cbcc/delivery_companion_projection_v0672.py': (
         'READY_AUTHORED_DELIVERY_LOCALE_COPY', 'chinese_meaning', 'asset_art_direction',
         'Runtime only bilingualizes its own fixed default Creator CTA', 'sys.modules.get',
+        'install_fresh_k01_runtime_closure',
     ),
     'runtime/cbcc/canonical_human_compaction_v0672.py': (
-        'CBCC_CANONICAL_STATIC_PROJECTION_V0672', 'DEDUPLICATED_SINGLE_MATERIALIZATION',
-        'deduplicated_heavy_object_families', 'textContent', 'replaceChildren',
+        'CBCC_CANONICAL_STATIC_PROJECTION_V0672', 'deduplicated_heavy_object_families',
+        'single embedded canonical payload + lazy DOM inspector', 'textContent', 'replaceChildren',
     ),
     'runtime/cbcc/canonical_human_lazy_projection_v0672.py': (
-        'CBCC_CANONICAL_LAZY_PROJECTION_V0672', 'SELF_CONTAINED_LAZY_SINGLE_MATERIALIZATION',
-        'data-canonical-mount', 'cbcc-canonical-data-v0672', 'textContent', 'replaceChildren',
+        'CBCC_CANONICAL_LAZY_PROJECTION_V0672', 'data-canonical-mount', 'cbcc-canonical-data-v0672',
+        'textContent', 'replaceChildren',
+    ),
+    'runtime/cbcc/fresh_k01_runtime_closure_v0672.py': (
+        '_GRAPHIC_TOKEN', 'camera_position', 'focus_dof', 'motion_timing', 'chinese_meaning',
+        'typography_contract', 'human_relevance_decisions', '_explicit_no_visible_copy_instruction',
+        'GLOBAL_NO_VISIBLE_COPY_PATTERN', 'install',
+    ),
+    'runtime/cbcc/compliance.py': (
+        'research_blocking_pending', 'PLANNING_ONLY_RESEARCH_PENDING',
     ),
     'runtime/cbcc/canonical_full_package_audit_v0671.py': (
         'canonical_human_lazy_projection_v0672', 'build_canonical_human_payload', 'finalize_static_human_projection',
+    ),
+    'runtime/cbcc/html_asset_package_parity.py': (
+        'cbcc-canonical-data-v0672', 'CANONICAL_HUMAN_DATA.json',
+    ),
+    'runtime/cbcc/listing_markdown_parity_v0671.py': (
+        '多语言 Listing Canonical 对照', '使用块式原文', '_refresh_appendix',
     ),
 }
 
