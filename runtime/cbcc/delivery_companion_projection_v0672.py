@@ -158,6 +158,9 @@ def _wrap_video_creator_plan(fn: Callable[..., dict[str, Any]]):
 
 def _install_global_language_closure() -> None:
     """Patch captured Runtime references without importing later bootstrap consumers early."""
+    from .fresh_k01_runtime_closure_v0672 import install as install_fresh_k01_runtime_closure
+    install_fresh_k01_runtime_closure()
+
     from . import global_chinese_interpretation as global_cn
     global_cn._asset_visible_copy_companion_present = _visible_copy_companion_present
 
