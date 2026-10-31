@@ -69,7 +69,29 @@ jobs:
       - name: Verify v0.6.72 Human compaction
         env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
         run: python -m pytest tests/test_v0672_canonical_human_compaction.py -q
-      - name: Verify v0.6.72 fresh K01 materialization closure
+      - name: Materialization A — prompt/card/provider semantics
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
+        run: |
+          python -m pytest -q \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_en_commercial_context_omits_chinese_only_values \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_modern_nested_design_card_satisfies_legacy_semantic_audit \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_provider_media_not_blocking_when_production_not_current_scope \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_provider_media_remain_blocking_when_production_is_current_scope
+      - name: Materialization B — presence/workspace/positive/lazy
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
+        run: |
+          python -m pytest -q \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_final_manifest_presence_overrides_stale_universe_count \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_cbcc_commercial_workspace_not_fixed_taxonomy_failure \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_positive_materialization_runs_before_legacy_audit \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_legacy_materialization_accepts_already_materialized_lazy_human_workspace
+      - name: Materialization C — HTML asset and Listing parity
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
+        run: |
+          python -m pytest -q \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_html_asset_parity_reads_lazy_embedded_canonical_data \
+            tests/test_v0672_fresh_k01_materialization_closure.py::test_listing_materializer_refreshes_stale_canonical_appendix_idempotently
+      - name: Verify v0.6.72 fresh K01 materialization aggregate
         env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
         run: python -m pytest tests/test_v0672_fresh_k01_materialization_closure.py -q
       - name: Verify v0.6.72 fresh K01 final export closure
@@ -131,26 +153,17 @@ jobs:
           version = re.match(r'^(\d+\.\d+\.\d+)', authority).group(1)
           plugin = Path(Path('dist_current/CURRENT_PLUGIN_PATH.txt').read_text(encoding='utf-8').strip())
           verified_by = [
-              'tests/test_v0672_fresh_k01_portfolio_delta.py',
-              'tests/test_v0672_fresh_k01_projection_closure.py',
-              'tests/test_v0672_global_language_closure.py',
-              'tests/test_v0672_canonical_human_compaction.py',
-              'tests/test_v0672_fresh_k01_materialization_closure.py',
-              'tests/test_v0672_fresh_k01_final_export_closure.py',
-              'tests/test_v0672_prompt_relevance_and_nested_execution.py',
-              'tests/test_v0672_integrated_copy_negative_constraint.py',
-              'tests/test_v0672_nonblocking_platform_research.py',
-              'tests/test_v0671_full_canonical_parity.py',
-              'tests/test_v0671_canonical_search_security.py',
-              'tests/test_v0670_positive_canonical_projection.py',
-              'scripts/check_v0664_requirement_consumer_map.py',
-              'scripts/check_current_release_package.py',
-              'scripts/check_v0670_release_delta.py',
-              'scripts/check_v0670_positive_projection_package.py',
-              'scripts/check_v0671_release_delta.py --floor-mode',
-              'scripts/check_v0672_release_delta.py'
+              'tests/test_v0672_fresh_k01_portfolio_delta.py','tests/test_v0672_fresh_k01_projection_closure.py',
+              'tests/test_v0672_global_language_closure.py','tests/test_v0672_canonical_human_compaction.py',
+              'tests/test_v0672_fresh_k01_materialization_closure.py','tests/test_v0672_fresh_k01_final_export_closure.py',
+              'tests/test_v0672_prompt_relevance_and_nested_execution.py','tests/test_v0672_integrated_copy_negative_constraint.py',
+              'tests/test_v0672_nonblocking_platform_research.py','tests/test_v0671_full_canonical_parity.py',
+              'tests/test_v0671_canonical_search_security.py','tests/test_v0670_positive_canonical_projection.py',
+              'scripts/check_v0664_requirement_consumer_map.py','scripts/check_current_release_package.py',
+              'scripts/check_v0670_release_delta.py','scripts/check_v0670_positive_projection_package.py',
+              'scripts/check_v0671_release_delta.py --floor-mode','scripts/check_v0672_release_delta.py'
           ]
-          payload = {'file':plugin.name,'version':version,'authority_version':authority,'bytes':plugin.stat().st_size,'sha256':hashlib.sha256(plugin.read_bytes()).hexdigest(),'verified_by':verified_by,'verified':True}
+          payload={'file':plugin.name,'version':version,'authority_version':authority,'bytes':plugin.stat().st_size,'sha256':hashlib.sha256(plugin.read_bytes()).hexdigest(),'verified_by':verified_by,'verified':True}
           Path('dist_current/VERIFIED_CURRENT_ARTIFACT.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(json.dumps(payload,ensure_ascii=False))
           PY
