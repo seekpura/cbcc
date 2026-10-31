@@ -33,12 +33,10 @@ def _flatten(value: Any) -> list[str]:
     return [str(value)] if _p(value) else []
 
 
-def _cell(value: Any) -> str:
+def _plain(value: Any) -> str:
     if isinstance(value, (dict, list)):
-        text = json.dumps(value, ensure_ascii=False)
-    else:
-        text = '' if value is None else str(value)
-    return text.replace('|', '\\|').replace('\n', '<br>')
+        return json.dumps(value, ensure_ascii=False, indent=2)
+    return '' if value is None else str(value)
 
 
 def render_multilingual_listing_appendix(center: Mapping[str, Any]) -> str:
@@ -47,22 +45,28 @@ def render_multilingual_listing_appendix(center: Mapping[str, Any]) -> str:
         return ''
     lines = [
         '', _APPENDIX_MARKER, '',
-        '> 该表直接投影 `HUMAN_DELIVERY.localized_copy`。目标市场原文、EN语义基线与中文释义不得在 MD 中静默消失。', '',
-        '| Locale | 字段 | 目标市场 / 基线内容 | 中文释义 / 用途 | 状态 |',
-        '|---|---|---|---|---|',
+        '> 该区直接投影 `HUMAN_DELIVERY.localized_copy`。目标市场原文、EN语义基线与中文释义不得在 MD 中静默消失。',
+        '> 使用块式原文而不是 Markdown 表格，避免标题、描述、FAQ 中的 `|`、换行或长文本被转义后失去连续原文。', '',
     ]
     for row in rows:
-        zh = row.get('delivery_translation') or row.get('delivery_note') or '待补中文释义 / 用途'
-        lines.append(f"| {_cell(row.get('locale') or '—')} | {_cell(row.get('field') or '—')} | {_cell(row.get('value'))} | {_cell(zh)} | {_cell(row.get('status') or row.get('release_status') or '—')} |")
-    return '\n'.join(lines) + '\n'
+        locale = _plain(row.get('locale') or '—')
+        field = _plain(row.get('field') or '—')
+        value = _plain(row.get('value'))
+        zh = _plain(row.get('delivery_translation') or row.get('delivery_note') or '待补中文释义 / 用途')
+        status = _plain(row.get('status') or row.get('release_status') or '—')
+        lines += [
+            f'### {field} · {locale}', '',
+            value, '',
+            f'- **中文释义 / 用途**：{zh}',
+            f'- **状态**：{status}', '',
+        ]
+    return '\n'.join(lines).rstrip() + '\n'
 
 
 def _refresh_appendix(text: str, appendix: str) -> str:
     if not appendix:
         return text
     if _APPENDIX_MARKER in text:
-        # The canonical appendix is an owned projection at the end of the Upload Ready file.
-        # Rebuild it from current HUMAN_DELIVERY so stale locale rows cannot survive silently.
         prefix = text.split(_APPENDIX_MARKER, 1)[0].rstrip()
         return prefix + '\n\n' + appendix.lstrip('\n')
     return text.rstrip() + '\n\n' + appendix.lstrip('\n')
@@ -111,7 +115,7 @@ def audit_listing_markdown_canonical_parity(package_dir: Path | str) -> list[dic
     if not path.exists():
         return [{'code': 'LISTING_MARKDOWN_MISSING'}]
     text = path.read_text(encoding='utf-8', errors='ignore')
-    # Markdown tables escape literal pipes. Compare semantic text, not markdown syntax bytes.
+    # Legacy table projections may contain escaped pipes; current block projection preserves exact text.
     comparable = text.replace('\\|', '|')
     missing = []
     for source in ('copy_center', 'localized_copy'):
