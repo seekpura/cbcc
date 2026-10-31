@@ -6,7 +6,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  diagnose:
+  subset:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: aggregate
+            expr: ''
+          - name: without-static
+            expr: 'not real_delivery_html'
+          - name: without-listing
+            expr: 'not listing_markdown'
+          - name: without-lineage
+            expr: 'not full_asset_package_lineage'
+          - name: without-strategy
+            expr: 'not strategy_completion'
+          - name: without-relevance
+            expr: 'not human_asset_and_typography'
+          - name: without-production-objects
+            expr: 'not human_payload_exposes_independent'
+          - name: first-five
+            expr: 'not human_payload_exposes_independent'
+          - name: static-and-production
+            expr: 'real_delivery_html or human_payload_exposes_independent'
+          - name: listing-and-production
+            expr: 'listing_markdown or human_payload_exposes_independent'
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -14,35 +39,13 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install pyyaml pytest
-      - name: hash seed 0
-        continue-on-error: true
-        env: {PYTHONHASHSEED: '0'}
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
-      - name: hash seed 1
-        continue-on-error: true
-        env: {PYTHONHASHSEED: '1'}
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
-      - name: hash seed 2
-        continue-on-error: true
-        env: {PYTHONHASHSEED: '2'}
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
-      - name: hash seed 3
-        continue-on-error: true
-        env: {PYTHONHASHSEED: '3'}
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
-      - name: hash seed 4
-        continue-on-error: true
-        env: {PYTHONHASHSEED: '4'}
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
-      - name: hash seed 5
-        continue-on-error: true
-        env: {PYTHONHASHSEED: '5'}
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
-      - name: hash seed 6
-        continue-on-error: true
-        env: {PYTHONHASHSEED: '6'}
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
-      - name: hash seed 7
-        continue-on-error: true
-        env: {PYTHONHASHSEED: '7'}
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
+      - name: Run subset
+        env:
+          PYTHONHASHSEED: '0'
+          EXPR: ${{ matrix.expr }}
+        run: |
+          if [ -z "$EXPR" ]; then
+            python -m pytest tests/test_v0671_full_canonical_parity.py -q
+          else
+            python -m pytest tests/test_v0671_full_canonical_parity.py -q -k "$EXPR"
+          fi
