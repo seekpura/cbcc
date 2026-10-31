@@ -6,21 +6,27 @@ import json,re
 
 def _data(html:str)->dict[str,Any]:
     m=re.search(r'\bconst\s+DATA\s*=\s*',html)
-    if not m:return {}
-    try:
-        value,_=json.JSONDecoder().raw_decode(html[m.end():]);return value if isinstance(value,dict) else {}
-    except Exception:return {}
-
+    if m:
+        try:
+            value,_=json.JSONDecoder().raw_decode(html[m.end():]);return value if isinstance(value,dict) else {}
+        except Exception:
+            pass
+    # v0.6.72 static/lazy workspace embeds one canonical JSON payload instead of a JS const.
+    m=re.search(r'<script\b[^>]*\bid=["\']cbcc-canonical-data-v0672["\'][^>]*>(.*?)</script>',html,re.I|re.S)
+    if m:
+        try:
+            value=json.loads(m.group(1));return value if isinstance(value,dict) else {}
+        except Exception:
+            pass
+    return {}
 def _json(path:Path)->Any:
     try:return json.loads(path.read_text(encoding='utf-8'))
     except Exception:return None
-
 def _text_first(root:Path,names:tuple[str,...])->str|None:
     for name in names:
         p=root/name
         if p.exists():return p.read_text(encoding='utf-8',errors='ignore').strip()
     return None
-
 def audit_html_asset_package_parity(package:Path)->list[dict[str,Any]]:
     html=package/'index.html';root=package/'asset_packages'
     if not html.exists() or not root.exists():return []
@@ -32,7 +38,7 @@ def audit_html_asset_package_parity(package:Path)->list[dict[str,Any]]:
             loaded=_json(current)
             data=loaded if isinstance(loaded,dict) else {}
     assets=data.get('assets') if isinstance(data,dict) else None
-    if not isinstance(assets,list):return [{'code':'HTML_ASSET_DATA_MISSING','why':'asset_packages exist but neither legacy const DATA nor current CANONICAL_HUMAN_DATA.json exposes assets.'}]
+    if not isinstance(assets,list):return [{'code':'HTML_ASSET_DATA_MISSING','why':'asset_packages exist but neither legacy const DATA, v0.6.72 embedded canonical payload, nor current CANONICAL_HUMAN_DATA.json exposes assets.'}]
     by_id={str(a.get('id') or a.get('asset_id') or ''):a for a in assets if isinstance(a,dict)};issues=[]
     for d in sorted(x for x in root.iterdir() if x.is_dir()):
         aid=d.name;a=by_id.get(aid)
