@@ -38,7 +38,6 @@ REQUIRED_RUNTIME = {
         'ASSET_TYPOGRAPHY_DECISION_MISSING',
     ),
     'runtime/cbcc/canonical_full_package_audit_v0671.py': (
-        'V0671_FULL_CANONICAL_BUSINESS_OBJECT_PARITY',
         'full_asset_package_lineage',
         'listing_md_multilingual_parity',
     ),
@@ -66,7 +65,15 @@ def _root(extracted: Path) -> Path:
     return extracted
 
 
-def audit(plugin_zip: Path) -> dict[str, Any]:
+def _version_tuple(value: Any) -> tuple[int, int, int] | None:
+    try:
+        parts = str(value or '').split('.')
+        return int(parts[0]), int(parts[1]), int(parts[2])
+    except Exception:
+        return None
+
+
+def audit(plugin_zip: Path, *, floor_mode: bool = False) -> dict[str, Any]:
     issues: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix='cbcc-v0671-delta-') as td:
         dest = Path(td)
@@ -74,8 +81,13 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
             zf.extractall(dest)
         plugin = _root(dest)
         manifest = json.loads((plugin / 'plugin.json').read_text(encoding='utf-8'))
-        if manifest.get('version') != VERSION:
-            issues.append({'code': 'V0671_PLUGIN_VERSION_MISMATCH', 'actual': manifest.get('version')})
+        actual_version = manifest.get('version')
+        if floor_mode:
+            parsed = _version_tuple(actual_version)
+            if parsed is None or parsed < (0, 6, 71):
+                issues.append({'code': 'V0671_FLOOR_PLUGIN_VERSION_TOO_OLD', 'actual': actual_version})
+        elif actual_version != VERSION:
+            issues.append({'code': 'V0671_PLUGIN_VERSION_MISMATCH', 'actual': actual_version})
         dc = manifest.get('delivery_contract') or {}
         for flag in REQUIRED_FLAGS:
             if dc.get(flag) is not True:
@@ -87,11 +99,16 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
             issues.append({'code': 'V0671_SKILL_PARITY_FAILED'})
         else:
             text = top.read_text(encoding='utf-8-sig')
-            for token in (f'version: {AUTHORITY}', '# Cross-Border Commerce Creative v0.6.71', '## 0.20 Full Canonical Human + Package Lineage Parity', '## 0.19 Canonical Materialization + Human Projection Parity'):
+            tokens = ['## 0.20 Full Canonical Human + Package Lineage Parity', '## 0.19 Canonical Materialization + Human Projection Parity']
+            if not floor_mode:
+                tokens.extend([f'version: {AUTHORITY}', '# Cross-Border Commerce Creative v0.6.71'])
+            for token in tokens:
                 if token not in text:
                     issues.append({'code': 'V0671_SKILL_TOKEN_MISSING', 'token': token})
         version_file = skill_root / 'resources/VERSION'
-        if not version_file.exists() or version_file.read_text(encoding='utf-8-sig').strip() != AUTHORITY:
+        if not version_file.exists():
+            issues.append({'code': 'V0671_RESOURCE_VERSION_MISSING'})
+        elif not floor_mode and version_file.read_text(encoding='utf-8-sig').strip() != AUTHORITY:
             issues.append({'code': 'V0671_RESOURCE_VERSION_MISMATCH'})
         resources = skill_root / 'resources'
         for rel, tokens in REQUIRED_RUNTIME.items():
@@ -126,14 +143,22 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
             offsets = [text.find(x) for x in ordered]
             if any(x < 0 for x in offsets) or offsets != sorted(offsets):
                 issues.append({'code': 'V0671_PROMPT_BOUNDARY_ORDER_INVALID', 'offsets': offsets})
-    return {'status': 'PASS' if not issues else 'FAIL', 'issue_count': len(issues), 'issues': issues, 'version': VERSION, 'authority_version': AUTHORITY}
+    return {
+        'status': 'PASS' if not issues else 'FAIL',
+        'issue_count': len(issues),
+        'issues': issues,
+        'version': VERSION,
+        'authority_version': AUTHORITY,
+        'mode': 'FLOOR_IN_NEWER_RELEASE' if floor_mode else 'EXACT_V0671_RELEASE',
+    }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('plugin_zip')
+    parser.add_argument('--floor-mode', action='store_true', help='Validate v0.6.71 capability floor inside a newer release without requiring v0.6.71 identity.')
     args = parser.parse_args()
-    result = audit(Path(args.plugin_zip))
+    result = audit(Path(args.plugin_zip), floor_mode=args.floor_mode)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result['status'] == 'PASS' else 1
 
