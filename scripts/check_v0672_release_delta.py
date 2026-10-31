@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import tempfile
 import zipfile
 from pathlib import Path
@@ -73,7 +74,12 @@ def _root(extracted: Path) -> Path:
     return extracted
 
 
-def audit(plugin_zip: Path) -> dict[str, Any]:
+def _version_tuple(value: Any) -> tuple[int, int, int] | None:
+    m = re.match(r'^(\d+)\.(\d+)\.(\d+)', str(value or ''))
+    return tuple(map(int, m.groups())) if m else None
+
+
+def audit(plugin_zip: Path, *, floor_mode: bool = False) -> dict[str, Any]:
     issues: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix='cbcc-v0672-delta-') as td:
         dest = Path(td)
@@ -81,8 +87,12 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
             zf.extractall(dest)
         plugin = _root(dest)
         manifest = json.loads((plugin / 'plugin.json').read_text(encoding='utf-8'))
-        if manifest.get('version') != VERSION:
-            issues.append({'code': 'V0672_PLUGIN_VERSION_MISMATCH', 'actual': manifest.get('version')})
+        actual_version = manifest.get('version')
+        if floor_mode:
+            if _version_tuple(actual_version) is None or _version_tuple(actual_version) < _version_tuple(VERSION):
+                issues.append({'code': 'V0672_FLOOR_PLUGIN_VERSION_TOO_OLD', 'actual': actual_version})
+        elif actual_version != VERSION:
+            issues.append({'code': 'V0672_PLUGIN_VERSION_MISMATCH', 'actual': actual_version})
         dc = manifest.get('delivery_contract') or {}
         for flag in REQUIRED_FLAGS:
             if dc.get(flag) is not True:
@@ -95,16 +105,20 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
             issues.append({'code': 'V0672_SKILL_PARITY_FAILED'})
         else:
             text = top.read_text(encoding='utf-8-sig')
-            for token in (
-                f'version: {AUTHORITY}', '# Cross-Border Commerce Creative v0.6.72',
+            tokens = [
                 '## 0.21 Fresh K01 Runtime Projection Closure',
                 '## 0.20 Full Canonical Human + Package Lineage Parity',
                 '## 0.19 Canonical Materialization + Human Projection Parity',
-            ):
+            ]
+            if not floor_mode:
+                tokens = [f'version: {AUTHORITY}', '# Cross-Border Commerce Creative v0.6.72', *tokens]
+            for token in tokens:
                 if token not in text:
                     issues.append({'code': 'V0672_SKILL_TOKEN_MISSING', 'token': token})
         version_file = skill_root / 'resources/VERSION'
-        if not version_file.exists() or version_file.read_text(encoding='utf-8-sig').strip() != AUTHORITY:
+        if not version_file.exists():
+            issues.append({'code': 'V0672_RESOURCE_VERSION_MISSING'})
+        elif not floor_mode and version_file.read_text(encoding='utf-8-sig').strip() != AUTHORITY:
             issues.append({'code': 'V0672_RESOURCE_VERSION_MISMATCH'})
 
         resources = skill_root / 'resources'
@@ -139,17 +153,24 @@ def audit(plugin_zip: Path) -> dict[str, Any]:
         override = resources / 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json'
         if not override.exists():
             issues.append({'code': 'V0672_CURRENT_OVERRIDE_MISSING'})
-        else:
+        elif not floor_mode:
             payload = json.loads(override.read_text(encoding='utf-8'))
             if payload.get('current_release_version') != VERSION:
                 issues.append({'code': 'V0672_CURRENT_OVERRIDE_VERSION_MISMATCH', 'actual': payload.get('current_release_version')})
 
-    return {'status':'PASS' if not issues else 'FAIL','issue_count':len(issues),'issues':issues,'version':VERSION,'authority_version':AUTHORITY}
+    return {
+        'status':'PASS' if not issues else 'FAIL',
+        'issue_count':len(issues),
+        'issues':issues,
+        'version':VERSION,
+        'authority_version':AUTHORITY,
+        'floor_mode':floor_mode,
+    }
 
 
 def main() -> int:
-    parser=argparse.ArgumentParser(); parser.add_argument('plugin_zip'); args=parser.parse_args()
-    result=audit(Path(args.plugin_zip)); print(json.dumps(result,ensure_ascii=False,indent=2))
+    parser=argparse.ArgumentParser(); parser.add_argument('plugin_zip'); parser.add_argument('--floor-mode', action='store_true'); args=parser.parse_args()
+    result=audit(Path(args.plugin_zip), floor_mode=args.floor_mode); print(json.dumps(result,ensure_ascii=False,indent=2))
     return 0 if result['status']=='PASS' else 1
 
 
