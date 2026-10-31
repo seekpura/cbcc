@@ -12,6 +12,7 @@ on:
       - 'scripts/check_v0670_positive_projection_package.py'
       - 'scripts/check_v0671_release_delta.py'
       - 'scripts/check_v0672_release_delta.py'
+      - 'scripts/check_v0673_release_delta.py'
       - 'scripts/check_v0664_requirement_consumer_map.py'
       - 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json'
       - 'references/CURRENT_CANONICAL_SKILL_BUILD.md'
@@ -20,6 +21,7 @@ on:
       - 'tests/test_v0671_full_canonical_parity.py'
       - 'tests/test_v0671_canonical_search_security.py'
       - 'tests/test_v0672_*.py'
+      - 'tests/test_v0673_*.py'
       - '.github/workflows/current-release-verification.yml'
   workflow_dispatch:
 
@@ -33,6 +35,9 @@ jobs:
           python-version: '3.12'
       - name: Install verification dependencies
         run: python -m pip install pyyaml pytest
+      - name: Verify v0.6.73 fresh K01 final export closure
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
+        run: python -m pytest tests/test_v0673_fresh_k01_final_export_closure.py -q
       - name: Verify v0.6.72 bootstrap import order
         env: {PYTHONHASHSEED: '0'}
         run: |
@@ -107,6 +112,7 @@ jobs:
           python scripts/check_v0670_positive_projection_package.py "$PLUGIN_ZIP"
           python scripts/check_v0671_release_delta.py "$PLUGIN_ZIP" --floor-mode
           python scripts/check_v0672_release_delta.py "$PLUGIN_ZIP"
+          if [ -f scripts/check_v0673_release_delta.py ]; then python scripts/check_v0673_release_delta.py "$PLUGIN_ZIP"; fi
       - name: Write exact verified artifact metadata
         run: |
           python - <<'PY'
@@ -116,10 +122,12 @@ jobs:
           version = re.match(r'^(\d+\.\d+\.\d+)', authority).group(1)
           plugin = Path(Path('dist_current/CURRENT_PLUGIN_PATH.txt').read_text(encoding='utf-8').strip())
           verified_by = [
+              'tests/test_v0673_fresh_k01_final_export_closure.py',
               'tests/test_v0672_fresh_k01_portfolio_delta.py','tests/test_v0672_fresh_k01_projection_closure.py','tests/test_v0672_global_language_closure.py','tests/test_v0672_canonical_human_compaction.py',
               'tests/test_v0671_full_canonical_parity.py','tests/test_v0671_canonical_search_security.py','tests/test_v0670_positive_canonical_projection.py',
               'scripts/check_v0664_requirement_consumer_map.py','scripts/check_current_release_package.py','scripts/check_v0670_release_delta.py','scripts/check_v0670_positive_projection_package.py','scripts/check_v0671_release_delta.py --floor-mode','scripts/check_v0672_release_delta.py'
           ]
+          if Path('scripts/check_v0673_release_delta.py').exists(): verified_by.append('scripts/check_v0673_release_delta.py')
           payload = {'file':plugin.name,'version':version,'authority_version':authority,'bytes':plugin.stat().st_size,'sha256':hashlib.sha256(plugin.read_bytes()).hexdigest(),'verified_by':verified_by,'verified':True}
           Path('dist_current/VERIFIED_CURRENT_ARTIFACT.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(json.dumps(payload,ensure_ascii=False))
