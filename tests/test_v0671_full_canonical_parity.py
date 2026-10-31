@@ -92,18 +92,26 @@ def test_real_delivery_html_receives_canonical_payload_and_visible_static_projec
 
 def test_listing_markdown_is_field_parity_checked_against_human_delivery(tmp_path: Path):
     from runtime.cbcc.human_delivery import render_upload_center_md
-    from runtime.cbcc.canonical_full_parity_v0671 import audit_listing_markdown_parity
+    from runtime.cbcc.listing_markdown_parity_v0671 import ensure_listing_markdown_canonical_parity, audit_listing_markdown_canonical_parity
 
     package = tmp_path / "package"
     package.mkdir()
     center = _center()
     _write_json(package / "HUMAN_DELIVERY.json", center)
-    md = render_upload_center_md(center)
-    (package / "01_LISTING_UPLOAD_READY.md").write_text(md, encoding="utf-8")
-    assert audit_listing_markdown_parity(package) == []
-    broken = md.replace("BM KP TWO", "")
+    raw_md = render_upload_center_md(center)
+    (package / "01_LISTING_UPLOAD_READY.md").write_text(raw_md, encoding="utf-8")
+    # The legacy renderer may still omit alternate locales in its intermediate output. The final
+    # package materializer must positively project them before parity is allowed to pass.
+    assert audit_listing_markdown_canonical_parity(package)
+    materialized = ensure_listing_markdown_canonical_parity(package)
+    assert materialized["status"] == "PASS"
+    assert audit_listing_markdown_canonical_parity(package) == []
+    complete_md = (package / "01_LISTING_UPLOAD_READY.md").read_text(encoding="utf-8")
+    for token in ("EN TITLE UNIQUE", "EN DESCRIPTION UNIQUE", "EN KP ONE", "EN KP TWO"):
+        assert token in complete_md
+    broken = complete_md.replace("BM KP TWO", "")
     (package / "01_LISTING_UPLOAD_READY.md").write_text(broken, encoding="utf-8")
-    issues = audit_listing_markdown_parity(package)
+    issues = audit_listing_markdown_canonical_parity(package)
     assert issues and issues[0]["code"] == "LISTING_MARKDOWN_CANONICAL_FIELD_DRIFT"
 
 
