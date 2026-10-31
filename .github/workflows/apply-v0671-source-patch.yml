@@ -19,10 +19,30 @@ jobs:
         with:
           ref: v0671-final-delivery-closure
           fetch-depth: 0
-      - name: Apply exact source patch
+      - name: Verify chunks and apply exact source patch
         shell: bash
         run: |
           set -euo pipefail
+          cat > /tmp/v0671_chunks.sha256 <<'EOF'
+          e008e3e766cec8f878cc3f44cc6ebf85b6d83e811a9665299501fef31a5989e7  .github/v0671_patch_chunk_00.b64
+          902fddffd8108a2c50d5495af1cc741ea57f4b85f6c6d1882ae31ca4b32f14a9  .github/v0671_patch_chunk_01.b64
+          6bd002d9da7e681676217425b4bfcbda879b604a91376b2a0f03bc8ed5fcc8d0  .github/v0671_patch_chunk_02.b64
+          e33b2aca9aa4f137351e9c2164c16ddb9be4c4e5d46a03f5ccdd9c203efac96c  .github/v0671_patch_chunk_03.b64
+          5db5431d0015ebd69768ad1c8a8532f72a710a65282621c6a2c64ab2602c4fb1  .github/v0671_patch_chunk_04.b64
+          51ed77b300271a520a26b04320a1fe5f669f30bc7441960ec888f6535bfe6999  .github/v0671_patch_chunk_05.b64
+          4320c6bff35d5c96da0ecf8a4cf590ffaab08ff78ee4bf005c9c4876bce8f42e  .github/v0671_patch_chunk_06.b64
+          8f2b6023c5fb0bec471438b888d519ea2673ef29f82c592f70f6935f7d7c3186  .github/v0671_patch_chunk_07.b64
+          19193233466ee8f1c6308dce7279224082bec048c342736c45e3339a08b9bebd  .github/v0671_patch_chunk_08.b64
+          b92b2cb16ba1b5e74fa79cbd69bdc8beb1374d3d87cb65971a5a10ec49eb866c  .github/v0671_patch_chunk_09.b64
+          4d4674f9734af32d1b69ba117a3447a4f92a115abbe86fd2a3ce98f5d1f23cda  .github/v0671_patch_chunk_10.b64
+          40afdaf0943992d935d7fd37b518c20cddc96d8e493b0c293604c91e8c381661  .github/v0671_patch_chunk_11.b64
+          7c279535d07ab1dea6cecb868f6bc07efa96aedd61449bb57ad87abdf0040c9f  .github/v0671_patch_chunk_12.b64
+          ceadb12e57313f134b9a1092722ee3586a237de5c118d26b262a2918d55e22d3  .github/v0671_patch_chunk_13.b64
+          44042ecfd98665c900b641b63d78ac61b621bffaaacc4eb46e07a95511246392  .github/v0671_patch_chunk_14.b64
+          509c326cba1250b84a04088d3ced334e149fcac8166e162d3e730feb5d2b1e6d  .github/v0671_patch_chunk_15.b64
+          EOF
+          sed -i 's/^          //' /tmp/v0671_chunks.sha256
+          sha256sum -c /tmp/v0671_chunks.sha256
           cat .github/v0671_patch_chunk_*.b64 | base64 -d > /tmp/v0671_source_patch.tar.gz
           echo "d8ebae6a7822eb37dc11db842fcb898b3ceebf2174353e3c3628b403b33624e5  /tmp/v0671_source_patch.tar.gz" | sha256sum -c -
           tar -xzf /tmp/v0671_source_patch.tar.gz
