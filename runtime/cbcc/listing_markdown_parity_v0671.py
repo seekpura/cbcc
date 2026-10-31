@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Any, Callable, Mapping
 import json
 
+_APPENDIX_MARKER = '## 多语言 Listing Canonical 对照'
+
 
 def _read_json(path: Path) -> dict[str, Any]:
     try:
@@ -44,7 +46,7 @@ def render_multilingual_listing_appendix(center: Mapping[str, Any]) -> str:
     if not rows:
         return ''
     lines = [
-        '', '## 多语言 Listing Canonical 对照', '',
+        '', _APPENDIX_MARKER, '',
         '> 该表直接投影 `HUMAN_DELIVERY.localized_copy`。目标市场原文、EN语义基线与中文释义不得在 MD 中静默消失。', '',
         '| Locale | 字段 | 目标市场 / 基线内容 | 中文释义 / 用途 | 状态 |',
         '|---|---|---|---|---|',
@@ -55,22 +57,25 @@ def render_multilingual_listing_appendix(center: Mapping[str, Any]) -> str:
     return '\n'.join(lines) + '\n'
 
 
-def wrap_render_upload_center_md(fn: Callable[[dict[str, Any]], str]):
-    """Make multilingual canonical Listing rows part of the renderer itself.
+def _refresh_appendix(text: str, appendix: str) -> str:
+    if not appendix:
+        return text
+    if _APPENDIX_MARKER in text:
+        # The canonical appendix is an owned projection at the end of the Upload Ready file.
+        # Rebuild it from current HUMAN_DELIVERY so stale locale rows cannot survive silently.
+        prefix = text.split(_APPENDIX_MARKER, 1)[0].rstrip()
+        return prefix + '\n\n' + appendix.lstrip('\n')
+    return text.rstrip() + '\n\n' + appendix.lstrip('\n')
 
-    The final-package ensure step remains an idempotent safety net, but renderer output is already
-    complete so a package cannot temporarily exist with BM/CN primary fields while EN/other locale
-    canonical rows are stranded only inside HUMAN_DELIVERY.json.
-    """
+
+def wrap_render_upload_center_md(fn: Callable[[dict[str, Any]], str]):
+    """Make multilingual canonical Listing rows part of the renderer itself."""
     if getattr(fn, '_cbcc_v0671_multilingual_listing_parity', False):
         return fn
 
     def rendered(center: dict[str, Any]) -> str:
         base = fn(center)
-        appendix = render_multilingual_listing_appendix(center)
-        if not appendix or '## 多语言 Listing Canonical 对照' in base:
-            return base
-        return base.rstrip() + '\n\n' + appendix
+        return _refresh_appendix(base, render_multilingual_listing_appendix(center))
 
     setattr(rendered, '_cbcc_v0671_multilingual_listing_parity', True)
     return rendered
@@ -88,10 +93,9 @@ def ensure_listing_markdown_canonical_parity(package_dir: Path | str) -> dict[st
     if not path.exists():
         return {'status': 'MISSING', 'path': str(path)}
     text = path.read_text(encoding='utf-8', errors='ignore')
-    appendix = render_multilingual_listing_appendix(center)
-    if appendix and '## 多语言 Listing Canonical 对照' not in text:
-        text = text.rstrip() + '\n\n' + appendix
-        path.write_text(text, encoding='utf-8')
+    refreshed = _refresh_appendix(text, render_multilingual_listing_appendix(center))
+    if refreshed != text:
+        path.write_text(refreshed, encoding='utf-8')
     return {'status': 'PASS', 'path': str(path), 'localized_rows': len(center.get('localized_copy') or [])}
 
 
