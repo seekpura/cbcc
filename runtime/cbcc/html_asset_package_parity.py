@@ -5,27 +5,35 @@ import json,re
 
 
 def _data(html:str)->dict[str,Any]:
+    # Legacy function-based workspace.
     m=re.search(r'\bconst\s+DATA\s*=\s*',html)
-    if not m:return {}
-    try:
-        value,_=json.JSONDecoder().raw_decode(html[m.end():]);return value if isinstance(value,dict) else {}
-    except Exception:return {}
-
+    if m:
+        try:
+            value,_=json.JSONDecoder().raw_decode(html[m.end():])
+            if isinstance(value,dict):return value
+        except Exception:pass
+    # v0.6.72 self-contained Lazy Human workspace. The exact same canonical asset objects are stored
+    # once in an application/json script and rendered on demand; parity rules below stay unchanged.
+    m=re.search(r'<script[^>]+id=["\']cbcc-canonical-data-v0672["\'][^>]*>(.*?)</script>',html,flags=re.S)
+    if m:
+        try:
+            value=json.loads(m.group(1))
+            if isinstance(value,dict):return value
+        except Exception:pass
+    return {}
 def _json(path:Path)->Any:
     try:return json.loads(path.read_text(encoding='utf-8'))
     except Exception:return None
-
 def _text_first(root:Path,names:tuple[str,...])->str|None:
     for name in names:
         p=root/name
         if p.exists():return p.read_text(encoding='utf-8',errors='ignore').strip()
     return None
-
 def audit_html_asset_package_parity(package:Path)->list[dict[str,Any]]:
     html=package/'index.html';root=package/'asset_packages'
     if not html.exists() or not root.exists():return []
     data=_data(html.read_text(encoding='utf-8',errors='ignore'));assets=data.get('assets') if isinstance(data,dict) else None
-    if not isinstance(assets,list):return [{'code':'HTML_ASSET_DATA_MISSING','why':'asset_packages exist but index.html DATA has no assets array'}]
+    if not isinstance(assets,list):return [{'code':'HTML_ASSET_DATA_MISSING','why':'asset_packages exist but index.html canonical data has no assets array'}]
     by_id={str(a.get('id') or a.get('asset_id') or ''):a for a in assets if isinstance(a,dict)};issues=[]
     for d in sorted(x for x in root.iterdir() if x.is_dir()):
         aid=d.name;a=by_id.get(aid)
