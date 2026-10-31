@@ -171,7 +171,7 @@ def _signature(asset: Mapping[str,Any]) -> tuple[str,...]:
 
 def _delta(asset: Mapping[str,Any]) -> Any:
     art=_art(asset)
-    return _pick(art,'deliberate_difference','adjacent_asset_delta','differentiation_axis','portfolio_delta','why_different_from_adjacent')
+    return _pick(art,'deliberate_difference','adjacent_asset_delta','differentiation_axis','portfolio_delta','why_different_from_adjacent','portfolio_rhythm_delta','rhythm_delta')
 
 
 def validate_portfolio_differentiation(architecture: Mapping[str,Any], selected_direction: Mapping[str,Any] | None=None) -> dict[str,Any]:
