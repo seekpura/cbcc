@@ -1,0 +1,63 @@
+--- a/runtime/cbcc/asset_compiler.py
++++ b/runtime/cbcc/asset_compiler.py
+@@ -14,6 +14,42 @@
+ def _jdump(x): return json.dumps(x,ensure_ascii=False,indent=2)
+ 
+ 
++def _operator_text(value: Any, default: str = '') -> str:
++    """Render a structured multilingual semantic value for Chinese-first operator text.
++
++    Canonical business objects may carry locale-keyed mappings. Human guidance needs one readable
++    string, while machine manifests must preserve the original structured value.
++    """
++    if value in (None, '', [], {}):
++        return default
++    if isinstance(value, dict):
++        for key in ('zh-CN', 'zh', 'cn', 'CN', 'chinese', 'en', 'EN'):
++            candidate=value.get(key)
++            if candidate not in (None, '', [], {}):
++                return _operator_text(candidate, default)
++        return json.dumps(value, ensure_ascii=False, sort_keys=True, default=str)
++    if isinstance(value, (list, tuple, set, frozenset)):
++        return '；'.join(_operator_text(item) for item in value if item not in (None, '', [], {})) or default
++    return str(value)
++
++
++def _semantic_text_values(value: Any) -> set[str]:
++    """Return hashable textual leaves for semantic equality checks without destroying structure."""
++    if value in (None, '', [], {}):
++        return set()
++    if isinstance(value, dict):
++        out=set()
++        for child in value.values():
++            out.update(_semantic_text_values(child))
++        return out
++    if isinstance(value, (list, tuple, set, frozenset)):
++        out=set()
++        for child in value:
++            out.update(_semantic_text_values(child))
++        return out
++    return {str(value)}
++
++
+ def _asset_strategy_markdown(asset:dict[str,Any], strategy:dict[str,Any], strategy_authority:dict[str,Any]|None=None)->str:
+     core=(strategy_authority or {}).get('sections',{}).get('04_marketing_core_strategy',{})
+     pos=core.get('positioning',{}) if isinstance(core,dict) else {}
+@@ -283,7 +319,7 @@
+         signature=asset.get('visual_production_signature') or {}
+         edit_contract=asset.get('editable_layer_contract') or {}
+         fidelity_line=('Explicit locked-source mode: use the supplied master as an immutable product layer.' if str(asset.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL','LOCKED_SOURCE_COMPOSITE','COMPOSITE'} else 'Reference-guided mode: source files guide the design; redraw/rerender/restyle/recompose is allowed. Keep verified facts/claims honest; pixel matching and photorealism are not required.')
+-        _write(d/'07_generation_guidance.txt','目标结果：\n- '+asset.get('strategic_job','Resolve the consumer question')+'\n- 视觉信息语法：'+str(signature.get('composition_grammar') or 'decision-led composition')+'\n- 决策关键证据平面：'+str(signature.get('evidence_plane') or asset.get('consumer_question'))+'\n- 差异化轴：'+str(signature.get('differentiation_axis') or 'decision-specific evidence relationship')+'\n\n产品 Fidelity 执行：\n- '+fidelity_line+'\n\n允许的语义元素：\n- '+('\n- '.join(map(str,asset.get('approved_visual_elements',[]))) or 'Use only elements required by the approved creative brief.')+'\n\n精确边界：\n- '+('\n- '.join(map(str,asset.get('precision_boundaries',[]))) or 'Preserve product truth, locked copy and approved product identity.')+'\n\n可局部修改层：\n- '+('\n- '.join(map(str,edit_contract.get('editable_layers',[]))) or 'No local editable layers declared; request an explicit scoped revision.')+'\n\n冻结层：\n- '+('\n- '.join(map(str,edit_contract.get('frozen_layers',[]))) or 'Product truth and locked copy remain frozen.')+'\n')
++        _write(d/'07_generation_guidance.txt','目标结果：\n- '+_operator_text(asset.get('strategic_job'),'Resolve the consumer question')+'\n- 视觉信息语法：'+str(signature.get('composition_grammar') or 'decision-led composition')+'\n- 决策关键证据平面：'+str(signature.get('evidence_plane') or asset.get('consumer_question'))+'\n- 差异化轴：'+str(signature.get('differentiation_axis') or 'decision-specific evidence relationship')+'\n\n产品 Fidelity 执行：\n- '+fidelity_line+'\n\n允许的语义元素：\n- '+('\n- '.join(map(str,asset.get('approved_visual_elements',[]))) or 'Use only elements required by the approved creative brief.')+'\n\n精确边界：\n- '+('\n- '.join(map(str,asset.get('precision_boundaries',[]))) or 'Preserve product truth, locked copy and approved product identity.')+'\n\n可局部修改层：\n- '+('\n- '.join(map(str,edit_contract.get('editable_layers',[]))) or 'No local editable layers declared; request an explicit scoped revision.')+'\n\n冻结层：\n- '+('\n- '.join(map(str,edit_contract.get('frozen_layers',[]))) or 'Product truth and locked copy remain frozen.')+'\n')
+         _write(d/'08_copy.md','# 锁定的可见文案\n\n> 目标市场可见文案按策划使用目标语言；人类交付 HTML 必须同时显示中文释义 / 用途。\n\n```json\n'+_jdump(asset.get('visible_copy',{}))+'\n```\n')
+         route=route_production({**asset,'source_product_assets':list(source_product_assets or [])},provider_preferences)
+         production_quality_targets={'product_fidelity':asset.get('product_fidelity'),'source_product_assets':list(source_product_assets or []),'visual_production_signature':asset.get('visual_production_signature',{}),'editable_layer_contract':asset.get('editable_layer_contract',{}),'copy_visual_alignment':{'locked_visible_copy':asset.get('visible_copy',{}),'decision_answer':asset.get('incremental_information') or asset.get('belief_target') or asset.get('strategic_job')},'provider_observation_targets':['product_identity_preserved','decision_answer_visible','surface_contract_met','copy_visual_alignment','photography_cmf_alignment','visual_differentiation_preserved'],'canonical_prompt_contract':prompt_bundle.get('machine_visual_contract') or {},'parameter_trace':prompt_bundle.get('parameter_trace') or [],'deterministic_copy_overlay':prompt_bundle.get('deterministic_copy_overlay') or {},'renderer_recipe':prompt_bundle.get('renderer_recipe') or {},'qa_target_contract':prompt_bundle.get('qa_target_contract') or {},'prompt_generation_readiness':(prompt_bundle.get('prompt_consumption_audit') or {}).get('status'),'prompt_generation_readiness_blocks_asset_delivery':False}
+@@ -321,7 +357,7 @@
+                 'listing_relevance':{
+                     'title_job':listing.get('title_job'),
+                     'hero_job':listing.get('hero_job'),
+-                    'pdp_sequence':[r for r in listing.get('pdp_sequence',[]) if r.get('question')==asset.get('consumer_question') or r.get('job') in {asset.get('strategic_job'),asset.get('belief_target')}],
++                    'pdp_sequence':[r for r in listing.get('pdp_sequence',[]) if r.get('question')==asset.get('consumer_question') or str(r.get('job')) in (_semantic_text_values(asset.get('strategic_job')) | _semantic_text_values(asset.get('belief_target')))],
+                 },
+                 'market_decisions':market.get('strategic_insights',[])[:4],
+                 'visual_execution':{
