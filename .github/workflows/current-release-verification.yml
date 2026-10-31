@@ -17,6 +17,7 @@ on:
       - 'runtime/**'
       - 'tests/test_v0670_positive_canonical_projection.py'
       - 'tests/test_v0671_full_canonical_parity.py'
+      - 'tests/test_v0671_canonical_search_security.py'
       - '.github/workflows/current-release-verification.yml'
   workflow_dispatch:
 
@@ -35,7 +36,9 @@ jobs:
       - name: Verify v0.6.71 acceptance aggregate first
         env:
           PYTHONHASHSEED: '0'
-        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
+        run: |
+          python -m pytest tests/test_v0671_full_canonical_parity.py -q
+          python -m pytest tests/test_v0671_canonical_search_security.py -q
 
       - name: Verify prior maturity and CURRENT requirement accounting
         env:
@@ -90,6 +93,7 @@ jobs:
               'sha256': hashlib.sha256(plugin.read_bytes()).hexdigest(),
               'verified_by': [
                   'tests/test_v0671_full_canonical_parity.py',
+                  'tests/test_v0671_canonical_search_security.py',
                   'tests/test_v0670_positive_canonical_projection.py',
                   'scripts/check_v0664_requirement_consumer_map.py',
                   'scripts/check_current_release_package.py',
