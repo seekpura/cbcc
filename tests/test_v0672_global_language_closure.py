@@ -27,7 +27,7 @@ def test_video_plan_preserves_authored_chinese_hook_and_runtime_default_creator_
         'family': 'CREATOR_AFFILIATE',
         'surface': 'CREATOR',
         'consumer_question': 'What should a creator naturally demonstrate while preserving product truth?',
-        'consumer_question_cn': '达人应如何自然演示，同时守住产品真源边界？',
+        'asset_art_direction': {'consumer_question_cn': '达人应如何自然演示，同时守住产品真源边界？'},
         'decision_intent': 'RELEVANCE',
         'incremental_information': 'show routine use without overclaiming',
     }]
