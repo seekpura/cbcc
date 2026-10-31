@@ -1,3 +1,4 @@
+# Final release verification path; temporary diagnostic workflows must not be present in the release head.
 name: current-release-verification
 
 on:
