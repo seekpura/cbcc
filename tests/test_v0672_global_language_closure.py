@@ -64,12 +64,33 @@ def test_v0672_bootstrap_does_not_import_compiler_before_strategy_completion():
     env['PYTHONPATH'] = os.pathsep.join(filter(None, [str(Path(__file__).resolve().parents[1] / 'runtime'), env.get('PYTHONPATH', '')]))
     code = r'''
 import sys
+import types
 import cbcc
 assert 'cbcc.compiler' not in sys.modules, 'v0.6.72 bootstrap imported compiler before normal caller import'
 from cbcc import strategy_authority
+
+def chain_has_marker(fn, marker):
+    stack = [fn]
+    seen = set()
+    while stack:
+        current = stack.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        if getattr(current, marker, False):
+            return True
+        for cell in getattr(current, '__closure__', None) or ():
+            try:
+                value = cell.cell_contents
+            except ValueError:
+                continue
+            if isinstance(value, types.FunctionType):
+                stack.append(value)
+    return False
+
 fn = strategy_authority.build_master_strategy
-assert getattr(fn, '_cbcc_v0670_strategy_culture_completion', False), 'v0.6.70 strategy completion wrapper missing'
-assert getattr(fn, '_cbcc_v0671_strategy_execution_completion', False), 'v0.6.71 strategy execution wrapper missing'
+assert chain_has_marker(fn, '_cbcc_v0670_strategy_culture_completion'), 'v0.6.70 strategy completion wrapper missing from chain'
+assert chain_has_marker(fn, '_cbcc_v0671_strategy_execution_completion'), 'v0.6.71 strategy execution wrapper missing from chain'
 '''
     completed = subprocess.run([sys.executable, '-c', code], env=env, text=True, capture_output=True)
     assert completed.returncode == 0, completed.stdout + completed.stderr
