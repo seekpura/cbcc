@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 import json
 
 
@@ -53,6 +53,27 @@ def render_multilingual_listing_appendix(center: Mapping[str, Any]) -> str:
         zh = row.get('delivery_translation') or row.get('delivery_note') or '待补中文释义 / 用途'
         lines.append(f"| {_cell(row.get('locale') or '—')} | {_cell(row.get('field') or '—')} | {_cell(row.get('value'))} | {_cell(zh)} | {_cell(row.get('status') or row.get('release_status') or '—')} |")
     return '\n'.join(lines) + '\n'
+
+
+def wrap_render_upload_center_md(fn: Callable[[dict[str, Any]], str]):
+    """Make multilingual canonical Listing rows part of the renderer itself.
+
+    The final-package ensure step remains an idempotent safety net, but renderer output is already
+    complete so a package cannot temporarily exist with BM/CN primary fields while EN/other locale
+    canonical rows are stranded only inside HUMAN_DELIVERY.json.
+    """
+    if getattr(fn, '_cbcc_v0671_multilingual_listing_parity', False):
+        return fn
+
+    def rendered(center: dict[str, Any]) -> str:
+        base = fn(center)
+        appendix = render_multilingual_listing_appendix(center)
+        if not appendix or '## 多语言 Listing Canonical 对照' in base:
+            return base
+        return base.rstrip() + '\n\n' + appendix
+
+    setattr(rendered, '_cbcc_v0671_multilingual_listing_parity', True)
+    return rendered
 
 
 def ensure_listing_markdown_canonical_parity(package_dir: Path | str) -> dict[str, Any]:
