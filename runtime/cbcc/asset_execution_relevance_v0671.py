@@ -100,6 +100,15 @@ def complete_asset_execution_relevance(asset: Mapping[str, Any]) -> dict[str, An
     type_required = _visible_copy_required(out, art)
     type_contract: dict[str, Any] = {}
     for dim, aliases in _TYPE_DIMS.items():
+        # Relevance wins over inherited/global typography defaults. If the asset has no visible copy,
+        # typography is explicitly NOT_NEEDED even when a project-level typography system exists.
+        if not type_required:
+            type_contract[dim] = {
+                'status': 'NOT_NEEDED',
+                'why': '当前资产没有可见文案，因此该排版变量不进入本资产生产。',
+                'execution': '不为无文案资产添加装饰文字。',
+            }
+            continue
         if isinstance(existing_type.get(dim), Mapping) and existing_type[dim].get('status') and existing_type[dim].get('why'):
             type_contract[dim] = deepcopy(existing_type[dim])
             continue
@@ -110,17 +119,11 @@ def complete_asset_execution_relevance(asset: Mapping[str, Any]) -> dict[str, An
                 'why': '该排版变量已由资产策划选择，必须进入对应文字生产/后期执行。',
                 'execution': deepcopy(value),
             }
-        elif type_required:
+        else:
             type_contract[dim] = {
                 'status': 'TO_VERIFY',
                 'why': '当前资产存在可见文案；该排版变量会影响移动端阅读与商品几何关系，缺失时必须显式保持待确认。',
                 'execution': '不得由模型以默认字体、默认换行或默认安全区静默替代策划决策。',
-            }
-        else:
-            type_contract[dim] = {
-                'status': 'NOT_NEEDED',
-                'why': '当前资产没有可见文案，因此该排版变量不进入本资产生产。',
-                'execution': '不为无文案资产添加装饰文字。',
             }
     art['typography_contract'] = type_contract
     out['asset_art_direction'] = art
