@@ -3,58 +3,67 @@ on:
   push:
     branches: [v0.6.72-fresh-k01-e2e-closure]
   workflow_dispatch:
+
+x-test: &test
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with: {python-version: '3.12'}
+    - run: python -m pip install pyyaml pytest
+
 jobs:
-  presence:
-    runs-on: ubuntu-latest
+  no-copy-typography:
+    <<: *test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: python -m pip install pyyaml pytest
       - env: {PYTHONPATH: runtime, PYTHONHASHSEED: '0'}
-        run: python -m pytest -q tests/test_v0672_fresh_k01_materialization_closure.py::test_final_manifest_presence_overrides_stale_universe_count
-  workspace:
-    runs-on: ubuntu-latest
+        run: python -m pytest -q tests/test_v0672_prompt_relevance_and_nested_execution.py::test_no_visible_copy_overrides_global_typography_to_not_needed
+  model-fields-not-needed:
+    <<: *test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: python -m pip install pyyaml pytest
       - env: {PYTHONPATH: runtime, PYTHONHASHSEED: '0'}
-        run: python -m pytest -q tests/test_v0672_fresh_k01_materialization_closure.py::test_cbcc_commercial_workspace_not_fixed_taxonomy_failure
-  positive-order:
-    runs-on: ubuntu-latest
+        run: python -m pytest -q tests/test_v0672_prompt_relevance_and_nested_execution.py::test_model_fields_do_not_require_global_typography_or_inclusive_contract_when_asset_relevance_says_not_needed
+  nested-photo:
+    <<: *test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: python -m pip install pyyaml pytest
       - env: {PYTHONPATH: runtime, PYTHONHASHSEED: '0'}
-        run: python -m pytest -q tests/test_v0672_fresh_k01_materialization_closure.py::test_positive_materialization_runs_before_legacy_audit
-  lazy-human:
-    runs-on: ubuntu-latest
+        run: python -m pytest -q tests/test_v0672_prompt_relevance_and_nested_execution.py::test_nested_camera_focus_and_lighting_values_are_selected_for_prompt_closure
+  graphic-carrier:
+    <<: *test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: python -m pip install pyyaml pytest
       - env: {PYTHONPATH: runtime, PYTHONHASHSEED: '0'}
-        run: python -m pytest -q tests/test_v0672_fresh_k01_materialization_closure.py::test_legacy_materialization_accepts_already_materialized_lazy_human_workspace
-  html-asset-parity:
-    runs-on: ubuntu-latest
+        run: python -m pytest -q tests/test_v0672_prompt_relevance_and_nested_execution.py::test_graphic_carrier_is_not_misclassified_as_photo_by_compatibility_focal_length_slot
+  visible-copy:
+    <<: *test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: python -m pip install pyyaml pytest
       - env: {PYTHONPATH: runtime, PYTHONHASHSEED: '0'}
-        run: python -m pytest -q tests/test_v0672_fresh_k01_materialization_closure.py::test_html_asset_parity_reads_lazy_embedded_canonical_data
-  listing-parity:
-    runs-on: ubuntu-latest
+        run: python -m pytest -q tests/test_v0672_prompt_relevance_and_nested_execution.py::test_canonical_visible_copy_projects_exact_language_slots_and_integrated_route_is_model_render
+  motion-timing:
+    <<: *test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.12'}
       - run: python -m pip install pyyaml pytest
       - env: {PYTHONPATH: runtime, PYTHONHASHSEED: '0'}
-        run: python -m pytest -q tests/test_v0672_fresh_k01_materialization_closure.py::test_listing_materializer_refreshes_stale_canonical_appendix_idempotently
+        run: python -m pytest -q tests/test_v0672_prompt_relevance_and_nested_execution.py::test_creator_motion_timing_alias_is_consumed_as_duration_timing
