@@ -66,6 +66,22 @@ jobs:
         continue-on-error: true
         run: python -m pytest 'tests/test_v0671_full_canonical_parity.py::test_human_payload_exposes_independent_asset_production_objects' -q
 
+      - name: v0671 same-process prefix 1-2
+        continue-on-error: true
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q -k 'real_delivery_html or listing_markdown'
+
+      - name: v0671 same-process prefix 1-3
+        continue-on-error: true
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q -k 'real_delivery_html or listing_markdown or full_asset_package_lineage'
+
+      - name: v0671 same-process prefix 1-4
+        continue-on-error: true
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q -k 'real_delivery_html or listing_markdown or full_asset_package_lineage or strategy_completion'
+
+      - name: v0671 same-process prefix 1-5
+        continue-on-error: true
+        run: python -m pytest tests/test_v0671_full_canonical_parity.py -q -k 'real_delivery_html or listing_markdown or full_asset_package_lineage or strategy_completion or human_asset_and_typography'
+
       - name: v0671 acceptance aggregate
         run: python -m pytest tests/test_v0671_full_canonical_parity.py -q
 
