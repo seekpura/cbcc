@@ -156,6 +156,13 @@ def _patch_model_native() -> None:
         if _all_not_needed(art.get('human_relevance_decisions')):
             fields.pop('inclusive_human', None)
             fields.pop('human_context', None)
+
+        # A project-level Photography color-management contract must not create missing EN prose
+        # on an explicitly graphic asset. Only asset-authored color management applies there.
+        carrier = str(art.get('visual_carrier') or '').strip()
+        if _GRAPHIC_TOKEN.search(carrier) and not _meaningful(art.get('color_management')):
+            fields.pop('color_management', None)
+            missing = [item for item in missing if item != 'color_management']
         return fields, missing
 
     native._visible_copy_block = visible_copy_block
