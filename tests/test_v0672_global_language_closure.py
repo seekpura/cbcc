@@ -1,5 +1,8 @@
 from pathlib import Path
 import json
+import os
+import subprocess
+import sys
 
 from cbcc.global_chinese_interpretation import _asset_visible_copy_companion_present, _audit_structured_copy
 from cbcc.video_creator import build_video_creator_plan
@@ -54,3 +57,19 @@ def test_video_plan_does_not_invent_chinese_hook_when_none_is_authored():
     plan = build_video_creator_plan('P2', [{'family': 'VIDEO', 'surface': 'PDP_VIDEO', 'curation_job': 'video'}], [], {'primary_locale': 'ms-MY'}, assets=assets)
     row = plan['assets'][0]
     assert row.get('hook_cn') in (None, '')
+
+
+def test_v0672_bootstrap_does_not_import_compiler_before_strategy_completion():
+    env = dict(os.environ)
+    env['PYTHONPATH'] = os.pathsep.join(filter(None, [str(Path(__file__).resolve().parents[1] / 'runtime'), env.get('PYTHONPATH', '')]))
+    code = r'''
+import sys
+import cbcc
+assert 'cbcc.compiler' not in sys.modules, 'v0.6.72 bootstrap imported compiler before normal caller import'
+from cbcc import strategy_authority
+fn = strategy_authority.build_master_strategy
+assert getattr(fn, '_cbcc_v0670_strategy_culture_completion', False), 'v0.6.70 strategy completion wrapper missing'
+assert getattr(fn, '_cbcc_v0671_strategy_execution_completion', False), 'v0.6.71 strategy execution wrapper missing'
+'''
+    completed = subprocess.run([sys.executable, '-c', code], env=env, text=True, capture_output=True)
+    assert completed.returncode == 0, completed.stdout + completed.stderr
