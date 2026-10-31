@@ -40,3 +40,21 @@ jobs:
       - run: python -m pip install pyyaml pytest
       - env: {PYTHONPATH: runtime, PYTHONHASHSEED: '0'}
         run: python -m pytest -q tests/test_v0672_fresh_k01_materialization_closure.py::test_legacy_materialization_accepts_already_materialized_lazy_human_workspace
+  html-asset-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install pyyaml pytest
+      - env: {PYTHONPATH: runtime, PYTHONHASHSEED: '0'}
+        run: python -m pytest -q tests/test_v0672_fresh_k01_materialization_closure.py::test_html_asset_parity_reads_lazy_embedded_canonical_data
+  listing-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install pyyaml pytest
+      - env: {PYTHONPATH: runtime, PYTHONHASHSEED: '0'}
+        run: python -m pytest -q tests/test_v0672_fresh_k01_materialization_closure.py::test_listing_materializer_refreshes_stale_canonical_appendix_idempotently
