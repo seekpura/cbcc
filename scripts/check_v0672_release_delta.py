@@ -37,8 +37,12 @@ REQUIRED_RUNTIME = {
         'CBCC_CANONICAL_STATIC_PROJECTION_V0672', 'DEDUPLICATED_SINGLE_MATERIALIZATION',
         'deduplicated_heavy_object_families', 'textContent', 'replaceChildren',
     ),
+    'runtime/cbcc/canonical_human_lazy_projection_v0672.py': (
+        'CBCC_CANONICAL_LAZY_PROJECTION_V0672', 'SELF_CONTAINED_LAZY_SINGLE_MATERIALIZATION',
+        'data-canonical-mount', 'cbcc-canonical-data-v0672', 'textContent', 'replaceChildren',
+    ),
     'runtime/cbcc/canonical_full_package_audit_v0671.py': (
-        'canonical_human_compaction_v0672', 'build_canonical_human_payload', 'finalize_static_human_projection',
+        'canonical_human_lazy_projection_v0672', 'build_canonical_human_payload', 'finalize_static_human_projection',
     ),
 }
 
