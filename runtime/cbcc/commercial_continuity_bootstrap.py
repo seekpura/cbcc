@@ -179,7 +179,8 @@ def install() -> None:
         if args:
             call_args = list(args)
             completed_asset = complete_asset_execution_relevance(call_args[0] or {})
-            normalized_asset = normalize_full_art_direction(completed_asset)
+            call_args[0] = completed_asset
+            normalized_asset = normalize_full_art_direction(call_args[0] or {})
             validate_canonical_asset_or_raise(normalized_asset)
             call_args[0] = normalized_asset
             out = existing_prompt_compile(*call_args, **kwargs)
