@@ -75,6 +75,15 @@ jobs:
       - name: Verify v0.6.72 fresh K01 final export closure
         env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
         run: python -m pytest tests/test_v0672_fresh_k01_final_export_closure.py -q
+      - name: Verify v0.6.72 prompt relevance and nested execution
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
+        run: python -m pytest tests/test_v0672_prompt_relevance_and_nested_execution.py -q
+      - name: Verify v0.6.72 integrated visible-copy negative constraints
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
+        run: python -m pytest tests/test_v0672_integrated_copy_negative_constraint.py -q
+      - name: Verify v0.6.72 nonblocking platform research
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: runtime}
+        run: python -m pytest tests/test_v0672_nonblocking_platform_research.py -q
       - name: Verify v0.6.71 acceptance aggregate
         env: {PYTHONHASHSEED: '0'}
         run: |
@@ -122,9 +131,24 @@ jobs:
           version = re.match(r'^(\d+\.\d+\.\d+)', authority).group(1)
           plugin = Path(Path('dist_current/CURRENT_PLUGIN_PATH.txt').read_text(encoding='utf-8').strip())
           verified_by = [
-              'tests/test_v0672_fresh_k01_portfolio_delta.py','tests/test_v0672_fresh_k01_projection_closure.py','tests/test_v0672_global_language_closure.py','tests/test_v0672_canonical_human_compaction.py','tests/test_v0672_fresh_k01_materialization_closure.py','tests/test_v0672_fresh_k01_final_export_closure.py',
-              'tests/test_v0671_full_canonical_parity.py','tests/test_v0671_canonical_search_security.py','tests/test_v0670_positive_canonical_projection.py',
-              'scripts/check_v0664_requirement_consumer_map.py','scripts/check_current_release_package.py','scripts/check_v0670_release_delta.py','scripts/check_v0670_positive_projection_package.py','scripts/check_v0671_release_delta.py --floor-mode','scripts/check_v0672_release_delta.py'
+              'tests/test_v0672_fresh_k01_portfolio_delta.py',
+              'tests/test_v0672_fresh_k01_projection_closure.py',
+              'tests/test_v0672_global_language_closure.py',
+              'tests/test_v0672_canonical_human_compaction.py',
+              'tests/test_v0672_fresh_k01_materialization_closure.py',
+              'tests/test_v0672_fresh_k01_final_export_closure.py',
+              'tests/test_v0672_prompt_relevance_and_nested_execution.py',
+              'tests/test_v0672_integrated_copy_negative_constraint.py',
+              'tests/test_v0672_nonblocking_platform_research.py',
+              'tests/test_v0671_full_canonical_parity.py',
+              'tests/test_v0671_canonical_search_security.py',
+              'tests/test_v0670_positive_canonical_projection.py',
+              'scripts/check_v0664_requirement_consumer_map.py',
+              'scripts/check_current_release_package.py',
+              'scripts/check_v0670_release_delta.py',
+              'scripts/check_v0670_positive_projection_package.py',
+              'scripts/check_v0671_release_delta.py --floor-mode',
+              'scripts/check_v0672_release_delta.py'
           ]
           payload = {'file':plugin.name,'version':version,'authority_version':authority,'bytes':plugin.stat().st_size,'sha256':hashlib.sha256(plugin.read_bytes()).hexdigest(),'verified_by':verified_by,'verified':True}
           Path('dist_current/VERIFIED_CURRENT_ARTIFACT.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
