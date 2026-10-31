@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pathlib import Path
-import json
+import json,re
 from typing import Any, Callable
 
 from .canonical_materialization_integrity import audit_asset_directory, COPY_ROUTES
@@ -44,10 +44,27 @@ def _prompt_contract_route_issue(asset_dir:Path)->dict[str,Any]|None:
         if route and route not in COPY_ROUTES:return {'code':'PROMPT_CONTRACT_COPY_ROUTE_INVALID','asset_id':asset_dir.name,'value':route[:500]}
     return None
 
+def _lazy_human_projection_status(html:Path)->dict[str,Any]|None:
+    """Recognize the stronger v0.6.72 self-contained Lazy projection without rerunning v0.6.70.
+
+    The current final-package audit separately verifies embedded canonical coverage and dynamic mounts.
+    This compatibility layer only prevents the legacy `const DATA` projector from treating an already
+    materialized Lazy workspace as missing data.
+    """
+    text=html.read_text(encoding='utf-8',errors='ignore')
+    if 'CBCC_CANONICAL_LAZY_PROJECTION_V0672' not in text:return None
+    m=re.search(r'<script[^>]+id=["\']cbcc-canonical-data-v0672["\'][^>]*>(.*?)</script>',text,flags=re.S)
+    if not m:return {'status':'INCOMPLETE','mode':'LAZY_CANONICAL_ALREADY_MATERIALIZED','issues':['LAZY_CANONICAL_DATA_SCRIPT_MISSING']}
+    try:value=json.loads(m.group(1))
+    except Exception:return {'status':'INCOMPLETE','mode':'LAZY_CANONICAL_ALREADY_MATERIALIZED','issues':['LAZY_CANONICAL_DATA_INVALID_JSON']}
+    if not isinstance(value,dict):return {'status':'INCOMPLETE','mode':'LAZY_CANONICAL_ALREADY_MATERIALIZED','issues':['LAZY_CANONICAL_DATA_NOT_OBJECT']}
+    return {'status':'PASS','mode':'LAZY_CANONICAL_ALREADY_MATERIALIZED','path':str(html),'canonical_data_script':'cbcc-canonical-data-v0672'}
+
 def wrap_audit_host_full_package(fn:Callable[[Path],dict[str,Any]]):
     def audited(package_dir:Path):
         package=Path(package_dir);html=package/'index.html';human_projection={'status':'NOT_APPLICABLE'}
-        if html.exists():human_projection=apply_complete_canonical_human_projection(html)
+        if html.exists():
+            human_projection=_lazy_human_projection_status(html) or apply_complete_canonical_human_projection(html)
         result=fn(package);issues=list(result.get('issues') or [])
         if html.exists() and human_projection.get('status')!='PASS':issues.append({'code':'CANONICAL_HUMAN_POSITIVE_PROJECTION_FAILED','detail':human_projection})
         root=package/'asset_packages'
