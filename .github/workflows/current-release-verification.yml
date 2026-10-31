@@ -33,6 +33,30 @@ jobs:
           python-version: '3.12'
       - name: Install verification dependencies
         run: python -m pip install pyyaml pytest
+      - name: Verify v0.6.72 bootstrap import order
+        env: {PYTHONHASHSEED: '0'}
+        run: |
+          PYTHONPATH=runtime python - <<'PY'
+          import sys, types
+          import cbcc
+          assert 'cbcc.compiler' not in sys.modules, 'bootstrap imported cbcc.compiler too early'
+          from cbcc import strategy_authority
+          def has_marker(fn, marker):
+              stack=[fn]; seen=set()
+              while stack:
+                  cur=stack.pop()
+                  if id(cur) in seen: continue
+                  seen.add(id(cur))
+                  if getattr(cur, marker, False): return True
+                  for cell in getattr(cur, '__closure__', None) or ():
+                      try: value=cell.cell_contents
+                      except ValueError: continue
+                      if isinstance(value, types.FunctionType): stack.append(value)
+              return False
+          fn=strategy_authority.build_master_strategy
+          assert has_marker(fn, '_cbcc_v0670_strategy_culture_completion')
+          assert has_marker(fn, '_cbcc_v0671_strategy_execution_completion')
+          PY
       - name: Verify v0.6.72 portfolio delta
         env: {PYTHONHASHSEED: '0'}
         run: python -m pytest tests/test_v0672_fresh_k01_portfolio_delta.py -q
