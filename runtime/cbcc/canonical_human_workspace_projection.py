@@ -21,7 +21,7 @@ def _json(value:Any)->str:
     return json.dumps(value,ensure_ascii=False,separators=(',',':')).replace('</','<\\/')
 
 
-def apply_canonical_human_projection_to_existing_html(html_path:Path|str, data:Mapping[str,Any]|None=None)->dict[str,Any]:
+def apply_canonical_human_projection_to_existing_html(html_path:Path|str, data:Mapping[str,Any]|None=None, payload_expression:str|None=None)->dict[str,Any]:
     """Mount a lossless Human projection onto the existing project-authored cbcc-commercial-v1 world.
 
     This intentionally does not replace the project's navigation/world. It overrides only business-object
@@ -33,7 +33,7 @@ def apply_canonical_human_projection_to_existing_html(html_path:Path|str, data:M
     text=path.read_text(encoding='utf-8',errors='ignore')
     if MARKER in text:return {'status':'PASS','already_applied':True,'path':str(path)}
     payload=dict(data or {}) or _extract_embedded_data(text)
-    if not payload:return {'status':'INCOMPLETE','issues':['CANONICAL_HUMAN_DATA_MISSING'],'path':str(path)}
+    if not payload and not payload_expression:return {'status':'INCOMPLETE','issues':['CANONICAL_HUMAN_DATA_MISSING'],'path':str(path)}
 
     script=r'''
 <script id="cbcc-canonical-human-projection-v0670">
@@ -154,7 +154,7 @@ const CBCC_CANONICAL_HUMAN=__PAYLOAD__;
   if(typeof render==='function')render();
 })();
 </script>
-'''.replace('__PAYLOAD__',_json(payload))
+'''.replace('__PAYLOAD__', payload_expression or _json(payload))
     if '</body>' in text:text=text.replace('</body>',script+'</body>',1)
     else:text+=script
     path.write_text(text,encoding='utf-8')

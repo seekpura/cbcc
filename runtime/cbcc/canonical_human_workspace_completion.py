@@ -42,12 +42,12 @@ def _normalize_payload(data:Mapping[str,Any])->dict[str,Any]:
     return out
 
 
-def apply_complete_canonical_human_projection(html_path:Path|str, data:Mapping[str,Any]|None=None)->dict[str,Any]:
+def apply_complete_canonical_human_projection(html_path:Path|str, data:Mapping[str,Any]|None=None, payload_expression:str|None=None)->dict[str,Any]:
     path=Path(html_path)
     if not path.exists():return {'status':'NOT_FOUND','path':str(path)}
     before=path.read_text(encoding='utf-8',errors='ignore')
     payload=_normalize_payload(dict(data or {}) or _extract_data(before))
-    result=apply_canonical_human_projection_to_existing_html(path,payload)
+    result=apply_canonical_human_projection_to_existing_html(path,payload,payload_expression=payload_expression)
     if result.get('status')!='PASS':return result
     text=path.read_text(encoding='utf-8',errors='ignore')
     if MARKER not in text:
