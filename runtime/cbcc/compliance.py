@@ -65,7 +65,7 @@ def compile_compliance(product_truth:dict[str,Any], claims:list[dict[str,Any]], 
     research_rows=list((research_gate or {}).get('pending') or [])
     research_pending=bool(research_rows)
     research_blocking_pending=any(bool(row.get('blocking', True)) for row in research_rows)
-    platform_ready=platform_compile.get('status') in {'VERIFIED_FOR_REQUEST','FAMILY_PLANNING_ONLY','PLANNING_ONLY_RESEARCH_PENDING'}
+    platform_ready=platform_compile.get('status') in {'VERIFIED_FOR_REQUEST','FAMILY_PLANNING_ONLY','PLANNING_ONLY_RESEARCH_PENDING'} or (platform_compile.get('status')=='RESEARCH_REQUIRED' and not research_blocking_pending)
     return {
         'status':'HOLD' if issues or research_blocking_pending or not platform_ready else 'READY_REVIEW',
         'issues':issues,
