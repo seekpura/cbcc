@@ -19,6 +19,7 @@ on:
       - 'references/V0670_REQUIREMENT_IMPLEMENTATION_DELTA.json'
       - 'prompts/canonical_authority_loading_map_CURRENT.md'
       - 'runtime/**'
+      - 'tests/test_v0671_full_canonical_parity.py'
       - '.github/workflows/current-release-verification.yml'
   workflow_dispatch:
 
@@ -37,6 +38,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_current_requirement_consumer_freshness.py' -v
           python -m unittest discover -s tests -p 'test_current_release_package_checker.py' -v
           python -m pytest tests/test_v0670_positive_canonical_projection.py -q
+          python -m pytest tests/test_v0671_full_canonical_parity.py -q
           python scripts/check_v0664_requirement_consumer_map.py
 
       - name: Build through stable CURRENT builder
@@ -84,7 +86,8 @@ jobs:
                   'scripts/check_current_release_package.py',
                   'scripts/check_v0670_release_delta.py',
                   'scripts/check_v0670_positive_projection_package.py',
-                  'tests/test_v0670_positive_canonical_projection.py'
+                  'tests/test_v0670_positive_canonical_projection.py',
+                  'tests/test_v0671_full_canonical_parity.py'
               ],
               'verified': True,
           }
