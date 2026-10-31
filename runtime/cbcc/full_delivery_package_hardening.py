@@ -56,8 +56,11 @@ def _audit_video_language_and_consumer(package: Path, issues: list[dict[str, Any
         return
 
     html_path = package / 'index.html'
-    if html_path.exists() and 'data-route="video"' not in html_path.read_text(encoding='utf-8', errors='ignore'):
-        _issue(issues, 'VIDEO_OBJECTS_HAVE_NO_PRIMARY_HTML_CONSUMER', count=len(rows))
+    if html_path.exists():
+        page = html_path.read_text(encoding='utf-8', errors='ignore')
+        has_video_consumer = ('data-route="video"' in page) or ('data-canonical-lazy-root="video"' in page)
+        if not has_video_consumer:
+            _issue(issues, 'VIDEO_OBJECTS_HAVE_NO_PRIMARY_HTML_CONSUMER', count=len(rows))
 
     for i, row in enumerate(rows, start=1):
         vid = str(row.get('video_id') or row.get('id') or f'VID-{i:02d}')
