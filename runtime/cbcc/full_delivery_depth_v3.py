@@ -134,11 +134,36 @@ def _ids(p):
     for d in (Path(p)/'asset_packages',Path(p)/'video'):
         if d.exists():ids.update(x.name for x in d.iterdir() if x.is_dir())
     return ids
+def _path_value(obj, path):
+    cur=obj
+    for key in path:
+        if not isinstance(cur,dict):return None
+        cur=cur.get(key)
+    return cur
+
 def _card_issues(card,aid):
-    groups={'strategic_job':('strategic_job','shopper_question','consumer_question','belief_transition'),'visual_carrier':('visual_carrier','carrier','role'),'product_presence':('product_presence','product_role','product'),'subject_system':('subject_system','subject_type','subject'),'scene_environment':('scene','environment','scene_system','decisive_moment'),'props_elements':('props','supporting_elements','evidence_elements'),'evidence_mode':('evidence_mode','evidence_hierarchy','proof','proof_mechanism'),'composition':('composition_grammar','composition','spatial_rhythm'),'cmf_material':('cmf','material','palette','palette_hex'),'portfolio_delta':('portfolio_delta','variant_hypothesis','test_hypothesis','incremental_information'),'measurement':('measurement_hypothesis','success_metric','metric')};out=[]
-    for label,keys in groups.items():
-        if not any(_p(card.get(k)) for k in keys):_issue(out,'ASSET_DESIGN_CARD_DECISION_MISSING',asset_id=aid,decision=label)
+    # v0.6.70+ Design Card is intentionally object-shaped. Audit semantic decisions from their
+    # named objects instead of assuming every field is flattened at the card root.
+    groups={
+      'strategic_job':(
+          ('strategic_job',),('shopper_question',),('consumer_question',),('belief_transition',),
+          ('commerce_task','strategic_job'),('commerce_task','consumer_question'),('visual_narrative','shopper_question'),
+      ),
+      'visual_carrier':(('visual_carrier',),('carrier',),('role',),('agent_art_direction','visual_carrier')),
+      'product_presence':(('product_presence',),('product_role',),('product',),('agent_art_direction','product_presence')),
+      'subject_system':(('subject_system',),('subject_type',),('subject',),('subject_action_environment_props','subject')),
+      'scene_environment':(('scene',),('environment',),('scene_system',),('decisive_moment',),('subject_action_environment_props','environment')),
+      'props_elements':(('props',),('supporting_elements',),('evidence_elements',),('subject_action_environment_props','props')),
+      'evidence_mode':(('evidence_mode',),('evidence_hierarchy',),('proof',),('proof_mechanism',),('information_design','proof_plane'),('agent_art_direction','evidence_hierarchy')),
+      'composition':(('composition_grammar',),('composition',),('spatial_rhythm',),('composition_camera','composition_grammar'),('photography_execution','composition')),
+      'cmf_material':(('cmf',),('material',),('palette',),('palette_hex',),('lighting_material_cmf','cmf'),('photography_execution','cmf')),
+      'portfolio_delta':(('portfolio_delta',),('variant_hypothesis',),('test_hypothesis',),('incremental_information',),('agent_art_direction','portfolio_rhythm_delta'),('commerce_task','incremental_information')),
+      'measurement':(('measurement_hypothesis',),('success_metric',),('metric',),('commerce_task','success_metric')),
+    };out=[]
+    for label,paths in groups.items():
+        if not any(_p(_path_value(card,path)) for path in paths):_issue(out,'ASSET_DESIGN_CARD_DECISION_MISSING',asset_id=aid,decision=label)
     return out
+
 def _listing_sections(text):
     out=[];matches=list(re.finditer(r'^##\s+(.+?)\s*$',text,flags=re.M))
     for i,m in enumerate(matches):
