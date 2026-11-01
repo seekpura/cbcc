@@ -44,7 +44,16 @@ from . import portfolio_visual_authority as _portfolio_visual_authority
 from . import asset_universe_authority as _asset_universe_authority
 from . import asset_portfolio_taxonomy as _asset_portfolio_taxonomy
 from . import surface_advisory_authority as _surface_advisory_authority
+from . import market_research_authority as _market_research_authority
+from .tools import market as _market
 from .tools import seven_agent as _seven_agent
+
+# Market analysis remains the established calculator/ingestion path.  Phase 2 adds a first-class
+# Research Authority as an additive projection of the real analyzer output so the compiler writes the
+# richer object through its existing `analyze_market(...) -> market_analysis.json` path.
+_market.analyze_market = _market_research_authority.wrap_analyze_market(
+    _market.analyze_market
+)
 
 # Photography is not a universal runtime default. It becomes active only when the Agent's per-asset
 # Art Direction selects photographic grammar / camera-light execution; then the strategy-level
