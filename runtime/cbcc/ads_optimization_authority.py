@@ -251,14 +251,19 @@ def wrap_compile_seven_tool_continuity(fn):
 _ADS_CONTEXT:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_ads_context', default=None)
 _ADS_PORTFOLIO_DEPTH:ContextVar[int]=ContextVar('cbcc_v0676_ads_portfolio_depth', default=0)
 
+def _explicit_ads_optimization_scope(request:Mapping[str,Any])->bool:
+    return bool(request.get('advertising_optimization') or request.get('ads_optimization'))
+
 def _ads_analyzer_scope(request:Mapping[str,Any])->bool:
-    return bool(request.get('ad_rows') or request.get('ad_analysis'))
+    return bool(request.get('ad_rows') or request.get('ad_analysis') or _explicit_ads_optimization_scope(request))
 
 def wrap_compile_pricing_economics_for_ads_context(fn):
     def compiled(request:dict[str,Any], market_analysis=None, legacy_economics=None):
         _ADS_CONTEXT.set(None)
         out=fn(request,market_analysis,legacy_economics)
         if _is_full(request,out) and _ads_analyzer_scope(request):
+            if _explicit_ads_optimization_scope(request) and not request.get('ad_rows') and not request.get('ad_analysis'):
+                request['ad_analysis']={'_phase2_no_performance_data':True,'ad_data':{}}
             _ADS_CONTEXT.set({'request':deepcopy(request),'pricing_economics':deepcopy(out)})
         return out
     setattr(compiled,'_cbcc_v0676_ads_optimization_context_bridge',True)
@@ -268,8 +273,15 @@ def wrap_analyze_ads(fn):
     def compiled(*args:Any, **kwargs:Any):
         in_portfolio=_ADS_PORTFOLIO_DEPTH.get()>0
         ctx=_d(_ADS_CONTEXT.get())
+        no_performance=bool(ctx and _d(_d(ctx.get('request')).get('ad_analysis')).get('_phase2_no_performance_data'))
         try:
-            legacy=fn(*args,**kwargs)
+            legacy=(
+                {'status':'NO_AD_PERFORMANCE_DATA_SUPPLIED','metrics':{},'diagnosis':[],
+                 'budget_headroom':{'status':'NOT_CALCULATED_NO_PERFORMANCE_DATA'},
+                 'incrementality':{'status':'NOT_ESTABLISHED','signals':{}},
+                 'principle':'No performance metrics are calculated or defaulted when no ad performance data was supplied.'}
+                if no_performance and not in_portfolio else fn(*args,**kwargs)
+            )
         except Exception:
             if ctx and not in_portfolio: _ADS_CONTEXT.set(None)
             raise
