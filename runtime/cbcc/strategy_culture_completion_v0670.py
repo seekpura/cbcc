@@ -103,12 +103,16 @@ def wrap_render_master_strategy_cn(fn:Callable[[dict[str,Any]],str]):
         s=_d(strategy.get('sections'));core=_d(s.get('04_marketing_core_strategy'));vis=_d(s.get('05_visual_photography_strategy'));info=_d(s.get('01_information_completeness_assumptions_decisions'))
         lines=['','### v0.6.70 决策执行闭合','', '| 对象 | Measurement / Context WHY / Relevance |','|---|---|']
         for key,row in _d(core.get('framework_relationships')).items():
-            lines.append(f"| {key} | {str(_d(row).get('measurement') or '—').replace('|','\\|')} |")
+            measurement = str(_d(row).get('measurement') or '—').replace('|', '\\|')
+            lines.append(f"| {key} | {measurement} |")
         for key,row in _d(vis.get('inclusive_dimension_decisions')).items():
             value=f"{row.get('relevance')}；WHY={row.get('why')}；执行={row.get('execution')}" if isinstance(row,dict) else str(row)
-            lines.append(f"| Inclusive/{key} | {value.replace('|','\\|')} |")
+            escaped_value = value.replace('|', '\\|')
+            lines.append(f"| Inclusive/{key} | {escaped_value} |")
         for i,row in enumerate(_l(info.get('decision_log'))):
-            if isinstance(row,dict):lines.append(f"| Decision {i+1} Context WHY | {str(row.get('context_why') or '—').replace('|','\\|')} |")
+            if isinstance(row,dict):
+                escaped_context_why = str(row.get('context_why') or '—').replace('|', '\\|')
+                lines.append(f"| Decision {i+1} Context WHY | {escaped_context_why} |")
         return base.rstrip()+'\n'+'\n'.join(lines)+'\n'
     setattr(rendered,'_cbcc_v0670_strategy_culture_completion',True);return rendered
 
