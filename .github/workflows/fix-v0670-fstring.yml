@@ -1,0 +1,58 @@
+name: fix-v0670-fstring
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-v0670-fstring.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Repair Python 3.11 f-string escape syntax only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('runtime/cbcc/strategy_culture_completion_v0670.py')
+          lines = p.read_text(encoding='utf-8').splitlines()
+          out=[]
+          changed=0
+          for line in lines:
+              indent=line[:len(line)-len(line.lstrip())]
+              if "lines.append(f\"| {key} | {str(_d(row).get('measurement') or '—').replace('|','\\\\|')} |\")" in line:
+                  out.append(indent + "measurement = str(_d(row).get('measurement') or '—').replace('|', '\\\\|')")
+                  out.append(indent + 'lines.append(f"| {key} | {measurement} |")')
+                  changed += 1
+              elif "lines.append(f\"| Inclusive/{key} | {value.replace('|','\\\\|')} |\")" in line:
+                  out.append(indent + "escaped_value = value.replace('|', '\\\\|')")
+                  out.append(indent + 'lines.append(f"| Inclusive/{key} | {escaped_value} |")')
+                  changed += 1
+              elif "if isinstance(row,dict):lines.append(f\"| Decision {i+1} Context WHY | {str(row.get('context_why') or '—').replace('|','\\\\|')} |\")" in line:
+                  out.append(indent + 'if isinstance(row,dict):')
+                  out.append(indent + "    escaped_context_why = str(row.get('context_why') or '—').replace('|', '\\\\|')")
+                  out.append(indent + '    lines.append(f"| Decision {i+1} Context WHY | {escaped_context_why} |")')
+                  changed += 1
+              else:
+                  out.append(line)
+          if changed != 3:
+              raise SystemExit(f'expected exactly 3 v0670 f-string repairs, changed={changed}')
+          p.write_text('\n'.join(out) + '\n', encoding='utf-8')
+          PY
+          python -m py_compile runtime/cbcc/strategy_culture_completion_v0670.py
+      - name: Commit exact syntax fix
+        run: |
+          git config user.name 'cbcc-release-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add runtime/cbcc/strategy_culture_completion_v0670.py
+          git commit -m 'fix: repair v0670 Python f-string syntax'
+          git push origin HEAD:main
