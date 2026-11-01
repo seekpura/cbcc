@@ -81,8 +81,9 @@ def _lineage(raw:Mapping[str,Any], sources:Mapping[str,Mapping[str,Any]], proof:
     source_type=raw.get('source_type') or first.get('source_type') or first.get('authority') or first.get('kind')
     recency=raw.get('recency') or first.get('as_of') or first.get('published_at') or first.get('date')
     exact_fact=deepcopy(raw.get('exact_fact')) if 'exact_fact' in raw else None
+    explicit_assumption=_p(raw.get('assumption_boundary'))
     assumption_boundary=raw.get('assumption_boundary')
-    if not refs and not _p(assumption_boundary): assumption_boundary=missing_boundary
+    if not refs and not explicit_assumption: assumption_boundary=missing_boundary
     confidence=str(raw.get('confidence') or ('MEDIUM' if refs else 'LOW')).upper()
     interpretation=raw.get('interpretation')
     downstream=deepcopy(raw.get('downstream_use') or [])
@@ -96,10 +97,10 @@ def _lineage(raw:Mapping[str,Any], sources:Mapping[str,Mapping[str,Any]], proof:
     }
     gaps=[]
     if unresolved: gaps.append('unresolved_source_refs')
-    if not refs and not _p(assumption_boundary): gaps.append('source_refs_or_assumption_boundary')
+    if not refs and not explicit_assumption: gaps.append('source_refs_or_explicit_assumption_boundary')
     for key in ('source_type','recency','interpretation','confidence','downstream_use','conflict_status','proof_object'):
         if not _p(out.get(key)): gaps.append(key)
-    if not _p(exact_fact) and not _p(assumption_boundary): gaps.append('exact_fact_or_assumption_boundary')
+    if not _p(exact_fact) and not explicit_assumption: gaps.append('exact_fact_or_explicit_assumption_boundary')
     out['lineage_gaps']=gaps
     out['lineage_status']='READY' if not gaps else 'TO_VERIFY'
     return out
@@ -198,9 +199,10 @@ def materialize_content_matrix_race_authority(strategy:Mapping[str,Any], request
 
 
 def content_matrix_race_issues(strategy:Mapping[str,Any])->list[dict[str,Any]]:
-    if not _is_full(strategy): return []
     auth=_d(strategy.get('content_matrix_race_authority_v0676'))
-    if not auth: return [{'code':'FULL_CONTENT_MATRIX_RACE_AUTHORITY_MISSING_V0676'}]
+    if not auth:
+        if not _is_full(strategy): return []
+        return [{'code':'FULL_CONTENT_MATRIX_RACE_AUTHORITY_MISSING_V0676'}]
     issues=[]
     matrix=[x for x in _l(auth.get('content_matrix')) if isinstance(x,Mapping)]
     race=[x for x in _l(auth.get('race')) if isinstance(x,Mapping)]
@@ -242,7 +244,7 @@ def wrap_build_master_strategy(fn:Callable[...,dict[str,Any]]):
 def wrap_validate_strategy_delivery(fn:Callable[[dict[str,Any]],dict[str,Any]]):
     def validated(strategy:dict[str,Any]):
         result=fn(strategy)
-        if not _is_full(strategy): return result
+        if not _d(strategy.get('content_matrix_race_authority_v0676')) and not _is_full(strategy): return result
         current=content_matrix_race_issues(strategy)
         issues=list(result.get('issues') or [])+current
         dedup=[]
