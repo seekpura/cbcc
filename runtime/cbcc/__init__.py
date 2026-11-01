@@ -41,6 +41,7 @@ from . import asset_architecture as _asset_architecture
 from . import agent_art_direction_authority as _agent_art_direction_authority
 from . import agent_plan_input_bridge as _agent_plan_input_bridge
 from . import portfolio_visual_authority as _portfolio_visual_authority
+from . import visual_master_authority as _visual_master_authority
 from . import asset_universe_authority as _asset_universe_authority
 from . import asset_portfolio_taxonomy as _asset_portfolio_taxonomy
 from . import surface_advisory_authority as _surface_advisory_authority
@@ -141,6 +142,9 @@ _asset_architecture.build_asset_architecture = _asset_universe_authority.wrap_bu
 _asset_architecture.build_asset_architecture = _asset_portfolio_taxonomy.wrap_build_asset_architecture(
     _asset_architecture.build_asset_architecture
 )
+_asset_architecture.build_asset_architecture = _visual_master_authority.wrap_build_asset_architecture(
+    _asset_architecture.build_asset_architecture
+)
 
 # Commercial analysis must enter curation before it reaches the final prompt. Preserve current asset
 # decision origins/sources plus target/culture in Creative Opportunity and Creative Council, then carry
@@ -163,6 +167,9 @@ _agent_autonomy.compile_agent_autonomy_plan = _agent_plan_input_bridge.wrap_comp
 _agent_autonomy.compile_agent_autonomy_plan = _portfolio_visual_authority.wrap_compile_agent_autonomy_plan(
     _agent_autonomy.compile_agent_autonomy_plan
 )
+_agent_autonomy.compile_agent_autonomy_plan = _visual_master_authority.wrap_compile_agent_autonomy_plan(
+    _agent_autonomy.compile_agent_autonomy_plan
+)
 _agent_autonomy.compile_agent_autonomy_plan = _subject_agent_authority.wrap_compile_agent_autonomy_plan(
     _agent_autonomy.compile_agent_autonomy_plan
 )
@@ -170,6 +177,9 @@ _agent_autonomy.agent_creative_directions = _agent_art_direction_authority.wrap_
     _agent_autonomy.agent_creative_directions
 )
 _agent_autonomy.agent_creative_directions = _portfolio_visual_authority.wrap_agent_creative_directions(
+    _agent_autonomy.agent_creative_directions
+)
+_agent_autonomy.agent_creative_directions = _visual_master_authority.wrap_agent_creative_directions(
     _agent_autonomy.agent_creative_directions
 )
 _agent_autonomy.compile_agent_next_action = _agent_art_direction_authority.wrap_compile_agent_next_action(
@@ -197,6 +207,9 @@ _creative.apply_creative_system_to_assets = _commercial_curation_lineage.wrap_ap
     _creative.apply_creative_system_to_assets
 )
 _creative.apply_creative_system_to_assets = _subject_agent_authority.wrap_apply_creative_system_to_assets(
+    _creative.apply_creative_system_to_assets
+)
+_creative.apply_creative_system_to_assets = _visual_master_authority.wrap_apply_creative_system_to_assets(
     _creative.apply_creative_system_to_assets
 )
 
