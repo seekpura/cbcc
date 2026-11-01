@@ -1,0 +1,128 @@
+{
+  "authority": "CBCC Phase 2 Market / Search / Competition / Price-band / Review Opportunity Research consumer delta",
+  "scope": "PARTIAL_PHASE_2_MARKET_RESEARCH_ONLY",
+  "requirements": [
+    {
+      "req": "REQ-006",
+      "requirement": "Market remains a first-class commerce capability with real data consumers",
+      "consumers": [
+        "runtime/cbcc/tools/market.py",
+        "runtime/cbcc/market_research_authority.py",
+        "runtime/cbcc/__init__.py",
+        "runtime/cbcc/compiler.py"
+      ],
+      "proof_objects": [
+        "market_analysis.json#/research_authority",
+        "DEMAND / SEARCH / COMPETITION / PRICE_BAND / REVIEWS / NEGATIVE_REVIEWS / OPPORTUNITY / RISK domains",
+        "tests/test_v0676_market_research_authority.py",
+        "tests/test_v0676_market_research_runtime_binding.py"
+      ],
+      "status": "PARTIAL_PHASE2_MARKET_RESEARCH_VERIFIED"
+    },
+    {
+      "req": "REQ-007",
+      "requirement": "FULL business depth includes research with decision density rather than section headings",
+      "consumers": [
+        "runtime/cbcc/market_research_authority.py"
+      ],
+      "proof_objects": [
+        "WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT on evidenced research findings",
+        "exact_fact / interpretation / confidence / assumption_boundary / downstream_use / conflict_status"
+      ],
+      "status": "PARTIAL_PHASE2_MARKET_RESEARCH_VERIFIED"
+    },
+    {
+      "req": "REQ-015",
+      "requirement": "Review/customer voice evidence remains available for downstream root-cause and repair work",
+      "consumers": [
+        "runtime/cbcc/tools/market.py",
+        "runtime/cbcc/market_research_authority.py"
+      ],
+      "proof_objects": [
+        "REVIEWS domain from supplied labels only",
+        "NEGATIVE_REVIEWS domain requires explicit negative sentiment/polarity label",
+        "review themes never become causal or population claims"
+      ],
+      "status": "PARTIAL_RESEARCH_INPUT_VERIFIED_REVIEW_ROOT_CAUSE_STILL_PENDING"
+    },
+    {
+      "req": "REQ-045",
+      "requirement": "Deep FULL business objects preserve senior-operator density",
+      "consumers": [
+        "runtime/cbcc/market_research_authority.py"
+      ],
+      "proof_objects": [
+        "eight explicit research domains",
+        "source-bounded major findings",
+        "explicit missing-input rows instead of generic prose"
+      ],
+      "status": "PARTIAL_PHASE2_MARKET_RESEARCH_VERIFIED"
+    },
+    {
+      "req": "REQ-058",
+      "requirement": "Platform/market execution cannot silently generalize outside supplied research scope",
+      "consumers": [
+        "runtime/cbcc/tools/market.py",
+        "runtime/cbcc/market_research_authority.py"
+      ],
+      "proof_objects": [
+        "source recency and scope mismatch exposure",
+        "sample-boundary assumptions",
+        "LOW confidence for stale, mismatched or unresolved sources"
+      ],
+      "status": "PARTIAL_RESEARCH_SCOPE_INTEGRITY_VERIFIED_PLATFORM_EXECUTION_WHY_PENDING"
+    },
+    {
+      "req": "REQ-062",
+      "requirement": "Whole-commerce FULL scope keeps Research as a first-class non-asset business object",
+      "consumers": [
+        "runtime/cbcc/market_research_authority.py",
+        "runtime/cbcc/canonical_commerce_graph.py"
+      ],
+      "proof_objects": [
+        "RESEARCH canonical graph node prefers enriched market_analysis.json over legacy research_gate.json",
+        "research business object exists before any asset/prompt work"
+      ],
+      "status": "PARTIAL_PHASE2_MARKET_RESEARCH_VERIFIED"
+    },
+    {
+      "req": "REQ-087",
+      "requirement": "Research remains first-class and cannot collapse into asset metadata or status/count summaries",
+      "consumers": [
+        "runtime/cbcc/market_research_authority.py",
+        "runtime/cbcc/canonical_commerce_graph.py",
+        "runtime/cbcc/compiler.py"
+      ],
+      "proof_objects": [
+        "market_analysis.json retains mature market calculators plus research_authority",
+        "canonical RESEARCH node binds the enriched business artifact",
+        "compiler continues its established analyze_market -> market_analysis.json path"
+      ],
+      "status": "PARTIAL_PHASE2_RESEARCH_FIRST_CLASS_VERIFIED"
+    },
+    {
+      "req": "REQ-088",
+      "requirement": "Source / Evidence / Assumption / Decision lineage remains explicit across research",
+      "consumers": [
+        "runtime/cbcc/tools/market.py",
+        "runtime/cbcc/market_research_authority.py"
+      ],
+      "proof_objects": [
+        "source -> type/authority -> recency -> exact fact -> interpretation -> confidence -> assumption boundary -> downstream use -> conflict -> tradeoff/execution/measurement",
+        "source_cards and traceability_status per finding",
+        "research authority SHA256"
+      ],
+      "status": "PARTIAL_PHASE2_RESEARCH_LINEAGE_VERIFIED"
+    }
+  ],
+  "verification": {
+    "focused_authority_tests": "6 passed",
+    "runtime_graph_binding": "GitHub main source readback + canonical graph behavioral test passed",
+    "cross_scope": "23 passed for canonical graph + Product Truth + Market Research; Phase 0 authority guard 1 passed; frozen K01 negative fixture guard 3 passed",
+    "real_object_inspection": "8 explicit domains; evidenced exact facts preserve source/confidence boundaries; missing analysis returns RESEARCH_INPUT_REQUIRED with null exact facts and LOW confidence",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11",
+    "provider_actual_output": "E2E_PENDING"
+  },
+  "completion_boundary": "This delta proves only the Phase 2 market/search/competition/price-band/review-opportunity research-density subtask. It does not complete Platform×Region×Audience×Culture WHY, intersectionality, applied frameworks, Economics/Offer, Listing/Search, Content Matrix/RACE, Ads optimization, Review root-cause/repair, or Measurement/A-B/P0-P1-P2."
+}
