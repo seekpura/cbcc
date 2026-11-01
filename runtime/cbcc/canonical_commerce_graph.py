@@ -29,7 +29,7 @@ NODE_SPECS: tuple[NodeSpec, ...] = (
     NodeSpec("AUDIENCE_CULTURE", "Audience / Culture / Intersectionality", ("culture_context.json", "strategy_authority.json"), optional=True),
     NodeSpec("ECONOMICS_OFFER", "Economics / Offer", ("pricing_economics_authority.json", "economics.json"), optional=True),
     NodeSpec("STRATEGY", "Strategy", ("strategy_authority.json",)),
-    NodeSpec("LISTING_SEARCH", "Listing / Search", ("listing.json", "listing_compile.json"), optional=True),
+    NodeSpec("LISTING_SEARCH", "Listing / Search", ("listing_analysis.json", "listing.json", "listing_compile.json"), optional=True),
     NodeSpec("CONTENT_MATRIX", "Content Matrix", ("strategy_authority.json",), "/sections/06_platform_content_matrix", optional=True),
     NodeSpec("RACE", "RACE", ("strategy_authority.json",), "/sections/07_race_execution_table", optional=True),
     NodeSpec("CULTURE_CHECK", "Culture Check", ("strategy_authority.json",), "/sections/08_culture_adaptation_checklist", optional=True),
