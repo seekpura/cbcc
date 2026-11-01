@@ -41,7 +41,7 @@ from .agent_autonomy import (
 )
 from .creative import compile_curation,compile_creative_council,compile_cmf,compile_inclusive_photography,apply_creative_system_to_assets,apply_inclusive_photography_to_assets
 from .creative_opportunity import compile_creative_opportunity_universe
-from .video_creator import build_video_creator_plan, enrich_video_plan_with_strategy
+from .video_creator import build_video_creator_plan, enrich_video_plan_with_strategy, project_dynamic_art_direction_to_assets
 from .surface_architecture import compile_surface_architecture
 from .campaign_architecture import compile_paid_campaign_architecture
 from .product_visual_intelligence import compile_product_visual_intelligence, compile_creative_anchor_plan
@@ -423,6 +423,8 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     for _asset in architecture.get('assets') or []:
         _asset['product_visual_intelligence']={'status':product_visual_intelligence.get('status'),'appearance_facts':product_visual_intelligence.get('appearance_facts'),'capture_risks':product_visual_intelligence.get('capture_risks'),'identity_faces':product_visual_intelligence.get('identity_faces')}
         _asset['creative_anchor_plan']={'direction_id':creative_anchors.get('direction_id'),'roles':[x.get('anchor_role') for x in creative_anchors.get('roles') or []]}
+    video_plan=build_video_creator_plan(request.get('project_id','project'),objects,questions,lang.to_dict(),request.get('video_jobs'),assets=architecture.get('assets'),creative_council=council)
+    architecture=project_dynamic_art_direction_to_assets(architecture,video_plan)
     aap=_write(p/'artifacts/asset_architecture.json',architecture); st.set_gate('ASSET_ARCHITECTURE','READY_REVIEW',[aap],architecture); st.checkpoint('ASSET_ARCHITECTURE','READY_REVIEW')
     creative={'design_system_status':'DIRECTION_SELECTED' if council.get('status')=='SELECTED' else 'TO_BE_CURATED','content_object_ids':[o['object_id'] for o in objects if o['family'] in {'VISUAL','VIDEO','CREATOR_AFFILIATE','PAID'}],
               'positive_first':True,'photography_contract_required':bool(request.get('photography_contract')),'photography_planning_is_advisory':True,'photography_validation':photography_validation,
@@ -438,7 +440,6 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     creative['photography_validation_blocks_project_completion']=False
     st.set_gate('CREATIVE','READY_REVIEW' if creative_ready else 'HOLD',[crp],creative)
 
-    video_plan=build_video_creator_plan(request.get('project_id','project'),objects,questions,lang.to_dict(),request.get('video_jobs'),assets=architecture.get('assets'),creative_council=council)
     _write(p/'artifacts/video_creator_plan.json',video_plan)
     paid_campaigns=compile_paid_campaign_architecture(request.get('project_id','project'),tc,architecture.get('assets') or [],truth,domain.get('economics'),domain.get('ads'),request.get('paid_campaigns'),objects)
     _write(p/'artifacts/paid_campaign_architecture.json',paid_campaigns)

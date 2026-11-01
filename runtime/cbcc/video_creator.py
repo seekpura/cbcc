@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any
+from copy import deepcopy
 from .models import stable_hash
 from .tools.video import timing
 from .prompt_compiler import _cn_phrase
@@ -113,6 +114,19 @@ def build_video_creator_plan(project_id:str, content_objects:list[dict[str,Any]]
         authored_hook,authored_hook_cn=_authored_visible_hook(source)
         hook=j.get('hook') or authored_hook or q
         hook_cn=j.get('hook_cn') or (authored_hook_cn if not j.get('hook') else None)
+        authored_motion_fields=[k for k in ('shots','narrative_carrier') if k in j and j.get(k) not in (None,'',[],{})]
+        authored_timing_fields=(['duration_seconds'] if j.get('shots') and 'duration_seconds' in j and j.get('duration_seconds') not in (None,'',[],{}) else [])
+        authored_audio_fields=[k for k in ('voice_locale','subtitle_locales','voiceover_style','audio') if k in j and j.get(k) not in (None,'',[],{})]
+        dynamic_authorship={
+            'motion':bool(j.get('shots')),
+            'timing':bool(j.get('shots')) and bool(authored_timing_fields),
+            'audio':bool(authored_audio_fields),
+        }
+        authored_dynamic_fields={
+            'motion':authored_motion_fields if dynamic_authorship['motion'] else [],
+            'timing':authored_timing_fields if dynamic_authorship['timing'] else [],
+            'audio':authored_audio_fields if dynamic_authorship['audio'] else [],
+        }
         rows.append({
             'video_id':vid,'family':family,'surface':j.get('surface','PDP_VIDEO'),'objective':j.get('objective'),'shopper_question':q,'decision_intent':decision,
             'creative_direction_id':source.get('creative_direction',{}).get('direction_id') or selected.get('direction_id'),'creative_thesis':source.get('creative_direction',{}).get('creative_thesis') or selected.get('creative_thesis'),
@@ -120,10 +134,77 @@ def build_video_creator_plan(project_id:str, content_objects:list[dict[str,Any]]
             'voice_locale':j.get('voice_locale') or language_contract.get('primary_locale'),'subtitle_locales':j.get('subtitle_locales') or language_contract.get('script_subtitle_locales',[]) or language_contract.get('visible_copy_locales',[]),
             'voiceover_style':j.get('voiceover_style') or ('creator-native conversational' if family=='CREATOR_AFFILIATE' else 'product-decision concise'),
             'on_screen_text_rule':'Use only locked approved copy; subtitles/labels must not cover decision-critical product/action evidence.','cta':j.get('cta'),'claim_ids':j.get('claim_ids',[]) or source.get('claim_ids',[]),'source_ids':j.get('source_ids',[]) or source.get('source_ids',[]),
-            'creator_contract':creator_contract,'live_contract':live_contract,'source_asset_id':source.get('asset_id')
+            'creator_contract':creator_contract,'live_contract':live_contract,'source_asset_id':source.get('asset_id'),
+            'audio':deepcopy(j.get('audio')) if isinstance(j.get('audio'),dict) else None,
+            'dynamic_art_direction_authorship':dynamic_authorship,'authored_dynamic_fields':authored_dynamic_fields,
         })
     return {'status':'COMPILED' if rows else 'NOT_REQUIRED','dynamic_count':len(rows),'fixed_duration_authority':False,'assets':rows,'principle':'Video/creator/live plans are built from the shopper decision and native interaction pattern, not from a generic hook-proof-CTA template.'}
 
+
+
+def project_dynamic_art_direction_to_assets(architecture:dict[str,Any], video_plan:dict[str,Any])->dict[str,Any]:
+    """Project only explicitly authored dynamic decisions back into the same asset Art Direction.
+
+    Runtime fallback shots/default locale/default duration remain execution conveniences only. They
+    are never promoted to creative authority. Existing visual-master, product, photography and
+    inclusion fields are merged by addition, never replaced.
+    """
+    out=deepcopy(architecture or {})
+    by_asset={
+        row.get('source_asset_id'):row
+        for row in (video_plan or {}).get('assets') or []
+        if isinstance(row,dict) and row.get('source_asset_id')
+    }
+    assets=[]
+    for raw in out.get('assets') or []:
+        asset=deepcopy(raw)
+        row=by_asset.get(asset.get('asset_id'))
+        if not row:
+            assets.append(asset)
+            continue
+        authored=row.get('dynamic_art_direction_authorship') or {}
+        fields=row.get('authored_dynamic_fields') or {}
+        art=deepcopy(asset.get('asset_art_direction') or {})
+        missing=[]
+        if authored.get('motion'):
+            art['motion']={
+                'authority':'EXPLICIT_AGENT_VIDEO_JOB',
+                'video_id':row.get('video_id'),
+                'family':row.get('family'),
+                'surface':row.get('surface'),
+                'narrative_carrier':row.get('narrative_carrier'),
+                'shots':deepcopy(row.get('shots') or []),
+                'authored_fields':deepcopy(fields.get('motion') or []),
+            }
+        else:
+            missing.append('motion')
+        if authored.get('timing'):
+            art['timing']={
+                'authority':'EXPLICIT_AGENT_VIDEO_JOB',
+                'duration_seconds':row.get('duration_seconds'),
+                'shot_timing':deepcopy(row.get('timing') or []),
+                'authored_fields':deepcopy(fields.get('timing') or []),
+            }
+        else:
+            missing.append('timing')
+        if authored.get('audio'):
+            audio={'authority':'EXPLICIT_AGENT_VIDEO_JOB','authored_fields':deepcopy(fields.get('audio') or [])}
+            for key in fields.get('audio') or []:
+                if key=='audio' and isinstance(row.get('audio'),dict):
+                    audio.update(deepcopy(row.get('audio') or {}))
+                elif key in row and row.get(key) not in (None,'',[],{}):
+                    audio[key]=deepcopy(row.get(key))
+            art['audio']=audio
+        else:
+            missing.append('audio')
+        asset['asset_art_direction']=art
+        asset['dynamic_art_direction_status']='AUTHORED' if not missing else 'TO_VERIFY'
+        asset['dynamic_art_direction_missing']=missing
+        asset['dynamic_art_direction_source_video_id']=row.get('video_id')
+        asset['runtime_may_invent_missing_dynamic_art_direction']=False
+        assets.append(asset)
+    out['assets']=assets
+    return out
 
 def _vmerge(base:dict[str,Any]|None, override:dict[str,Any]|None)->dict[str,Any]:
     out=dict(base or {})
