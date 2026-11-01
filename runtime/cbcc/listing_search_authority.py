@@ -242,7 +242,7 @@ def materialize_listing_search_authority(compiled_listing:Mapping[str,Any], requ
 def wrap_compile_pricing_economics_for_listing_context(fn:Callable[...,dict[str,Any]]):
     def compiled(request:dict[str,Any], market_analysis:dict[str,Any]|None=None, legacy_economics:dict[str,Any]|None=None):
         out=fn(request,market_analysis,legacy_economics)
-        if _is_full_context(request,out):
+        if _is_full_context(request,out) and isinstance(request.get('listing_input'),Mapping) and bool(request.get('listing_input')):
             _LISTING_CONTEXT.set({'request':deepcopy(request),'market_analysis':deepcopy(market_analysis or {}),'pricing_economics':deepcopy(out)})
         else:
             _LISTING_CONTEXT.set(None)
