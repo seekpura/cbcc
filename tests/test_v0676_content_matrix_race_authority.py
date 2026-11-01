@@ -170,3 +170,13 @@ def test_validator_preserves_existing_issues_and_adds_content_matrix_race_issues
     codes={x['code'] for x in result['issues']}
     assert 'EXISTING_ISSUE' in codes
     assert 'FULL_CONTENT_MATRIX_PLATFORM_EXECUTION_INCOMPLETE_V0676' in codes
+
+
+def test_unknown_source_reference_cannot_satisfy_req088_lineage():
+    req=request(); row=req['platform_content_matrix'][0]
+    row['source_refs']=['SRC-NOT-IN-REGISTRY']; row['evidence']=['SRC-NOT-IN-REGISTRY']
+    out=mod.materialize_content_matrix_race_authority(base_strategy(),req)
+    cm=out['content_matrix_race_authority_v0676']['content_matrix'][0]
+    assert cm['lineage_status']=='TO_VERIFY'
+    assert cm['unresolved_source_refs']==['SRC-NOT-IN-REGISTRY']
+    assert any(x['code']=='FULL_CONTENT_MATRIX_LINEAGE_INCOMPLETE_V0676' for x in mod.content_matrix_race_issues(out))
