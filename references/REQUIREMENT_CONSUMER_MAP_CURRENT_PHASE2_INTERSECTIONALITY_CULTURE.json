@@ -1,0 +1,58 @@
+{
+  "authority": "CBCC Phase 2 Intersectionality + Culture Adaptation consumer accounting",
+  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
+  "requirements": ["REQ-007", "REQ-011", "REQ-056", "REQ-060", "REQ-062", "REQ-088"],
+  "status": "PHASE2_SUBTASK_VERIFIED_PENDING_CONTENT_MATRIX_PHASE2_9_HUMAN_PARITY_PHASE6_REAL_K01_PHASE10",
+  "locked_behavior": {
+    "core_intersection_dimensions": ["race_ethnicity", "gender", "age", "income", "geography"],
+    "relevance_aware_contexts": ["language", "religion", "holiday_calendar", "taboo", "family_household", "skin_hair_body_representation"],
+    "major_row_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
+    "culture_execution_checks": ["script_check", "casting_check", "wardrobe_grooming_check", "color_check", "cta_check"],
+    "rule": "Intersectionality is an evidence/verification program, not a demographic behavior inference. Missing culture/identity facts remain TO_VERIFY; Runtime does not invent ethnicity, religion, festival, household, skin/hair/body or behavioral conclusions."
+  },
+  "consumers": [
+    "runtime/cbcc/culture.py",
+    "runtime/cbcc/strategy_authority.py",
+    "runtime/cbcc/strategy_culture_materialization.py",
+    "runtime/cbcc/strategy_execution_completion_v0671.py",
+    "runtime/cbcc/intersectionality_culture_authority.py",
+    "runtime/cbcc/v0676_phase2_closure.py",
+    "runtime/cbcc/delivery_contract.py",
+    "runtime/cbcc/delivery_export.py"
+  ],
+  "proof_objects": [
+    "strategy.sections.03_platform_region_audience_culture_insight.intersectionality_table",
+    "strategy.sections.03_platform_region_audience_culture_insight.intersectionality_interaction_analysis[*]",
+    "strategy.sections.08_culture_adaptation_checklist[*]",
+    "strategy.intersectionality_culture_authority_v0676.dimension_coverage",
+    "strategy.intersectionality_culture_authority_v0676.context_coverage",
+    "delivery_contract.intersectionality_culture_authority_v0676_audit"
+  ],
+  "regression_tests": [
+    "tests/test_v0676_intersectionality_culture_authority.py",
+    "tests/test_v0676_context_why_authority.py"
+  ],
+  "verification": {
+    "red": "Before runtime/cbcc/intersectionality_culture_authority.py existed, the focused suite failed during collection with FileNotFoundError for the intended missing authority.",
+    "focused_green": "6/6 intersectionality/culture authority tests passed.",
+    "adjacent_cross_scope": "12/12 tests passed: 6 intersectionality/culture + 6 Context-WHY tests. This batch did not claim a rerun of the earlier 32-test Phase 1/Product Truth/Research/Information Audit baseline.",
+    "source_readback": "GitHub main readback confirms the authority and v0.6.76 closure binding are persisted.",
+    "content_matrix_culture_propagation": "DEFERRED_PHASE2_SUBTASK_9",
+    "human_json_md_html_parity": "PENDING_PHASE6",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11"
+  },
+  "verified_behavior": [
+    "Fully authored intersectionality interaction rows reach READY only with explicit WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT plus stereotype guard.",
+    "Legacy generic verification-program rows remain TO_VERIFY and cannot false-pass as dense strategy merely because mechanism/execution text exists.",
+    "The five core intersection dimensions are explicitly accounted for; missing decision-level evidence remains TO_VERIFY with behavior_inference_allowed=false.",
+    "Language/religion/holiday/taboo/family-household/skin-hair-body contexts are relevance-aware coverage objects, not tokenistic defaults or fabricated facts.",
+    "Culture adaptation rows require script/casting/wardrobe-grooming/color/CTA checks in addition to six-field business density.",
+    "Information Audit, Product Truth and Core Strategy sibling sections remain unchanged by this authority; pre-existing validator issues are preserved."
+  ],
+  "deferred_boundaries": [
+    "Content Matrix per-row RACE + culture/taboo propagation belongs to Phase 2 subtask 9 and is not falsely claimed here.",
+    "Deep-skin exposure, hair/body/disability/age/AI-bias production execution belongs to later Visual/Art Direction phases and is not falsely claimed here.",
+    "Human Workspace same-source projection remains Phase 6; current proof is machine-object/runtime density only."
+  ]
+}
