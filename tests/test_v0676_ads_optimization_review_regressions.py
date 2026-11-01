@@ -57,3 +57,29 @@ def test_pricing_bridge_clears_prior_ads_context_before_upstream_exception():
     with pytest.raises(RuntimeError): fail(req,None,None)
     safe=mod.wrap_analyze_ads(lambda *args,**kwargs: {'status':'CALCULATED_FROM_INPUTS'})
     assert 'phase2_ads_optimization_authority' not in safe({})
+
+
+def test_no_performance_stub_does_not_claim_platform_attribution_available():
+    req=fx.request()
+    legacy={'status':'NO_AD_PERFORMANCE_DATA_SUPPLIED','metrics':{},'incrementality':{'status':'NOT_ESTABLISHED','signals':{}}}
+    out=mod.materialize_ads_optimization_authority(legacy,req,fx.pricing())
+    assert out['attribution_boundary']['platform_attribution_status']=='NOT_SUPPLIED'
+
+
+def test_authored_incrementality_label_cannot_bypass_missing_counterfactual_evidence():
+    req=fx.request()
+    req['advertising_optimization']['incrementality_decision']={'status':'ESTABLISHED','evidence':['SRC-ADS']}
+    out=mod.materialize_ads_optimization_authority(fx.legacy_ads(),req,fx.pricing())
+    assert out['attribution_boundary']['incrementality_status']!='ESTABLISHED'
+    assert out['attribution_boundary']['causal_sales_claim_allowed'] is False
+
+
+def test_internal_no_performance_stub_is_removed_from_original_request_after_consumption():
+    req=fx.request()
+    p=mod.wrap_compile_pricing_economics_for_ads_context(lambda request, market_analysis=None, legacy_economics=None: fx.pricing())
+    p(req,None,None)
+    assert (req.get('ad_analysis') or {}).get('_phase2_no_performance_data') is True
+    a=mod.wrap_analyze_ads(lambda *args,**kwargs: (_ for _ in ()).throw(AssertionError('calculator must not run')))
+    out=a({})
+    assert out['phase2_business_status']=='READY'
+    assert 'ad_analysis' not in req
