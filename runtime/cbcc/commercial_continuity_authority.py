@@ -61,7 +61,15 @@ def wrap_compile_seven_agent_synthesis(fn: Callable[..., dict[str, Any]]):
         domain = kwargs.get('domain') if 'domain' in kwargs else (args[0] if args else None)
         architecture = kwargs.get('architecture') if 'architecture' in kwargs else (args[1] if len(args) > 1 else None)
         context = compile_commerce_decision_context(domain=_dict(domain))
-        out['asset_input_summary'] = deepcopy(out.get('asset_inputs') or {})
+        original_asset_inputs = deepcopy(out.get('asset_inputs') or {})
+        # Commercial continuity upgrades summary-only business payloads, but product-source
+        # reference inputs are an independent fidelity channel and must survive that upgrade.
+        # Preserve the canonical source-usage contract without copying the old summary fields
+        # back over the richer commerce decision context.
+        product_sources = original_asset_inputs.get('product_sources')
+        if _nonempty(product_sources):
+            context['product_sources'] = deepcopy(product_sources)
+        out['asset_input_summary'] = original_asset_inputs
         out['asset_inputs'] = context
         out['commerce_decision_context'] = context
         out['continuity_upgrade'] = 'RICH_PAYLOAD_NOT_STATUS_COUNT_SUMMARY'
