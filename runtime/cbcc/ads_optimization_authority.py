@@ -138,10 +138,13 @@ def _incrementality_from_legacy(legacy:Mapping[str,Any])->dict[str,Any]:
 def _attribution_boundary(legacy:Mapping[str,Any], request:Mapping[str,Any])->dict[str,Any]:
     inc=_incrementality_from_legacy(legacy)
     authored=_d(_d(request.get('advertising_optimization')).get('incrementality_decision'))
-    established=str(authored.get('status') or '').upper()=='ESTABLISHED' and _p(authored.get('evidence'))
+    counterfactual_ready=str(inc.get('status') or '').upper()=='EVIDENCE_AVAILABLE'
+    established=(str(authored.get('status') or '').upper()=='ESTABLISHED' and _p(authored.get('evidence')) and counterfactual_ready)
+    no_performance=str(legacy.get('status') or '').upper()=='NO_AD_PERFORMANCE_DATA_SUPPLIED'
     return {
-        'platform_attribution_status':'AVAILABLE' if legacy else 'NOT_SUPPLIED',
-        'incrementality_status':'ESTABLISHED' if established else str(inc.get('status') or 'NOT_ESTABLISHED'),
+        'platform_attribution_status':'NOT_SUPPLIED' if no_performance or not legacy else 'AVAILABLE',
+        'incrementality_status':'ESTABLISHED' if established else ('EVIDENCE_AVAILABLE_NOT_AUTHORED_AS_CAUSAL' if counterfactual_ready else 'NOT_ESTABLISHED'),
+        'counterfactual_evidence_status':str(inc.get('status') or 'NOT_ESTABLISHED'),
         'counterfactual_signals':deepcopy(inc.get('signals') or {}),
         'causal_sales_claim_allowed':bool(established),
         'rule':'Platform-attributed conversions are not automatically incremental conversions. Causal sales/lift claims require an explicit incrementality decision backed by defensible counterfactual evidence.'
@@ -250,6 +253,15 @@ def wrap_compile_seven_tool_continuity(fn):
 
 _ADS_CONTEXT:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_ads_context', default=None)
 _ADS_PORTFOLIO_DEPTH:ContextVar[int]=ContextVar('cbcc_v0676_ads_portfolio_depth', default=0)
+_ADS_STUB_REQUEST:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_ads_stub_request', default=None)
+
+def _cleanup_internal_ads_stub():
+    req=_ADS_STUB_REQUEST.get()
+    if isinstance(req,dict):
+        marker=req.get('ad_analysis')
+        if isinstance(marker,Mapping) and marker.get('_phase2_no_performance_data') is True:
+            req.pop('ad_analysis',None)
+    _ADS_STUB_REQUEST.set(None)
 
 def _explicit_ads_optimization_scope(request:Mapping[str,Any])->bool:
     return bool(request.get('advertising_optimization') or request.get('ads_optimization'))
@@ -259,11 +271,13 @@ def _ads_analyzer_scope(request:Mapping[str,Any])->bool:
 
 def wrap_compile_pricing_economics_for_ads_context(fn):
     def compiled(request:dict[str,Any], market_analysis=None, legacy_economics=None):
+        _cleanup_internal_ads_stub()
         _ADS_CONTEXT.set(None)
         out=fn(request,market_analysis,legacy_economics)
         if _is_full(request,out) and _ads_analyzer_scope(request):
             if _explicit_ads_optimization_scope(request) and not request.get('ad_rows') and not request.get('ad_analysis'):
                 request['ad_analysis']={'_phase2_no_performance_data':True,'ad_data':{}}
+                _ADS_STUB_REQUEST.set(request)
             _ADS_CONTEXT.set({'request':deepcopy(request),'pricing_economics':deepcopy(out)})
         return out
     setattr(compiled,'_cbcc_v0676_ads_optimization_context_bridge',True)
@@ -283,7 +297,9 @@ def wrap_analyze_ads(fn):
                 if no_performance and not in_portfolio else fn(*args,**kwargs)
             )
         except Exception:
-            if ctx and not in_portfolio: _ADS_CONTEXT.set(None)
+            if ctx and not in_portfolio:
+                _ADS_CONTEXT.set(None)
+                _cleanup_internal_ads_stub()
             raise
         if in_portfolio:
             return legacy
@@ -293,6 +309,7 @@ def wrap_analyze_ads(fn):
             return compile_ads_optimization_domain(legacy,ctx.get('request'),ctx.get('pricing_economics'))
         finally:
             _ADS_CONTEXT.set(None)
+            _cleanup_internal_ads_stub()
     setattr(compiled,'_cbcc_v0676_ads_optimization_authority',True)
     return compiled
 
@@ -303,6 +320,7 @@ def wrap_analyze_ad_portfolio(fn):
             legacy=fn(*args,**kwargs)
         except Exception:
             _ADS_CONTEXT.set(None)
+            _cleanup_internal_ads_stub()
             raise
         finally:
             _ADS_PORTFOLIO_DEPTH.reset(token)
@@ -313,5 +331,6 @@ def wrap_analyze_ad_portfolio(fn):
             return compile_ads_optimization_domain(legacy,ctx.get('request'),ctx.get('pricing_economics'))
         finally:
             _ADS_CONTEXT.set(None)
+            _cleanup_internal_ads_stub()
     setattr(compiled,'_cbcc_v0676_ads_optimization_authority',True)
     return compiled
