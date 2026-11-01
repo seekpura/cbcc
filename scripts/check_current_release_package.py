@@ -22,6 +22,7 @@ LOCKED_AUTHORITY_PATHS = (
     "references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md",
     "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
     "references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json",
+    "references/K01_2026-10-30_REAL_OUTPUT_REGRESSION.md",
 )
 BASELINE_PROOF_TOKENS = (
     "STRATEGY_CULTURE_MATERIALIZATION_TOKEN_MISSING",
@@ -38,7 +39,7 @@ _BASE_REQUIRED_RELEASE_PATHS = _baseline.required_release_paths
 
 
 def required_release_paths() -> list[str]:
-    """Extend the mature CURRENT checker with locked REQ-061..090 release authorities."""
+    """Extend the mature CURRENT checker with locked REQ-061..090 and K01 regression authorities."""
     rows = list(_BASE_REQUIRED_RELEASE_PATHS())
     for rel in LOCKED_AUTHORITY_PATHS + ("scripts/check_current_release_package_baseline.py",):
         if rel not in rows:
