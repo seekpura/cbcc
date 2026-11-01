@@ -20,6 +20,7 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     from . import seven_tool_continuity as seven_tool_module
     from .tools import listing as listing_module
     from .tools import ads as ads_module
+    from .tools import feedback as feedback_module
     from .information_audit_authority import (
         wrap_build_master_strategy as wrap_information_audit_strategy,
         wrap_validate_strategy_delivery as wrap_information_audit_validator,
@@ -61,6 +62,11 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         wrap_analyze_ads,
         wrap_analyze_ad_portfolio,
         wrap_compile_seven_tool_continuity as wrap_ads_optimization_seven_tool_continuity,
+    )
+    from .review_analysis_authority import (
+        wrap_compile_request_checkpoint_for_review_context,
+        wrap_analyze_feedback,
+        wrap_compile_seven_tool_continuity as wrap_review_analysis_seven_tool_continuity,
     )
 
     installed: list[str] = []
@@ -134,6 +140,15 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         )
         installed.append('ADS_OPTIMIZATION_ECONOMICS_CONTEXT_BRIDGE')
 
+    # Review Analysis does not depend semantically on Economics. We reuse this already-early compiler
+    # request checkpoint only to carry the FULL request to the later feedback branch without forking
+    # compiler.py. The Review wrapper consumes and clears the context exactly once.
+    if not getattr(pricing_economics_module.compile_pricing_economics_authority, '_cbcc_v0676_review_analysis_context_bridge', False):
+        pricing_economics_module.compile_pricing_economics_authority = wrap_compile_request_checkpoint_for_review_context(
+            pricing_economics_module.compile_pricing_economics_authority
+        )
+        installed.append('REVIEW_ANALYSIS_REQUEST_CONTEXT_BRIDGE')
+
     # Listing 2.0 remains the mature field/search/localization compiler. Phase 2 wraps that same compiler;
     # it does not introduce a second copy generator. The wrapper adds first-class publishability, decision
     # density, source lineage and explicit Pricing/Offer handoff in FULL project scope.
@@ -150,6 +165,12 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     if not getattr(ads_module.analyze_ad_portfolio, '_cbcc_v0676_ads_optimization_authority', False):
         ads_module.analyze_ad_portfolio = wrap_analyze_ad_portfolio(ads_module.analyze_ad_portfolio)
         installed.append('ADS_OPTIMIZATION_PORTFOLIO_BUSINESS_AUTHORITY')
+
+    # Preserve tools.feedback.analyze_feedback as the deterministic aggregation/prioritization engine.
+    # Phase 2 adds Agent-authored root-cause and smallest-repair decisions around that real output.
+    if not getattr(feedback_module.analyze_feedback, '_cbcc_v0676_review_analysis_authority', False):
+        feedback_module.analyze_feedback = wrap_analyze_feedback(feedback_module.analyze_feedback)
+        installed.append('REVIEW_ANALYSIS_ROOT_CAUSE_REPAIR_AUTHORITY')
 
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_economics_offer_authority', False):
         strategy_authority.build_master_strategy = wrap_economics_offer_strategy(strategy_authority.build_master_strategy)
@@ -178,6 +199,11 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
             seven_tool_module.compile_seven_tool_continuity
         )
         installed.append('SEVEN_TOOL_ADS_BUSINESS_READINESS_BRIDGE')
+    if not getattr(seven_tool_module.compile_seven_tool_continuity, '_cbcc_v0676_review_analysis_authority', False):
+        seven_tool_module.compile_seven_tool_continuity = wrap_review_analysis_seven_tool_continuity(
+            seven_tool_module.compile_seven_tool_continuity
+        )
+        installed.append('SEVEN_TOOL_REVIEW_BUSINESS_READINESS_BRIDGE')
 
     delivery_export.validate_strategy_delivery = delivery_contract.validate_strategy_delivery
 
@@ -231,6 +257,14 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'ADS_OPTIMIZATION_INCREMENTALITY_BOUNDARY',
         'ADS_OPTIMIZATION_ASSET_INDEPENDENT_PHASE2_AUTHORITY',
         'SEVEN_TOOL_ADS_BUSINESS_READINESS_BRIDGE',
+        'REVIEW_ANALYSIS_REQUEST_CONTEXT_BRIDGE',
+        'REVIEW_ANALYSIS_ROOT_CAUSE_REPAIR_AUTHORITY',
+        'REVIEW_ANALYSIS_SMALLEST_RESPONSIBLE_LAYER_REPAIR',
+        'REVIEW_ANALYSIS_SIX_FIELD_DECISION_DENSITY',
+        'REVIEW_ANALYSIS_REQ088_LINEAGE',
+        'REVIEW_ANALYSIS_LOCAL_VERIFY_GLOBAL_MEASUREMENT_BOUNDARY',
+        'REVIEW_ANALYSIS_ASSET_AND_PRODUCTION_REVIEW_INDEPENDENCE',
+        'SEVEN_TOOL_REVIEW_BUSINESS_READINESS_BRIDGE',
     ]
     return {
         'status':'INSTALLED' if installed else 'ALREADY_INSTALLED',
