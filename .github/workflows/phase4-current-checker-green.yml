@@ -1,0 +1,62 @@
+name: phase4-current-checker-green
+
+on:
+  push:
+    branches: [phase4-k01-regression]
+    paths:
+      - '.github/current_release_checker_phase4_patch.py'
+      - '.github/workflows/phase4-current-checker-green.yml'
+  workflow_dispatch:
+
+permissions: {contents: write}
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase4-k01-regression
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install -q pytest pyyaml
+      - name: Apply CURRENT locked-requirement checker patch
+        run: python .github/current_release_checker_phase4_patch.py
+      - name: Source-level CURRENT checker tests
+        run: |
+          python -m unittest discover -s tests -p 'test_current_release_package_checker.py' -v
+          python -m unittest discover -s tests -p 'test_current_requirement_consumer_freshness.py' -v
+      - name: Build exact CURRENT package
+        run: |
+          rm -rf /tmp/cbcc-current-phase4-proof
+          python -m scripts.build_plugin_dist_current --output-dir /tmp/cbcc-current-phase4-proof
+      - name: Resolve and verify exact CURRENT package with patched checker
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          files=sorted(Path('/tmp/cbcc-current-phase4-proof').glob('cross-border-commerce-creative-plugin-v*.zip'))
+          assert len(files)==1, files
+          Path('/tmp/current-plugin-path.txt').write_text(str(files[0]),encoding='utf-8')
+          print(files[0])
+          PY
+          python scripts/check_current_release_package.py "$(cat /tmp/current-plugin-path.txt)"
+      - name: Verify locked Phase 4 authority is inside package
+        run: |
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          plugin=Path('/tmp/current-plugin-path.txt').read_text(encoding='utf-8').strip()
+          with zipfile.ZipFile(plugin) as zf:
+              names=set(zf.namelist())
+          suffix='skills/cross-border-commerce-creative/resources/references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER.json'
+          assert any(name.endswith(suffix) for name in names), suffix
+          PY
+      - name: Commit CURRENT checker production fix only
+        run: |
+          git config user.name 'cbcc-phase4-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add scripts/check_current_release_package.py
+          git diff --cached --check
+          git commit -m 'fix(release): enforce locked REQ-061..090 same-source package authority'
+          git push origin HEAD:phase4-k01-regression
