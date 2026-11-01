@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from contextvars import ContextVar
 from typing import Any, Mapping
 import re
 
@@ -187,3 +188,118 @@ def materialize_review_analysis_authority(legacy_feedback:Mapping[str,Any],reque
     authority['issues']=review_analysis_issues(authority)
     authority['status']='READY' if not authority['issues'] else 'TO_VERIFY'
     return authority
+
+
+def compile_review_analysis_domain(legacy_feedback:Mapping[str,Any],request:Mapping[str,Any]|None=None)->dict[str,Any]:
+    base=deepcopy(dict(legacy_feedback or {}))
+    authority=materialize_review_analysis_authority(base,request)
+    if not _is_full(request,base):return base
+    out=deepcopy(base)
+    out['phase2_review_analysis_authority']=authority
+    out['phase2_business_status']=authority.get('status')
+    return out
+
+
+def wrap_compile_seven_tool_continuity(fn):
+    def compiled(*args:Any,**kwargs:Any):
+        out=fn(*args,**kwargs)
+        domain=_d(kwargs.get('domain'))
+        if not domain and args and isinstance(args[0],Mapping):domain=_d(args[0])
+        feedback=_d(domain.get('feedback'))
+        authority=_d(feedback.get('phase2_review_analysis_authority'))
+        status=feedback.get('phase2_business_status') or authority.get('status') or 'TO_VERIFY'
+        for row in _l(out.get('capabilities')):
+            if isinstance(row,dict) and row.get('id')=='07_REVIEW_ANALYSIS':
+                row['business_readiness_status']=status
+                ev=row.setdefault('evidence',{})
+                ev['review_business_readiness_status']=status
+                ev['review_authority_status']=authority.get('status') or 'NOT_MATERIALIZED'
+                ev['review_issue_count']=len(authority.get('issues') or []) if authority else None
+        out['review_analysis_integrity']={
+            'business_readiness_status':status,
+            'authority_status':authority.get('status') or 'NOT_MATERIALIZED',
+            'issues':deepcopy(authority.get('issues') or []),
+            'rule':'Legacy feedback aggregation/classification is evidence state. Phase 2 Review business readiness independently requires an authored root-cause hypothesis, responsible layer, smallest repair, frozen layers, local verification and learning handoff.'
+        }
+        return out
+    setattr(compiled,'_cbcc_v0676_review_analysis_authority',True)
+    return compiled
+
+
+_REVIEW_CONTEXT:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_review_context',default=None)
+_REVIEW_STUB_STATE:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_review_stub_state',default=None)
+
+def _cleanup_internal_review_stub():
+    state=_REVIEW_STUB_STATE.get()
+    if isinstance(state,Mapping):
+        req=state.get('request')
+        if isinstance(req,dict):
+            if state.get('had_key'):
+                req['feedback_rows']=deepcopy(state.get('original'))
+            else:
+                req.pop('feedback_rows',None)
+    _REVIEW_STUB_STATE.set(None)
+
+def _inject_internal_no_feedback_stub(request:dict[str,Any]):
+    had_key='feedback_rows' in request
+    original=deepcopy(request.get('feedback_rows'))
+    request['feedback_rows']=[{'_phase2_no_feedback_data':True}]
+    _REVIEW_STUB_STATE.set({'request':request,'had_key':had_key,'original':original})
+
+def _explicit_review_scope(request:Mapping[str,Any])->bool:
+    return bool(request.get('review_analysis') or request.get('review_root_cause'))
+
+def _has_feedback_input(request:Mapping[str,Any])->bool:
+    rows=request.get('feedback_rows')
+    if not isinstance(rows,(list,tuple)) or not rows:return False
+    return not (len(rows)==1 and isinstance(rows[0],Mapping) and rows[0].get('_phase2_no_feedback_data') is True)
+
+def _review_analyzer_scope(request:Mapping[str,Any])->bool:
+    return _has_feedback_input(request) or _explicit_review_scope(request)
+
+def wrap_compile_request_checkpoint_for_review_context(fn):
+    def compiled(request:dict[str,Any],*args:Any,**kwargs:Any):
+        _cleanup_internal_review_stub()
+        _REVIEW_CONTEXT.set(None)
+        out=fn(request,*args,**kwargs)
+        if _is_full(request,out) and _review_analyzer_scope(request):
+            if _explicit_review_scope(request) and not _has_feedback_input(request):
+                _inject_internal_no_feedback_stub(request)
+            _REVIEW_CONTEXT.set({'request':deepcopy(request),'checkpoint':deepcopy(out)})
+        return out
+    setattr(compiled,'_cbcc_v0676_review_analysis_context_bridge',True)
+    return compiled
+
+def wrap_analyze_feedback(fn):
+    def compiled(*args:Any,**kwargs:Any):
+        ctx=_d(_REVIEW_CONTEXT.get())
+        req=_d(ctx.get('request'))
+        rows=req.get('feedback_rows')
+        no_feedback=bool(isinstance(rows,list) and len(rows)==1 and isinstance(rows[0],Mapping) and rows[0].get('_phase2_no_feedback_data') is True)
+        try:
+            legacy=(
+                {
+                    'status':'NO_CUSTOMER_REVIEW_DATA_SUPPLIED',
+                    'summary':{'total':0,'categories':{},'shares':{}},
+                    'issues':[],
+                    'revision_actions':[],
+                    'source_matrix':{},
+                    'severity_matrix':{},
+                    'unclassified_count':0,
+                    'note':'No customer review/CS/returns data was supplied. No counts, rates, root causes or issue frequency are fabricated.'
+                }
+                if no_feedback else fn(*args,**kwargs)
+            )
+        except Exception:
+            if ctx:
+                _REVIEW_CONTEXT.set(None)
+                _cleanup_internal_review_stub()
+            raise
+        if not ctx:return legacy
+        try:
+            return compile_review_analysis_domain(legacy,ctx.get('request'))
+        finally:
+            _REVIEW_CONTEXT.set(None)
+            _cleanup_internal_review_stub()
+    setattr(compiled,'_cbcc_v0676_review_analysis_authority',True)
+    return compiled
