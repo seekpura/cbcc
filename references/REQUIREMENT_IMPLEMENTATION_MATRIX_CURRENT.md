@@ -1,6 +1,6 @@
 # CBCC Requirement Implementation Matrix — CURRENT
 
-This is the human-readable status summary for `REQ-001..REQ-060`. **The machine-level one-to-one implementation authority is `REQUIREMENT_CONSUMER_MAP_V0664.json`.** That JSON names the concrete existing Consumer path(s), concrete proof object(s), and precise status for every requirement, and is release-checked by `scripts/check_v0664_requirement_consumer_map.py`. The strict checker has passed `60/60` with `0` issues. This summary never substitutes for that map, the detailed cumulative ledger, or the verbatim user requirement source.
+This is the human-readable status summary for `REQ-001..REQ-090`. REQ-001..060 retain the existing strict consumer-accounting authority in `REQUIREMENT_CONSUMER_MAP_V0664.json` plus CURRENT overrides. REQ-061..090 are newly locked by `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md` and remain explicitly **not yet fully implemented** until the cumulative 001..090 consumer map, code/package consumers and real FULL proof are completed. This summary never substitutes for the detailed cumulative ledgers, verbatim user authority, machine execution ledger or actual proof objects.
 
 | REQ | Requirement | Human summary | Status |
 |---|---|---|---|
@@ -22,7 +22,7 @@ This is the human-readable status summary for `REQ-001..REQ-060`. **The machine-
 | REQ-016 | Chinese-first without density loss | global Chinese interpretation + language delivery/matrix/audit | CONSUMER MAPPED + E2E_PENDING |
 | REQ-017 | Target language + EN baseline + CN meaning | language delivery + Prompt/asset compiler | CONSUMER MAPPED + E2E_PENDING |
 | REQ-018 | HTML complete workspace | delivery workspace/html + project-authored HTML + shell | CONSUMER MAPPED + E2E_PENDING |
-| REQ-019 | Open-world Asset Universe | universe authority + 12-family audit + asset architecture | CONSUMER MAPPED + E2E_PENDING |
+| REQ-019 | Open-world Asset Universe | universe authority + family audit + asset architecture | CONSUMER MAPPED + E2E_PENDING |
 | REQ-020 | No silent family omission | family audit + FULL package audit | PACKAGE_ENFORCED |
 | REQ-021 | Preserve real A/B variants | creative opportunity + universe + portfolio + experiment | CONSUMER MAPPED + E2E_PENDING |
 | REQ-022 | Presence independent from Fidelity | subject presence + native reference + universe audit | CONSUMER MAPPED + E2E_PENDING |
@@ -53,7 +53,7 @@ This is the human-readable status summary for `REQ-001..REQ-060`. **The machine-
 | REQ-047 | GitHub main source of truth | VERSION + builder + source-parity authority | RELEASE_PROCESS_ENFORCED |
 | REQ-048 | Installed-plugin parity | parity checker + source-parity lock + installed Skill readback | INSTALLED_PARITY_REQUIRED |
 | REQ-049 | Fresh positive FULL fixture | completion/package audit + real K01 host run | E2E_PENDING |
-| REQ-050 | Historical K01 negative fixture | K01 authority + real shortcut Runtime audit + regression test | PACKAGE_ENFORCED; 17 STRUCTURAL FAILS VERIFIED |
+| REQ-050 | Historical K01 negative fixture | K01 authority + real shortcut Runtime audit + regression test | PACKAGE_ENFORCED; NEGATIVE FIXTURE VERIFIED |
 | REQ-051 | Verbatim long requirements mandatory | verbatim source + CURRENT source lock/loading | RELEASE_PROCESS_ENFORCED |
 | REQ-052 | ≤10 questions then continue | long-requirement Runtime + full audit + Human projection | IMPLEMENTED_CODE |
 | REQ-053 | Four-way Product Truth + A/B/C | strategy depth + claim authority + Truth tool | IMPLEMENTED_CODE |
@@ -64,6 +64,36 @@ This is the human-readable status summary for `REQ-001..REQ-060`. **The machine-
 | REQ-058 | Platform execution + localization | platform/scope + locale + Human projection | CONSUMER MAPPED + E2E_PENDING |
 | REQ-059 | P0/P1/P2 tradeoff | strategy depth/authority + decision authority | CONSUMER MAPPED + E2E_PENDING |
 | REQ-060 | Nine semantic outputs, no fixed shell | strategy depth + workspace + project HTML + FULL audit | CONSUMER MAPPED + E2E_PENDING |
+| REQ-061 | Canonical commerce object graph | JSON authority → MD/HTML/Prompt/Production projections | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-062 | Whole-commerce FULL scope | assets cannot swallow strategy/listing/economics/ads/reviews | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-063 | Explicit family evaluation | each relevant family ACTIVATED/NOT_NEEDED/TO_VERIFY/MISSING_INPUT + WHY | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-064 | Scenario/Lifestyle/Context/Human-use | scene-led decision objects with real strategic roles | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-065 | Negative/Counterexample/Expectation management | 阴性/反例/误区/错误使用/边界 clarification | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-066 | Brand IP/Memory/Brand World | distinctive assets and long-term recall layer evaluation | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-067 | Packaging Trust/Unboxing/Contents/Size/Compatibility | transaction-trust family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-068 | Ingredient/Formula/Material/Texture/Detail/Macro/Proof | evidence/sensory-detail family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-069 | How-to/Routine/Usage/FAQ/Objection/Comparison | education/objection/decision family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-070 | A+/PDP/Longform/Specification/Source-document | long-form surface family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-071 | Paid Media/Performance Creative | audience+tension+hypothesis+offer+landing+economics | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-072 | Social/Seeding/Organic | platform-native social family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-073 | Creator/UGC/Affiliate | creator performance/script/product handling/affiliate handoff | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-074 | Product/PDP/Short Video | time-based commercial argument | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-075 | LIVE commerce | host/demo/objection/offer/Q&A loop | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-076 | Store/Banner/Landing/Campaign/Seasonal | store/campaign surface family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-077 | CRM/Lifecycle/Post-purchase | onboarding/education/replenishment/service/review request | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-078 | Test/Rotation/A-B/Multivariate | explicit changed variable/held constants/decision rule | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-079 | Surface-native specialization | capacity only limits activation, not universe | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-080 | Visual Master + portfolio rhythm | project-level visual system separate from per-object AD | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-081 | Per-object Art Direction beyond stills | image/scene/negative/IP/video/creator/etc route-specific AD | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-082 | Commercial-grade Prompt density | lossless pixel/frame/audio-changing projection | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-083 | Dynamic/temporal Prompt continuity | beat/motion/audio/text timing/cover continuity | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-084 | Product Presence/Fidelity/reference independence | presence is creative; fidelity is truth/production | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-085 | Concrete human/culture/inclusion execution | casting/body/hair/wardrobe/hands/lighting/bias review | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-086 | Scene-derived photography/lighting/CMF closure | selected values derive from scene/material and reach acting plane | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-087 | Non-asset commerce objects remain first-class | Listing/Economics/Ads/Reviews/Research cannot collapse into asset metadata | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-088 | Source/Evidence/Assumption/Decision lineage | exact source→interpretation→decision→proof trace | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-089 | Human Workspace full canonical projection | complete routed HTML; summaries only entrances | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-090 | FULL package lineage + actual-output boundary | machine/human/editable/production package + honest E2E_PENDING | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
 
 ## Current evidence boundary
-The strict Consumer Map has CI proof `PASS / requirement_count=60 / issue_count=0`. The historical K01 negative fixture is closed at package-audit level with 17 structural failure classes. Installed-plugin parity and active Host Skill snapshot parity are separate evidence: a stale active Host snapshot cannot prove a newly installed release. Fresh positive K01 FULL remains pending until authored through a Host context that actually loaded the current installed Skill; Provider/Result/Review/Revision/actual-output QA remain pending unless real outputs exist.
+REQ-061..090 are formally locked but are **not** claimed implemented. Their machine status lives in `REQUIREMENT_EXECUTION_LEDGER_CURRENT.json`; execution order and acceptance proof live in `LOCKED_IMPLEMENTATION_PLAN_CURRENT.md`. The existing 60-row strict Consumer Map remains valid for its historical scope until a cumulative 90-row map supersedes it. Fresh positive K01 FULL remains mandatory for behavioral closure. Provider/Result/Review/Revision/actual-output QA remain pending unless real outputs exist.

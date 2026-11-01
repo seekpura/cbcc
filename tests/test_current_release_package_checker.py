@@ -47,6 +47,27 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
         ):
             self.assertIn(rel, required)
 
+    def test_checker_requires_locked_req_061_090_authorities(self):
+        checker = _load_checker()
+        required = set(checker.required_release_paths())
+        for rel in (
+            "references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md",
+            "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
+            "references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json",
+        ):
+            self.assertIn(rel, required)
+
+    def test_checker_text_enforces_same_source_and_locked_plan_tokens(self):
+        text = CHECKER.read_text(encoding="utf-8")
+        for token in (
+            "CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md",
+            "LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
+            "REQUIREMENT_EXECUTION_LEDGER_CURRENT.json",
+            "REQ-061..REQ-090",
+            "Canonical same-source invariant",
+        ):
+            self.assertIn(token, text)
+
     def test_checker_has_no_fixed_expected_release_constant(self):
         text = CHECKER.read_text(encoding="utf-8")
         self.assertNotRegex(text, r"EXPECTED_VERSION\s*=\s*['\"]\d+\.\d+\.\d+['\"]")
