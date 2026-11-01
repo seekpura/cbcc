@@ -6,7 +6,7 @@
   "completion_rule": "No requirement is complete from document existence, headings, file counts or boolean flags. Require concrete consumer, proof object, verification and where applicable real K01 FULL evidence.",
   "new_requirements": [
     {"req":"REQ-061","title":"Canonical commerce object graph","phase":"1,6,7","status":"PARTIAL_PHASE_1_GRAPH_AUTHORITY_VERIFIED"},
-    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_PRODUCT_TRUTH_EVIDENCE_VERIFIED"},
+    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_PRODUCT_TRUTH_AND_MARKET_RESEARCH_VERIFIED"},
     {"req":"REQ-063","title":"Explicit opportunity-family evaluation","phase":"3","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-064","title":"Scenario/Lifestyle/Context/Human-use","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-065","title":"Negative/Counterexample/Expectation management","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
@@ -31,15 +31,15 @@
     {"req":"REQ-084","title":"Product Presence/Fidelity/reference independence","phase":"4,5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-085","title":"Concrete human/culture/inclusion execution","phase":"4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-086","title":"Scene-derived photography/lighting/CMF closure","phase":"4,5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-087","title":"Listing/Economics/Ads/Reviews/Research remain first-class","phase":"1,2","status":"PARTIAL_PHASE_1_GRAPH_BOUNDARY_VERIFIED"},
-    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE2_PRODUCT_TRUTH_EVIDENCE_VERIFIED"},
+    {"req":"REQ-087","title":"Listing/Economics/Ads/Reviews/Research remain first-class","phase":"1,2","status":"PARTIAL_PHASE2_RESEARCH_FIRST_CLASS_VERIFIED"},
+    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE2_PRODUCT_TRUTH_AND_RESEARCH_LINEAGE_VERIFIED"},
     {"req":"REQ-089","title":"Human Workspace full canonical projection","phase":"6","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-090","title":"FULL package lineage and actual-output boundary","phase":"7,8,10","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"}
   ],
   "phase_status": {
     "0":"IN_PROGRESS_BUILT_PLUGIN_READBACK_DEFERRED_PHASE11",
     "1":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY",
-    "2":"IN_PROGRESS_PRODUCT_TRUTH_EVIDENCE_SUBTASK_VERIFIED",
+    "2":"IN_PROGRESS_PRODUCT_TRUTH_AND_MARKET_RESEARCH_SUBTASKS_VERIFIED",
     "3":"NOT_STARTED",
     "4":"NOT_STARTED",
     "5":"NOT_STARTED",
@@ -96,36 +96,64 @@
       "source_truth":"GITHUB_MAIN_PERSISTED",
       "source_commits":[
         "75f8f95ec5b5fa24481c8295e2454dba25580317",
-        "c3538fbc5147862d6923a9ff96c4aa52f39a1af3"
+        "c3538fbc5147862d6923a9ff96c4aa52f39a1af3",
+        "dce49ebb578b266523f01c4486c155fc289a696d"
       ]
     },
     "2": {
-      "status":"IN_PROGRESS_PRODUCT_TRUTH_EVIDENCE_SUBTASK_VERIFIED",
-      "subtask":"Product Truth / Evidence authority",
-      "focused_tests":"9 passed",
-      "cross_scope_tests":"16 passed with Phase 1 canonical graph suite",
+      "status":"IN_PROGRESS_PRODUCT_TRUTH_AND_MARKET_RESEARCH_SUBTASKS_VERIFIED",
+      "verified_subtasks":[
+        "Product Truth / Evidence authority",
+        "Market / Search / Competition / Price-band / Review Opportunity Research authority"
+      ],
+      "focused_tests": {
+        "product_truth":"9 passed",
+        "market_research":"6 passed",
+        "canonical_graph_market_binding":"1 passed behavioral verification",
+        "runtime_market_binding":"GitHub main source readback verified"
+      },
+      "cross_scope_tests":"23 passed for canonical graph + Product Truth + Market Research, plus Phase 0 authority guard 1 passed and frozen K01 negative fixture guard 3 passed",
       "proof_objects":[
         "runtime/cbcc/product_truth_evidence_authority.py",
         "tests/test_v0676_product_truth_evidence_authority.py",
-        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_PRODUCT_TRUTH.json"
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_PRODUCT_TRUTH.json",
+        "runtime/cbcc/market_research_authority.py",
+        "runtime/cbcc/tools/market.py",
+        "runtime/cbcc/__init__.py",
+        "runtime/cbcc/compiler.py",
+        "runtime/cbcc/canonical_commerce_graph.py",
+        "tests/test_v0676_market_research_authority.py",
+        "tests/test_v0676_market_research_runtime_binding.py",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_MARKET_RESEARCH.json"
       ],
       "verified_behaviors":[
         "FACT / TRUE_SELLING_POINT / PERCEIVED_BENEFIT / EMOTIONAL_VALUE / NON_CLAIMABLE remain separate",
-        "A/B/C evidence semantics are machine-explicit",
-        "C-grade or unbound value rows cannot become hard claims",
-        "conflicting facts are quarantined instead of guessed",
-        "missing value layers remain MISSING_INPUT with WHY",
-        "Claim→Evidence trace exposes SOURCE_BOUND / UNBOUND_HOLD",
-        "assumptions require downstream effect and evidence needed",
-        "canonical graph prefers the new Product Truth authority while preserving legacy compatibility fallback"
+        "A/B/C evidence semantics are machine-explicit and C-grade/unbound rows cannot become hard claims",
+        "Claim→Evidence trace exposes SOURCE_BOUND / UNBOUND_HOLD and fact conflicts are quarantined",
+        "Research exposes DEMAND / SEARCH / COMPETITION / PRICE_BAND / REVIEWS / NEGATIVE_REVIEWS / OPPORTUNITY / RISK as explicit domains",
+        "Evidenced research rows carry WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT plus exact fact, interpretation, confidence, assumption boundary, downstream use and conflict status",
+        "research source recency, representativeness boundary, scope mismatch and traceability remain visible in source cards",
+        "negative-review research uses explicit supplied negative labels only and does not infer free-text sentiment",
+        "missing research returns RESEARCH_INPUT_REQUIRED with null exact facts and LOW confidence instead of fabricated market size/search volume/rank/sales",
+        "opportunities remain RESEARCH_HYPOTHESIS_NOT_RECOMMENDATION until downstream cross-checks pass",
+        "real Runtime package initialization wraps tools.market.analyze_market additively, preserving compiler analyze_market -> market_analysis.json",
+        "canonical RESEARCH graph node prefers enriched market_analysis.json while retaining research_gate.json as compatibility fallback"
       ],
-      "remaining_phase2":"Market/research density; four-context WHY; intersectionality/culture; applied frameworks; Economics/Offer; Listing/Search; Content Matrix/RACE; Ads; Reviews; Measurement and complete WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT coverage.",
+      "remaining_phase2":"Information audit/questions/assumption-decision density closure; Platform×Region×Audience×Culture WHY; intersectionality/culture adaptation; applied Positioning/VP/STP/JTBD/AIDA/FABE/4P/Funnel/RACE decisions; Economics/Offer; complete Listing/Search; Content Matrix/RACE; Ads optimization; Review Analysis root-cause/repair loop; Measurement/A-B/P0-P1-P2/next-input plan; full major-row WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT coverage across those objects.",
       "real_k01_full":"PENDING_PHASE10",
+      "built_plugin_readback":"PENDING_PHASE11",
+      "provider_actual_output":"E2E_PENDING",
       "source_truth":"GITHUB_MAIN_PERSISTED",
       "source_commits":[
         "bfe8993c26c127021c2a24428a04d451f027c0a7",
         "22433cc2b1d01fa84821adf4bae42b4130b8bdda",
-        "fc12ac1517da14168231e43552305a1227755102"
+        "fc12ac1517da14168231e43552305a1227755102",
+        "0620f4b76e0870a97db426c3bba2c84c61e4a79d",
+        "c04e6d6aa4688fff5b922cc0385cb085f5fc9af8",
+        "94be2bc02c5ab93f96fe3ca86afeae7dc0511fef",
+        "dce49ebb578b266523f01c4486c155fc289a696d",
+        "54ab48b9f5aedbcd0c56686c54b078dd8ae2372e",
+        "13f6c30103d570ed4aefcf6476d19631315054c1"
       ]
     }
   }
