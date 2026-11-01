@@ -206,3 +206,39 @@ def wrap_validate_economics_offer(fn:Callable[...,dict[str,Any]]):
         result['economics_offer_authority_v0676_audit']={'status':'PASS' if not current else 'INCOMPLETE','issues':current}
         return result
     return validated
+
+def wrap_build_master_strategy(fn:Callable[...,dict[str,Any]]):
+    def built(request:dict[str,Any], *args:Any, **kwargs:Any):
+        strategy=fn(request,*args,**kwargs)
+        if not _is_full_context(request,strategy): return strategy
+        economics=_d(kwargs.get('economics'))
+        strict=_d(economics.get('pricing_economics_authority'))
+        phase2=_d(strict.get('phase2_economics_offer_authority'))
+        if not phase2:
+            phase2=materialize_economics_offer_authority(strict,request,economics)
+        out=deepcopy(strategy)
+        sections=out.setdefault('sections',{})
+        core=sections.setdefault('04_marketing_core_strategy',{})
+        core['pricing_economics_offer']=deepcopy(phase2)
+        sections['04_marketing_core_strategy']=core
+        out['sections']=sections
+        return out
+    setattr(built,'_cbcc_v0676_economics_offer_authority',True)
+    return built
+
+def wrap_validate_strategy_delivery(fn:Callable[[dict[str,Any]],dict[str,Any]]):
+    def validated(strategy:dict[str,Any]):
+        result=fn(strategy)
+        if not _is_full_context(strategy,strategy): return result
+        core=_d(_d(strategy.get('sections')).get('04_marketing_core_strategy'))
+        authority=_d(core.get('pricing_economics_offer'))
+        current=economics_offer_issues(authority) if authority else [{'code':'FULL_ECONOMICS_OFFER_AUTHORITY_MISSING_V0676'}]
+        issues=list(result.get('issues') or [])+current
+        dedup=[]
+        for item in issues:
+            if item not in dedup: dedup.append(item)
+        result['issues']=dedup; result['status']='PASS' if not dedup else 'INCOMPLETE'
+        result['economics_offer_authority_v0676_audit']={'status':'PASS' if not current else 'INCOMPLETE','issues':current}
+        return result
+    setattr(validated,'_cbcc_v0676_economics_offer_authority',True)
+    return validated
