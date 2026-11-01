@@ -31,6 +31,10 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         wrap_build_master_strategy as wrap_intersectionality_culture_strategy,
         wrap_validate_strategy_delivery as wrap_intersectionality_culture_validator,
     )
+    from .content_matrix_race_authority import (
+        wrap_build_master_strategy as wrap_content_matrix_race_strategy,
+        wrap_validate_strategy_delivery as wrap_content_matrix_race_validator,
+    )
     from .strategy_framework_authority import (
         wrap_build_master_strategy as wrap_strategy_framework_strategy,
         wrap_validate_strategy_delivery as wrap_strategy_framework_validator,
@@ -71,6 +75,15 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         installed.append('INTERSECTIONALITY_CULTURE_DENSITY_AUTHORITY')
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_intersectionality_culture_authority', False):
         delivery_contract.validate_strategy_delivery = wrap_intersectionality_culture_validator(delivery_contract.validate_strategy_delivery)
+
+    # Phase 2 Content Matrix/RACE must exist before asset/prompt work. Install this before the
+    # Strategy/Framework wrapper so section 07 is finalized before the existing applied-RACE authority
+    # snapshots it. The same order is preserved on delivery validation.
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_content_matrix_race_authority', False):
+        strategy_authority.build_master_strategy = wrap_content_matrix_race_strategy(strategy_authority.build_master_strategy)
+        installed.append('CONTENT_MATRIX_RACE_BUSINESS_AUTHORITY')
+    if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_content_matrix_race_authority', False):
+        delivery_contract.validate_strategy_delivery = wrap_content_matrix_race_validator(delivery_contract.validate_strategy_delivery)
 
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_strategy_framework_authority', False):
         strategy_authority.build_master_strategy = wrap_strategy_framework_strategy(strategy_authority.build_master_strategy)
@@ -149,6 +162,14 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'CORE_INTERSECTION_DIMENSION_COVERAGE_WITHOUT_BEHAVIOR_INFERENCE',
         'CULTURE_SCRIPT_CASTING_WARDROBE_COLOR_CTA_EXECUTION_AUDIT',
         'RELEVANCE_AWARE_CULTURAL_CONTEXT_COVERAGE',
+        'CONTENT_MATRIX_RACE_BUSINESS_AUTHORITY',
+        'CONTENT_MATRIX_PLATFORM_EXECUTION_AND_ATTRIBUTION',
+        'CONTENT_MATRIX_SIX_FIELD_DECISION_DENSITY',
+        'CONTENT_MATRIX_REQ088_LINEAGE',
+        'CONTENT_MATRIX_VALID_RACE_LINKAGE',
+        'RACE_PLATFORM_CULTURE_ATTRIBUTION_NEXT_DECISION',
+        'RACE_REQ088_LINEAGE',
+        'CONTENT_MATRIX_ASSET_INDEPENDENT_PHASE2_AUTHORITY',
         'APPLIED_STRATEGY_FRAMEWORK_AUTHORITY',
         'FRAMEWORK_DEFINITION_CANNOT_FALSE_PASS_AS_APPLICATION',
         'POSITIONING_VALUE_MESSAGE_SIX_FIELD_DENSITY_AUDIT',
