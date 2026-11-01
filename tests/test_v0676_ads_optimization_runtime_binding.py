@@ -35,14 +35,14 @@ def test_seven_tool_bridge_separates_ads_legacy_status_from_business_readiness()
     assert out['ads_optimization_integrity']['business_readiness_status']=='READY'
 
 
-def test_compiler_materializes_ads_authority_with_or_without_performance_rows_before_asset_architecture():
-    text=(ROOT/'runtime/cbcc/compiler.py').read_text(encoding='utf-8')
-    assert 'compile_ads_optimization_domain' in text
-    assert "request.get('advertising_optimization') or request.get('ads_optimization')" in text
-    assert "'status':'NO_AD_PERFORMANCE_DATA_SUPPLIED'" in text
-    ads_write=text.index("artifacts/ad_analysis.json")
-    asset_build=text.index('architecture=build_asset_architecture')
-    assert ads_write < asset_build
+def test_phase2_closure_installs_ads_context_analyzers_and_seven_tool_readiness_bridge():
+    text=(ROOT/'runtime/cbcc/v0676_phase2_closure.py').read_text(encoding='utf-8')
+    assert 'ads_optimization_authority' in text
+    assert 'wrap_compile_pricing_economics_for_ads_context' in text
+    assert 'wrap_analyze_ads' in text
+    assert 'wrap_analyze_ad_portfolio' in text
+    assert 'SEVEN_TOOL_ADS_BUSINESS_READINESS_BRIDGE' in text
+    assert 'ADS_OPTIMIZATION_ECONOMICS_CONTEXT_BRIDGE' in text
 
 
 def test_canonical_graph_prefers_enriched_ad_analysis_over_paid_campaign_architecture(tmp_path:Path):
