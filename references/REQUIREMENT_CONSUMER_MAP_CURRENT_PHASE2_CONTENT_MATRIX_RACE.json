@@ -1,0 +1,127 @@
+{
+  "authority": "CBCC Phase 2 Content Matrix / RACE consumer accounting",
+  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
+  "requirements": ["REQ-006", "REQ-010", "REQ-011", "REQ-012", "REQ-015", "REQ-016", "REQ-017", "REQ-045", "REQ-053", "REQ-054", "REQ-055", "REQ-056", "REQ-057", "REQ-058", "REQ-059", "REQ-060", "REQ-062", "REQ-087", "REQ-088"],
+  "status": "PHASE2_SUBTASK_VERIFIED_PENDING_ADS_REVIEW_MEASUREMENT_HUMAN_K01_RELEASE",
+  "locked_behavior": {
+    "phase2_independence": "Content Matrix / RACE is a first-class commercial execution object that must be authorable and verifiable before asset/prompt work. Asset architecture is not required to make this Phase 2 business authority exist.",
+    "content_matrix_row_contract": ["platform", "site", "surface", "content_type", "audience", "audience_state", "purchase_barrier", "topic", "hook", "hook_mechanism", "script_structure", "visual_form", "visual_carrier", "proof_evidence", "cta", "metric", "race_stage", "culture_adaptation", "taboo_stereotype_check"],
+    "platform_execution_contract": ["platform_dimensions", "duration", "cover_first_frame", "subtitle_strategy", "music_rights", "traffic_mechanism", "landing_handoff", "utm_attribution"],
+    "race_execution_contract": ["stage", "objective", "key_actions", "output", "platform", "surface", "culture_check", "kpi", "attribution", "next_decision"],
+    "decision_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
+    "lineage": ["source_refs", "source_type", "recency", "exact_fact_or_explicit_assumption_boundary", "interpretation", "confidence", "downstream_use", "conflict_status", "proof_object"],
+    "race_order": ["RESEARCH", "ACTION", "COMMUNICATION", "EVALUATION"],
+    "source_resolution_rule": "A source-ref string does not count as lineage unless it resolves in the project source registry. Runtime-generated fallback boundaries explain missing authority but do not become an explicitly authored assumption.",
+    "race_link_rule": "Every Content Matrix row must point to a valid real RACE stage in the same authority. Legacy Reach/Act/Convert/Engage labels cannot satisfy the locked RACE contract.",
+    "canonical_rule": "CONTENT_MATRIX and RACE remain canonical Strategy section authorities in strategy_authority.json. Phase 2 does not create a second canonical business payload."
+  },
+  "consumers": [
+    "runtime/cbcc/strategy_authority.py",
+    "runtime/cbcc/content_matrix_race_authority.py",
+    "runtime/cbcc/strategy_framework_authority.py",
+    "runtime/cbcc/delivery_contract.py",
+    "runtime/cbcc/v0676_phase2_closure.py",
+    "runtime/cbcc/canonical_commerce_graph.py"
+  ],
+  "proof_objects": [
+    "strategy_authority.json.sections.06_platform_content_matrix",
+    "strategy_authority.json.sections.07_race_execution_table",
+    "strategy_authority.json.content_matrix_race_authority_v0676",
+    "strategy_authority.json.content_matrix_race_authority_v0676.content_matrix[*].density_status",
+    "strategy_authority.json.content_matrix_race_authority_v0676.content_matrix[*].platform_execution_status",
+    "strategy_authority.json.content_matrix_race_authority_v0676.content_matrix[*].race_link_status",
+    "strategy_authority.json.content_matrix_race_authority_v0676.content_matrix[*].lineage_status",
+    "strategy_authority.json.content_matrix_race_authority_v0676.race[*].density_status",
+    "strategy_authority.json.content_matrix_race_authority_v0676.race[*].execution_status",
+    "strategy_authority.json.content_matrix_race_authority_v0676.race[*].lineage_status",
+    "delivery_contract.content_matrix_race_authority_v0676_audit",
+    "canonical_commerce_graph.CONTENT_MATRIX.authority_ref=strategy_authority.json#/sections/06_platform_content_matrix",
+    "canonical_commerce_graph.RACE.authority_ref=strategy_authority.json#/sections/07_race_execution_table"
+  ],
+  "regression_tests": [
+    "tests/test_v0676_content_matrix_race_authority.py",
+    "tests/test_v0676_content_matrix_race_review_regressions.py",
+    "tests/test_v0676_content_matrix_race_runtime_binding.py",
+    "tests/test_v0676_listing_search_authority.py",
+    "tests/test_v0676_listing_search_context_bridge.py",
+    "tests/test_v0676_listing_search_runtime_binding.py",
+    "tests/test_v0676_economics_offer_authority.py",
+    "tests/test_v0676_canonical_commerce_graph.py"
+  ],
+  "verification": {
+    "red": [
+      "Initial focused RED failed during collection with FileNotFoundError for runtime/cbcc/content_matrix_race_authority.py, proving the first-class Phase 2 authority was absent.",
+      "Runtime-binding RED failed because v0676_phase2_closure.py did not install Content Matrix/RACE wrappers; canonical section binding itself remained correct.",
+      "REQ-088 hardening RED failed 1/9 because an unknown source-ref string could previously satisfy lineage without resolving in the project source registry.",
+      "Review hardening RED failed 2/11 because a runtime-generated missing boundary could masquerade as an explicit assumption and because attached FULL authority could escape validation when the root strategy omitted a delivery-mode marker."
+    ],
+    "green": "Final focused verification passed 13/13: core authority 9 + review false-pass regressions 2 + runtime/canonical binding 2.",
+    "cross_scope": "Current-session adjacent rerun passed 44/44 total: Phase 2 Content Matrix/RACE 13 + Complete Listing/Search 13 + Economics/Offer 11 + canonical commerce graph 7. These are fresh reruns from the current local mirror, not historical pass counts.",
+    "produced_object_inspection": {
+      "ready_fixture": {
+        "status": "READY",
+        "asset_dependency": "NOT_REQUIRED_FOR_PHASE2_BUSINESS_AUTHORITY",
+        "content_row_count": 1,
+        "content_row_status": "READY",
+        "content_density_status": "READY",
+        "platform_execution_status": "READY",
+        "race_link_status": "READY",
+        "lineage_status": "READY",
+        "resolved_source_refs": ["SRC-CONTENT"],
+        "race_order": ["RESEARCH", "ACTION", "COMMUNICATION", "EVALUATION"],
+        "race_row_statuses": ["READY", "READY", "READY", "READY"],
+        "issue_count": 0
+      },
+      "negative_missing_attribution": {
+        "change": "remove utm_attribution while retaining hook/script/CTA/metric",
+        "status": "TO_VERIFY",
+        "platform_execution_status": "TO_VERIFY",
+        "issue": "FULL_CONTENT_MATRIX_PLATFORM_EXECUTION_INCOMPLETE_V0676"
+      },
+      "negative_unknown_source": {
+        "change": "replace resolved SRC-CONTENT with SRC-NOT-IN-REGISTRY",
+        "status": "TO_VERIFY",
+        "lineage_status": "TO_VERIFY",
+        "unresolved_source_refs": ["SRC-NOT-IN-REGISTRY"],
+        "issue": "FULL_CONTENT_MATRIX_LINEAGE_INCOMPLETE_V0676"
+      }
+    },
+    "scope_diff": "Compared with Phase 2 #8 closure commit 1f02016d7e4e1e2c260c0575c4d7a22998c0d6c7, this subtask changes only runtime/cbcc/content_matrix_race_authority.py, runtime/cbcc/v0676_phase2_closure.py and three #9 test files. HTML, compiler.py, Ads, Review, Measurement and K01 fixture files are untouched.",
+    "human_json_md_html_parity": "PENDING_PHASE6",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11",
+    "provider_actual_output": "E2E_PENDING"
+  },
+  "verified_behavior": [
+    "Content Matrix/RACE can be authored from explicit Phase 2 business rows even when no asset architecture exists; this prevents asset work from being a prerequisite for commercial content planning.",
+    "A topic/hook/CTA row cannot false-pass without platform dimensions/duration/cover/subtitle/music-rights/traffic/landing/attribution execution fields.",
+    "Every Content Matrix row requires WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT plus source/assumption lineage before business readiness is READY.",
+    "Every RACE stage requires the locked Research/Action/Communication/Evaluation order plus objective/actions/output/platform/surface/culture/KPI/attribution/next-decision and the same six-field business density.",
+    "Content Matrix race_stage must resolve to a real stage in the same authority; legacy REACH/ACT/CONVERT/ENGAGE cannot substitute for the locked RACE stages.",
+    "Unknown source IDs remain visible but unresolved and keep lineage TO_VERIFY.",
+    "Runtime-generated missing boundaries cannot be mistaken for an explicitly authored assumption.",
+    "Once FULL Content Matrix/RACE authority is materialized, delivery validation continues to audit it even if the root strategy object no longer carries a delivery_mode marker.",
+    "The Content Matrix wrapper is installed before the existing Strategy/Framework wrapper, so the existing applied-RACE authority consumes the finalized section 07 rather than a stale pre-#9 RACE table.",
+    "Canonical CONTENT_MATRIX and RACE nodes continue to point into strategy_authority.json sections rather than a duplicate second business payload."
+  ],
+  "deferred_boundaries": [
+    "Advertising Optimization remains Phase 2 subtask 10 and is not implemented by this Content Matrix/RACE closure.",
+    "Review Analysis/root-cause/repair remains Phase 2 subtask 11.",
+    "Measurement/A-B/P0-P1-P2/next-input closure remains Phase 2 subtask 12; this subtask carries per-row metric/attribution/next-decision fields but does not claim the global measurement loop.",
+    "Visual Master, Asset Universe, Art Direction and Prompt execution remain later phases; no asset or prompt readiness is implied by this business authority.",
+    "JSON→MD→HTML same-source Human Workspace projection remains Phase 6; no HTML was modified in this subtask.",
+    "Fresh real K01 FULL remains Phase 10; built-plugin install/readback remains Phase 11.",
+    "Provider Result / actual-output QA remains E2E_PENDING."
+  ],
+  "source_commits": [
+    "1360ac641d3f3b9ea24ab108b1fb5fd3aa729790",
+    "cdca1285e82c86b484d5855b757637d7b918fd6c",
+    "d335d408a9e7ce5f9159822adfd534e487ec2dd5",
+    "6e6f9357c99afe5dd7eaac800f6f8e384988b20b",
+    "08497b46b09776a565a6eb21dfbe9c0d4e44be3b",
+    "cccb7271bd0d5755afa37edcc5924bcee07609cf",
+    "223d0571b5dcc1d4cd0c48733694fdd50548d1ef",
+    "2c329edb45898f39cc0d6336a7db7bc5635b143b",
+    "05ac4628a1e5f836c66fbd31aa23de0d69031296"
+  ]
+}
