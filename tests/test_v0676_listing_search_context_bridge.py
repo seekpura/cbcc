@@ -50,3 +50,25 @@ def test_pricing_context_bridge_hands_real_request_market_and_economics_to_later
     authority=out['phase2_listing_search_authority']
     assert authority['pricing_offer_context']['selected_price']=='MYR 59'
     assert authority['search_evidence']['terms'][0]['source_id']=='SRC-SEARCH'
+
+
+def test_full_request_without_listing_input_does_not_seed_context_for_unrelated_listing_call():
+    req=_request(); req.pop('listing_input')
+    pricing_wrapped=mod.wrap_compile_pricing_economics_for_listing_context(lambda request, market_analysis=None, legacy_economics=None: _pricing())
+    listing_wrapped=mod.wrap_compile_listing(lambda *args,**kwargs: _listing())
+    pricing_wrapped(req,{'price_bands':[]},None)
+    out=listing_wrapped({}, {}, [], {}, {}, [], {})
+    assert 'phase2_listing_search_authority' not in out
+    assert 'phase2_business_status' not in out
+
+
+def test_implicit_listing_context_is_consumed_once_and_cannot_leak_to_second_listing_call():
+    req=_request()
+    pricing_wrapped=mod.wrap_compile_pricing_economics_for_listing_context(lambda request, market_analysis=None, legacy_economics=None: _pricing())
+    listing_wrapped=mod.wrap_compile_listing(lambda *args,**kwargs: _listing())
+    pricing_wrapped(req,{'price_bands':[]},None)
+    first=listing_wrapped({}, {}, [], {}, {}, [], {})
+    second=listing_wrapped({}, {}, [], {}, {}, [], {})
+    assert first['phase2_business_status']=='READY'
+    assert 'phase2_listing_search_authority' not in second
+    assert 'phase2_business_status' not in second
