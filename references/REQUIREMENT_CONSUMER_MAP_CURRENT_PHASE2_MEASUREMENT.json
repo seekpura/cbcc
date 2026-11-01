@@ -1,15 +1,67 @@
 {
   "authority": "CBCC Phase 2 Measurement / A-B / P0-P1-P2 / Next-Input consumer accounting",
   "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
-  "requirements": ["REQ-006", "REQ-041", "REQ-045", "REQ-062", "REQ-078", "REQ-088"],
+  "requirements": [
+    "REQ-006",
+    "REQ-041",
+    "REQ-045",
+    "REQ-062",
+    "REQ-078",
+    "REQ-088"
+  ],
   "status": "PHASE2_SUBTASK_VERIFIED_PENDING_HUMAN_K01_RELEASE",
   "locked_behavior": {
     "first_class_object": "Measurement is a first-class Phase 2 business authority that exists before asset production and before observed experiment success. It defines what will be measured, why, from which source, against which baseline/target, under which isolated test, with which decision rule and next input.",
     "statistics_engine_rule": "runtime/cbcc/tools/experiment.py remains the deterministic experiment/statistics engine. Phase 2 Measurement consumes experiment output as evidence and never reimplements Wilson intervals, MDE/power, contamination/spillover, cluster/geo, CUPED, sequential or other experiment calculations.",
-    "measurement_row_contract": ["business_question", "decision_object", "hypothesis", "primary_metric", "metric_definition", "desired_direction", "baseline", "target_or_mde", "metric_source_ref", "attribution_method", "observation_window", "analysis_unit", "guardrails", "learning_handoff", "next_decision"],
-    "ab_test_contract": ["test_type", "changed_variable", "held_constants", "variants", "deployment_pool", "randomization_unit", "sample_size_rule", "duration_or_stop_rule", "sequential_monitoring_policy", "success_rule", "failure_rule"],
-    "decision_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
-    "lineage": ["source_refs", "source_type", "recency", "exact_fact_or_explicit_assumption_boundary", "interpretation", "confidence", "downstream_use", "conflict_status", "proof_object"],
+    "measurement_row_contract": [
+      "business_question",
+      "decision_object",
+      "hypothesis",
+      "primary_metric",
+      "metric_definition",
+      "desired_direction",
+      "baseline",
+      "target_or_mde",
+      "metric_source_ref",
+      "attribution_method",
+      "observation_window",
+      "analysis_unit",
+      "guardrails",
+      "learning_handoff",
+      "next_decision"
+    ],
+    "ab_test_contract": [
+      "test_type",
+      "changed_variable",
+      "held_constants",
+      "variants",
+      "deployment_pool",
+      "randomization_unit",
+      "sample_size_rule",
+      "duration_or_stop_rule",
+      "sequential_monitoring_policy",
+      "success_rule",
+      "failure_rule"
+    ],
+    "decision_density": [
+      "what",
+      "why",
+      "evidence",
+      "tradeoff",
+      "execution",
+      "measurement"
+    ],
+    "lineage": [
+      "source_refs",
+      "source_type",
+      "recency",
+      "exact_fact_or_explicit_assumption_boundary",
+      "interpretation",
+      "confidence",
+      "downstream_use",
+      "conflict_status",
+      "proof_object"
+    ],
     "metric_truth_rule": "metric_source_ref must resolve in the project source registry. Missing baseline remains missing/None and is never silently defaulted to zero.",
     "variable_isolation_rule": "The changed variable may not also appear in held_constants; a test must have at least two distinct variants and explicit randomization/deployment/stop/success/failure contracts.",
     "priority_rule": "P0/P1/P2 are explicit authored decisions in exact order. Priority status is constrained to ACTIVE/NOT_NEEDED/HOLD and each priority decision_ref must resolve to a real unique measurement_id.",
@@ -72,9 +124,22 @@
         "metric_source_ref": "SRC-MEASURE",
         "attribution_method": "FIRST_PARTY_SESSION_EXPERIMENT",
         "changed_variable": "FIRST_IMPRESSION_PROPOSITION",
-        "held_constants": ["PRICE", "SKU", "AUDIENCE", "PLACEMENT", "PDP_BODY"],
-        "variants": ["CONTROL_CURRENT_HERO", "VARIANT_SINGLE_PROPOSITION"],
-        "priority_order": ["P0", "P1", "P2"],
+        "held_constants": [
+          "PRICE",
+          "SKU",
+          "AUDIENCE",
+          "PLACEMENT",
+          "PDP_BODY"
+        ],
+        "variants": [
+          "CONTROL_CURRENT_HERO",
+          "VARIANT_SINGLE_PROPOSITION"
+        ],
+        "priority_order": [
+          "P0",
+          "P1",
+          "P2"
+        ],
         "priority_status": "READY",
         "next_input_status": "READY",
         "next_input_decision_ref": "M-01",
@@ -104,7 +169,9 @@
         "change": "append a second distinct Measurement decision with measurement_id=M-01",
         "status": "TO_VERIFY",
         "measurement_id_uniqueness_status": "TO_VERIFY",
-        "duplicate_measurement_ids": ["M-01"],
+        "duplicate_measurement_ids": [
+          "M-01"
+        ],
         "issue": "FULL_MEASUREMENT_ID_DUPLICATE_V0676"
       },
       "negative_missing_baseline": {
@@ -147,15 +214,19 @@
     "Post-production strategy learning/revision remains runtime/cbcc/learning_loop.py and requires real result evidence; Phase 2 Measurement readiness alone does not claim it has run."
   ],
   "source_commits": [
-    "2a17903ce8f8aa0fb7f88f7692b811a9824bdebd",
+    "730ed37631a6adb7dee7cb7bfe8daf3849e72b73",
     "1f4b17929e1f5224829dae671f83dd16383b6de9",
+    "1f42cf384d1ee89a494c361c9f1e8f231240165a",
     "d9293204152d30915de4ce9d2c8e9d7fbb9a6182",
     "690a21a6e78e500d2832e226a6379d0789c8d1de",
+    "9ac9cad2b83092ed4c65b3d4fdd55f8d91628d18",
     "e1e023ed8323aaf68f3913c6d5d277568d569b5c",
+    "647753ccd0df6d767c5878577ce36ab07c8f19c1",
     "c15b6ca99dec1227395a621cf2fb4bbedbd1c79a",
     "104ae530cdf6af93d58919d1b82876360315f14d",
     "e308978a7a2329f6198bf00769a58f3ae6fb29ba",
     "dc47248ee17156e11d16e9e83808fb9dc429b887",
-    "757d97e57101bb436c6b4d8378dde86de926c282"
+    "757d97e57101bb436c6b4d8378dde86de926c282",
+    "b40deb5bfaecc1422499a6c2549c0eea61d1347d"
   ]
 }
