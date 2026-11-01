@@ -1,0 +1,134 @@
+name: phase4-visual-master-postcommit-verify
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install -q pytest pyyaml openpyxl
+      - name: Cross-scope verification
+        run: |
+          pytest -q \
+            tests/test_v0676_phase4_visual_master_runtime_binding.py \
+            tests/test_v0676_phase4_visual_master_authority.py \
+            tests/test_v0676_phase4_visual_route_art_direction.py \
+            tests/test_v0632_portfolio_visual_authority.py \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0676_phase3_opportunity_family_evaluation.py \
+            tests/test_v0676_phase3_opportunity_family_runtime_binding.py \
+            tests/test_v0662_asset_universe_and_package_regressions.py \
+            tests/test_v0655_asset_universe_open_world.py \
+            tests/test_v0646_asset_family_no_quota.py \
+            tests/test_v0646_activation_state_taxonomy.py
+      - name: Produced-object inspection
+        run: |
+          python - <<'PY'
+          from copy import deepcopy
+          from cbcc.agent_autonomy import compile_agent_autonomy_plan, agent_creative_directions
+          from cbcc.opportunity_family_authority import OPPORTUNITY_FAMILY_REGISTRY, compile_opportunity_family_evaluation
+          from cbcc.visual_master_authority import bind_visual_master_upstream, visual_master_ref
+          from cbcc.asset_architecture import build_asset_architecture
+          from cbcc.creative import apply_creative_system_to_assets
+
+          program = {
+              'visual_territory':'truthful tactile evidence with editorial tension',
+              'carrier_mix':['product identity hero','human routine crop'],
+              'product_presence_rhythm':['hero','supporting'],
+              'scale_density_rhythm':'large sparse identity → tight embodied routine',
+              'composition_rhythm':'asymmetric depth → diagonal action crop',
+              'continuity_tokens':['warm mineral neutral','forest accent only'],
+              'deliberate_breaks':['routine crop abandons hero scale'],
+              'delete_merge_logic':'merge only same shopper question + evidence plane',
+              'mechanism_bindings':['depth-led identity','embodied action crop'],
+          }
+          review = {
+              'status':'PASS',
+              'adjacent_asset_review':[{'pair':['AST-HERO','AST-ROUTINE'],'delta':'identity depth vs embodied action'}],
+              'keep_reauthor_merge_delete':[{'asset_id':'AST-HERO','decision':'KEEP'},{'asset_id':'AST-ROUTINE','decision':'KEEP'}],
+          }
+          request = {
+              'target':{'target_id':'T-P4','market':'MY','platform_family':'TikTok Shop','site':'MY','category':'Beauty','surfaces':['GALLERY']},
+              'compile_assets':True,
+              'agent_plan':{
+                  'portfolio_visual_program':deepcopy(program),
+                  'portfolio_differentiation_review':deepcopy(review),
+                  'asset_art_directions':[
+                      {
+                          'asset_id':'AST-HERO','visual_carrier':'PRODUCT_IDENTITY_HERO','subject':'real product identity',
+                          'composition_grammar':'asymmetric depth with label-readable product anchor',
+                          'camera_or_view':'truthful three-quarter label-readable view',
+                          'deliberate_difference':'opening identity hero',
+                          'product_presence':{'planning_state':'REQUIRED','product_role':'HERO','source_reference_role':'SUBJECT_REFERENCE'},
+                      },
+                      {
+                          'asset_id':'AST-ROUTINE','visual_carrier':'HUMAN_ROUTINE_CROP','subject':'hand-to-skin routine moment',
+                          'composition_grammar':'tight diagonal action crop',
+                          'camera_or_view':'close three-quarter routine view',
+                          'deliberate_difference':'switch to embodied action',
+                          'product_presence':{'planning_state':'SUPPORTING','product_role':'ROUTINE_TRACE','source_reference_role':'SUBJECT_REFERENCE'},
+                      },
+                  ],
+              },
+          }
+          plan = compile_agent_autonomy_plan(request)
+          raw_master = plan['creative_exploration']['visual_master']
+          decisions = {
+              row['family_id']:{'status':'NOT_NEEDED','why':'evaluated in fixture','why_not':'outside this focused fixture'}
+              for row in OPPORTUNITY_FAMILY_REGISTRY
+          }
+          decisions['F01_HERO_IDENTITY'] = {'status':'NEEDED','why':'identity required','satisfying_objects':['AST-HERO']}
+          decisions['F04_HUMAN_INTERACTION'] = {'status':'NEEDED','why':'routine use required','satisfying_objects':['AST-ROUTINE']}
+          evaluation = compile_opportunity_family_evaluation(decisions, context=request['target'])
+          master = bind_visual_master_upstream(raw_master, phase3_opportunity_family_evaluation=evaluation, content_object_ids=['CO-VISUAL'])
+          target = deepcopy(request['target'])
+          target['phase3_opportunity_family_evaluation'] = evaluation
+          target['phase4_visual_master'] = master
+          architecture = build_asset_architecture(
+              'P4-POSTCOMMIT', target,
+              ['What is this product?','How is it used in a routine?'], [],
+              [
+                  {'asset_id':'AST-HERO','asset_name':'Hero','consumer_question':'What is this product?','surface':'GALLERY','family':'VISUAL','decision_intent':'IDENTIFY','strategic_job':'Resolve identity.'},
+                  {'asset_id':'AST-ROUTINE','asset_name':'Routine','consumer_question':'How is it used in a routine?','surface':'GALLERY','family':'VISUAL','decision_intent':'USAGE','strategic_job':'Resolve routine use.'},
+              ], {}, 'BEAUTY'
+          )
+          # Stable IDs from explicit jobs are generated by architecture; map authored AD by generated IDs for this inspection.
+          generated = [a['asset_id'] for a in architecture['assets']]
+          direction = agent_creative_directions(plan)[0]
+          direction = deepcopy(direction)
+          direction['asset_art_directions'] = []
+          for idx, aid in enumerate(generated):
+              base = request['agent_plan']['asset_art_directions'][idx]
+              row = deepcopy(base); row['asset_id'] = aid
+              direction['asset_art_directions'].append(row)
+          council = {'selected_direction':direction,'directions':[direction],'alternative_directions':[],'direction_source':'USER_SUPPLIED'}
+          out = apply_creative_system_to_assets(architecture, council, {}, None)
+          ref = visual_master_ref(master)
+          assert master['status'] == 'READY'
+          assert master['upstream_lineage']['phase3_opportunity_family_evaluation']['needed_family_ids'] == ['F01_HERO_IDENTITY','F04_HUMAN_INTERACTION']
+          assert architecture['phase4_visual_master']['visual_master_id'] == master['visual_master_id']
+          assert all(a.get('visual_master_ref') == ref for a in architecture['assets'])
+          assert out['creative_system_assignment']['visual_master_ref'] == ref
+          assert out['assets'][0]['asset_art_direction']['composition_grammar'] != out['assets'][1]['asset_art_direction']['composition_grammar']
+          assert out['assets'][0]['visual_master_ref'] == out['assets'][1]['visual_master_ref'] == ref
+          print({
+              'master_id':master['visual_master_id'],
+              'master_status':master['status'],
+              'needed_family_ids':master['upstream_lineage']['phase3_opportunity_family_evaluation']['needed_family_ids'],
+              'asset_count':len(out['assets']),
+              'same_master_ref':True,
+              'per_asset_art_direction_distinct':True,
+          })
+          PY
