@@ -5,6 +5,8 @@ import re
 from copy import deepcopy
 from typing import Any, Mapping
 
+from .visual_route_scope import is_visual_production_asset
+
 _VISUAL_SURFACES={
     'SEARCH_RESULTS','LISTING_PRIMARY','PDP_HERO','GALLERY','PDP','LONGFORM','A_PLUS','PDP_VIDEO',
     'SHORT_VIDEO','CREATOR','LIVE','PAID_AD','SOCIAL_CONTENT','STORE_BANNER','LANDING_PAGE_HERO',
@@ -178,7 +180,7 @@ def validate_portfolio_differentiation(architecture: Mapping[str,Any], selected_
     direction=selected_direction if isinstance(selected_direction,Mapping) else {}
     if not direction.get('require_portfolio_differentiation_review'):
         return {'status':'NOT_APPLICABLE','authority':'COMPATIBILITY_MODE'}
-    assets=[a for a in (architecture.get('assets') or []) if str(a.get('asset_type') or '').upper() in {'IMAGE','VIDEO'} and str(a.get('art_direction_status') or '').upper()=='AUTHORED']
+    assets=[a for a in (architecture.get('assets') or []) if is_visual_production_asset(a) and str(a.get('art_direction_status') or '').upper()=='AUTHORED']
     issues=[]
     duplicate_groups=[]
     by_sig={}

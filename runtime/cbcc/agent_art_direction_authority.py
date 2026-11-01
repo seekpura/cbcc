@@ -3,6 +3,8 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any, Mapping
 
+from .visual_route_scope import is_visual_production_asset
+
 
 def _rows(value: Any) -> list[dict[str, Any]]:
     if isinstance(value, Mapping):
@@ -366,7 +368,7 @@ def wrap_compile_agent_next_action(legacy_fn):
         architecture=kwargs.get('asset_architecture') if isinstance(kwargs.get('asset_architecture'), Mapping) else {}
         missing=[]
         for asset in architecture.get('assets') or []:
-            if str(asset.get('asset_type') or '').upper() in {'IMAGE','VIDEO'} and str(asset.get('art_direction_status') or '').upper()!='AUTHORED':
+            if is_visual_production_asset(asset) and str(asset.get('art_direction_status') or '').upper()!='AUTHORED':
                 missing.append(asset.get('asset_id'))
         if not missing:
             return result
