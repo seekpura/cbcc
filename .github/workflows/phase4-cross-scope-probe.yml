@@ -1,0 +1,45 @@
+name: phase4-cross-scope-probe
+
+on:
+  push:
+    branches: [phase4-closure-debug]
+    paths:
+      - '.github/phase4_cross_scope_probe.py'
+      - '.github/workflows/phase4-cross-scope-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase4-closure-debug
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install same dependencies as historical Phase 3 closure
+        run: python -m pip install -q pytest pyyaml pillow
+      - name: Inventory probe files
+        run: python .github/phase4_cross_scope_probe.py
+      - name: Phase 3 opportunity-family baseline
+        run: |
+          pytest -q \
+            tests/test_v0676_phase3_opportunity_family_evaluation.py \
+            tests/test_v0676_phase3_opportunity_family_runtime_binding.py \
+            tests/test_v0662_asset_universe_and_package_regressions.py \
+            tests/test_v0655_asset_universe_open_world.py \
+            tests/test_v0646_asset_family_no_quota.py \
+            tests/test_v0646_activation_state_taxonomy.py \
+            tests/test_v0633_asset_universe_workspace.py
+      - name: Canonical graph
+        run: pytest -q tests/test_v0676_canonical_commerce_graph.py
+      - name: Human projection
+        run: pytest -q tests/test_v0670_human_projection_integrity.py
+      - name: Native reference/provider integrity
+        run: pytest -q tests/test_v0635_native_reference_provider_integrity.py
