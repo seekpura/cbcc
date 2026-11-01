@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from contextvars import ContextVar
 from typing import Any, Mapping
 import re
 
@@ -145,10 +146,12 @@ def _attribution_boundary(legacy:Mapping[str,Any], request:Mapping[str,Any])->di
         'causal_sales_claim_allowed':bool(established),
         'rule':'Platform-attributed conversions are not automatically incremental conversions. Causal sales/lift claims require an explicit incrementality decision backed by defensible counterfactual evidence.'
     }
+
 def _optimization_rows(request:Mapping[str,Any])->list[Any]:
     obj=request.get('advertising_optimization') or request.get('ads_optimization') or {}
     if isinstance(obj,Mapping): return _l(obj.get('rows') or obj.get('decisions') or obj.get('optimization_rows'))
     return _l(obj)
+
 def ads_optimization_issues(authority:Mapping[str,Any])->list[dict[str,Any]]:
     auth=_d(authority); issues=[]
     rows=[x for x in _l(auth.get('optimization_rows')) if isinstance(x,Mapping)]
@@ -166,6 +169,7 @@ def ads_optimization_issues(authority:Mapping[str,Any])->list[dict[str,Any]]:
     for x in issues:
         if x not in dedup: dedup.append(x)
     return dedup
+
 def materialize_ads_optimization_authority(legacy_ads:Mapping[str,Any], request:Mapping[str,Any]|None=None, pricing_economics:Mapping[str,Any]|None=None)->dict[str,Any]:
     base=deepcopy(dict(legacy_ads)); req=_d(request)
     if not _is_full(req,base): return base
@@ -187,3 +191,89 @@ def materialize_ads_optimization_authority(legacy_ads:Mapping[str,Any], request:
     authority['issues']=ads_optimization_issues(authority)
     authority['status']='READY' if not authority['issues'] else 'TO_VERIFY'
     return authority
+
+
+def compile_ads_optimization_domain(legacy_ads:Mapping[str,Any], request:Mapping[str,Any]|None=None, pricing_economics:Mapping[str,Any]|None=None)->dict[str,Any]:
+    base=deepcopy(dict(legacy_ads or {}))
+    authority=materialize_ads_optimization_authority(base,request,pricing_economics)
+    if not _is_full(request,base): return base
+    out=deepcopy(base)
+    out['phase2_ads_optimization_authority']=authority
+    out['phase2_business_status']=authority.get('status')
+    return out
+
+
+def wrap_compile_seven_tool_continuity(fn):
+    def compiled(*args:Any, **kwargs:Any):
+        out=fn(*args,**kwargs)
+        domain=_d(kwargs.get('domain'))
+        if not domain and args and isinstance(args[0],Mapping): domain=_d(args[0])
+        ads=_d(domain.get('ads'))
+        authority=_d(ads.get('phase2_ads_optimization_authority'))
+        status=ads.get('phase2_business_status') or authority.get('status') or 'TO_VERIFY'
+        for row in _l(out.get('capabilities')):
+            if isinstance(row,dict) and row.get('id')=='06_ADVERTISING_OPTIMIZATION':
+                row['business_readiness_status']=status
+                ev=row.setdefault('evidence',{})
+                ev['ads_business_readiness_status']=status
+                ev['ads_authority_status']=authority.get('status') or 'NOT_MATERIALIZED'
+                ev['ads_issue_count']=len(authority.get('issues') or []) if authority else None
+        out['ads_optimization_integrity']={
+            'business_readiness_status':status,
+            'authority_status':authority.get('status') or 'NOT_MATERIALIZED',
+            'issues':deepcopy(authority.get('issues') or []),
+            'rule':'Legacy CALCULATED/PORTFOLIO_CALCULATED is performance-analysis state. Phase 2 Ads business readiness independently requires authored optimization decisions + verified economics + attribution/test/repair/learning contracts.'
+        }
+        return out
+    setattr(compiled,'_cbcc_v0676_ads_optimization_authority',True)
+    return compiled
+
+
+_ADS_CONTEXT:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_ads_context', default=None)
+_ADS_PORTFOLIO_DEPTH:ContextVar[int]=ContextVar('cbcc_v0676_ads_portfolio_depth', default=0)
+
+def _ads_analyzer_scope(request:Mapping[str,Any])->bool:
+    return bool(request.get('ad_rows') or request.get('ad_analysis'))
+
+def wrap_compile_pricing_economics_for_ads_context(fn):
+    def compiled(request:dict[str,Any], market_analysis=None, legacy_economics=None):
+        out=fn(request,market_analysis,legacy_economics)
+        if _is_full(request,out) and _ads_analyzer_scope(request):
+            _ADS_CONTEXT.set({'request':deepcopy(request),'pricing_economics':deepcopy(out)})
+        else:
+            _ADS_CONTEXT.set(None)
+        return out
+    setattr(compiled,'_cbcc_v0676_ads_optimization_context_bridge',True)
+    return compiled
+
+def wrap_analyze_ads(fn):
+    def compiled(*args:Any, **kwargs:Any):
+        legacy=fn(*args,**kwargs)
+        if _ADS_PORTFOLIO_DEPTH.get()>0:
+            return legacy
+        ctx=_d(_ADS_CONTEXT.get())
+        if not ctx:
+            return legacy
+        try:
+            return compile_ads_optimization_domain(legacy,ctx.get('request'),ctx.get('pricing_economics'))
+        finally:
+            _ADS_CONTEXT.set(None)
+    setattr(compiled,'_cbcc_v0676_ads_optimization_authority',True)
+    return compiled
+
+def wrap_analyze_ad_portfolio(fn):
+    def compiled(*args:Any, **kwargs:Any):
+        token=_ADS_PORTFOLIO_DEPTH.set(_ADS_PORTFOLIO_DEPTH.get()+1)
+        try:
+            legacy=fn(*args,**kwargs)
+        finally:
+            _ADS_PORTFOLIO_DEPTH.reset(token)
+        ctx=_d(_ADS_CONTEXT.get())
+        if not ctx:
+            return legacy
+        try:
+            return compile_ads_optimization_domain(legacy,ctx.get('request'),ctx.get('pricing_economics'))
+        finally:
+            _ADS_CONTEXT.set(None)
+    setattr(compiled,'_cbcc_v0676_ads_optimization_authority',True)
+    return compiled
