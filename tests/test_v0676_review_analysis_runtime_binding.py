@@ -52,3 +52,17 @@ def test_canonical_graph_reviews_bind_feedback_analysis_not_production_review_wo
     graph=g.build_canonical_commerce_graph(art)
     node=next(x for x in graph['nodes'] if x['node_id']=='REVIEWS')
     assert node['authority_ref']=='feedback_analysis.json'
+
+
+def test_seven_tool_review_bridge_does_not_mutate_ads_capability():
+    feedback=mod.compile_review_analysis_domain(fx.legacy_feedback(),fx.request())
+    ads={'id':'06_ADVERTISING_OPTIMIZATION','project_status':'PORTFOLIO_CALCULATED','business_readiness_status':'READY','evidence':{'ads_business_readiness_status':'READY'}}
+    review={'id':'07_REVIEW_ANALYSIS','project_status':'AGGREGATED_FROM_CLASSIFIED_INPUT','evidence':{}}
+    def base(**kwargs):
+        import copy
+        return {'status':'SEVEN_TOOL_CONTINUITY_COMPILED','capabilities':[copy.deepcopy(ads),copy.deepcopy(review)]}
+    out=mod.wrap_compile_seven_tool_continuity(base)(domain={'feedback':feedback})
+    ads_out=next(x for x in out['capabilities'] if x['id']=='06_ADVERTISING_OPTIMIZATION')
+    assert ads_out==ads
+    review_out=next(x for x in out['capabilities'] if x['id']=='07_REVIEW_ANALYSIS')
+    assert review_out['business_readiness_status']=='READY'
