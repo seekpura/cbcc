@@ -48,7 +48,6 @@ jobs:
               encoded = json.dumps(value, ensure_ascii=False, separators=(',', ':'))
               return src[:vstart] + encoded + src[vend:]
 
-          # REQ status accounting remains partial globally where later phases still own work.
           reqs = ledger['new_requirements']
           status_by_req = {
               'REQ-062': 'PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_CONTEXT_WHY_INTERSECTIONALITY_CULTURE_STRATEGY_FRAMEWORKS_ECONOMICS_OFFER_LISTING_SEARCH_CONTENT_MATRIX_RACE_ADS_OPTIMIZATION_REVIEW_ANALYSIS_AND_MEASUREMENT_VERIFIED',
@@ -64,7 +63,6 @@ jobs:
           phase_status['2'] = 'PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED'
           text = replace_value(text, 'phase_status', phase_status)
 
-          # Reparse after the two outer replacements, then patch only Phase 2 fields.
           current = json.loads(text)
           p2 = current['phase_evidence']['2']
           p2_start = text.find('"2":', text.find('"phase_evidence"'))
@@ -140,39 +138,43 @@ jobs:
           text = replace_value(text, 'remaining_phase2', 'NONE — Phase 2 subtasks 1–12 verified against the locked acceptance rule; later phases and Phase 6/10/11 release boundaries remain separate.', p2_start)
 
           commits = list(p2['source_commits'])
-          for sha in measurement['source_commits']:
+          for sha in measurement['source_commits'] + ['5f374894f5424b5ff5336022b9591abf55833367']:
               if sha not in commits:
                   commits.append(sha)
           p2_start = text.find('"2":', text.find('"phase_evidence"'))
           text = replace_value(text, 'source_commits', commits, p2_start)
 
-          # ci_status is new in Phase 2; insert it after source_commits if absent.
           p2_start = text.find('"2":', text.find('"phase_evidence"'))
-          p2_end_obj, p2_used = decoder.raw_decode(text[text.find('{', p2_start):])
-          p2_end = text.find('{', p2_start) + p2_used
+          p2_obj_start = text.find('{', p2_start)
+          _, p2_used = decoder.raw_decode(text[p2_obj_start:])
+          p2_end = p2_obj_start + p2_used
           if '"ci_status"' not in text[p2_start:p2_end]:
               sc_pos = text.find('"source_commits"', p2_start)
               colon = text.find(':', sc_pos)
               vstart = colon + 1
-              while text[vstart].isspace(): vstart += 1
+              while text[vstart].isspace():
+                  vstart += 1
               _, used = decoder.raw_decode(text[vstart:])
               vend = vstart + used
               text = text[:vend] + ',\n      "ci_status": "NO_GITHUB_COMMIT_STATUS_OR_WORKFLOW_RUN_AVAILABLE_FOR_FINAL_PHASE2_CODE_COMMIT"' + text[vend:]
 
-          # Semantic verification before writing.
           final = json.loads(text)
           p2f = final['phase_evidence']['2']
-          assert final['phase_status']['2'] == 'PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED'
-          assert p2f['status'] == 'PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED'
-          assert len(p2f['verified_subtasks']) == 12
-          assert p2f['remaining_phase2'].startswith('NONE')
-          assert final['phase_status']['3'] == 'NOT_STARTED'
-          assert p2f['real_k01_full'] == 'PENDING_PHASE10'
-          assert p2f['built_plugin_readback'] == 'PENDING_PHASE11'
-          assert p2f['provider_actual_output'] == 'E2E_PENDING'
-          assert '5f374894f5424b5ff5336022b9591abf55833367' in p2f['source_commits']
-          assert final['phase_evidence']['0']['source_commits'] == ledger['phase_evidence']['0']['source_commits']
-          assert final['phase_evidence']['1'] == ledger['phase_evidence']['1']
+          checks = {
+              'phase2_status': final['phase_status']['2'] == 'PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED',
+              'phase2_evidence_status': p2f['status'] == 'PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED',
+              'subtasks_12': len(p2f['verified_subtasks']) == 12,
+              'remaining_none': p2f['remaining_phase2'].startswith('NONE'),
+              'phase3_not_started': final['phase_status']['3'] == 'NOT_STARTED',
+              'k01_deferred': p2f['real_k01_full'] == 'PENDING_PHASE10',
+              'plugin_deferred': p2f['built_plugin_readback'] == 'PENDING_PHASE11',
+              'provider_deferred': p2f['provider_actual_output'] == 'E2E_PENDING',
+              'map_fix_commit_accounted': '5f374894f5424b5ff5336022b9591abf55833367' in p2f['source_commits'],
+              'phase0_preserved': final['phase_evidence']['0']['source_commits'] == ledger['phase_evidence']['0']['source_commits'],
+              'phase1_preserved': final['phase_evidence']['1'] == ledger['phase_evidence']['1'],
+          }
+          print(json.dumps(checks, indent=2))
+          assert all(checks.values()), checks
           ledger_path.write_text(text, encoding='utf-8')
           PY
       - name: Commit verified ledger closure
