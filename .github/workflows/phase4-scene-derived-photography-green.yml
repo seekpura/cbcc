@@ -25,6 +25,16 @@ jobs:
       - name: Apply scene-derived photography patch
         run: |
           python .github/phase4_patch_scene_photography.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('runtime/cbcc/portfolio_visual_authority.py')
+          text=p.read_text(encoding='utf-8')
+          old="    blob = _norm(candidate)\n"
+          new="    blob = ' | '.join(_norm(v) for v in candidate.values() if _meaningful(v))\n"
+          if old not in text:
+              raise SystemExit('photographic route blob anchor missing')
+          p.write_text(text.replace(old,new,1),encoding='utf-8')
+          PY
           python -m py_compile runtime/cbcc/portfolio_visual_authority.py runtime/cbcc/photographic_route_agent_authority.py
       - name: Focused GREEN and cross-scope regressions
         run: |
