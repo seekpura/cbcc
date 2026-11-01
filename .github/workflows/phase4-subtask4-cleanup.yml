@@ -1,5 +1,6 @@
 name: phase4-subtask4-cleanup
 
+# One-shot cleanup after committed subtask 4 verification.
 on:
   push:
     paths:
