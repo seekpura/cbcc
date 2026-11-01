@@ -6,7 +6,7 @@
   "completion_rule": "No requirement is complete from document existence, headings, file counts or boolean flags. Require concrete consumer, proof object, verification and where applicable real K01 FULL evidence.",
   "new_requirements": [
     {"req":"REQ-061","title":"Canonical commerce object graph","phase":"1,6,7","status":"PARTIAL_PHASE_1_GRAPH_AUTHORITY_VERIFIED"},
-    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_AND_MARKET_RESEARCH_VERIFIED"},
+    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_AND_CONTEXT_WHY_VERIFIED"},
     {"req":"REQ-063","title":"Explicit opportunity-family evaluation","phase":"3","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-064","title":"Scenario/Lifestyle/Context/Human-use","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-065","title":"Negative/Counterexample/Expectation management","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
@@ -32,14 +32,14 @@
     {"req":"REQ-085","title":"Concrete human/culture/inclusion execution","phase":"4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-086","title":"Scene-derived photography/lighting/CMF closure","phase":"4,5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-087","title":"Listing/Economics/Ads/Reviews/Research remain first-class","phase":"1,2","status":"PARTIAL_PHASE2_RESEARCH_FIRST_CLASS_VERIFIED"},
-    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_AND_RESEARCH_LINEAGE_VERIFIED"},
+    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_RESEARCH_AND_CONTEXT_WHY_LINEAGE_VERIFIED"},
     {"req":"REQ-089","title":"Human Workspace full canonical projection","phase":"6","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-090","title":"FULL package lineage and actual-output boundary","phase":"7,8,10","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"}
   ],
   "phase_status": {
     "0":"IN_PROGRESS_BUILT_PLUGIN_READBACK_DEFERRED_PHASE11",
     "1":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY",
-    "2":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_AND_MARKET_RESEARCH_SUBTASKS_VERIFIED",
+    "2":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_AND_CONTEXT_WHY_SUBTASKS_VERIFIED",
     "3":"NOT_STARTED",
     "4":"NOT_STARTED",
     "5":"NOT_STARTED",
@@ -101,11 +101,12 @@
       ]
     },
     "2": {
-      "status":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_AND_MARKET_RESEARCH_SUBTASKS_VERIFIED",
+      "status":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_AND_CONTEXT_WHY_SUBTASKS_VERIFIED",
       "verified_subtasks":[
         "Information Audit / Pending Questions / Assumption-Decision authority",
         "Product Truth / Evidence authority",
-        "Market / Search / Competition / Price-band / Review Opportunity Research authority"
+        "Market / Search / Competition / Price-band / Review Opportunity Research authority",
+        "Platform × Region × Audience × Culture decision-specific WHY authority"
       ],
       "focused_tests": {
         "information_audit":"7 passed core authority",
@@ -113,16 +114,20 @@
         "product_truth":"9 passed",
         "market_research":"6 passed",
         "canonical_graph_market_binding":"1 passed behavioral verification",
-        "runtime_bindings":"GitHub main source readback verified for Market Research and v0.6.76 Information Audit closure"
+        "context_why":"6 passed: 4 core authority + 2 cross-scope preservation checks; RED first failed on missing context_why_authority.py",
+        "runtime_bindings":"GitHub main source readback verified for Market Research and the v0.6.76 Information Audit + Context WHY closure"
       },
-      "cross_scope_tests":"32 passed for canonical graph + Product Truth + Market Research + Information Audit, plus Phase 0 authority guard 1 passed and frozen K01 negative fixture guard 3 passed",
+      "cross_scope_tests":"Prior canonical graph + Product Truth + Market Research + Information Audit baseline was 32 passed; current Context WHY batch additionally passed 6 focused/adjacent-object tests, preserving sibling sections and existing validator issues. Phase 0 authority guard remains 1 passed and frozen K01 negative fixture guard 3 passed from the locked baseline.",
       "proof_objects":[
         "runtime/cbcc/information_audit_authority.py",
+        "runtime/cbcc/context_why_authority.py",
         "runtime/cbcc/v0676_phase2_closure.py",
         "runtime/cbcc/__init__.py",
         "tests/test_v0676_information_audit_authority.py",
         "tests/test_v0676_information_audit_full_alias_regression.py",
+        "tests/test_v0676_context_why_authority.py",
         "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_INFORMATION_AUDIT.json",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_CONTEXT_WHY.json",
         "runtime/cbcc/product_truth_evidence_authority.py",
         "tests/test_v0676_product_truth_evidence_authority.py",
         "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_PRODUCT_TRUTH.json",
@@ -151,10 +156,14 @@
         "missing research returns RESEARCH_INPUT_REQUIRED with null exact facts and LOW confidence instead of fabricated market size/search volume/rank/sales",
         "opportunities remain RESEARCH_HYPOTHESIS_NOT_RECOMMENDATION until downstream cross-checks pass",
         "real Runtime package initialization wraps tools.market.analyze_market additively, preserving compiler analyze_market -> market_analysis.json",
-        "canonical RESEARCH graph node prefers enriched market_analysis.json while retaining research_gate.json as compatibility fallback"
+        "canonical RESEARCH graph node prefers enriched market_analysis.json while retaining research_gate.json as compatibility fallback",
+        "Every production-ready major strategy decision must expose WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT plus separate platform / region / audience / race-ethnicity-culture context rows with the same six-field density",
+        "Legacy inherited project_context is explicitly decision_specificity=REQUIRES_DECISION_SPECIFIC_CHECK and cannot false-pass as a causal decision WHY",
+        "Missing four-axis context remains TO_VERIFY with no fabricated evidence or causal claim",
+        "Context-WHY materialization leaves Information Audit, Product Truth and Market/Audience/Culture sibling objects unchanged and preserves pre-existing delivery validator issues"
       ],
-      "produced_object_inspection":"A 12-question upstream state already split into 10 visible + 2 overflow remained total=12/visible=10/overflow=2 after compilation; unresolved items were preserved; all questions and the assumption retained exact_fact=null; the Product Truth FACT retained exact_fact=30g; information_audit_issues returned an empty list.",
-      "remaining_phase2":"Platform×Region×Audience×Culture WHY; intersectionality/culture adaptation; applied Positioning/VP/STP/JTBD/AIDA/FABE/4P/Funnel/RACE decisions; Economics/Offer; complete Listing/Search; Content Matrix/RACE; Ads optimization; Review Analysis root-cause/repair loop; Measurement/A-B/P0-P1-P2/next-input plan; full major-row WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT coverage across those objects.",
+      "produced_object_inspection":"Information Audit inspection preserved 12 unresolved questions as total=12/visible=10/overflow=2 with exact_fact=null for unresolved items and exact_fact=30g for the Product Truth fact. Context-WHY inspection showed a fully authored FULL_PROJECT row as density_status=READY across all four axes, while legacy project_context and missing axes stayed density_status=TO_VERIFY and produced concrete audit issues rather than fabricated causality.",
+      "remaining_phase2":"Intersectionality/culture adaptation; applied Positioning/VP/STP/JTBD/AIDA/FABE/4P/Funnel/RACE decisions; Economics/Offer; complete Listing/Search; Content Matrix/RACE; Ads optimization; Review Analysis root-cause/repair loop; Measurement/A-B/P0-P1-P2/next-input plan; full major-row WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT coverage across those objects.",
       "real_k01_full":"PENDING_PHASE10",
       "built_plugin_readback":"PENDING_PHASE11",
       "provider_actual_output":"E2E_PENDING",
@@ -173,7 +182,12 @@
         "b93286595d82b683859e98714dde0cdb1cc3fd83",
         "29d8b5759c1cf87aacf22a9ebea790fba13c34af",
         "eb567864664934943a30745f7c6c9f6d1aa2149e",
-        "640043bf96d4fb759d9a986e373019ba8f403fa2"
+        "640043bf96d4fb759d9a986e373019ba8f403fa2",
+        "9522ac4cdd54fd60306dee5a8b5cf54d40a10d8f",
+        "71d7612e93684098467d5f4f3d4628f429aed617",
+        "13f460c8f64b08017fe464f7127ccc3297eb8b4f",
+        "5ff5daafa75f44816188ead148649dab59a36a0c",
+        "424e4c647e343b5393c134db85d1e33a996bde9f"
       ]
     }
   }
