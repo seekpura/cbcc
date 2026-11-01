@@ -28,6 +28,10 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         wrap_build_master_strategy as wrap_intersectionality_culture_strategy,
         wrap_validate_strategy_delivery as wrap_intersectionality_culture_validator,
     )
+    from .strategy_framework_authority import (
+        wrap_build_master_strategy as wrap_strategy_framework_strategy,
+        wrap_validate_strategy_delivery as wrap_strategy_framework_validator,
+    )
 
     installed: list[str] = []
 
@@ -37,26 +41,28 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_information_audit_authority', False):
         delivery_contract.validate_strategy_delivery = wrap_information_audit_validator(delivery_contract.validate_strategy_delivery)
 
-    # Context WHY must wrap the final mature strategy chain plus the Information Audit layer. It does not
-    # invent platform/region/audience/culture causality: incomplete or inherited project context remains
-    # TO_VERIFY and the validator blocks a false FULL-depth pass.
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_context_why_authority', False):
         strategy_authority.build_master_strategy = wrap_context_why_strategy(strategy_authority.build_master_strategy)
         installed.append('DECISION_SPECIFIC_CONTEXT_WHY_AUTHORITY')
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_context_why_authority', False):
         delivery_contract.validate_strategy_delivery = wrap_context_why_validator(delivery_contract.validate_strategy_delivery)
 
-    # Preserve the mature v0.6.69/v0.6.71 intersectionality and culture objects, then enforce business
-    # density and evidence boundaries on those same objects. Missing identity/cultural facts remain
-    # TO_VERIFY; Runtime never manufactures demographic causality or tokenistic cultural conclusions.
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_intersectionality_culture_authority', False):
         strategy_authority.build_master_strategy = wrap_intersectionality_culture_strategy(strategy_authority.build_master_strategy)
         installed.append('INTERSECTIONALITY_CULTURE_DENSITY_AUTHORITY')
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_intersectionality_culture_authority', False):
         delivery_contract.validate_strategy_delivery = wrap_intersectionality_culture_validator(delivery_contract.validate_strategy_delivery)
 
-    # delivery_export imported this symbol before the final closure. Refresh only that cached consumer;
-    # strategy_authority.materialize_strategy imports validate_strategy_delivery dynamically.
+    # Mature v0.6.69/v0.6.70 rows may contain framework definitions and generic measurement defaults.
+    # Keep those rows as descriptive context, but require an explicit current-project changed decision
+    # plus six-field density before APPLIED/NOT_NEEDED is considered complete. Missing VP/RACE evidence
+    # remains TO_VERIFY rather than being invented by Runtime.
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_strategy_framework_authority', False):
+        strategy_authority.build_master_strategy = wrap_strategy_framework_strategy(strategy_authority.build_master_strategy)
+        installed.append('APPLIED_STRATEGY_FRAMEWORK_AUTHORITY')
+    if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_strategy_framework_authority', False):
+        delivery_contract.validate_strategy_delivery = wrap_strategy_framework_validator(delivery_contract.validate_strategy_delivery)
+
     delivery_export.validate_strategy_delivery = delivery_contract.validate_strategy_delivery
 
     closures = [
@@ -71,6 +77,10 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'CORE_INTERSECTION_DIMENSION_COVERAGE_WITHOUT_BEHAVIOR_INFERENCE',
         'CULTURE_SCRIPT_CASTING_WARDROBE_COLOR_CTA_EXECUTION_AUDIT',
         'RELEVANCE_AWARE_CULTURAL_CONTEXT_COVERAGE',
+        'APPLIED_STRATEGY_FRAMEWORK_AUTHORITY',
+        'FRAMEWORK_DEFINITION_CANNOT_FALSE_PASS_AS_APPLICATION',
+        'POSITIONING_VALUE_MESSAGE_SIX_FIELD_DENSITY_AUDIT',
+        'RACE_APPLIED_DECISION_DENSITY_AUDIT',
     ]
     return {
         'status':'INSTALLED' if installed else 'ALREADY_INSTALLED',
