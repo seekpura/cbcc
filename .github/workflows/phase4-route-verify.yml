@@ -1,0 +1,113 @@
+name: phase4-route-verify
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/phase4-route-verify.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install verification dependencies
+        run: python -m pip install -q pytest pyyaml openpyxl
+      - name: Cross-scope Phase 4 route verification
+        run: |
+          pytest -q \
+            tests/test_v0676_phase4_visual_route_art_direction.py \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0632_portfolio_visual_authority.py \
+            tests/test_v0658_art_direction_end_to_end_lock.py \
+            tests/test_v069_photography_execution_continuity.py \
+            tests/test_v0632_production_parameter_closure.py \
+            tests/test_v0676_phase3_opportunity_family_evaluation.py \
+            tests/test_v0676_phase3_opportunity_family_runtime_binding.py
+      - name: Inspect produced route-authority objects
+        run: |
+          python - <<'PY'
+          import json
+          from cbcc.agent_autonomy import compile_agent_autonomy_plan, compile_agent_next_action
+          from cbcc.portfolio_visual_authority import validate_portfolio_differentiation
+
+          target={
+              'market':'MY','platform_family':'TikTok Shop','site':'MY','category':'Beauty',
+              'surfaces':['UGC_BRIEF','LIVE','LANDING_PAGE_HERO'],
+          }
+          plan=compile_agent_autonomy_plan({
+              'target':target,'compile_assets':True,
+              'agent_plan':{'creative_exploration':{
+                  'portfolio_visual_program':{
+                      'visual_territory':'route-native truth world',
+                      'carrier_mix':['creator routine','live proof','landing editorial'],
+                      'product_presence_rhythm':['supporting','hero','hero'],
+                      'scale_density_rhythm':'intimate -> demonstrative -> spacious',
+                      'composition_rhythm':'handheld -> table proof -> editorial hierarchy',
+                      'continuity_tokens':['truthful identity'],
+                      'deliberate_breaks':['embodied action','editorial information'],
+                      'delete_merge_logic':'merge only materially identical jobs',
+                      'mechanism_bindings':['routine','proof','editorial'],
+                  },
+                  'portfolio_differentiation_review':{
+                      'status':'PASS_AFTER_REAUTHOR',
+                      'adjacent_asset_review':[{'pair':['AST-UGC','AST-LIVE'],'delta':'creator vs live'}],
+                      'keep_reauthor_merge_delete':[{'asset_id':'AST-UGC','decision':'KEEP'}],
+                  },
+              }}
+          })
+          architecture={
+              'assets':[
+                  {'asset_id':'AST-UGC','asset_type':'BRIEF','surface':'UGC_BRIEF','art_direction_status':'MISSING_AGENT_DECISION'},
+                  {'asset_id':'AST-LIVE','asset_type':'LIVE','surface':'LIVE','art_direction_status':'MISSING_AGENT_DECISION'},
+                  {'asset_id':'AST-LANDING','asset_type':'PAGE','surface':'LANDING_PAGE_HERO','art_direction_status':'MISSING_AGENT_DECISION'},
+              ],
+              'decision_coverage_summary':{},
+          }
+          result=compile_agent_next_action(
+              plan,request={},research_gate={},asset_architecture=architecture,
+              creative_council={'selected_direction':{'direction_id':'DIR-P4'}},
+              compliance={},production_run={},gate_scope={},content_requiredness={},
+          )
+          blocker=next(x for x in result['blocking_frontier'] if x.get('action')=='AUTHOR_PER_ASSET_ART_DIRECTION')
+          assert set(blocker['items'])=={'AST-UGC','AST-LIVE','AST-LANDING'}
+
+          def authored(aid,atype,surface):
+              return {
+                  'asset_id':aid,'asset_type':atype,'surface':surface,'art_direction_status':'AUTHORED',
+                  'asset_art_direction':{
+                      'visual_carrier':'ROUTE_VISUAL','composition_grammar':'same visual grammar',
+                      'layout_geometry':'same visual grammar','scale_depth':'same scale',
+                      'negative_space':'same field','material_response':'same response',
+                      'deliberate_difference':'claimed difference',
+                      'product_presence':{'planning_state':'REQUIRED','product_role':'hero'},
+                  }
+              }
+          validation=validate_portfolio_differentiation(
+              {'assets':[authored('AST-UGC','BRIEF','UGC_BRIEF'),authored('AST-LIVE','LIVE','LIVE')]},
+              {
+                  'require_portfolio_differentiation_review':True,
+                  'portfolio_differentiation_review':{
+                      'status':'PASS_AFTER_REAUTHOR',
+                      'adjacent_asset_review':[{'pair':['AST-UGC','AST-LIVE'],'delta':'claimed'}],
+                      'keep_reauthor_merge_delete':[{'asset_id':'AST-UGC','decision':'KEEP'}],
+                  }
+              }
+          )
+          assert validation['asset_count_reviewed']==2
+          assert validation['status']=='RETURN_TO_AGENT'
+          assert validation['duplicate_signature_groups']==[['AST-UGC','AST-LIVE']]
+          print(json.dumps({
+              'missing_art_direction_blocker':blocker,
+              'portfolio_validation':{
+                  'status':validation['status'],
+                  'asset_count_reviewed':validation['asset_count_reviewed'],
+                  'duplicate_signature_groups':validation['duplicate_signature_groups'],
+              }
+          },ensure_ascii=False,indent=2))
+          PY
