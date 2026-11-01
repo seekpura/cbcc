@@ -49,3 +49,18 @@ def test_request_without_ad_analysis_scope_clears_context_and_cannot_contaminate
     p(req,None,None)
     out=a({})
     assert 'phase2_ads_optimization_authority' not in out
+
+
+def test_explicit_ads_optimization_without_performance_data_materializes_no_data_authority_without_running_metrics_calculator():
+    req=fx.request()
+    assert 'ad_rows' not in req and 'ad_analysis' not in req
+    p=mod.wrap_compile_pricing_economics_for_ads_context(lambda request, market_analysis=None, legacy_economics=None: fx.pricing())
+    p(req,None,None)
+    assert (req.get('ad_analysis') or {}).get('_phase2_no_performance_data') is True
+    def must_not_run(*args,**kwargs):
+        raise AssertionError('metrics calculator must not run when performance data is absent')
+    a=mod.wrap_analyze_ads(must_not_run)
+    out=a({})
+    assert out['status']=='NO_AD_PERFORMANCE_DATA_SUPPLIED'
+    assert out['phase2_business_status']=='READY'
+    assert out['phase2_ads_optimization_authority']['performance_analysis']['status']=='NO_AD_PERFORMANCE_DATA_SUPPLIED'
