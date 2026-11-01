@@ -6,7 +6,7 @@
   "completion_rule": "No requirement is complete from document existence, headings, file counts or boolean flags. Require concrete consumer, proof object, verification and where applicable real K01 FULL evidence.",
   "new_requirements": [
     {"req":"REQ-061","title":"Canonical commerce object graph","phase":"1,6,7","status":"PARTIAL_PHASE_1_GRAPH_AUTHORITY_VERIFIED"},
-    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_AND_CONTEXT_WHY_VERIFIED"},
+    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_CONTEXT_WHY_AND_INTERSECTIONALITY_CULTURE_VERIFIED"},
     {"req":"REQ-063","title":"Explicit opportunity-family evaluation","phase":"3","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-064","title":"Scenario/Lifestyle/Context/Human-use","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-065","title":"Negative/Counterexample/Expectation management","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
@@ -32,14 +32,14 @@
     {"req":"REQ-085","title":"Concrete human/culture/inclusion execution","phase":"4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-086","title":"Scene-derived photography/lighting/CMF closure","phase":"4,5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-087","title":"Listing/Economics/Ads/Reviews/Research remain first-class","phase":"1,2","status":"PARTIAL_PHASE2_RESEARCH_FIRST_CLASS_VERIFIED"},
-    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_RESEARCH_AND_CONTEXT_WHY_LINEAGE_VERIFIED"},
+    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_RESEARCH_CONTEXT_WHY_AND_INTERSECTIONALITY_CULTURE_LINEAGE_VERIFIED"},
     {"req":"REQ-089","title":"Human Workspace full canonical projection","phase":"6","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-090","title":"FULL package lineage and actual-output boundary","phase":"7,8,10","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"}
   ],
   "phase_status": {
     "0":"IN_PROGRESS_BUILT_PLUGIN_READBACK_DEFERRED_PHASE11",
     "1":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY",
-    "2":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_AND_CONTEXT_WHY_SUBTASKS_VERIFIED",
+    "2":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_CONTEXT_WHY_AND_INTERSECTIONALITY_CULTURE_SUBTASKS_VERIFIED",
     "3":"NOT_STARTED",
     "4":"NOT_STARTED",
     "5":"NOT_STARTED",
@@ -101,12 +101,13 @@
       ]
     },
     "2": {
-      "status":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_AND_CONTEXT_WHY_SUBTASKS_VERIFIED",
+      "status":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_CONTEXT_WHY_AND_INTERSECTIONALITY_CULTURE_SUBTASKS_VERIFIED",
       "verified_subtasks":[
         "Information Audit / Pending Questions / Assumption-Decision authority",
         "Product Truth / Evidence authority",
         "Market / Search / Competition / Price-band / Review Opportunity Research authority",
-        "Platform × Region × Audience × Culture decision-specific WHY authority"
+        "Platform × Region × Audience × Culture decision-specific WHY authority",
+        "Intersectionality + Culture Adaptation density authority"
       ],
       "focused_tests": {
         "information_audit":"7 passed core authority",
@@ -115,19 +116,23 @@
         "market_research":"6 passed",
         "canonical_graph_market_binding":"1 passed behavioral verification",
         "context_why":"6 passed: 4 core authority + 2 cross-scope preservation checks; RED first failed on missing context_why_authority.py",
-        "runtime_bindings":"GitHub main source readback verified for Market Research and the v0.6.76 Information Audit + Context WHY closure"
+        "intersectionality_culture":"6 passed; RED first failed during collection on missing intersectionality_culture_authority.py",
+        "runtime_bindings":"GitHub main source readback verified for Market Research and the v0.6.76 Information Audit + Context WHY + Intersectionality/Culture closure"
       },
-      "cross_scope_tests":"Prior canonical graph + Product Truth + Market Research + Information Audit baseline was 32 passed; current Context WHY batch additionally passed 6 focused/adjacent-object tests, preserving sibling sections and existing validator issues. Phase 0 authority guard remains 1 passed and frozen K01 negative fixture guard 3 passed from the locked baseline.",
+      "cross_scope_tests":"Earlier canonical graph + Product Truth + Market Research + Information Audit baseline was 32 passed. Context-WHY batch passed 6 focused/adjacent tests. Current Intersectionality/Culture batch passed 6/6 and re-ran Context-WHY 6/6, for 12/12 adjacent tests. The earlier 32-test baseline was not falsely claimed as rerun in this batch. Phase 0 authority guard remains 1 passed and frozen K01 negative fixture guard 3 passed from the locked baseline.",
       "proof_objects":[
         "runtime/cbcc/information_audit_authority.py",
         "runtime/cbcc/context_why_authority.py",
+        "runtime/cbcc/intersectionality_culture_authority.py",
         "runtime/cbcc/v0676_phase2_closure.py",
         "runtime/cbcc/__init__.py",
         "tests/test_v0676_information_audit_authority.py",
         "tests/test_v0676_information_audit_full_alias_regression.py",
         "tests/test_v0676_context_why_authority.py",
+        "tests/test_v0676_intersectionality_culture_authority.py",
         "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_INFORMATION_AUDIT.json",
         "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_CONTEXT_WHY.json",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_INTERSECTIONALITY_CULTURE.json",
         "runtime/cbcc/product_truth_evidence_authority.py",
         "tests/test_v0676_product_truth_evidence_authority.py",
         "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_PRODUCT_TRUTH.json",
@@ -160,10 +165,21 @@
         "Every production-ready major strategy decision must expose WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT plus separate platform / region / audience / race-ethnicity-culture context rows with the same six-field density",
         "Legacy inherited project_context is explicitly decision_specificity=REQUIRES_DECISION_SPECIFIC_CHECK and cannot false-pass as a causal decision WHY",
         "Missing four-axis context remains TO_VERIFY with no fabricated evidence or causal claim",
-        "Context-WHY materialization leaves Information Audit, Product Truth and Market/Audience/Culture sibling objects unchanged and preserves pre-existing delivery validator issues"
+        "Context-WHY materialization leaves Information Audit, Product Truth and Market/Audience/Culture sibling objects unchanged and preserves pre-existing delivery validator issues",
+        "Intersectionality interaction rows reach READY only when decision-level WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT is present; legacy generic verification rows remain TO_VERIFY",
+        "race_ethnicity / gender / age / income / geography are explicitly accounted for while missing decision-specific identity evidence remains TO_VERIFY with behavior_inference_allowed=false",
+        "language / religion / holiday / taboo / family-household / skin-hair-body contexts are relevance-aware coverage objects rather than tokenistic defaults or fabricated facts",
+        "Culture adaptation rows require script / casting / wardrobe-grooming / color / CTA execution checks plus six-field business density",
+        "Intersectionality/Culture authority preserves previously verified Information Audit, Product Truth and Core Strategy sibling objects and preserves existing validator issues"
       ],
-      "produced_object_inspection":"Information Audit inspection preserved 12 unresolved questions as total=12/visible=10/overflow=2 with exact_fact=null for unresolved items and exact_fact=30g for the Product Truth fact. Context-WHY inspection showed a fully authored FULL_PROJECT row as density_status=READY across all four axes, while legacy project_context and missing axes stayed density_status=TO_VERIFY and produced concrete audit issues rather than fabricated causality.",
-      "remaining_phase2":"Intersectionality/culture adaptation; applied Positioning/VP/STP/JTBD/AIDA/FABE/4P/Funnel/RACE decisions; Economics/Offer; complete Listing/Search; Content Matrix/RACE; Ads optimization; Review Analysis root-cause/repair loop; Measurement/A-B/P0-P1-P2/next-input plan; full major-row WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT coverage across those objects.",
+      "produced_object_inspection":"Information Audit inspection preserved 12 unresolved questions as total=12/visible=10/overflow=2 with exact_fact=null for unresolved items and exact_fact=30g for the Product Truth fact. Context-WHY inspection showed a fully authored FULL_PROJECT row as density_status=READY across all four axes, while legacy project_context and missing axes stayed density_status=TO_VERIFY. Intersectionality/Culture inspection showed authored interaction and culture rows as READY only with full six-field density; legacy generic rows stayed TO_VERIFY; all five core dimensions remained explicit without behavior inference; holiday/religion and other missing contexts retained exact_fact=null.",
+      "deferred_boundaries":[
+        "Content Matrix per-row RACE + culture/taboo propagation remains Phase 2 subtask 9 and is not claimed by the Intersectionality/Culture subtask.",
+        "Deep-skin exposure, reflector/diffusion, hair/body/disability/age/AI-bias production execution remains later Visual/Art Direction work and is not claimed by this subtask.",
+        "JSON→MD→HTML same-source Human projection remains Phase 6.",
+        "Fresh real K01 FULL remains Phase 10; built plugin readback remains Phase 11."
+      ],
+      "remaining_phase2":"Applied Positioning/VP/message hierarchy/STP/JTBD/AIDA/FABE/4P/Funnel/RACE decisions; Economics/Offer; complete Listing/Search; Content Matrix/RACE; Ads optimization; Review Analysis root-cause/repair loop; Measurement/A-B/P0-P1-P2/next-input plan; full major-row WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT coverage across those objects.",
       "real_k01_full":"PENDING_PHASE10",
       "built_plugin_readback":"PENDING_PHASE11",
       "provider_actual_output":"E2E_PENDING",
@@ -187,7 +203,11 @@
         "71d7612e93684098467d5f4f3d4628f429aed617",
         "13f460c8f64b08017fe464f7127ccc3297eb8b4f",
         "5ff5daafa75f44816188ead148649dab59a36a0c",
-        "424e4c647e343b5393c134db85d1e33a996bde9f"
+        "424e4c647e343b5393c134db85d1e33a996bde9f",
+        "7a4e2c9102cc54a6f331d243f65397ab818fe7ee",
+        "241ec020a3c6d062bb807504798e02dbbf353529",
+        "d1b5b2c334ef19b58d54e1b878353d2088f8b549",
+        "51f6e5b5bc7bccb700a3cdff67b11b2767f60fb4"
       ]
     }
   }
