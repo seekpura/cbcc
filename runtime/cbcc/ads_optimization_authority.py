@@ -253,15 +253,36 @@ def wrap_compile_seven_tool_continuity(fn):
 
 _ADS_CONTEXT:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_ads_context', default=None)
 _ADS_PORTFOLIO_DEPTH:ContextVar[int]=ContextVar('cbcc_v0676_ads_portfolio_depth', default=0)
-_ADS_STUB_REQUEST:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_ads_stub_request', default=None)
+_ADS_STUB_STATE:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_ads_stub_state', default=None)
 
 def _cleanup_internal_ads_stub():
-    req=_ADS_STUB_REQUEST.get()
-    if isinstance(req,dict):
-        marker=req.get('ad_analysis')
-        if isinstance(marker,Mapping) and marker.get('_phase2_no_performance_data') is True:
-            req.pop('ad_analysis',None)
-    _ADS_STUB_REQUEST.set(None)
+    state=_ADS_STUB_STATE.get()
+    if isinstance(state,Mapping):
+        req=state.get('request')
+        if isinstance(req,dict):
+            if state.get('had_key'):
+                req['ad_analysis']=deepcopy(state.get('original'))
+            else:
+                req.pop('ad_analysis',None)
+    _ADS_STUB_STATE.set(None)
+
+def _inject_internal_no_performance_stub(request:dict[str,Any]):
+    had_key='ad_analysis' in request
+    original=deepcopy(request.get('ad_analysis'))
+    marker=dict(request.get('ad_analysis') or {})
+    marker['_phase2_no_performance_data']=True
+    marker.setdefault('ad_data',{})
+    request['ad_analysis']=marker
+    _ADS_STUB_STATE.set({'request':request,'had_key':had_key,'original':original})
+
+def _has_ad_performance_input(request:Mapping[str,Any])->bool:
+    if bool(request.get('ad_rows')):
+        return True
+    aa=request.get('ad_analysis')
+    if isinstance(aa,Mapping):
+        data=aa.get('ad_data')
+        return isinstance(data,Mapping) and bool(data)
+    return False
 
 def _explicit_ads_optimization_scope(request:Mapping[str,Any])->bool:
     return bool(request.get('advertising_optimization') or request.get('ads_optimization'))
@@ -275,9 +296,8 @@ def wrap_compile_pricing_economics_for_ads_context(fn):
         _ADS_CONTEXT.set(None)
         out=fn(request,market_analysis,legacy_economics)
         if _is_full(request,out) and _ads_analyzer_scope(request):
-            if _explicit_ads_optimization_scope(request) and not request.get('ad_rows') and not request.get('ad_analysis'):
-                request['ad_analysis']={'_phase2_no_performance_data':True,'ad_data':{}}
-                _ADS_STUB_REQUEST.set(request)
+            if _explicit_ads_optimization_scope(request) and not _has_ad_performance_input(request):
+                _inject_internal_no_performance_stub(request)
             _ADS_CONTEXT.set({'request':deepcopy(request),'pricing_economics':deepcopy(out)})
         return out
     setattr(compiled,'_cbcc_v0676_ads_optimization_context_bridge',True)
