@@ -1,0 +1,30 @@
+name: phase4-listing-cross-probe
+
+on:
+  push:
+    branches: [phase4-closure-debug]
+    paths:
+      - '.github/workflows/phase4-listing-cross-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  listing-cross-probe:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase4-closure-debug
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -q pytest pyyaml pillow
+      - run: |
+          pytest -q \
+            tests/test_v0676_listing_search_authority.py \
+            tests/test_v0676_listing_search_context_bridge.py \
+            tests/test_v0676_listing_search_runtime_binding.py
