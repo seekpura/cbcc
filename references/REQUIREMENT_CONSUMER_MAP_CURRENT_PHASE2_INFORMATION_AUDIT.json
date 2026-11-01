@@ -1,0 +1,115 @@
+{
+  "authority": "CBCC Phase 2 Information Audit / Pending Questions / Assumption / Decision Log consumer delta",
+  "scope": "PARTIAL_PHASE_2_INFORMATION_AUDIT_ONLY",
+  "requirements": [
+    {
+      "req": "REQ-003",
+      "requirement": "FULL auto-completes work rather than blocking the workflow on missing input",
+      "consumers": [
+        "runtime/cbcc/long_requirement_runtime.py",
+        "runtime/cbcc/information_audit_authority.py",
+        "runtime/cbcc/v0676_phase2_closure.py"
+      ],
+      "proof_objects": [
+        "continue_under_assumptions=true",
+        "pending confirmations capped at 10 user-facing questions while all unresolved items remain machine-visible",
+        "MISSING_INPUT / TO_VERIFY / ASSUMPTION never become facts"
+      ],
+      "status": "PARTIAL_PHASE2_INFORMATION_AUDIT_VERIFIED"
+    },
+    {
+      "req": "REQ-007",
+      "requirement": "FULL decision depth starts with information completeness, unknowns, assumptions and decision log",
+      "consumers": [
+        "runtime/cbcc/strategy_authority.py",
+        "runtime/cbcc/strategy_culture_materialization.py",
+        "runtime/cbcc/information_audit_authority.py"
+      ],
+      "proof_objects": [
+        "cbcc-information-audit-authority-v1",
+        "information_audit_items",
+        "assumption_decision_log",
+        "WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT on pending questions, assumptions and decisions"
+      ],
+      "status": "PARTIAL_PHASE2_INFORMATION_AUDIT_VERIFIED"
+    },
+    {
+      "req": "REQ-052",
+      "requirement": "Information audit → at most 10 clarification questions → explicit assumptions → continue",
+      "consumers": [
+        "runtime/cbcc/long_requirement_runtime.py",
+        "runtime/cbcc/information_audit_authority.py"
+      ],
+      "proof_objects": [
+        "question_limit=10",
+        "pending_confirmation_total_count",
+        "pending_confirmations",
+        "pending_confirmations_overflow",
+        "unresolved_items",
+        "FACT / ASSUMPTION / DECISION separation"
+      ],
+      "status": "PHASE2_INFORMATION_AUDIT_SEQUENCE_VERIFIED"
+    },
+    {
+      "req": "REQ-060",
+      "requirement": "Required FULL output object #1 is information completeness / pending confirmations / assumptions / decisions",
+      "consumers": [
+        "runtime/cbcc/information_audit_authority.py",
+        "runtime/cbcc/v0676_phase2_closure.py",
+        "runtime/cbcc/delivery_contract.py"
+      ],
+      "proof_objects": [
+        "canonical Strategy Section 01 authority",
+        "strict FULL_INFORMATION_AUDIT_* validation codes",
+        "existing Human materializers retain compatibility fields item/status/basis/tradeoff"
+      ],
+      "status": "PARTIAL_PHASE2_CANONICAL_OBJECT_VERIFIED_HUMAN_PROJECTION_PARITY_DEFERRED_PHASE6"
+    },
+    {
+      "req": "REQ-062",
+      "requirement": "Whole-commerce FULL scope keeps Information Audit as a first-class non-asset business object",
+      "consumers": [
+        "runtime/cbcc/information_audit_authority.py",
+        "runtime/cbcc/canonical_commerce_graph.py"
+      ],
+      "proof_objects": [
+        "INFORMATION_AUDIT canonical graph node points to strategy_authority Section 01",
+        "canonical_graph_binding inside information authority",
+        "authority_sha256"
+      ],
+      "status": "PARTIAL_PHASE2_INFORMATION_AUDIT_VERIFIED"
+    },
+    {
+      "req": "REQ-088",
+      "requirement": "Source / Evidence / Assumption / Decision lineage stays explicit",
+      "consumers": [
+        "runtime/cbcc/information_audit_authority.py"
+      ],
+      "proof_objects": [
+        "source_refs / source_type / recency / exact_fact / interpretation / confidence / assumption_boundary / downstream_use / conflict_status / proof_object",
+        "unknown and assumption rows keep exact_fact=null",
+        "Product Truth facts retain exact_fact only inside declared source scope"
+      ],
+      "status": "PARTIAL_PHASE2_INFORMATION_AUDIT_LINEAGE_VERIFIED"
+    }
+  ],
+  "runtime_binding": {
+    "entry": "runtime/cbcc/__init__.py",
+    "order": [
+      "commercial_continuity_bootstrap.install()",
+      "v0674_regression_closure.apply_v0674_patches()",
+      "v0676_phase2_closure.apply_v0676_phase2_patches()"
+    ],
+    "meaning": "v0.6.76 Information Audit is additive and installs only after the mature strategy/commercial continuity layers and v0.6.74 cross-scope closure."
+  },
+  "verification": {
+    "red": "Initial authority test failed because information_audit_authority.py did not exist. FULL alias regression later failed 1/2 because FULL_PROJECT was not recognized.",
+    "green": "Core authority 7/7 passed; alias focused suite 9/9 passed after reusing v0.6.74 FULL semantics.",
+    "cross_scope": "32 passed for canonical graph + Product Truth + Market Research + Information Audit; Phase 0 authority guard 1 passed; frozen K01 negative fixture guard 3 passed.",
+    "produced_object_inspection": "12 unresolved confirmations remained total=12 with visible=10 and overflow=2; unresolved items were preserved; pending questions and assumptions kept exact_fact=null; Product Truth FACT retained exact_fact=30g; strict information audit issues=[]",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11",
+    "provider_actual_output": "E2E_PENDING"
+  },
+  "completion_boundary": "This delta proves only the Phase 2 Information Audit / question / assumption-decision density subtask. Human JSON→Markdown→HTML canonical parity remains Phase 6. Platform×Region×Audience×Culture WHY, intersectionality/culture, applied frameworks, Economics/Offer, Listing/Search, Content Matrix/RACE, Ads, Review root-cause/repair and Measurement remain Phase 2 work."
+}
