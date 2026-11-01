@@ -25,7 +25,7 @@ NODE_SPECS: tuple[NodeSpec, ...] = (
     NodeSpec("SOURCES", "Sources", ("evidence.json",), "/sources"),
     NodeSpec("INFORMATION_AUDIT", "Information Audit", ("strategy_authority.json",), "/sections/01_information_completeness_assumptions_decisions"),
     NodeSpec("PRODUCT_TRUTH", "Product Truth", ("product_truth_evidence_authority.json", "product_truth.json")),
-    NodeSpec("RESEARCH", "Research", ("research_gate.json",)),
+    NodeSpec("RESEARCH", "Research", ("market_analysis.json", "research_gate.json")),
     NodeSpec("AUDIENCE_CULTURE", "Audience / Culture / Intersectionality", ("culture_context.json", "strategy_authority.json"), optional=True),
     NodeSpec("ECONOMICS_OFFER", "Economics / Offer", ("pricing_economics_authority.json", "economics.json"), optional=True),
     NodeSpec("STRATEGY", "Strategy", ("strategy_authority.json",)),
