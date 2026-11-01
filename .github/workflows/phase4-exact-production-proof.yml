@@ -1,0 +1,68 @@
+name: phase4-exact-production-proof
+
+on:
+  push:
+    branches: [phase4-closure-debug]
+    paths:
+      - '.github/workflows/phase4-exact-production-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-production-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 63eab0ab46ce5a251592b1a3363b03b99c3b4adf
+          path: production
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -q pytest pyyaml pillow
+      - name: Focused Phase 4 exact production bytes
+        working-directory: production
+        env:
+          PYTHONPATH: runtime
+        run: |
+          files=(tests/test_v0676_phase4_*.py)
+          pytest -q "${files[@]}"
+      - name: Phase 3 exact production bytes
+        working-directory: production
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_v0676_phase3_opportunity_family_evaluation.py \
+            tests/test_v0676_phase3_opportunity_family_runtime_binding.py \
+            tests/test_v0662_asset_universe_and_package_regressions.py \
+            tests/test_v0655_asset_universe_open_world.py \
+            tests/test_v0646_asset_family_no_quota.py \
+            tests/test_v0646_activation_state_taxonomy.py \
+            tests/test_v0633_asset_universe_workspace.py
+      - name: Listing Search exact production bytes
+        working-directory: production
+        env:
+          PYTHONPATH: runtime
+        run: |
+          pytest -q \
+            tests/test_v0676_listing_search_authority.py \
+            tests/test_v0676_listing_search_context_bridge.py \
+            tests/test_v0676_listing_search_runtime_binding.py
+      - name: Canonical graph exact production bytes
+        working-directory: production
+        env:
+          PYTHONPATH: runtime
+        run: pytest -q tests/test_v0676_canonical_commerce_graph.py
+      - name: Human projection exact production bytes
+        working-directory: production
+        env:
+          PYTHONPATH: runtime
+        run: pytest -q tests/test_v0670_human_projection_integrity.py
+      - name: Native reference/provider exact production bytes
+        working-directory: production
+        env:
+          PYTHONPATH: runtime
+        run: pytest -q tests/test_v0635_native_reference_provider_integrity.py
