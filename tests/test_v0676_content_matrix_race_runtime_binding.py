@@ -11,7 +11,11 @@ def test_phase2_closure_installs_content_matrix_before_strategy_framework_and_va
     assert 'CONTENT_MATRIX_RACE_BUSINESS_AUTHORITY' in text
     # Content/RACE must materialize the final section rows before the existing Strategy/Framework
     # wrapper snapshots section 07 into its own applied-RACE authority.
-    assert text.index('wrap_content_matrix_race_strategy') < text.index("'_cbcc_v0676_strategy_framework_authority'")
+    content_assign='strategy_authority.build_master_strategy = wrap_content_matrix_race_strategy'
+    framework_assign='strategy_authority.build_master_strategy = wrap_strategy_framework_strategy'
+    content_validator='delivery_contract.validate_strategy_delivery = wrap_content_matrix_race_validator'
+    assert text.index(content_assign) < text.index(framework_assign)
+    assert content_validator in text
 
 
 def test_canonical_graph_keeps_content_matrix_and_race_as_strategy_section_authorities_not_duplicate_payloads():
