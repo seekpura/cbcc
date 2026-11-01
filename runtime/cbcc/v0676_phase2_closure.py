@@ -39,6 +39,11 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         wrap_build_master_strategy as wrap_economics_offer_strategy,
         wrap_validate_strategy_delivery as wrap_economics_offer_validator,
     )
+    from .economics_offer_refinement_v0676 import (
+        wrap_compile_pricing_economics_authority as wrap_economics_offer_refinement_compile,
+        wrap_build_master_strategy as wrap_economics_offer_refinement_strategy,
+        wrap_validate_strategy_delivery as wrap_economics_offer_refinement_validator,
+    )
     from .economics_offer_seven_tool_bridge import wrap_compile_seven_tool_continuity
 
     installed: list[str] = []
@@ -76,10 +81,24 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         )
         installed.append('ECONOMICS_OFFER_BUSINESS_AUTHORITY')
 
+    # Refinement is deliberately a second additive layer: it adds REQ-088 lineage and distinguishes a
+    # zero-contribution mathematical floor from a real operating break-even boundary. It never recalculates
+    # price, cost, contribution, CPA, CPC or ROAS.
+    if not getattr(pricing_economics_module.compile_pricing_economics_authority, '_cbcc_v0676_economics_offer_refinement', False):
+        pricing_economics_module.compile_pricing_economics_authority = wrap_economics_offer_refinement_compile(
+            pricing_economics_module.compile_pricing_economics_authority
+        )
+        installed.append('ECONOMICS_OFFER_LINEAGE_AND_BREAK_EVEN_REFINEMENT')
+
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_economics_offer_authority', False):
         strategy_authority.build_master_strategy = wrap_economics_offer_strategy(strategy_authority.build_master_strategy)
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_economics_offer_refinement', False):
+        strategy_authority.build_master_strategy = wrap_economics_offer_refinement_strategy(strategy_authority.build_master_strategy)
+
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_economics_offer_authority', False):
         delivery_contract.validate_strategy_delivery = wrap_economics_offer_validator(delivery_contract.validate_strategy_delivery)
+    if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_economics_offer_refinement', False):
+        delivery_contract.validate_strategy_delivery = wrap_economics_offer_refinement_validator(delivery_contract.validate_strategy_delivery)
 
     # Seven-tool continuity remains mature; only its Economics evidence status is enriched so calculation
     # readiness cannot masquerade as Pricing/Offer business readiness.
@@ -113,6 +132,8 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'BREAK_EVEN_INPUT_CONDITIONALITY',
         'MARKET_PRICE_EVIDENCE_NOT_PRICE_RECOMMENDATION',
         'LEGACY_SENSITIVITY_NOT_OFFER_AUTHORITY',
+        'ECONOMICS_REQ088_LINEAGE_REFINEMENT',
+        'ZERO_CONTRIBUTION_BREAK_EVEN_BASELINE_NOT_OPERATING_BOUNDARY',
         'SEVEN_TOOL_ECONOMICS_BUSINESS_READINESS_BRIDGE',
     ]
     return {
