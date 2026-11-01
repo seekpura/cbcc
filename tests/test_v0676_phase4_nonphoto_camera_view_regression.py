@@ -23,23 +23,25 @@ def _asset(asset_id: str, asset_type: str, carrier: str, composition: str, delta
     }
 
 
-def test_semantic_camera_or_view_alone_does_not_activate_scene_derived_photography_gate():
-    direction = {
+def _direction(asset_ids: list[str]):
+    return {
         'require_portfolio_differentiation_review': True,
         'portfolio_differentiation_review': {
             'status': 'PASS',
             'adjacent_asset_review': [
                 {
-                    'pair': ['AST-G08', 'AST-V01'],
-                    'delta': 'static modular usage system -> temporal motion-led routine sequence',
+                    'pair': asset_ids,
+                    'delta': 'explicit route-specific visual difference',
                 }
             ],
             'keep_reauthor_merge_delete': [
-                {'asset_id': 'AST-G08', 'decision': 'KEEP'},
-                {'asset_id': 'AST-V01', 'decision': 'KEEP'},
+                {'asset_id': aid, 'decision': 'KEEP'} for aid in asset_ids
             ],
         },
     }
+
+
+def test_semantic_camera_or_view_alone_does_not_activate_scene_derived_photography_gate():
     architecture = {
         'assets': [
             _asset(
@@ -59,7 +61,10 @@ def test_semantic_camera_or_view_alone_does_not_activate_scene_derived_photograp
         ]
     }
 
-    result = validate_portfolio_differentiation(architecture, direction)
+    result = validate_portfolio_differentiation(
+        architecture,
+        _direction(['AST-G08', 'AST-V01']),
+    )
 
     assert result['photography_asset_count_reviewed'] == 0, result
     assert result['status'] == 'PASS', result
@@ -67,3 +72,26 @@ def test_semantic_camera_or_view_alone_does_not_activate_scene_derived_photograp
         issue['type'] == 'MISSING_SCENE_DERIVED_PHOTOGRAPHY_EXECUTION'
         for issue in result['issues']
     ), result
+
+
+def test_explicit_photographic_carrier_still_activates_scene_derived_photography_gate():
+    photo = _asset(
+        'AST-PHOTO',
+        'IMAGE',
+        'LIFESTYLE_PHOTOGRAPHY',
+        'environment-led product use frame',
+        'photographic use-context route',
+    )
+    result = validate_portfolio_differentiation(
+        {'assets': [photo]},
+        _direction(['AST-PHOTO']),
+    )
+
+    assert result['photography_asset_count_reviewed'] == 1, result
+    issue = next(
+        item for item in result['issues']
+        if item['type'] == 'MISSING_SCENE_DERIVED_PHOTOGRAPHY_EXECUTION'
+    )
+    assert issue['asset_ids'] == ['AST-PHOTO']
+    assert set(issue['missing']) == {'camera', 'lighting', 'cmf'}
+    assert result['status'] == 'RETURN_TO_AGENT'
