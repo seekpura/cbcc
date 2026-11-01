@@ -12,6 +12,8 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
     steps:
       - uses: actions/checkout@v4
       - name: Install test dependencies
@@ -33,13 +35,13 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          from runtime.cbcc.opportunity_family_authority import (
+          from cbcc.opportunity_family_authority import (
               OPPORTUNITY_FAMILY_REGISTRY,
               compile_opportunity_family_evaluation,
               compile_asset_universe_matrix,
               wrap_build_asset_architecture,
           )
-          from runtime.cbcc.asset_portfolio_workspace import render_asset_portfolio_workspace
+          from cbcc.asset_portfolio_workspace import render_asset_portfolio_workspace
 
           decisions={}
           for row in OPPORTUNITY_FAMILY_REGISTRY:
