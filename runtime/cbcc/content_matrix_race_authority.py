@@ -76,7 +76,8 @@ def _refs(raw:Mapping[str,Any])->list[str]:
 
 def _lineage(raw:Mapping[str,Any], sources:Mapping[str,Mapping[str,Any]], proof:str, missing_boundary:str)->dict[str,Any]:
     refs=_refs(raw)
-    first=_d(sources.get(refs[0])) if refs else {}
+    unresolved=[ref for ref in refs if ref not in sources]
+    first=_d(sources.get(refs[0])) if refs and refs[0] in sources else {}
     source_type=raw.get('source_type') or first.get('source_type') or first.get('authority') or first.get('kind')
     recency=raw.get('recency') or first.get('as_of') or first.get('published_at') or first.get('date')
     exact_fact=deepcopy(raw.get('exact_fact')) if 'exact_fact' in raw else None
@@ -91,8 +92,10 @@ def _lineage(raw:Mapping[str,Any], sources:Mapping[str,Mapping[str,Any]], proof:
         'source_refs':refs,'source_type':source_type,'recency':recency,'exact_fact':exact_fact,
         'interpretation':interpretation,'confidence':confidence,'assumption_boundary':assumption_boundary,
         'downstream_use':downstream,'conflict_status':conflict,'proof_object':proof_object,
+        'unresolved_source_refs':unresolved,
     }
     gaps=[]
+    if unresolved: gaps.append('unresolved_source_refs')
     if not refs and not _p(assumption_boundary): gaps.append('source_refs_or_assumption_boundary')
     for key in ('source_type','recency','interpretation','confidence','downstream_use','conflict_status','proof_object'):
         if not _p(out.get(key)): gaps.append(key)
