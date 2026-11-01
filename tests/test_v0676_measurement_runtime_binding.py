@@ -36,3 +36,23 @@ def test_v0676_closure_installs_measurement_strategy_and_validator_wrappers_with
     assert "'_cbcc_v0676_measurement_authority'" in text
     assert "'MEASUREMENT_BUSINESS_AUTHORITY'" in text
     assert 'SEVEN_TOOL_MEASUREMENT' not in text
+
+
+def test_canonical_measurement_prefers_strategy_section09_over_experiment_result(tmp_path:Path):
+    import json
+    gpath=ROOT/'runtime/cbcc/canonical_commerce_graph.py'
+    gspec=importlib.util.spec_from_file_location('canonical_measurement_v0676',gpath)
+    g=importlib.util.module_from_spec(gspec); assert gspec and gspec.loader
+    sys.modules[gspec.name]=g; gspec.loader.exec_module(g)
+    art=tmp_path/'artifacts'; art.mkdir(parents=True); (tmp_path/'meta').mkdir()
+    (tmp_path/'meta/request.json').write_text('{}')
+    (art/'evidence.json').write_text(json.dumps({'sources':[]}))
+    (art/'product_truth.json').write_text('{}')
+    (art/'research_gate.json').write_text('{}')
+    strategy={'sections':{'01_information_completeness_assumptions_decisions':{},'09_risk_measurement_priority_next_steps':{'measurement_plan':[{'measurement_id':'M-01'}]}}}
+    (art/'strategy_authority.json').write_text(json.dumps(strategy))
+    (art/'experiment_analysis.json').write_text(json.dumps({'status':'ANALYZED','decision':'WINNER'}))
+    graph=g.build_canonical_commerce_graph(art)
+    node=next(x for x in graph['nodes'] if x['node_id']=='MEASUREMENT')
+    assert node['authority_ref']=='strategy_authority.json'
+    assert node['json_pointer']=='/sections/09_risk_measurement_priority_next_steps'
