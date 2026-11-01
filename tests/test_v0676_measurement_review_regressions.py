@@ -1,0 +1,49 @@
+from __future__ import annotations
+from pathlib import Path
+import importlib.util, sys
+
+ROOT=Path(__file__).parents[1]
+MODULE=ROOT/'runtime/cbcc/measurement_authority.py'
+spec=importlib.util.spec_from_file_location('measurement_review_v0676',MODULE)
+mod=importlib.util.module_from_spec(spec); assert spec and spec.loader
+sys.modules[spec.name]=mod; spec.loader.exec_module(mod)
+FIX=ROOT/'tests/test_v0676_measurement_authority.py'
+fspec=importlib.util.spec_from_file_location('measurement_fixture_review_v0676',FIX)
+fx=importlib.util.module_from_spec(fspec); assert fspec and fspec.loader
+sys.modules[fspec.name]=fx; fspec.loader.exec_module(fx)
+
+
+def test_measurement_requires_attribution_observation_analysis_and_learning_handoff():
+    req=fx.request(); row=req['measurement_plan']['rows'][0]
+    for key in ('attribution_method','observation_window','analysis_unit','sequential_monitoring_policy','learning_handoff'): row.pop(key,None)
+    out=mod.materialize_measurement_authority(fx.legacy_strategy(),req,fx.experiment_result()); rr=out['measurement_authority_v0676']['measurement_rows'][0]
+    assert rr['business_contract_status']=='TO_VERIFY'; assert any(x['code']=='FULL_MEASUREMENT_BUSINESS_OBJECT_INCOMPLETE_V0676' for x in mod.measurement_issues(out))
+
+
+def test_priority_decision_ref_must_resolve_to_real_measurement_id():
+    req=fx.request(); req['measurement_plan']['priorities'][0]['decision_ref']='M-NOT-REAL'
+    out=mod.materialize_measurement_authority(fx.legacy_strategy(),req,fx.experiment_result()); p0=out['measurement_authority_v0676']['priorities'][0]
+    assert p0['decision_link_status']=='TO_VERIFY'; assert any(x['code']=='FULL_MEASUREMENT_PRIORITY_PLAN_INCOMPLETE_V0676' for x in mod.measurement_issues(out))
+
+
+def test_next_input_must_link_real_measurement_decision_and_reject_generic_more_data():
+    req=fx.request(); nxt=req['measurement_plan']['next_inputs'][0]; nxt['decision_ref']='M-NOT-REAL'; nxt['exact_missing_input']='need more data'
+    out=mod.materialize_measurement_authority(fx.legacy_strategy(),req,fx.experiment_result()); nn=out['measurement_authority_v0676']['next_inputs'][0]
+    assert nn['decision_link_status']=='TO_VERIFY'; assert nn['exact_input_status']=='TO_VERIFY'; assert out['measurement_authority_v0676']['next_input_status']=='TO_VERIFY'
+
+
+def test_priority_status_must_be_explicit_active_or_not_needed_not_arbitrary_text():
+    req=fx.request(); req['measurement_plan']['priorities'][1]['status']='SOMETHING'
+    out=mod.materialize_measurement_authority(fx.legacy_strategy(),req,fx.experiment_result()); p1=out['measurement_authority_v0676']['priorities'][1]
+    assert p1['priority_contract_status']=='TO_VERIFY'
+
+
+def test_unknown_lineage_source_cannot_be_hidden_by_valid_metric_source():
+    req=fx.request(); row=req['measurement_plan']['rows'][0]; row['source_refs']=['SRC-NOT-IN-REGISTRY']; row['evidence']=['SRC-NOT-IN-REGISTRY']; row['metric_source_ref']='SRC-MEASURE'
+    out=mod.materialize_measurement_authority(fx.legacy_strategy(),req,fx.experiment_result()); rr=out['measurement_authority_v0676']['measurement_rows'][0]
+    assert rr['metric_source_status']=='READY'; assert rr['lineage_status']=='TO_VERIFY'; assert rr['unresolved_source_refs']==['SRC-NOT-IN-REGISTRY']
+
+
+def test_measurement_plan_ready_does_not_claim_experiment_result_or_causal_learning():
+    out=mod.materialize_measurement_authority(fx.legacy_strategy(),fx.request(),None); auth=out['measurement_authority_v0676']
+    assert auth['status']=='READY'; assert auth['experiment_evidence']==fx.legacy_strategy()['sections']['09_risk_measurement_priority_next_steps']['experiment']; assert auth['boundaries']['measurement_plan_completion_is_not_experiment_success'] is True; assert auth['boundaries']['post_production_learning_status']=='DEFERRED_TO_LEARNING_LOOP_WHEN_REAL_RESULTS_EXIST'
