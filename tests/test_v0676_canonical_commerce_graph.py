@@ -90,6 +90,7 @@ def test_required_missing_fails_closed_without_fabricating(tmp_path):
     node = next(n for n in graph["nodes"] if n["node_id"] == "PRODUCT_TRUTH")
     assert node["authority_ref"] is None
     assert node["authority_sha256"] is None
+    assert str(node.get("why") or "").strip()
 
 
 def test_materialization_is_deterministic(tmp_path):
@@ -100,3 +101,38 @@ def test_materialization_is_deterministic(tmp_path):
     second = (art / "canonical_commerce_graph.json").read_bytes()
     assert one == two
     assert first == second
+
+
+def test_optional_missing_domains_are_to_verify_with_why_not_invented_not_active(tmp_path):
+    art = fixture(tmp_path)
+    for rel in (
+        "culture_context.json", "pricing_economics_authority.json", "listing.json",
+        "video_creator_plan.json", "ad_analysis.json", "feedback_analysis.json",
+        "compliance_report.json", "operator_execution_board.json", "execution_contract.json",
+    ):
+        path = art / rel
+        if path.exists():
+            path.unlink()
+    graph = mod.build_canonical_commerce_graph(art)
+    optional_missing = [n for n in graph["nodes"] if not n["required"] and n["authority_ref"] is None]
+    assert optional_missing
+    assert all(n["status"] == "TO_VERIFY" for n in optional_missing)
+    assert all(str(n.get("why") or "").strip() for n in optional_missing)
+    assert not any(n["status"] == "NOT_ACTIVE" for n in optional_missing)
+
+
+def test_first_class_business_nodes_do_not_fallback_to_strategy_or_seven_agent(tmp_path):
+    art = fixture(tmp_path)
+    for rel in ("listing.json", "ad_analysis.json", "feedback_analysis.json"):
+        (art / rel).unlink()
+    dump(art / "seven_agent_synthesis.json", {
+        "listing": {"title": "must not substitute"},
+        "ads": {"status": "READY"},
+        "reviews": {"status": "READY"},
+    })
+    graph = mod.build_canonical_commerce_graph(art)
+    nodes = {n["node_id"]: n for n in graph["nodes"]}
+    for node_id in ("LISTING_SEARCH", "ADS", "REVIEWS"):
+        assert nodes[node_id]["authority_ref"] is None
+        assert nodes[node_id]["status"] == "TO_VERIFY"
+        assert str(nodes[node_id].get("why") or "").strip()

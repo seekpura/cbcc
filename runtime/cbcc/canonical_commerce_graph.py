@@ -29,7 +29,7 @@ NODE_SPECS: tuple[NodeSpec, ...] = (
     NodeSpec("AUDIENCE_CULTURE", "Audience / Culture / Intersectionality", ("culture_context.json", "strategy_authority.json"), optional=True),
     NodeSpec("ECONOMICS_OFFER", "Economics / Offer", ("pricing_economics_authority.json", "economics.json"), optional=True),
     NodeSpec("STRATEGY", "Strategy", ("strategy_authority.json",)),
-    NodeSpec("LISTING_SEARCH", "Listing / Search", ("listing.json", "listing_compile.json", "strategy_authority.json"), optional=True),
+    NodeSpec("LISTING_SEARCH", "Listing / Search", ("listing.json", "listing_compile.json"), optional=True),
     NodeSpec("CONTENT_MATRIX", "Content Matrix", ("strategy_authority.json",), "/sections/06_platform_content_matrix", optional=True),
     NodeSpec("RACE", "RACE", ("strategy_authority.json",), "/sections/07_race_execution_table", optional=True),
     NodeSpec("CULTURE_CHECK", "Culture Check", ("strategy_authority.json",), "/sections/08_culture_adaptation_checklist", optional=True),
@@ -42,8 +42,8 @@ NODE_SPECS: tuple[NodeSpec, ...] = (
         optional=True,
         children=("IMAGE", "GRAPHIC", "SCENE", "IP", "NEGATIVE", "VIDEO", "CREATOR", "LIVE"),
     ),
-    NodeSpec("ADS", "Ads", ("ad_analysis.json", "paid_campaign_architecture.json", "seven_agent_synthesis.json"), optional=True),
-    NodeSpec("REVIEWS", "Reviews", ("feedback_analysis.json", "seven_agent_synthesis.json"), optional=True),
+    NodeSpec("ADS", "Ads", ("ad_analysis.json", "paid_campaign_architecture.json"), optional=True),
+    NodeSpec("REVIEWS", "Reviews", ("feedback_analysis.json",), optional=True),
     NodeSpec("COMPLIANCE", "Compliance", ("compliance_report.json",), optional=True),
     NodeSpec("MEASUREMENT", "Measurement", ("strategy_authority.json", "experiment_analysis.json"), "/sections/09_risk_measurement_priority_next_steps", optional=True),
     NodeSpec("OPERATIONS", "Operations", ("operator_execution_board.json",), optional=True),
@@ -95,7 +95,12 @@ def _node_payload(artifacts_dir: Path, spec: NodeSpec) -> dict[str, Any]:
         return {
             "node_id": spec.node_id,
             "label": spec.label,
-            "status": "NOT_ACTIVE" if spec.optional else "MISSING_CANONICAL_AUTHORITY",
+            "status": "TO_VERIFY" if spec.optional else "MISSING_CANONICAL_AUTHORITY",
+            "why": (
+                "No dedicated canonical authority object resolved for this domain; upstream must explicitly decide NOT_ACTIVE, MISSING_INPUT or provide the missing authority before downstream projection."
+                if spec.optional
+                else "A required canonical authority object did not resolve; downstream projections must fail closed rather than fabricate or substitute another domain object."
+            ),
             "required": not spec.optional,
             "authority_ref": None,
             "authority_sha256": None,
