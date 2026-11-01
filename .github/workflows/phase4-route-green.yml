@@ -1,0 +1,114 @@
+name: phase4-route-green
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/phase4-route-green.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install focused test dependencies
+        run: python -m pip install -q pytest pyyaml openpyxl
+      - name: Implement shared visual-route scope authority
+        run: |
+          cat > runtime/cbcc/visual_route_scope.py <<'PY'
+          from __future__ import annotations
+
+          from typing import Any, Mapping
+
+
+          VISUAL_PRODUCTION_SURFACES = frozenset({
+              'SEARCH_RESULTS', 'LISTING_PRIMARY', 'PDP_HERO', 'GALLERY', 'PDP', 'LONGFORM', 'A_PLUS',
+              'PDP_VIDEO', 'SHORT_VIDEO', 'CREATOR', 'LIVE', 'PAID_AD', 'SOCIAL_CONTENT', 'STORE_BANNER',
+              'LANDING_PAGE_HERO', 'COMPARISON', 'SPECIFICATION', 'UGC_BRIEF',
+          })
+
+          VISUAL_PRODUCTION_ASSET_TYPES = frozenset({
+              'IMAGE', 'VIDEO', 'MOTION', 'ANIMATION', 'UGC', 'CREATOR', 'LIVE', 'PAGE', 'LANDING_PAGE',
+              'BANNER', 'CAROUSEL', 'INTERACTIVE', 'HTML', 'PDP_VIDEO', 'SHORT_VIDEO',
+          })
+
+
+          def _token(value: Any) -> str:
+              return str(value or '').strip().upper().replace('-', '_').replace(' ', '_')
+
+
+          def is_visual_production_asset(asset: Mapping[str, Any] | None) -> bool:
+              """Return whether an architecture object participates in visual Art Direction.
+
+              Visual authority follows the active delivery route, not only the historical IMAGE/VIDEO
+              asset-type pair. A UGC brief, LIVE object or landing-page object can therefore require
+              Art Direction even when its serializer uses a non-image asset_type.
+              """
+              row = asset if isinstance(asset, Mapping) else {}
+              if row.get('visual_route_active') is False:
+                  return False
+              asset_type = _token(row.get('asset_type'))
+              surface = _token(row.get('surface'))
+              return asset_type in VISUAL_PRODUCTION_ASSET_TYPES or surface in VISUAL_PRODUCTION_SURFACES
+          PY
+
+          python - <<'PY'
+          from pathlib import Path
+
+          patches = [
+              (
+                  Path('runtime/cbcc/agent_art_direction_authority.py'),
+                  'from typing import Any, Mapping\n',
+                  'from typing import Any, Mapping\n\nfrom .visual_route_scope import is_visual_production_asset\n',
+                  "if str(asset.get('asset_type') or '').upper() in {'IMAGE','VIDEO'} and str(asset.get('art_direction_status') or '').upper()!='AUTHORED':",
+                  "if is_visual_production_asset(asset) and str(asset.get('art_direction_status') or '').upper()!='AUTHORED':",
+              ),
+              (
+                  Path('runtime/cbcc/portfolio_visual_authority.py'),
+                  'from typing import Any, Mapping\n',
+                  'from typing import Any, Mapping\n\nfrom .visual_route_scope import is_visual_production_asset\n',
+                  "assets=[a for a in (architecture.get('assets') or []) if str(a.get('asset_type') or '').upper() in {'IMAGE','VIDEO'} and str(a.get('art_direction_status') or '').upper()=='AUTHORED']",
+                  "assets=[a for a in (architecture.get('assets') or []) if is_visual_production_asset(a) and str(a.get('art_direction_status') or '').upper()=='AUTHORED']",
+              ),
+          ]
+
+          for path, import_old, import_new, filter_old, filter_new in patches:
+              text = path.read_text(encoding='utf-8')
+              if 'from .visual_route_scope import is_visual_production_asset' not in text:
+                  if text.count(import_old) != 1:
+                      raise SystemExit(f'{path}: expected one typing import anchor')
+                  text = text.replace(import_old, import_new, 1)
+              if filter_new not in text:
+                  if text.count(filter_old) != 1:
+                      raise SystemExit(f'{path}: expected one historical IMAGE/VIDEO filter')
+                  text = text.replace(filter_old, filter_new, 1)
+              path.write_text(text, encoding='utf-8')
+          PY
+
+          python -m py_compile \
+            runtime/cbcc/visual_route_scope.py \
+            runtime/cbcc/agent_art_direction_authority.py \
+            runtime/cbcc/portfolio_visual_authority.py
+      - name: Focused Phase 4 GREEN plus legacy route regressions
+        run: |
+          pytest -q \
+            tests/test_v0676_phase4_visual_route_art_direction.py \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0632_portfolio_visual_authority.py
+      - name: Commit verified Phase 4 route authority
+        run: |
+          git config user.name 'cbcc-release-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add runtime/cbcc/visual_route_scope.py runtime/cbcc/agent_art_direction_authority.py runtime/cbcc/portfolio_visual_authority.py
+          git commit -m 'feat: GREEN extend Art Direction across visual routes'
+          git push origin HEAD:main
