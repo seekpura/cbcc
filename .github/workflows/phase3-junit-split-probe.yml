@@ -1,0 +1,26 @@
+name: phase3-junit-split-probe
+
+on:
+  push:
+    branches: [phase4-closure-debug]
+    paths: ['.github/workflows/phase3-junit-split-probe.yml']
+  workflow_dispatch:
+
+permissions: {contents: read}
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: 63eab0ab46ce5a251592b1a3363b03b99c3b4adf}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: python -m pip install -q pytest pyyaml pillow
+      - {name: p3-eval, continue-on-error: true, env: {PYTHONPATH: runtime}, run: "pytest -q tests/test_v0676_phase3_opportunity_family_evaluation.py --junitxml=/tmp/a.xml"}
+      - {name: p3-binding, continue-on-error: true, env: {PYTHONPATH: runtime}, run: "pytest -q tests/test_v0676_phase3_opportunity_family_runtime_binding.py --junitxml=/tmp/b.xml"}
+      - {name: universe-regressions, continue-on-error: true, env: {PYTHONPATH: runtime}, run: "pytest -q tests/test_v0662_asset_universe_and_package_regressions.py --junitxml=/tmp/c.xml"}
+      - {name: universe-open, continue-on-error: true, env: {PYTHONPATH: runtime}, run: "pytest -q tests/test_v0655_asset_universe_open_world.py --junitxml=/tmp/d.xml"}
+      - {name: family-no-quota, continue-on-error: true, env: {PYTHONPATH: runtime}, run: "pytest -q tests/test_v0646_asset_family_no_quota.py --junitxml=/tmp/e.xml"}
+      - {name: activation, continue-on-error: true, env: {PYTHONPATH: runtime}, run: "pytest -q tests/test_v0646_activation_state_taxonomy.py --junitxml=/tmp/f.xml"}
+      - {name: workspace, continue-on-error: true, env: {PYTHONPATH: runtime}, run: "pytest -q tests/test_v0633_asset_universe_workspace.py --junitxml=/tmp/g.xml"}
