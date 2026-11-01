@@ -19,6 +19,7 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     from . import pricing_economics_authority as pricing_economics_module
     from . import seven_tool_continuity as seven_tool_module
     from .tools import listing as listing_module
+    from .tools import ads as ads_module
     from .information_audit_authority import (
         wrap_build_master_strategy as wrap_information_audit_strategy,
         wrap_validate_strategy_delivery as wrap_information_audit_validator,
@@ -54,6 +55,12 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         wrap_compile_pricing_economics_for_listing_context,
         wrap_compile_listing,
         wrap_compile_seven_tool_continuity as wrap_listing_search_seven_tool_continuity,
+    )
+    from .ads_optimization_authority import (
+        wrap_compile_pricing_economics_for_ads_context,
+        wrap_analyze_ads,
+        wrap_analyze_ad_portfolio,
+        wrap_compile_seven_tool_continuity as wrap_ads_optimization_seven_tool_continuity,
     )
 
     installed: list[str] = []
@@ -118,12 +125,31 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         )
         installed.append('LISTING_SEARCH_PRICING_CONTEXT_BRIDGE')
 
+    # Ads analysis is also downstream of the final #7 Economics object. Seed a separate request-local
+    # one-use context only when the compiler will actually analyze ad_rows/ad_analysis. This avoids both
+    # stale cross-project state and any compiler.py fork while keeping Ads arithmetic in tools.ads.
+    if not getattr(pricing_economics_module.compile_pricing_economics_authority, '_cbcc_v0676_ads_optimization_context_bridge', False):
+        pricing_economics_module.compile_pricing_economics_authority = wrap_compile_pricing_economics_for_ads_context(
+            pricing_economics_module.compile_pricing_economics_authority
+        )
+        installed.append('ADS_OPTIMIZATION_ECONOMICS_CONTEXT_BRIDGE')
+
     # Listing 2.0 remains the mature field/search/localization compiler. Phase 2 wraps that same compiler;
     # it does not introduce a second copy generator. The wrapper adds first-class publishability, decision
     # density, source lineage and explicit Pricing/Offer handoff in FULL project scope.
     if not getattr(listing_module.compile_listing, '_cbcc_v0676_listing_search_authority', False):
         listing_module.compile_listing = wrap_compile_listing(listing_module.compile_listing)
         installed.append('LISTING_SEARCH_BUSINESS_AUTHORITY')
+
+    # Preserve tools.ads as the only deterministic metrics/diagnosis calculator. Phase 2 enriches its real
+    # result with authored optimization decisions and final Economics/Offer boundaries. Portfolio analysis
+    # suppresses enrichment for its internal analyze_ads calls and consumes the context once at portfolio end.
+    if not getattr(ads_module.analyze_ads, '_cbcc_v0676_ads_optimization_authority', False):
+        ads_module.analyze_ads = wrap_analyze_ads(ads_module.analyze_ads)
+        installed.append('ADS_OPTIMIZATION_BUSINESS_AUTHORITY')
+    if not getattr(ads_module.analyze_ad_portfolio, '_cbcc_v0676_ads_optimization_authority', False):
+        ads_module.analyze_ad_portfolio = wrap_analyze_ad_portfolio(ads_module.analyze_ad_portfolio)
+        installed.append('ADS_OPTIMIZATION_PORTFOLIO_BUSINESS_AUTHORITY')
 
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_economics_offer_authority', False):
         strategy_authority.build_master_strategy = wrap_economics_offer_strategy(strategy_authority.build_master_strategy)
@@ -135,8 +161,8 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_economics_offer_refinement', False):
         delivery_contract.validate_strategy_delivery = wrap_economics_offer_refinement_validator(delivery_contract.validate_strategy_delivery)
 
-    # Seven-tool continuity remains mature. Economics readiness and Listing/Search business readiness are
-    # additive evidence layers; neither arithmetic nor LISTING_CONTRACT_COMPILED may masquerade as FULL readiness.
+    # Seven-tool continuity remains mature. Each commercial authority adds business readiness separately
+    # from legacy calculator/compiler status so a metric calculation can never masquerade as business closure.
     if not getattr(seven_tool_module.compile_seven_tool_continuity, '_cbcc_v0676_economics_offer_authority', False):
         seven_tool_module.compile_seven_tool_continuity = wrap_compile_seven_tool_continuity(
             seven_tool_module.compile_seven_tool_continuity
@@ -147,6 +173,11 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
             seven_tool_module.compile_seven_tool_continuity
         )
         installed.append('SEVEN_TOOL_LISTING_BUSINESS_READINESS_BRIDGE')
+    if not getattr(seven_tool_module.compile_seven_tool_continuity, '_cbcc_v0676_ads_optimization_authority', False):
+        seven_tool_module.compile_seven_tool_continuity = wrap_ads_optimization_seven_tool_continuity(
+            seven_tool_module.compile_seven_tool_continuity
+        )
+        installed.append('SEVEN_TOOL_ADS_BUSINESS_READINESS_BRIDGE')
 
     delivery_export.validate_strategy_delivery = delivery_contract.validate_strategy_delivery
 
@@ -191,6 +222,15 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'EXPLICIT_PRICING_OFFER_TO_LISTING_HANDOFF',
         'TARGET_ENGLISH_DELIVERY_COMPANION_LISTING_CONTINUITY',
         'SEVEN_TOOL_LISTING_BUSINESS_READINESS_BRIDGE',
+        'ADS_OPTIMIZATION_ECONOMICS_CONTEXT_BRIDGE',
+        'ADS_OPTIMIZATION_BUSINESS_AUTHORITY',
+        'ADS_OPTIMIZATION_OBJECTIVE_AUDIENCE_CREATIVE_OFFER_LANDING_CONTRACT',
+        'ADS_OPTIMIZATION_ATTRIBUTION_TEST_REPAIR_LEARNING_CONTRACT',
+        'ADS_OPTIMIZATION_SIX_FIELD_DECISION_DENSITY',
+        'ADS_OPTIMIZATION_REQ088_LINEAGE',
+        'ADS_OPTIMIZATION_INCREMENTALITY_BOUNDARY',
+        'ADS_OPTIMIZATION_ASSET_INDEPENDENT_PHASE2_AUTHORITY',
+        'SEVEN_TOOL_ADS_BUSINESS_READINESS_BRIDGE',
     ]
     return {
         'status':'INSTALLED' if installed else 'ALREADY_INSTALLED',
