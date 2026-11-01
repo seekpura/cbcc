@@ -1,0 +1,142 @@
+{
+  "authority": "CBCC Phase 2 Review Analysis / Root-Cause / Repair consumer accounting",
+  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
+  "requirements": ["REQ-006", "REQ-015", "REQ-040", "REQ-045", "REQ-062", "REQ-087", "REQ-088"],
+  "status": "PHASE2_SUBTASK_VERIFIED_PENDING_MEASUREMENT_HUMAN_K01_RELEASE",
+  "locked_behavior": {
+    "first_class_object": "Customer Review/CS/returns analysis is a first-class Phase 2 business authority independent from asset production review. Mature tools.feedback remains the deterministic aggregation/prioritization engine; the Phase 2 layer adds Agent-authored root-cause hypotheses, smallest responsible repair decisions, local verification and learning handoff.",
+    "eight_class_taxonomy": ["PRODUCT_QUALITY", "EXPECTATION_GAP", "MISUNDERSTANDING", "USAGE_EXPERIENCE", "FIT_SIZE_COMPATIBILITY", "PACKAGE_CONTENTS", "LOGISTICS_SERVICE", "POSITIVE_VALUE"],
+    "repair_row_contract": ["issue_class", "issue_signal", "root_cause_hypothesis", "root_cause_layer", "root_cause_status", "responsible_layer", "repair_action", "repair_scope", "frozen_layers", "why_not_broader_rework", "verification_metric", "success_rule", "failure_rule", "learning_handoff"],
+    "positive_value_contract": ["issue_class", "issue_signal", "decision_type=PRESERVE_LEARN", "preservation_action", "frozen_layers", "verification_metric", "success_rule", "failure_rule", "learning_handoff"],
+    "decision_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
+    "lineage": ["source_refs", "source_type", "recency", "exact_fact_or_explicit_assumption_boundary", "interpretation", "confidence", "downstream_use", "conflict_status", "proof_object"],
+    "evidence_alignment_rule": "When aggregated feedback data exists, an authored Review decision must align to an observed eight-class category. Review counts/categories are evidence signals, not permission to invent a different issue class.",
+    "causal_boundary_rule": "WORKING_HYPOTHESIS and EVIDENCE_SUPPORTED_HYPOTHESIS may be READY when their normal evidence/lineage is complete. Any confirmed/proven causal status additionally requires resolved causal evidence refs and an explicit defensible causal/diagnostic method; review frequency alone never proves root cause.",
+    "responsible_layer_rule": "Communication/expectation issues cannot default to Product Quality changes; Product Quality issues cannot be declared fixed by copy-only repair. repair_scope must be compatible with the issue class and the active responsible layer cannot simultaneously be frozen.",
+    "smallest_repair_rule": "Repair decisions require a bounded repair scope, frozen unrelated layers and an explicit WHY for not broadening the rework. FULL_PROJECT/GLOBAL/ALL_CONTENT style repair defaults cannot satisfy the smallest-repair contract.",
+    "positive_value_rule": "POSITIVE_VALUE is preservation/learning, not a fabricated defect/root-cause. It uses PRESERVE_LEARN and may not be forced through a repair action.",
+    "no_feedback_rule": "An explicit Review Analysis plan may materialize before raw feedback_rows are supplied. Runtime emits NO_CUSTOMER_REVIEW_DATA_SUPPLIED with total=0 and no fabricated counts/rates/root causes; the deterministic feedback aggregator is bypassed for the internal stub and the user's original request is restored.",
+    "production_review_boundary": "Production output QA/review workspace is a separate later execution/revision authority and cannot substitute for customer Review/CS/returns root-cause decisions.",
+    "measurement_boundary": "#11 defines local verify-after-repair fields and learning handoff only. Global A/B, P0/P1/P2, experiment governance and next-input Measurement closure remain Phase 2 subtask 12.",
+    "canonical_rule": "Canonical REVIEWS remains feedback_analysis.json. Production review workspace/execution_contract and Strategy fallback do not replace the first-class customer Review authority."
+  },
+  "consumers": [
+    "runtime/cbcc/tools/feedback.py",
+    "runtime/cbcc/review_analysis_authority.py",
+    "runtime/cbcc/compiler.py",
+    "runtime/cbcc/v0676_phase2_closure.py",
+    "runtime/cbcc/seven_tool_continuity.py",
+    "runtime/cbcc/tools/seven_agent.py",
+    "runtime/cbcc/canonical_commerce_graph.py"
+  ],
+  "runtime_checkpoint_note": "v0676 reuses the already-early compile_pricing_economics_authority call only as a request checkpoint because it occurs before compiler.py's feedback branch. Review Analysis has no semantic Economics dependency.",
+  "proof_objects": [
+    "artifacts/feedback_analysis.json.phase2_review_analysis_authority",
+    "artifacts/feedback_analysis.json.phase2_business_status",
+    "artifacts/feedback_analysis.json.phase2_review_analysis_authority.repair_rows[*].business_contract_status",
+    "artifacts/feedback_analysis.json.phase2_review_analysis_authority.repair_rows[*].density_status",
+    "artifacts/feedback_analysis.json.phase2_review_analysis_authority.repair_rows[*].lineage_status",
+    "artifacts/feedback_analysis.json.phase2_review_analysis_authority.repair_rows[*].evidence_alignment_status",
+    "artifacts/feedback_analysis.json.phase2_review_analysis_authority.repair_rows[*].causal_boundary_status",
+    "artifacts/feedback_analysis.json.phase2_review_analysis_authority.repair_rows[*].root_cause_route_status",
+    "artifacts/feedback_analysis.json.phase2_review_analysis_authority.repair_rows[*].smallest_repair_status",
+    "artifacts/feedback_analysis.json.phase2_review_analysis_authority.verification_boundary",
+    "seven_tool_continuity.capabilities[id=07_REVIEW_ANALYSIS].business_readiness_status",
+    "seven_tool_continuity.review_analysis_integrity",
+    "canonical_commerce_graph.REVIEWS.authority_ref=feedback_analysis.json"
+  ],
+  "regression_tests": [
+    "tests/test_v0676_review_analysis_authority.py",
+    "tests/test_v0676_review_analysis_context_bridge.py",
+    "tests/test_v0676_review_analysis_review_regressions.py",
+    "tests/test_v0676_review_analysis_runtime_binding.py"
+  ],
+  "verification": {
+    "red": [
+      "Initial RED failed during collection with FileNotFoundError for runtime/cbcc/review_analysis_authority.py, proving the first-class Review/root-cause/repair authority was absent rather than a feedback aggregation regression.",
+      "Runtime/context RED produced 7 failed / 1 passed: missing request-context/domain/Seven-tool APIs failed while the existing canonical REVIEWS -> feedback_analysis.json binding already passed.",
+      "Review hardening RED produced 4 failed / 1 passed for observed-class alignment, causal overclaim, repair-scope contradiction and positive-value preservation; production Review metadata already correctly failed to substitute for customer Review authority.",
+      "Final hardening RED produced 2 failed / 5 passed because arbitrary root_cause_status text and freezing the active responsible layer could still false-pass before the final fix."
+    ],
+    "green": "Final fresh focused/cross-scope-isolation verification passed 25/25: core authority 8 + request-context/no-data 6 + runtime/continuity/canonical 4 + review false-pass regressions 7.",
+    "cross_scope": "No repository CI/status workflow was available for the current commit, so prior #10 68/68 is not claimed as rerun. Fresh #11 cross-scope behavior verifies that the temporary Review no-data stub preserves unrelated Listing/Ads request inputs and that the Seven-tool Review wrapper leaves the Ads capability byte-equivalent. GitHub compare from #10 ledger closure b935d639e8e0c8a0e674a4bb916c9c389b347432 through 0656c33bfe6f6b9cfdc23518bea03668a143e81c shows only six #11 files changed; v0676_phase2_closure.py is additive +34/-0 and no Listing/Economics/Ads/Content-Matrix implementation file changed.",
+    "produced_object_inspection": {
+      "ready_repair_fixture": {
+        "status": "READY",
+        "row_status": "READY",
+        "issue_class": "EXPECTATION_GAP",
+        "responsible_layer": "LISTING",
+        "repair_scope": ["LISTING.USAGE_COPY", "FAQ.USAGE_BOUNDARY"],
+        "frozen_layers": ["PRODUCT_TRUTH", "PRICING_OFFER", "UNRELATED_VISUAL_STYLE"],
+        "causal_boundary_status": "READY",
+        "local_repair_verification_contract": "READY",
+        "global_measurement_status": "DEFERRED_PHASE2_SUBTASK_12",
+        "measurement_closure_claimed": false,
+        "issue_count": 0
+      },
+      "negative_scope_contradiction": {
+        "change": "replace bounded Listing/FAQ repair scope with PRODUCT_FORMULA while keeping responsible_layer=LISTING",
+        "status": "TO_VERIFY",
+        "root_cause_route_status": "TO_VERIFY",
+        "issue": "FULL_REVIEW_RESPONSIBLE_LAYER_CONTRADICTION_V0676"
+      },
+      "positive_value_fixture": {
+        "status": "READY",
+        "decision_type": "PRESERVE_LEARN",
+        "smallest_repair_status": "NOT_APPLICABLE_POSITIVE_VALUE",
+        "row_status": "READY"
+      },
+      "no_feedback_fixture": {
+        "status": "NO_CUSTOMER_REVIEW_DATA_SUPPLIED",
+        "summary_total": 0,
+        "phase2_business_status": "READY",
+        "feedback_aggregator_executed": false,
+        "user_request_restored": true
+      }
+    },
+    "runtime_source_readback": "GitHub main confirms v0676_phase2_closure imports tools.feedback, installs the Review request-context checkpoint before compiler feedback analysis, wraps tools.feedback.analyze_feedback, and adds Seven-tool Review business readiness. Package __init__ applies v0676 before callers import compiler.py, so compiler captures the wrapped feedback analyzer.",
+    "scope_diff": "From Phase 2 #10 ledger closure b935d639e8e0c8a0e674a4bb916c9c389b347432 through the final #11 verification commit 0656c33bfe6f6b9cfdc23518bea03668a143e81c, only runtime/cbcc/review_analysis_authority.py, runtime/cbcc/v0676_phase2_closure.py and four #11 test files changed. HTML, compiler.py, Listing, Economics, Ads, Content Matrix, Measurement, K01 and Provider files are untouched.",
+    "human_json_md_html_parity": "PENDING_PHASE6",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11",
+    "provider_actual_output": "E2E_PENDING"
+  },
+  "verified_behavior": [
+    "Feedback aggregation/classification cannot false-pass a missing Agent-authored root-cause/repair decision.",
+    "Every repair decision requires root-cause hypothesis/layer/status, responsible layer, smallest repair scope, frozen unrelated layers, local verification, learning handoff, six-field density and REQ-088 lineage.",
+    "When aggregated feedback exists, the authored issue class must align with an observed eight-class category.",
+    "Review frequency, share or severity never proves causality. Confirmed/proven causal status requires separate causal evidence refs and an explicit approved causal/diagnostic method.",
+    "Communication/expectation issues cannot silently mutate Product Quality, Product Quality issues cannot be copy-only fixes, and repair scope must match the responsible issue domain.",
+    "The active responsible layer cannot also be listed as frozen in the same repair decision.",
+    "Broad FULL_PROJECT/GLOBAL/ALL_CONTENT redesign defaults cannot satisfy smallest-repair readiness.",
+    "POSITIVE_VALUE is modeled as PRESERVE_LEARN with preservation action and learning handoff rather than a fake defect/root-cause repair.",
+    "Unknown source IDs remain unresolved and cannot satisfy Review REQ-088 lineage.",
+    "An explicit Review plan without raw feedback data materializes with zero observed feedback, never fabricated counts or root causes, and restores the original request after the internal stub is consumed.",
+    "Review request context is one-use and exception-safe and does not mutate unrelated Listing/Ads inputs.",
+    "Seven-tool Review Analysis exposes business_readiness_status separately from legacy aggregation status and does not mutate the Ads capability.",
+    "Production output Review/QA cannot substitute for the Phase 2 customer Review/CS/returns business authority.",
+    "Canonical REVIEWS remains feedback_analysis.json, preserving one first-class customer Review authority.",
+    "#11 exposes local verify-after-repair rules while explicitly deferring global Measurement closure to #12."
+  ],
+  "deferred_boundaries": [
+    "Measurement/A-B/P0-P1-P2/next-input closure remains Phase 2 subtask 12; Review Analysis only supplies local repair verification and a learning handoff.",
+    "Production actual-output QA, provider-result review and local production revision remain later execution/review authorities and are not claimed by customer Review Analysis.",
+    "JSON→MD→HTML same-source Human Workspace projection remains Phase 6; no HTML was modified.",
+    "Fresh real K01 FULL remains Phase 10; built-plugin install/readback remains Phase 11.",
+    "Provider Result / actual-output QA remains E2E_PENDING."
+  ],
+  "source_commits": [
+    "e13a30da62c906f280c29ec19b747e0d537a640d",
+    "0c9f67fa94ed60876966dee784a5118172a644d5",
+    "38915f5af9232da791341abef08edba2827c81a5",
+    "853df627115f3e1961bb4787b29cf0ac4a1b5568",
+    "62900a11ae24fa4867f106c08da214d9bb3c90ac",
+    "d9f78c741e9e8815295a5e943b4bfe38003c3296",
+    "d3cb8f9225f916ce122bc2bed14a84bece56a413",
+    "cb235294818c188fd42f0cb17e19b3a9a62eec7d",
+    "2b493f69940452295b46960debbb979dc4c5ac1d",
+    "f1f35377fe6582ad28bb3a0fac91ecbf5bcedf19",
+    "b28c1fe9ba661c01fa7ddaaac23a5bdbe7020e31",
+    "0656c33bfe6f6b9cfdc23518bea03668a143e81c"
+  ]
+}
