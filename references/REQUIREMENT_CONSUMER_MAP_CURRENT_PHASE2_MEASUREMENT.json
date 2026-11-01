@@ -1,0 +1,161 @@
+{
+  "authority": "CBCC Phase 2 Measurement / A-B / P0-P1-P2 / Next-Input consumer accounting",
+  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
+  "requirements": ["REQ-006", "REQ-041", "REQ-045", "REQ-062", "REQ-078", "REQ-088"],
+  "status": "PHASE2_SUBTASK_VERIFIED_PENDING_HUMAN_K01_RELEASE",
+  "locked_behavior": {
+    "first_class_object": "Measurement is a first-class Phase 2 business authority that exists before asset production and before observed experiment success. It defines what will be measured, why, from which source, against which baseline/target, under which isolated test, with which decision rule and next input.",
+    "statistics_engine_rule": "runtime/cbcc/tools/experiment.py remains the deterministic experiment/statistics engine. Phase 2 Measurement consumes experiment output as evidence and never reimplements Wilson intervals, MDE/power, contamination/spillover, cluster/geo, CUPED, sequential or other experiment calculations.",
+    "measurement_row_contract": ["business_question", "decision_object", "hypothesis", "primary_metric", "metric_definition", "desired_direction", "baseline", "target_or_mde", "metric_source_ref", "attribution_method", "observation_window", "analysis_unit", "guardrails", "learning_handoff", "next_decision"],
+    "ab_test_contract": ["test_type", "changed_variable", "held_constants", "variants", "deployment_pool", "randomization_unit", "sample_size_rule", "duration_or_stop_rule", "sequential_monitoring_policy", "success_rule", "failure_rule"],
+    "decision_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
+    "lineage": ["source_refs", "source_type", "recency", "exact_fact_or_explicit_assumption_boundary", "interpretation", "confidence", "downstream_use", "conflict_status", "proof_object"],
+    "metric_truth_rule": "metric_source_ref must resolve in the project source registry. Missing baseline remains missing/None and is never silently defaulted to zero.",
+    "variable_isolation_rule": "The changed variable may not also appear in held_constants; a test must have at least two distinct variants and explicit randomization/deployment/stop/success/failure contracts.",
+    "priority_rule": "P0/P1/P2 are explicit authored decisions in exact order. Priority status is constrained to ACTIVE/NOT_NEEDED/HOLD and each priority decision_ref must resolve to a real unique measurement_id.",
+    "next_input_rule": "Each next-input row must name the exact missing input, owner/source, downstream unblock, trigger and a real measurement decision_ref. Generic placeholders such as 'need more data' do not satisfy readiness.",
+    "id_rule": "measurement_id values are unique within the authority; duplicate identifiers keep the authority TO_VERIFY even if priority/next-input links would otherwise resolve to that duplicated string.",
+    "strategy_projection_rule": "The full lossless authority is stored at strategy_authority.json.measurement_authority_v0676 and section 09 measurement_plan. Existing section09 ab_test_hypotheses remains a backward-compatible projection with id/hypothesis/variable/variants/hold_constant/deployment_pool/metric/guardrail/next_decision_rule plus measurement_authority_ref; legacy auto-generated advisory content is preserved under legacy_advisory_v0676.",
+    "canonical_rule": "Canonical MEASUREMENT prefers strategy_authority.json#/sections/09_risk_measurement_priority_next_steps over experiment_analysis.json. Experiment results are fallback evidence, not the canonical business-plan authority.",
+    "seven_tool_rule": "No eighth Seven-tool capability is created. Measurement is a canonical Strategy/commerce authority and downstream learning input, while the historical seven first-class tools remain unchanged.",
+    "learning_boundary": "Measurement plan completion does not mean experiment success or causal learning. Post-production learning/revision is deferred to runtime/cbcc/learning_loop.py when real results exist.",
+    "phase_boundary": "Human Workspace JSON→MD→HTML projection remains Phase 6; fresh real K01 FULL remains Phase 10; built-plugin readback remains Phase 11; Provider actual-output QA remains E2E_PENDING."
+  },
+  "consumers": [
+    "runtime/cbcc/measurement_authority.py",
+    "runtime/cbcc/strategy_authority.py",
+    "runtime/cbcc/tools/experiment.py",
+    "runtime/cbcc/delivery_contract.py",
+    "runtime/cbcc/v0676_phase2_closure.py",
+    "runtime/cbcc/canonical_commerce_graph.py",
+    "runtime/cbcc/learning_loop.py"
+  ],
+  "proof_objects": [
+    "strategy_authority.json.measurement_authority_v0676",
+    "strategy_authority.json.measurement_authority_v0676.measurement_rows[*].business_contract_status",
+    "strategy_authority.json.measurement_authority_v0676.measurement_rows[*].test_contract_status",
+    "strategy_authority.json.measurement_authority_v0676.measurement_rows[*].density_status",
+    "strategy_authority.json.measurement_authority_v0676.measurement_rows[*].lineage_status",
+    "strategy_authority.json.measurement_authority_v0676.measurement_rows[*].metric_source_status",
+    "strategy_authority.json.measurement_authority_v0676.measurement_id_uniqueness_status",
+    "strategy_authority.json.measurement_authority_v0676.priority_status",
+    "strategy_authority.json.measurement_authority_v0676.next_input_status",
+    "strategy_authority.json.sections.09_risk_measurement_priority_next_steps.measurement_plan",
+    "strategy_authority.json.sections.09_risk_measurement_priority_next_steps.ab_test_hypotheses",
+    "strategy_authority.json.sections.09_risk_measurement_priority_next_steps.priority_plan",
+    "strategy_authority.json.sections.09_risk_measurement_priority_next_steps.next_input_plan",
+    "delivery_contract.measurement_authority_v0676_audit",
+    "canonical_commerce_graph.MEASUREMENT.authority_ref=strategy_authority.json#/sections/09_risk_measurement_priority_next_steps"
+  ],
+  "regression_tests": [
+    "tests/test_v0676_measurement_authority.py",
+    "tests/test_v0676_measurement_runtime_binding.py",
+    "tests/test_v0676_measurement_review_regressions.py"
+  ],
+  "verification": {
+    "red": [
+      "Initial RED failed during collection with FileNotFoundError for runtime/cbcc/measurement_authority.py, proving the first-class Measurement authority was absent rather than an experiment-statistics regression.",
+      "Runtime wiring RED produced 11 passed / 1 failed; the only failure was that v0676_phase2_closure.py had not installed the Measurement Strategy/validator wrappers.",
+      "Decision-contract hardening RED produced 4 failed / 14 passed for missing attribution/observation/analysis/learning fields, unresolved priority decision_ref, generic/unlinked next-input and arbitrary priority status.",
+      "Strategy consumer compatibility RED produced 18 passed / 1 failed because replacing section09 ab_test_hypotheses with full Measurement rows broke its established projection schema.",
+      "Final identity hardening RED produced 1 failed / 20 passed because duplicate measurement_id values could still make priority/next-input refs appear resolvable; sibling-preservation behavior already passed."
+    ],
+    "green": "Final fresh focused verification passed 22/22 after ID uniqueness and canonical binding checks. The final suite covers core authority, Strategy/delivery wiring, decision-contract false-pass guards, backward-compatible section09 projections, duplicate-ID rejection, sibling preservation and canonical Measurement preference.",
+    "cross_scope": "No GitHub CI status or workflow run exists for the final #12 commit, so earlier #10/#11 regression counts are not claimed as rerun. Fresh #12 cross-scope evidence proves Measurement materialization preserves unrelated Strategy 04/06/07 sections plus Review/Economics siblings, canonical MEASUREMENT remains Strategy section09 ahead of experiment_analysis.json, and GitHub compare from #11 ledger closure 3b6eb5bcabb0cfca5eb1783ca98d9b044d9788f1 through 757d97e57101bb436c6b4d8378dde86de926c282 changes only five #12 files with v0676_phase2_closure.py additive +20/-0.",
+    "produced_object_inspection": {
+      "ready_fixture": {
+        "status": "READY",
+        "measurement_id": "M-01",
+        "row_status": "READY",
+        "baseline": 0.21,
+        "target_or_mde": 0.03,
+        "metric_source_ref": "SRC-MEASURE",
+        "attribution_method": "FIRST_PARTY_SESSION_EXPERIMENT",
+        "changed_variable": "FIRST_IMPRESSION_PROPOSITION",
+        "held_constants": ["PRICE", "SKU", "AUDIENCE", "PLACEMENT", "PDP_BODY"],
+        "variants": ["CONTROL_CURRENT_HERO", "VARIANT_SINGLE_PROPOSITION"],
+        "priority_order": ["P0", "P1", "P2"],
+        "priority_status": "READY",
+        "next_input_status": "READY",
+        "next_input_decision_ref": "M-01",
+        "experiment_decision": "INCONCLUSIVE",
+        "post_production_learning_status": "DEFERRED_TO_LEARNING_LOOP_WHEN_REAL_RESULTS_EXIST",
+        "issue_count": 0
+      },
+      "negative_ab_variable_collision": {
+        "change": "add FIRST_IMPRESSION_PROPOSITION to held_constants while it remains the changed_variable",
+        "status": "TO_VERIFY",
+        "issue": "FULL_MEASUREMENT_AB_TEST_CONTRACT_INVALID_V0676"
+      },
+      "negative_priority_link": {
+        "change": "replace P0 decision_ref with M-NOT-REAL",
+        "status": "TO_VERIFY",
+        "decision_link_status": "TO_VERIFY",
+        "issue": "FULL_MEASUREMENT_PRIORITY_PLAN_INCOMPLETE_V0676"
+      },
+      "negative_next_input": {
+        "change": "use generic 'need more data' and unresolved decision_ref",
+        "status": "TO_VERIFY",
+        "exact_input_status": "TO_VERIFY",
+        "decision_link_status": "TO_VERIFY",
+        "issue": "FULL_MEASUREMENT_NEXT_INPUT_PLAN_INCOMPLETE_V0676"
+      },
+      "negative_duplicate_id": {
+        "change": "append a second distinct Measurement decision with measurement_id=M-01",
+        "status": "TO_VERIFY",
+        "measurement_id_uniqueness_status": "TO_VERIFY",
+        "duplicate_measurement_ids": ["M-01"],
+        "issue": "FULL_MEASUREMENT_ID_DUPLICATE_V0676"
+      },
+      "negative_missing_baseline": {
+        "change": "remove baseline",
+        "status": "TO_VERIFY",
+        "baseline": null,
+        "issue": "FULL_MEASUREMENT_BUSINESS_OBJECT_INCOMPLETE_V0676"
+      }
+    },
+    "runtime_source_readback": "GitHub main confirms v0676_phase2_closure installs Measurement only as Strategy/delivery wrappers and contains no SEVEN_TOOL_MEASUREMENT marker. GitHub main canonical_commerce_graph.py lists MEASUREMENT candidates in Strategy-first order: strategy_authority.json then experiment_analysis.json.",
+    "scope_diff": "From Phase 2 #11 ledger closure 3b6eb5bcabb0cfca5eb1783ca98d9b044d9788f1 through final pre-documentation #12 code commit 757d97e57101bb436c6b4d8378dde86de926c282, only runtime/cbcc/measurement_authority.py, runtime/cbcc/v0676_phase2_closure.py and three #12 test files changed. HTML, compiler.py, Listing, Economics, Ads, Review, Content Matrix, K01 and Provider files are untouched.",
+    "ci_status": "NO_GITHUB_COMMIT_STATUS_OR_WORKFLOW_RUN_AVAILABLE_FOR_FINAL_CODE_COMMIT",
+    "human_json_md_html_parity": "PENDING_PHASE6",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11",
+    "provider_actual_output": "E2E_PENDING"
+  },
+  "verified_behavior": [
+    "Legacy Strategy auto-generated A/B suggestions, P0/P1/P2 labels or an existing experiment result cannot false-pass a missing authored Measurement plan.",
+    "Every Measurement row requires metric definition, baseline, target/MDE, resolved metric source, attribution method, observation window, analysis unit, guardrails, learning handoff and next decision plus six-field business density and REQ-088 lineage.",
+    "A/B/Multivariate tests require a named changed variable, held constants, at least two distinct variants, deployment/randomization, sample-size, stop/sequential, success and failure rules.",
+    "The changed variable cannot simultaneously be held constant.",
+    "Missing baseline remains null/missing and never becomes a zero baseline.",
+    "P0/P1/P2 are explicit authored decisions in exact order and each decision_ref must resolve to a unique real Measurement decision.",
+    "Next-input rows must be exact, owned, linked to a real Measurement decision and tied to a downstream unblock/trigger; generic 'need more data' placeholders remain TO_VERIFY.",
+    "Duplicate measurement_id values are rejected even when downstream refs would otherwise resolve to the duplicated string.",
+    "Experiment output is preserved byte-for-business-semantics as evidence and is not recalculated by Measurement authority or promoted into a missing business plan.",
+    "Measurement plan READY does not imply experiment success, causal learning or post-production Strategy revision.",
+    "The full Measurement authority is lossless while Strategy section09 preserves its existing AB/priorities projection schema and legacy advisory content.",
+    "Measurement materialization preserves unrelated Strategy, Review and Economics sibling authorities.",
+    "Canonical MEASUREMENT prefers Strategy section09 over experiment_analysis.json.",
+    "No eighth Seven-tool capability is created.",
+    "Post-production learning remains deferred to learning_loop.py when actual measured results exist."
+  ],
+  "deferred_boundaries": [
+    "JSON→MD→HTML same-source Human Workspace projection remains Phase 6; no HTML was modified.",
+    "Fresh real K01 FULL remains Phase 10.",
+    "Built-plugin install/readback remains Phase 11.",
+    "Provider Result / actual-output QA remains E2E_PENDING.",
+    "Post-production strategy learning/revision remains runtime/cbcc/learning_loop.py and requires real result evidence; Phase 2 Measurement readiness alone does not claim it has run."
+  ],
+  "source_commits": [
+    "2a17903ce8f8aa0fb7f88f7692b811a9824bdebd",
+    "1f4b17929e1f5224829dae671f83dd16383b6de9",
+    "d9293204152d30915de4ce9d2c8e9d7fbb9a6182",
+    "690a21a6e78e500d2832e226a6379d0789c8d1de",
+    "e1e023ed8323aaf68f3913c6d5d277568d569b5c",
+    "c15b6ca99dec1227395a621cf2fb4bbedbd1c79a",
+    "104ae530cdf6af93d58919d1b82876360315f14d",
+    "e308978a7a2329f6198bf00769a58f3ae6fb29ba",
+    "dc47248ee17156e11d16e9e83808fb9dc429b887",
+    "757d97e57101bb436c6b4d8378dde86de926c282"
+  ]
+}
