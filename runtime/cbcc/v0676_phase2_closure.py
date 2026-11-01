@@ -18,6 +18,7 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     from . import delivery_export
     from . import pricing_economics_authority as pricing_economics_module
     from . import seven_tool_continuity as seven_tool_module
+    from .tools import listing as listing_module
     from .information_audit_authority import (
         wrap_build_master_strategy as wrap_information_audit_strategy,
         wrap_validate_strategy_delivery as wrap_information_audit_validator,
@@ -45,6 +46,10 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         wrap_validate_strategy_delivery as wrap_economics_offer_refinement_validator,
     )
     from .economics_offer_seven_tool_bridge import wrap_compile_seven_tool_continuity
+    from .listing_search_authority import (
+        wrap_compile_listing,
+        wrap_compile_seven_tool_continuity as wrap_listing_search_seven_tool_continuity,
+    )
 
     installed: list[str] = []
 
@@ -90,6 +95,13 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         )
         installed.append('ECONOMICS_OFFER_LINEAGE_AND_BREAK_EVEN_REFINEMENT')
 
+    # Listing 2.0 remains the mature field/search/localization compiler. Phase 2 wraps that same compiler;
+    # it does not introduce a second copy generator. The wrapper adds first-class publishability, decision
+    # density, source lineage and explicit Pricing/Offer handoff when a FULL project supplies phase2_context.
+    if not getattr(listing_module.compile_listing, '_cbcc_v0676_listing_search_authority', False):
+        listing_module.compile_listing = wrap_compile_listing(listing_module.compile_listing)
+        installed.append('LISTING_SEARCH_BUSINESS_AUTHORITY')
+
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_economics_offer_authority', False):
         strategy_authority.build_master_strategy = wrap_economics_offer_strategy(strategy_authority.build_master_strategy)
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_economics_offer_refinement', False):
@@ -100,13 +112,18 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_economics_offer_refinement', False):
         delivery_contract.validate_strategy_delivery = wrap_economics_offer_refinement_validator(delivery_contract.validate_strategy_delivery)
 
-    # Seven-tool continuity remains mature; only its Economics evidence status is enriched so calculation
-    # readiness cannot masquerade as Pricing/Offer business readiness.
+    # Seven-tool continuity remains mature. Economics readiness and Listing/Search business readiness are
+    # additive evidence layers; neither arithmetic nor LISTING_CONTRACT_COMPILED may masquerade as FULL readiness.
     if not getattr(seven_tool_module.compile_seven_tool_continuity, '_cbcc_v0676_economics_offer_authority', False):
         seven_tool_module.compile_seven_tool_continuity = wrap_compile_seven_tool_continuity(
             seven_tool_module.compile_seven_tool_continuity
         )
         installed.append('SEVEN_TOOL_ECONOMICS_BUSINESS_READINESS_BRIDGE')
+    if not getattr(seven_tool_module.compile_seven_tool_continuity, '_cbcc_v0676_listing_search_authority', False):
+        seven_tool_module.compile_seven_tool_continuity = wrap_listing_search_seven_tool_continuity(
+            seven_tool_module.compile_seven_tool_continuity
+        )
+        installed.append('SEVEN_TOOL_LISTING_BUSINESS_READINESS_BRIDGE')
 
     delivery_export.validate_strategy_delivery = delivery_contract.validate_strategy_delivery
 
@@ -135,6 +152,13 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'ECONOMICS_REQ088_LINEAGE_REFINEMENT',
         'ZERO_CONTRIBUTION_BREAK_EVEN_BASELINE_NOT_OPERATING_BOUNDARY',
         'SEVEN_TOOL_ECONOMICS_BUSINESS_READINESS_BRIDGE',
+        'LISTING_SEARCH_BUSINESS_AUTHORITY',
+        'LISTING_SEARCH_NINE_OBJECT_DECISION_DENSITY',
+        'LISTING_SEARCH_REQ088_LINEAGE',
+        'SEARCH_EVIDENCE_SOURCE_BINDING',
+        'EXPLICIT_PRICING_OFFER_TO_LISTING_HANDOFF',
+        'TARGET_ENGLISH_DELIVERY_COMPANION_LISTING_CONTINUITY',
+        'SEVEN_TOOL_LISTING_BUSINESS_READINESS_BRIDGE',
     ]
     return {
         'status':'INSTALLED' if installed else 'ALREADY_INSTALLED',
