@@ -78,3 +78,18 @@ def test_checkpoint_exception_clears_prior_review_context():
     with pytest.raises(RuntimeError): bad(req)
     safe=mod.wrap_analyze_feedback(lambda rows:{'status':'AGGREGATED_FROM_CLASSIFIED_INPUT'})
     assert 'phase2_review_analysis_authority' not in safe([])
+
+
+def test_review_no_data_stub_preserves_unrelated_listing_and_ads_request_inputs():
+    from copy import deepcopy
+    req=fx.request()
+    req['listing_input']={'fields':{'title':'keep-me'}}
+    req['ad_analysis']={'ad_data':{'impressions':100,'clicks':5}}
+    expected_listing=deepcopy(req['listing_input']); expected_ads=deepcopy(req['ad_analysis'])
+    seed=mod.wrap_compile_request_checkpoint_for_review_context(lambda request,*a,**k:{'status':'READY'})
+    analyze=mod.wrap_analyze_feedback(lambda rows: (_ for _ in ()).throw(AssertionError('no-data stub must bypass aggregator')))
+    seed(req)
+    analyze(req['feedback_rows'])
+    assert req['listing_input']==expected_listing
+    assert req['ad_analysis']==expected_ads
+    assert 'feedback_rows' not in req
