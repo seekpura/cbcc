@@ -64,3 +64,15 @@ def test_explicit_ads_optimization_without_performance_data_materializes_no_data
     assert out['status']=='NO_AD_PERFORMANCE_DATA_SUPPLIED'
     assert out['phase2_business_status']=='READY'
     assert out['phase2_ads_optimization_authority']['performance_analysis']['status']=='NO_AD_PERFORMANCE_DATA_SUPPLIED'
+
+
+def test_empty_ad_data_uses_no_performance_route_and_restores_user_supplied_ad_analysis_config():
+    req=fx.request(); original={'ad_data':{},'price':59,'thresholds':{'roas_floor':3.0}}
+    req['ad_analysis']=dict(original)
+    p=mod.wrap_compile_pricing_economics_for_ads_context(lambda request, market_analysis=None, legacy_economics=None: fx.pricing())
+    p(req,None,None)
+    assert req['ad_analysis']['_phase2_no_performance_data'] is True
+    a=mod.wrap_analyze_ads(lambda *args,**kwargs: (_ for _ in ()).throw(AssertionError('empty ad_data is not performance data')))
+    out=a({})
+    assert out['status']=='NO_AD_PERFORMANCE_DATA_SUPPLIED'
+    assert req['ad_analysis']==original
