@@ -61,8 +61,8 @@ def test_semantic_camera_or_view_alone_does_not_activate_scene_derived_photograp
 
     result = validate_portfolio_differentiation(architecture, direction)
 
-    assert result['status'] == 'PASS', result
     assert result['photography_asset_count_reviewed'] == 0, result
+    assert result['status'] == 'PASS', result
     assert not any(
         issue['type'] == 'MISSING_SCENE_DERIVED_PHOTOGRAPHY_EXECUTION'
         for issue in result['issues']
