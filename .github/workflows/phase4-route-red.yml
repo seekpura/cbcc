@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - 'tests/test_v0676_phase4_visual_route_art_direction.py'
+      - 'runtime/cbcc/strategy_culture_completion_v0670.py'
+      - 'runtime/cbcc/agent_art_direction_authority.py'
+      - 'runtime/cbcc/portfolio_visual_authority.py'
       - '.github/workflows/phase4-route-red.yml'
   workflow_dispatch:
 
