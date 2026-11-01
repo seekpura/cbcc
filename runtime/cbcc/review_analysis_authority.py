@@ -6,11 +6,16 @@ from typing import Any, Mapping
 import re
 
 DENSITY_FIELDS=('what','why','evidence','tradeoff','execution','measurement')
-BUSINESS_FIELDS=(
+REPAIR_BUSINESS_FIELDS=(
     'issue_class','issue_signal','root_cause_hypothesis','root_cause_layer','root_cause_status',
     'responsible_layer','repair_action','repair_scope','frozen_layers','why_not_broader_rework',
     'verification_metric','success_rule','failure_rule','learning_handoff',
 )
+POSITIVE_BUSINESS_FIELDS=(
+    'issue_class','issue_signal','decision_type','preservation_action','frozen_layers',
+    'verification_metric','success_rule','failure_rule','learning_handoff',
+)
+BUSINESS_FIELDS=REPAIR_BUSINESS_FIELDS
 _FULL_DENY={'TASK_SCOPED','TASK_SCOPE','PARTIAL','NOT_FULL','NON_FULL','SCOPED','MINIMAL'}
 _FULL_EXACT={'FULL','FULL_PROJECT','FULL_DELIVERY','FULL_PACKAGE','FULL_COMMERCE','FULL_STRATEGY','FULL_WORKSPACE','FULL_E2E','END_TO_END','COMPLETE_DELIVERY','COMPLETE_PROJECT','完整交付','全量交付','完整项目','全量项目'}
 
@@ -30,6 +35,24 @@ ALLOWED_RESPONSIBLE={
     'POSITIVE_VALUE':{'LISTING','IMAGE','VISUAL','PROOF','CREATOR','PRODUCT_STRATEGY'},
 }
 BROAD_REPAIR_TOKENS={'FULL_PROJECT','FULL_PROJECT_REDESIGN','FULL_REDESIGN','GLOBAL_REDESIGN','ALL_ASSETS','ALL_CONTENT','EVERYTHING'}
+LEGACY_CLASS_MAP={
+    'PRODUCT_DEFECT':'PRODUCT_QUALITY','TEXTURE':'PRODUCT_QUALITY','EXPECTATION_GAP':'EXPECTATION_GAP',
+    'MISUNDERSTANDING':'MISUNDERSTANDING','PARAMETER_CONFUSION':'MISUNDERSTANDING',
+    'USAGE_DIFFICULTY':'USAGE_EXPERIENCE','SIZE':'FIT_SIZE_COMPATIBILITY','COMPATIBILITY':'FIT_SIZE_COMPATIBILITY',
+    'PACKAGE_CONFUSION':'PACKAGE_CONTENTS','LOGISTICS':'LOGISTICS_SERVICE','CUSTOMER_SERVICE':'LOGISTICS_SERVICE',
+    'PRAISE':'POSITIVE_VALUE','POSITIVE':'POSITIVE_VALUE','POSITIVE_VALUE':'POSITIVE_VALUE',
+}
+SCOPE_PREFIXES={
+    'PRODUCT_QUALITY':('PRODUCT','QUALITY'),
+    'EXPECTATION_GAP':('LISTING','IMAGE','VISUAL','CREATOR','FAQ','CX'),
+    'MISUNDERSTANDING':('LISTING','IMAGE','VISUAL','FAQ','CX'),
+    'USAGE_EXPERIENCE':('LISTING','VIDEO','CX','USAGE','FAQ'),
+    'FIT_SIZE_COMPATIBILITY':('LISTING','IMAGE','SCALE','ATTRIBUTE','CX'),
+    'PACKAGE_CONTENTS':('LISTING','IMAGE','PACKAGE','CX'),
+    'LOGISTICS_SERVICE':('FULFILLMENT','CX','LOGISTICS','SERVICE'),
+}
+CAUSAL_STATUS_TOKENS={'CONFIRMED_CAUSE','CAUSAL_CONFIRMED','PROVEN_CAUSE','VERIFIED_CAUSE'}
+CAUSAL_METHODS={'CONTROLLED_EXPERIMENT','HOLDOUT','DIAGNOSTIC_CONFIRMATION','RETURN_INSPECTION','QUALITY_INVESTIGATION'}
 
 
 def _p(v:Any)->bool: return v not in (None,'',[],{})
@@ -110,8 +133,48 @@ def _review_rows(request:Mapping[str,Any])->list[Any]:
     if isinstance(obj,Mapping):return _l(obj.get('rows') or obj.get('decisions') or obj.get('repair_rows'))
     return _l(obj)
 
+def _legacy_class(value:Any)->str:
+    token=str(value or '').upper()
+    return LEGACY_CLASS_MAP.get(token,token if token in REVIEW_EIGHT_CLASSES else '')
+
+def _observed_classes(legacy:Mapping[str,Any])->set[str]:
+    out=set()
+    for row in _l(legacy.get('issues')):
+        if isinstance(row,Mapping):
+            c=_legacy_class(row.get('category') or row.get('issue_class'))
+            if c:out.add(c)
+    for key in _d(_d(legacy.get('summary')).get('categories')).keys():
+        c=_legacy_class(key)
+        if c:out.add(c)
+    return out
+
+def _evidence_alignment_status(src:Mapping[str,Any],legacy:Mapping[str,Any])->tuple[str,list[str]]:
+    observed=_observed_classes(legacy)
+    if not observed:
+        return ('NOT_APPLICABLE_NO_AGGREGATED_FEEDBACK',[])
+    cls=str(src.get('issue_class') or '').upper()
+    if cls in observed:return ('READY',[])
+    return ('TO_VERIFY',['issue_class_not_observed_in_aggregated_feedback'])
+
+def _causal_boundary_status(src:Mapping[str,Any],sources:Mapping[str,Mapping[str,Any]])->tuple[str,list[str]]:
+    if str(src.get('issue_class') or '').upper()=='POSITIVE_VALUE':
+        return ('NOT_APPLICABLE_POSITIVE_VALUE',[])
+    status=str(src.get('root_cause_status') or '').upper()
+    if status not in CAUSAL_STATUS_TOKENS:
+        return ('READY',[])
+    refs=[str(x) for x in _l(src.get('causal_evidence_refs')) if _p(x)]
+    unresolved=[x for x in refs if x not in sources]
+    method=str(src.get('causal_method') or '').upper()
+    gaps=[]
+    if not refs:gaps.append('causal_evidence_refs')
+    if unresolved:gaps.append('unresolved_causal_evidence_refs')
+    if method not in CAUSAL_METHODS:gaps.append('causal_method')
+    return ('READY' if not gaps else 'TO_VERIFY',gaps)
+
 def _route_status(src:Mapping[str,Any])->tuple[str,list[str]]:
     cls=str(src.get('issue_class') or '').upper()
+    if cls=='POSITIVE_VALUE':
+        return ('NOT_APPLICABLE_POSITIVE_VALUE',[])
     responsible=str(src.get('responsible_layer') or '').upper()
     root_layer=str(src.get('root_cause_layer') or '').upper()
     gaps=[]
@@ -122,9 +185,15 @@ def _route_status(src:Mapping[str,Any])->tuple[str,list[str]]:
         gaps.append('communication_issue_cannot_default_to_product_change_without_separate_defect_evidence')
     if cls=='PRODUCT_QUALITY' and responsible in {'LISTING','IMAGE','VISUAL','FAQ','CREATOR','CX'}:
         gaps.append('product_quality_issue_cannot_be_repaired_by_communication_only')
+    scope=[str(x).upper() for x in _l(src.get('repair_scope')) if _p(x)]
+    prefixes=SCOPE_PREFIXES.get(cls,())
+    if scope and prefixes and any(not any(item.startswith(prefix) or prefix in item for prefix in prefixes) for item in scope):
+        gaps.append('repair_scope_not_supported_by_issue_class')
     return ('READY' if not gaps else 'TO_VERIFY',gaps)
 
 def _smallest_repair_status(src:Mapping[str,Any])->tuple[str,list[str]]:
+    if str(src.get('issue_class') or '').upper()=='POSITIVE_VALUE':
+        return ('NOT_APPLICABLE_POSITIVE_VALUE',[])
     gaps=[]
     scope=[str(x).upper() for x in _l(src.get('repair_scope')) if _p(x)]
     frozen=[str(x).upper() for x in _l(src.get('frozen_layers')) if _p(x)]
@@ -134,17 +203,24 @@ def _smallest_repair_status(src:Mapping[str,Any])->tuple[str,list[str]]:
     if any(any(token in item for token in BROAD_REPAIR_TOKENS) for item in scope):gaps.append('broad_rework_not_smallest_repair')
     return ('READY' if not gaps else 'TO_VERIFY',gaps)
 
-def _normalize_row(raw:Any,i:int,sources:Mapping[str,Mapping[str,Any]])->dict[str,Any]:
+def _normalize_row(raw:Any,i:int,sources:Mapping[str,Mapping[str,Any]],legacy:Mapping[str,Any])->dict[str,Any]:
     src=_d(raw); out=deepcopy(src)
     out.setdefault('review_decision_id',f'REV-ROOT-{i+1:02d}')
-    gaps=[k for k in BUSINESS_FIELDS if not _p(src.get(k))]
+    cls=str(src.get('issue_class') or '').upper()
+    out.setdefault('decision_type','PRESERVE_LEARN' if cls=='POSITIVE_VALUE' else 'REPAIR')
+    required=POSITIVE_BUSINESS_FIELDS if cls=='POSITIVE_VALUE' else REPAIR_BUSINESS_FIELDS
+    gaps=[k for k in required if not _p(out.get(k))]
+    if cls=='POSITIVE_VALUE' and str(out.get('decision_type') or '').upper()!='PRESERVE_LEARN':gaps.append('decision_type=PRESERVE_LEARN')
     out['business_contract_gaps']=gaps
     out['business_contract_status']='READY' if not gaps else 'TO_VERIFY'
     den,dg=_density(src); out['density_status']=den; out['density_gaps']=dg
     for k,v in _lineage(src,sources,f'review_analysis_authority.repair_rows[{i}]').items():out[k]=deepcopy(v)
-    rs,rg=_route_status(src); out['root_cause_route_status']=rs; out['root_cause_route_gaps']=rg
-    ss,sg=_smallest_repair_status(src); out['smallest_repair_status']=ss; out['smallest_repair_gaps']=sg
-    out['row_status']='READY' if all(out.get(k)=='READY' for k in ('business_contract_status','density_status','lineage_status','root_cause_route_status','smallest_repair_status')) else 'TO_VERIFY'
+    ea,eg=_evidence_alignment_status(src,legacy); out['evidence_alignment_status']=ea; out['evidence_alignment_gaps']=eg
+    cb,cg=_causal_boundary_status(src,sources); out['causal_boundary_status']=cb; out['causal_boundary_gaps']=cg
+    rs,rg=_route_status(out); out['root_cause_route_status']=rs; out['root_cause_route_gaps']=rg
+    ss,sg=_smallest_repair_status(out); out['smallest_repair_status']=ss; out['smallest_repair_gaps']=sg
+    ok={'READY','NOT_APPLICABLE_POSITIVE_VALUE','NOT_APPLICABLE_NO_AGGREGATED_FEEDBACK'}
+    out['row_status']='READY' if all(out.get(k) in ok for k in ('business_contract_status','density_status','lineage_status','evidence_alignment_status','causal_boundary_status','root_cause_route_status','smallest_repair_status')) else 'TO_VERIFY'
     return out
 
 def review_analysis_issues(authority:Mapping[str,Any])->list[dict[str,Any]]:
@@ -152,13 +228,18 @@ def review_analysis_issues(authority:Mapping[str,Any])->list[dict[str,Any]]:
     rows=[x for x in _l(auth.get('repair_rows')) if isinstance(x,Mapping)]
     if not rows:issues.append({'code':'FULL_REVIEW_ROOT_CAUSE_REPAIR_DECISION_MISSING_V0676'})
     for i,row in enumerate(rows):
-        if row.get('business_contract_status')!='READY':issues.append({'code':'FULL_REVIEW_ROOT_CAUSE_REPAIR_OBJECT_INCOMPLETE_V0676','row':i,'fields':row.get('business_contract_gaps') or list(BUSINESS_FIELDS)})
+        if row.get('business_contract_status')!='READY':issues.append({'code':'FULL_REVIEW_ROOT_CAUSE_REPAIR_OBJECT_INCOMPLETE_V0676','row':i,'fields':row.get('business_contract_gaps') or []})
         if row.get('density_status')!='READY':issues.append({'code':'FULL_REVIEW_DECISION_DENSITY_INCOMPLETE_V0676','row':i,'fields':row.get('density_gaps') or list(DENSITY_FIELDS)})
         if row.get('lineage_status')!='READY':issues.append({'code':'FULL_REVIEW_LINEAGE_INCOMPLETE_V0676','row':i,'fields':row.get('lineage_gaps') or []})
-        if row.get('root_cause_route_status')!='READY':
+        if row.get('evidence_alignment_status') not in {'READY','NOT_APPLICABLE_NO_AGGREGATED_FEEDBACK'}:
+            issues.append({'code':'FULL_REVIEW_EVIDENCE_CLASS_ALIGNMENT_INCOMPLETE_V0676','row':i,'fields':row.get('evidence_alignment_gaps') or []})
+        if row.get('causal_boundary_status') not in {'READY','NOT_APPLICABLE_POSITIVE_VALUE'}:
+            issues.append({'code':'FULL_REVIEW_CAUSAL_ROOT_CAUSE_OVERCLAIM_V0676','row':i,'fields':row.get('causal_boundary_gaps') or []})
+        if row.get('root_cause_route_status') not in {'READY','NOT_APPLICABLE_POSITIVE_VALUE'}:
             code='FULL_REVIEW_PRODUCT_DEFECT_COPY_ONLY_REPAIR_V0676' if 'product_quality_issue_cannot_be_repaired_by_communication_only' in (row.get('root_cause_route_gaps') or []) else 'FULL_REVIEW_RESPONSIBLE_LAYER_CONTRADICTION_V0676'
             issues.append({'code':code,'row':i,'fields':row.get('root_cause_route_gaps') or []})
-        if row.get('smallest_repair_status')!='READY':issues.append({'code':'FULL_REVIEW_SMALLEST_REPAIR_ROUTE_INCOMPLETE_V0676','row':i,'fields':row.get('smallest_repair_gaps') or []})
+        if row.get('smallest_repair_status') not in {'READY','NOT_APPLICABLE_POSITIVE_VALUE'}:
+            issues.append({'code':'FULL_REVIEW_SMALLEST_REPAIR_ROUTE_INCOMPLETE_V0676','row':i,'fields':row.get('smallest_repair_gaps') or []})
     dedup=[]
     for x in issues:
         if x not in dedup:dedup.append(x)
@@ -168,7 +249,7 @@ def materialize_review_analysis_authority(legacy_feedback:Mapping[str,Any],reque
     base=deepcopy(dict(legacy_feedback or {})); req=_d(request)
     if not _is_full(req,base):return base
     sources=_source_index(req)
-    rows=[_normalize_row(x,i,sources) for i,x in enumerate(_review_rows(req)) if isinstance(x,Mapping)]
+    rows=[_normalize_row(x,i,sources,base) for i,x in enumerate(_review_rows(req)) if isinstance(x,Mapping)]
     local_verify_ready=bool(rows) and all(_p(r.get('verification_metric')) and _p(r.get('success_rule')) and _p(r.get('failure_rule')) for r in rows)
     authority={
         'schema':'cbcc-review-analysis-authority-v0.6.76',
