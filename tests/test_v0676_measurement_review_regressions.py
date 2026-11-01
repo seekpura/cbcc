@@ -54,3 +54,30 @@ def test_strategy_section09_keeps_legacy_ab_projection_schema_while_full_authori
     required={'id','hypothesis','variable','variants','hold_constant','deployment_pool','metric','guardrail','next_decision_rule','measurement_authority_ref'}
     assert required.issubset(row); assert row['id']=='M-01'; assert row['measurement_authority_ref']=='M-01'; assert out['measurement_authority_v0676']['measurement_rows'][0]['attribution_method']=='FIRST_PARTY_SESSION_EXPERIMENT'
     assert s9['legacy_advisory_v0676']['ab_test_hypotheses'][0]['id']=='AB-HERO-PROP'; assert s9['priority_plan']['P0'][0]['measure']==s9['priority_plan']['P0'][0]['measurement']
+
+
+def test_duplicate_measurement_ids_cannot_false_pass_priority_and_next_input_links():
+    req=fx.request()
+    duplicate=dict(req['measurement_plan']['rows'][0])
+    duplicate['business_question']='Second distinct measurement question'
+    duplicate['hypothesis']='Second hypothesis sharing an invalid duplicate identifier.'
+    req['measurement_plan']['rows'].append(duplicate)
+    out=mod.materialize_measurement_authority(fx.legacy_strategy(),req,fx.experiment_result())
+    auth=out['measurement_authority_v0676']
+    assert auth['measurement_id_uniqueness_status']=='TO_VERIFY'
+    assert any(x['code']=='FULL_MEASUREMENT_ID_DUPLICATE_V0676' for x in mod.measurement_issues(out))
+
+
+def test_measurement_materialization_preserves_unrelated_strategy_siblings():
+    base=fx.legacy_strategy()
+    base['sections']['04_marketing_core_strategy']={'marker':'KEEP-CORE'}
+    base['sections']['06_platform_content_matrix']=[{'marker':'KEEP-CONTENT'}]
+    base['sections']['07_race_execution_table']=[{'marker':'KEEP-RACE'}]
+    base['review_analysis_authority_v0676']={'marker':'KEEP-REVIEW'}
+    base['phase2_economics_offer_authority']={'marker':'KEEP-ECON'}
+    out=mod.materialize_measurement_authority(base,fx.request(),fx.experiment_result())
+    assert out['sections']['04_marketing_core_strategy']=={'marker':'KEEP-CORE'}
+    assert out['sections']['06_platform_content_matrix']==[{'marker':'KEEP-CONTENT'}]
+    assert out['sections']['07_race_execution_table']==[{'marker':'KEEP-RACE'}]
+    assert out['review_analysis_authority_v0676']=={'marker':'KEEP-REVIEW'}
+    assert out['phase2_economics_offer_authority']=={'marker':'KEEP-ECON'}
