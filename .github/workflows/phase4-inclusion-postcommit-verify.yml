@@ -25,9 +25,29 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pytest pyyaml
-      - name: Independent cross-scope verification
+      - name: Diagnose seven-agent runtime and isolated reference continuity
+        run: |
+          python - <<'PY'
+          import inspect
+          import cbcc.tools.seven_agent as s
+          print('seven_agent_file=', s.__file__)
+          source=inspect.getsource(s.compile_seven_agent_synthesis)
+          print('product_sources_in_source=', "'product_sources'" in source)
+          syn=s.compile_seven_agent_synthesis(
+              domain={'market':{'status':'READY'},'economics':{'status':'READY','currency':'MYR'},'listing':{'status':'READY','compiled':{'objection_resolution_plan':[{'objection':'x'}]}},'ads':{'status':'READY','diagnosis':[{'route':'CLICK_PACKAGE'}]},'feedback':{'status':'READY','issues':[{'category':'MISUNDERSTANDING'}]}},
+              architecture={'assets':[{'asset_id':'A','asset_type':'IMAGE','decision_origin':'FEEDBACK_SIGNAL'}]},
+              video_plan={'assets':[{'asset_id':'V'}]},
+              paid_campaigns={'campaigns':[{'id':'C'}]},
+              source_product_assets=[{'asset_id':'P','source_usage':'DESIGN_REFERENCE'}],
+          )
+          print('asset_inputs=', syn.get('asset_inputs'))
+          assert syn['asset_inputs']['product_sources']['default_usage']=='DESIGN_REFERENCE'
+          PY
+          pytest -q tests/test_reference_guided_optional_prompt_and_capability_continuity.py::test_seven_first_class_capabilities_are_synthesized_from_real_outputs
+      - name: Independent cross-scope verification with reference continuity first
         run: |
           pytest -q \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py \
             tests/test_v0676_phase4_inclusion_execution_authority.py \
             tests/test_v0676_intersectionality_culture_authority.py \
             tests/test_v0670_human_projection_integrity.py \
@@ -36,7 +56,6 @@ jobs:
             tests/test_v0676_phase4_visual_master_authority.py \
             tests/test_v0676_phase4_visual_master_runtime_binding.py \
             tests/test_v0635_native_reference_provider_integrity.py \
-            tests/test_v0646_subject_*.py \
-            tests/test_reference_guided_optional_prompt_and_capability_continuity.py
+            tests/test_v0646_subject_*.py
       - name: Produced-object inspection
         run: python .github/phase4_verify_inclusion.py
