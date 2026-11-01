@@ -16,6 +16,7 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     from . import strategy_authority
     from . import delivery_contract
     from . import delivery_export
+    from . import pricing_economics_authority as pricing_economics_module
     from .information_audit_authority import (
         wrap_build_master_strategy as wrap_information_audit_strategy,
         wrap_validate_strategy_delivery as wrap_information_audit_validator,
@@ -31,6 +32,11 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     from .strategy_framework_authority import (
         wrap_build_master_strategy as wrap_strategy_framework_strategy,
         wrap_validate_strategy_delivery as wrap_strategy_framework_validator,
+    )
+    from .economics_offer_authority import (
+        wrap_compile_pricing_economics_authority,
+        wrap_build_master_strategy as wrap_economics_offer_strategy,
+        wrap_validate_strategy_delivery as wrap_economics_offer_validator,
     )
 
     installed: list[str] = []
@@ -53,15 +59,25 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_intersectionality_culture_authority', False):
         delivery_contract.validate_strategy_delivery = wrap_intersectionality_culture_validator(delivery_contract.validate_strategy_delivery)
 
-    # Mature v0.6.69/v0.6.70 rows may contain framework definitions and generic measurement defaults.
-    # Keep those rows as descriptive context, but require an explicit current-project changed decision
-    # plus six-field density before APPLIED/NOT_NEEDED is considered complete. Missing VP/RACE evidence
-    # remains TO_VERIFY rather than being invented by Runtime.
     if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_strategy_framework_authority', False):
         strategy_authority.build_master_strategy = wrap_strategy_framework_strategy(strategy_authority.build_master_strategy)
         installed.append('APPLIED_STRATEGY_FRAMEWORK_AUTHORITY')
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_strategy_framework_authority', False):
         delivery_contract.validate_strategy_delivery = wrap_strategy_framework_validator(delivery_contract.validate_strategy_delivery)
+
+    # The established pricing_economics_authority remains the only deterministic calculator. Phase 2
+    # wraps that same object with missing-input integrity + Agent-authored Pricing/Offer decision density.
+    # This is installed before compiler import, so compiler.py captures the final wrapped symbol.
+    if not getattr(pricing_economics_module.compile_pricing_economics_authority, '_cbcc_v0676_economics_offer_authority', False):
+        pricing_economics_module.compile_pricing_economics_authority = wrap_compile_pricing_economics_authority(
+            pricing_economics_module.compile_pricing_economics_authority
+        )
+        installed.append('ECONOMICS_OFFER_BUSINESS_AUTHORITY')
+
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_economics_offer_authority', False):
+        strategy_authority.build_master_strategy = wrap_economics_offer_strategy(strategy_authority.build_master_strategy)
+    if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_economics_offer_authority', False):
+        delivery_contract.validate_strategy_delivery = wrap_economics_offer_validator(delivery_contract.validate_strategy_delivery)
 
     delivery_export.validate_strategy_delivery = delivery_contract.validate_strategy_delivery
 
@@ -81,6 +97,12 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'FRAMEWORK_DEFINITION_CANNOT_FALSE_PASS_AS_APPLICATION',
         'POSITIONING_VALUE_MESSAGE_SIX_FIELD_DENSITY_AUDIT',
         'RACE_APPLIED_DECISION_DENSITY_AUDIT',
+        'ECONOMICS_OFFER_BUSINESS_AUTHORITY',
+        'PAYMENT_FEE_AND_REQUIRED_INPUT_INTEGRITY',
+        'PRICING_AND_OFFER_SIX_FIELD_DECISION_DENSITY',
+        'BREAK_EVEN_INPUT_CONDITIONALITY',
+        'MARKET_PRICE_EVIDENCE_NOT_PRICE_RECOMMENDATION',
+        'LEGACY_SENSITIVITY_NOT_OFFER_AUTHORITY',
     ]
     return {
         'status':'INSTALLED' if installed else 'ALREADY_INSTALLED',
