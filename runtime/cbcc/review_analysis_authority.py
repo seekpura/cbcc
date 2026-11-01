@@ -51,6 +51,7 @@ SCOPE_PREFIXES={
     'PACKAGE_CONTENTS':('LISTING','IMAGE','PACKAGE','CX'),
     'LOGISTICS_SERVICE':('FULFILLMENT','CX','LOGISTICS','SERVICE'),
 }
+HYPOTHESIS_STATUS_TOKENS={'WORKING_HYPOTHESIS','EVIDENCE_SUPPORTED_HYPOTHESIS'}
 CAUSAL_STATUS_TOKENS={'CONFIRMED_CAUSE','CAUSAL_CONFIRMED','PROVEN_CAUSE','VERIFIED_CAUSE'}
 CAUSAL_METHODS={'CONTROLLED_EXPERIMENT','HOLDOUT','DIAGNOSTIC_CONFIRMATION','RETURN_INSPECTION','QUALITY_INVESTIGATION'}
 
@@ -160,8 +161,10 @@ def _causal_boundary_status(src:Mapping[str,Any],sources:Mapping[str,Mapping[str
     if str(src.get('issue_class') or '').upper()=='POSITIVE_VALUE':
         return ('NOT_APPLICABLE_POSITIVE_VALUE',[])
     status=str(src.get('root_cause_status') or '').upper()
-    if status not in CAUSAL_STATUS_TOKENS:
+    if status in HYPOTHESIS_STATUS_TOKENS:
         return ('READY',[])
+    if status not in CAUSAL_STATUS_TOKENS:
+        return ('TO_VERIFY',['root_cause_status_not_supported'])
     refs=[str(x) for x in _l(src.get('causal_evidence_refs')) if _p(x)]
     unresolved=[x for x in refs if x not in sources]
     method=str(src.get('causal_method') or '').upper()
@@ -197,8 +200,11 @@ def _smallest_repair_status(src:Mapping[str,Any])->tuple[str,list[str]]:
     gaps=[]
     scope=[str(x).upper() for x in _l(src.get('repair_scope')) if _p(x)]
     frozen=[str(x).upper() for x in _l(src.get('frozen_layers')) if _p(x)]
+    responsible=str(src.get('responsible_layer') or '').upper()
     if not scope:gaps.append('repair_scope')
     if not frozen:gaps.append('frozen_layers')
+    if responsible and any(item==responsible or item.startswith(responsible+'.') or item.startswith(responsible+'_') for item in frozen):
+        gaps.append('responsible_layer_cannot_be_frozen')
     if not _p(src.get('why_not_broader_rework')):gaps.append('why_not_broader_rework')
     if any(any(token in item for token in BROAD_REPAIR_TOKENS) for item in scope):gaps.append('broad_rework_not_smallest_repair')
     return ('READY' if not gaps else 'TO_VERIFY',gaps)
