@@ -45,6 +45,8 @@ def _asset_portfolio(project: Path, target: dict[str, Any]) -> dict[str, Any]:
         'assets': compact,
         'commercial_curation_continuity': architecture.get('commercial_curation_continuity'),
         'asset_universe': architecture.get('asset_universe'),
+        'phase3_opportunity_family_evaluation': architecture.get('phase3_opportunity_family_evaluation'),
+        'opportunity_family_fulfillment': architecture.get('opportunity_family_fulfillment'),
     }
 
 

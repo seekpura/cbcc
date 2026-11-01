@@ -17,6 +17,7 @@ from .assets import required_foundation_roles, FoundationAssetRecord
 from .culture import compile_culture_context
 from .locale import compile_language_profiles
 from .asset_architecture import build_asset_architecture
+from .opportunity_family_authority import compile_opportunity_family_evaluation, compile_asset_universe_matrix
 from .category_strategy import infer_category_family
 from .asset_compiler import compile_asset_packages, validate_asset_packages
 from .decision import compile_persuasion_frameworks
@@ -374,7 +375,15 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     _write(p/'artifacts/market_evidence_fit_contract.json',market_fit_contract)
     market_theme_jobs=list(market_fit_contract.get('approved_asset_jobs') or []) + list(request.get('market_theme_fit') or [])
     category_family=infer_category_family(request)
-    architecture=build_asset_architecture(request.get('project_id','project'),tc,questions,objects,request.get('asset_jobs'),{'listing_objections':((domain.get('listing') or {}).get('compiled') or {}).get('objection_resolution_plan',[]),'feedback_issues':(domain.get('feedback') or {}).get('issues',[]),'market_theme_jobs':market_theme_jobs},category_family)
+    phase3_decisions=request.get('opportunity_family_decisions') or (request.get('target') or {}).get('opportunity_family_decisions') or {}
+    phase3_context=dict(tc); phase3_context['delivery_mode']=request.get('delivery_mode') or request.get('scope_mode')
+    phase3_opportunity_family_evaluation=compile_opportunity_family_evaluation(phase3_decisions,context=phase3_context)
+    _write(p/'artifacts/asset_universe_matrix.json',compile_asset_universe_matrix(phase3_opportunity_family_evaluation))
+    architecture_target=dict(tc); architecture_target['phase3_opportunity_family_evaluation']=phase3_opportunity_family_evaluation
+    architecture=build_asset_architecture(request.get('project_id','project'),architecture_target,questions,objects,request.get('asset_jobs'),{'listing_objections':((domain.get('listing') or {}).get('compiled') or {}).get('objection_resolution_plan',[]),'feedback_issues':(domain.get('feedback') or {}).get('issues',[]),'market_theme_jobs':market_theme_jobs},category_family)
+    phase3_opportunity_family_evaluation=architecture.get('phase3_opportunity_family_evaluation') or phase3_opportunity_family_evaluation
+    opportunity_family_fulfillment=architecture.get('opportunity_family_fulfillment') or {}
+    _write(p/'artifacts/asset_universe_matrix.json',compile_asset_universe_matrix(phase3_opportunity_family_evaluation,architecture.get('asset_universe') or {},opportunity_family_fulfillment))
     surface_architecture=compile_surface_architecture(tc,objects,architecture.get('assets') or [],pc)
     architecture['assets']=surface_architecture.get('assets') or architecture.get('assets') or []
     architecture['surface_architecture']=surface_architecture

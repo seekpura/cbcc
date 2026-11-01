@@ -228,3 +228,8 @@ _v0674_regression_closure.apply_v0674_patches()
 # It is additive and currently closes the Information Audit / question / assumption-decision subtask.
 from . import v0676_phase2_closure as _v0676_phase2_closure
 _v0676_phase2_closure.apply_v0676_phase2_patches()
+
+# v0.6.76 Phase 3 evaluates the locked opportunity-family universe before asset creation.
+# It is additive: the mature open-world architecture, legacy 12-axis audit and activation model remain intact.
+from . import v0676_phase3_closure as _v0676_phase3_closure
+_v0676_phase3_closure.apply_v0676_phase3_patches()

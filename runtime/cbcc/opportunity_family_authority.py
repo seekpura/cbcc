@@ -283,6 +283,34 @@ def audit_opportunity_family_fulfillment(
     }
 
 
+
+def compile_asset_universe_matrix(
+    evaluation: Mapping[str, Any] | None,
+    asset_universe: Mapping[str, Any] | None = None,
+    fulfillment: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    evaluation = deepcopy(dict(evaluation or {}))
+    asset_universe = deepcopy(dict(asset_universe or {}))
+    fulfillment_obj = deepcopy(dict(fulfillment or {})) if fulfillment is not None else None
+    status = 'READY' if evaluation.get('status') == 'READY' else 'TO_VERIFY'
+    stage = 'PRE_ASSET_ARCHITECTURE'
+    if fulfillment_obj is not None:
+        stage = 'PRE_ASSET_ARCHITECTURE_WITH_POST_ASSET_FULFILLMENT'
+        if fulfillment_obj.get('status') != 'READY':
+            status = 'TO_VERIFY'
+    return {
+        'schema_version':'cbcc-asset-universe-matrix-phase3-v0.6.76',
+        'status':status,
+        'evaluation_stage':stage,
+        'opportunity_family_evaluation':evaluation,
+        'opportunity_family_fulfillment':fulfillment_obj,
+        'asset_universe':asset_universe,
+        'fixed_total_asset_limit':False,
+        'fixed_asset_quota_per_family':False,
+        'platform_capacity_is_activation_constraint_only':True,
+        'principle':'The matrix records the 23-family decision authority before asset creation, then joins actual architecture fulfillment without turning families into quotas.',
+    }
+
 def wrap_build_asset_architecture(fn: Callable[..., dict[str, Any]]):
     """Install Phase 3 evaluation before the mature asset architecture runs."""
     if getattr(fn, '_cbcc_v0676_phase3_opportunity_family', False):

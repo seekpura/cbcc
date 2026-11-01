@@ -58,6 +58,40 @@ def render_asset_portfolio_workspace(portfolio: dict[str, Any]) -> str:
     if rows:
         table = '<div class="ap-table"><table><thead><tr><th>Asset</th><th>Family</th><th>Surface</th><th>Pool</th><th>Variant</th><th>Hypothesis</th></tr></thead><tbody>' + ''.join(rows) + '</tbody></table></div>'
 
+    family_eval = portfolio.get('phase3_opportunity_family_evaluation') if isinstance(portfolio.get('phase3_opportunity_family_evaluation'), dict) else {}
+    family_fulfillment = portfolio.get('opportunity_family_fulfillment') if isinstance(portfolio.get('opportunity_family_fulfillment'), dict) else {}
+    fulfillment_by_id = {str(x.get('family_id')): x for x in (family_fulfillment.get('rows') or []) if isinstance(x, dict)}
+    family_rows = []
+    for row in family_eval.get('families') or []:
+        if not isinstance(row, dict):
+            continue
+        fid = str(row.get('family_id') or '')
+        frow = fulfillment_by_id.get(fid) or {}
+        status = str(row.get('status') or 'TO_VERIFY')
+        fulfill_status = str(frow.get('fulfillment_status') or ('NOT_REQUIRED_DELIBERATE_OMISSION' if status == 'NOT_NEEDED' else 'TO_VERIFY'))
+        satisfiers = _text(row.get('satisfying_objects'), 320)
+        matched = _text(frow.get('matched_asset_ids'), 240)
+        family_rows.append(
+            '<tr>'
+            f'<td>{html.escape(fid)}</td>'
+            f'<td>{html.escape(_text(row.get("family"), 140))}</td>'
+            f'<td>{html.escape(status)}</td>'
+            f'<td>{html.escape(_text(row.get("why"), 360))}</td>'
+            f'<td>{html.escape(_text(row.get("why_not"), 360))}</td>'
+            f'<td>{html.escape(satisfiers)}</td>'
+            f'<td>{html.escape(fulfill_status)}</td>'
+            f'<td>{html.escape(matched)}</td>'
+            '</tr>'
+        )
+    family_table = ''
+    if family_rows:
+        family_table = (
+            '<h3>机会族评估</h3>'
+            '<div class="cbcc-commerce-note">23 类机会族必须在资产创建前逐一判断；NOT_NEEDED 必须是有理由的主动省略。一个对象可以满足多个机会族，不形成固定配额。</div>'
+            '<div class="ap-table"><table><thead><tr><th>ID</th><th>机会族</th><th>决策</th><th>为什么</th><th>为什么不做</th><th>计划满足对象</th><th>履约</th><th>实际资产</th></tr></thead><tbody>'
+            + ''.join(family_rows) + '</tbody></table></div>'
+        )
+
     return (
         '<section class="asset-portfolio-intelligence searchable">'
         '<header><div><span>ASSET UNIVERSE · ACTIVATION · TEST</span><h2>商业资产宇宙</h2></div>'
@@ -65,7 +99,7 @@ def render_asset_portfolio_workspace(portfolio: dict[str, Any]) -> str:
         f'<div class="ap-metrics">{metric_html}</div>'
         '<h3>资产族</h3><div class="ap-chips">' + families + '</div>'
         '<h3>部署 / 测试池</h3><div class="ap-chips">' + states + '</div>'
-        + table + '</section>'
+        + family_table + table + '</section>'
     )
 
 
