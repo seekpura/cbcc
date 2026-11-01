@@ -10,7 +10,7 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     env:
-      PYTHONPATH: runtime
+      PYTHONPATH: .:runtime
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
