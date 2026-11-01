@@ -47,3 +47,10 @@ def test_unknown_lineage_source_cannot_be_hidden_by_valid_metric_source():
 def test_measurement_plan_ready_does_not_claim_experiment_result_or_causal_learning():
     out=mod.materialize_measurement_authority(fx.legacy_strategy(),fx.request(),None); auth=out['measurement_authority_v0676']
     assert auth['status']=='READY'; assert auth['experiment_evidence']==fx.legacy_strategy()['sections']['09_risk_measurement_priority_next_steps']['experiment']; assert auth['boundaries']['measurement_plan_completion_is_not_experiment_success'] is True; assert auth['boundaries']['post_production_learning_status']=='DEFERRED_TO_LEARNING_LOOP_WHEN_REAL_RESULTS_EXIST'
+
+
+def test_strategy_section09_keeps_legacy_ab_projection_schema_while_full_authority_stays_lossless():
+    out=mod.materialize_measurement_authority(fx.legacy_strategy(),fx.request(),fx.experiment_result()); s9=out['sections']['09_risk_measurement_priority_next_steps']; row=s9['ab_test_hypotheses'][0]
+    required={'id','hypothesis','variable','variants','hold_constant','deployment_pool','metric','guardrail','next_decision_rule','measurement_authority_ref'}
+    assert required.issubset(row); assert row['id']=='M-01'; assert row['measurement_authority_ref']=='M-01'; assert out['measurement_authority_v0676']['measurement_rows'][0]['attribution_method']=='FIRST_PARTY_SESSION_EXPERIMENT'
+    assert s9['legacy_advisory_v0676']['ab_test_hypotheses'][0]['id']=='AB-HERO-PROP'; assert s9['priority_plan']['P0'][0]['measure']==s9['priority_plan']['P0'][0]['measurement']
