@@ -26,6 +26,18 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install pytest pyyaml
+      - name: Normalize known creative import formatting for deterministic patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('runtime/cbcc/compiler.py')
+          t=p.read_text(encoding='utf-8')
+          spaced='from .creative import compile_curation, compile_creative_council, compile_cmf, compile_inclusive_photography, apply_creative_system_to_assets'
+          compact='from .creative import compile_curation,compile_creative_council,compile_cmf,compile_inclusive_photography,apply_creative_system_to_assets'
+          if spaced not in t and compact not in t:
+              raise SystemExit('unexpected creative import shape')
+          p.write_text(t.replace(spaced, compact, 1),encoding='utf-8')
+          PY
       - name: Apply Phase 4 inclusion patch
         run: python .github/phase4_patch_inclusion.py
       - name: Focused Phase 4 inclusion verification
