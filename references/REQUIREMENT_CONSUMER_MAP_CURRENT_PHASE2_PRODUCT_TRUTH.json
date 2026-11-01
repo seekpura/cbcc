@@ -1,0 +1,13 @@
+{
+  "authority":"CBCC Phase 2 Product Truth / Evidence consumer delta",
+  "scope":"PARTIAL_PHASE_2_ONLY",
+  "requirements":[
+    {"req":"REQ-008","requirement":"Product Truth four-way audit + A/B/C evidence grading","consumers":["runtime/cbcc/product_truth_evidence_authority.py","runtime/cbcc/canonical_commerce_graph.py"],"proof_objects":["value_ladder","value_kind_status","evidence_grade_policy","fact_conflicts","tests/test_v0676_product_truth_evidence_authority.py"],"status":"PARTIAL_PHASE2_PRODUCT_TRUTH_EVIDENCE_VERIFIED"},
+    {"req":"REQ-009","requirement":"Claim → Evidence trace without unsupported promotion","consumers":["runtime/cbcc/product_truth_evidence_authority.py"],"proof_objects":["claim_evidence_trace","SOURCE_BOUND / UNBOUND_HOLD","C grade hard-claim prohibition"],"status":"PARTIAL_PHASE2_PRODUCT_TRUTH_EVIDENCE_VERIFIED"},
+    {"req":"REQ-053","requirement":"Four-way Product Truth + A/B/C remains mandatory","consumers":["runtime/cbcc/product_truth_evidence_authority.py"],"proof_objects":["FACT / TRUE_SELLING_POINT / PERCEIVED_BENEFIT / EMOTIONAL_VALUE / NON_CLAIMABLE explicit states","MISSING_INPUT + WHY for absent layers"],"status":"PARTIAL_PHASE2_PRODUCT_TRUTH_EVIDENCE_VERIFIED"},
+    {"req":"REQ-062","requirement":"Whole-commerce FULL scope keeps Product Truth as a first-class object","consumers":["runtime/cbcc/canonical_commerce_graph.py"],"proof_objects":["PRODUCT_TRUTH canonical graph node prefers product_truth_evidence_authority.json","legacy product_truth.json remains compatibility fallback only"],"status":"PARTIAL_PHASE2_PRODUCT_TRUTH_EVIDENCE_VERIFIED"},
+    {"req":"REQ-088","requirement":"Source / Evidence / Assumption / Decision lineage","consumers":["runtime/cbcc/product_truth_evidence_authority.py","runtime/cbcc/canonical_commerce_graph.py"],"proof_objects":["source_ids per Product Truth row","claim_evidence_trace","authority_sha256","canonical_graph_binding"],"status":"PARTIAL_PHASE2_PRODUCT_TRUTH_EVIDENCE_VERIFIED"}
+  ],
+  "verification":{"focused":"9 passed","cross_scope":"16 passed with the complete 7-test Phase 1 canonical graph suite","real_k01_full":"PENDING_PHASE10","provider_actual_output":"E2E_PENDING"},
+  "completion_boundary":"This delta proves only the Product Truth / Evidence subtask of Phase 2. It does not mark Phase 2, REQ-062 or REQ-088 globally complete."
+}

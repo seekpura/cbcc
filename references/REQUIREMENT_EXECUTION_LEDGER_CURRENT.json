@@ -1,12 +1,12 @@
 {
-  "authority": "CBCC CURRENT locked requirement execution ledger",
-  "requirement_range": "REQ-001..REQ-090",
-  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
-  "extension_02": "references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md",
-  "completion_rule": "No requirement is complete from document existence, headings, file counts or boolean flags. Require concrete consumer, proof object, verification and where applicable real K01 FULL evidence.",
-  "new_requirements": [
+  "authority":"CBCC CURRENT locked requirement execution ledger",
+  "requirement_range":"REQ-001..REQ-090",
+  "plan":"references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
+  "extension_02":"references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md",
+  "completion_rule":"No requirement is complete from document existence, headings, file counts or boolean flags. Require concrete consumer, proof object, verification and where applicable real K01 FULL evidence.",
+  "new_requirements":[
     {"req":"REQ-061","title":"Canonical commerce object graph","phase":"1,6,7","status":"PARTIAL_PHASE_1_GRAPH_AUTHORITY_VERIFIED"},
-    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE_1_GRAPH_AUTHORITY_VERIFIED"},
+    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_PRODUCT_TRUTH_EVIDENCE_VERIFIED"},
     {"req":"REQ-063","title":"Explicit opportunity-family evaluation","phase":"3","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-064","title":"Scenario/Lifestyle/Context/Human-use","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-065","title":"Negative/Counterexample/Expectation management","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
@@ -32,54 +32,14 @@
     {"req":"REQ-085","title":"Concrete human/culture/inclusion execution","phase":"4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-086","title":"Scene-derived photography/lighting/CMF closure","phase":"4,5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-087","title":"Listing/Economics/Ads/Reviews/Research remain first-class","phase":"1,2","status":"PARTIAL_PHASE_1_GRAPH_BOUNDARY_VERIFIED"},
-    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE_1_REFERENCE_HASH_LINEAGE_VERIFIED"},
+    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE2_PRODUCT_TRUTH_EVIDENCE_VERIFIED"},
     {"req":"REQ-089","title":"Human Workspace full canonical projection","phase":"6","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-090","title":"FULL package lineage and actual-output boundary","phase":"7,8,10","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"}
   ],
-  "phase_status": {
-    "0":"SOURCE_GUARDS_COMPLETE_PACKAGE_READBACK_PENDING",
-    "1":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY",
-    "2":"NOT_STARTED",
-    "3":"NOT_STARTED",
-    "4":"NOT_STARTED",
-    "5":"NOT_STARTED",
-    "6":"NOT_STARTED",
-    "7":"NOT_STARTED",
-    "8":"NOT_STARTED",
-    "9":"NOT_STARTED",
-    "10":"NOT_STARTED",
-    "11":"NOT_STARTED"
-  },
-  "phase_evidence": {
-    "0": {
-      "source_authority_lock": "PASS",
-      "negative_fixture_guard": "PASS",
-      "built_plugin_readback": "PENDING_PHASE_11_RELEASE_BUILD",
-      "proof_objects": [
-        "references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md",
-        "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
-        "references/K01_2026-10-30_REAL_OUTPUT_REGRESSION.md",
-        "tests/test_v0676_k01_negative_fixture_guard.py",
-        "scripts/check_current_release_package.py"
-      ],
-      "note": "Phase 0 source/runtime guards are closed. Exact built-plugin readback remains intentionally pending until the release artifact is built; this is not represented as release completion."
-    },
-    "1": {
-      "status": "PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY",
-      "focused_tests": "7 passed",
-      "proof_objects": [
-        "runtime/cbcc/canonical_commerce_graph.py",
-        "tests/test_v0676_canonical_commerce_graph.py"
-      ],
-      "verified_behaviors": [
-        "stable canonical node IDs and deterministic graph hash",
-        "JSON is canonical while Markdown/HTML/Model Prompt/Asset Package are projection-only",
-        "required missing authority fails closed",
-        "optional absent domains are TO_VERIFY with WHY instead of invented NOT_ACTIVE",
-        "Listing/Ads/Reviews cannot fall back to Strategy or Seven-Agent synthesis",
-        "graph stores authority refs and hashes rather than a second business payload"
-      ],
-      "deferred_by_plan": "JSON→MD→HTML→Prompt/package enforcement remains Phase 6/7; REQ-061/062/087/088 therefore remain partial rather than globally complete."
-    }
+  "phase_status":{"0":"SOURCE_GUARDS_COMPLETE_PACKAGE_READBACK_PENDING","1":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY","2":"IN_PROGRESS_PRODUCT_TRUTH_EVIDENCE_SUBTASK_VERIFIED","3":"NOT_STARTED","4":"NOT_STARTED","5":"NOT_STARTED","6":"NOT_STARTED","7":"NOT_STARTED","8":"NOT_STARTED","9":"NOT_STARTED","10":"NOT_STARTED","11":"NOT_STARTED"},
+  "phase_evidence":{
+    "0":{"source_authority_lock":"PASS","negative_fixture_guard":"PASS","built_plugin_readback":"PENDING_PHASE_11_RELEASE_BUILD","proof_objects":["references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md","references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md","references/K01_2026-10-30_REAL_OUTPUT_REGRESSION.md","tests/test_v0676_k01_negative_fixture_guard.py","scripts/check_current_release_package.py"],"note":"Phase 0 source/runtime guards are closed. Exact built-plugin readback remains intentionally pending until the release artifact is built; this is not represented as release completion."},
+    "1":{"status":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY","focused_tests":"7 passed","proof_objects":["runtime/cbcc/canonical_commerce_graph.py","tests/test_v0676_canonical_commerce_graph.py"],"verified_behaviors":["stable canonical node IDs and deterministic graph hash","JSON is canonical while Markdown/HTML/Model Prompt/Asset Package are projection-only","required missing authority fails closed","optional absent domains are TO_VERIFY with WHY instead of invented NOT_ACTIVE","Listing/Ads/Reviews cannot fall back to Strategy or Seven-Agent synthesis","graph stores authority refs and hashes rather than a second business payload"],"deferred_by_plan":"JSON→MD→HTML→Prompt/package enforcement remains Phase 6/7; REQ-061/062/087/088 therefore remain partial rather than globally complete."},
+    "2":{"status":"IN_PROGRESS_PRODUCT_TRUTH_EVIDENCE_SUBTASK_VERIFIED","subtask":"Product Truth / Evidence authority","focused_tests":"9 passed","cross_scope_tests":"16 passed with the complete 7-test Phase 1 canonical graph suite","proof_objects":["runtime/cbcc/product_truth_evidence_authority.py","tests/test_v0676_product_truth_evidence_authority.py","references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_PRODUCT_TRUTH.json"],"verified_behaviors":["FACT / TRUE_SELLING_POINT / PERCEIVED_BENEFIT / EMOTIONAL_VALUE / NON_CLAIMABLE remain separate","A/B/C evidence semantics are machine-explicit","C-grade or unbound value rows cannot become hard claims","conflicting facts are quarantined instead of guessed","missing value layers remain MISSING_INPUT with WHY","Claim→Evidence trace exposes SOURCE_BOUND / UNBOUND_HOLD","assumptions require downstream effect and evidence needed","canonical graph prefers the new Product Truth authority while preserving legacy compatibility fallback"],"remaining_phase2":"Market/research density; four-context WHY; intersectionality/culture; applied frameworks; Economics/Offer; Listing/Search; Content Matrix/RACE; Ads; Reviews; Measurement and complete WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT coverage.","real_k01_full":"PENDING_PHASE10"}
   }
 }
