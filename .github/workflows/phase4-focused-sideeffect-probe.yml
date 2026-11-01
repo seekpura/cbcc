@@ -1,0 +1,48 @@
+name: phase4-focused-sideeffect-probe
+
+on:
+  push:
+    branches: [phase4-closure-debug]
+    paths:
+      - '.github/workflows/phase4-focused-sideeffect-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase4-closure-debug
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -q pytest pyyaml pillow
+      - name: Phase 4 focused
+        run: |
+          files=(tests/test_v0676_phase4_*.py)
+          pytest -q "${files[@]}"
+      - name: Assert tracked workspace remains clean after Phase 4 focused
+        continue-on-error: true
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
+      - name: Reset any test filesystem side effects
+        run: |
+          git reset --hard HEAD
+          git clean -fd -e .github/workflows/phase4-focused-sideeffect-probe.yml
+      - name: Phase 3 after reset
+        run: |
+          pytest -q \
+            tests/test_v0676_phase3_opportunity_family_evaluation.py \
+            tests/test_v0676_phase3_opportunity_family_runtime_binding.py \
+            tests/test_v0662_asset_universe_and_package_regressions.py \
+            tests/test_v0655_asset_universe_open_world.py \
+            tests/test_v0646_asset_family_no_quota.py \
+            tests/test_v0646_activation_state_taxonomy.py \
+            tests/test_v0633_asset_universe_workspace.py
