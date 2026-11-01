@@ -39,7 +39,7 @@ from .agent_autonomy import (
     compile_agent_autonomy_plan, research_requirements_from_plan, derive_content_families,
     agent_creative_opportunities, agent_creative_directions, compile_agent_next_action,
 )
-from .creative import compile_curation, compile_creative_council, compile_cmf, compile_inclusive_photography, apply_creative_system_to_assets
+from .creative import compile_curation,compile_creative_council,compile_cmf,compile_inclusive_photography,apply_creative_system_to_assets,apply_inclusive_photography_to_assets
 from .creative_opportunity import compile_creative_opportunity_universe
 from .video_creator import build_video_creator_plan, enrich_video_plan_with_strategy
 from .surface_architecture import compile_surface_architecture
@@ -416,6 +416,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     _write(p/'artifacts/creative_council.json',council)
     architecture=apply_creative_system_to_assets(architecture,council,cmf,request.get('photography_contract'))
     inclusive=compile_inclusive_photography(culture,request.get('photography_contract'),architecture.get('assets') or [])
+    architecture=apply_inclusive_photography_to_assets(architecture,inclusive)
     _write(p/'artifacts/inclusive_photography.json',inclusive)
     creative_anchors=compile_creative_anchor_plan(council,architecture,product_visual_intelligence,cmf)
     _write(p/'artifacts/creative_anchor_plan.json',creative_anchors)
