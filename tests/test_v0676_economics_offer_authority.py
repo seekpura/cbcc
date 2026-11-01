@@ -137,3 +137,23 @@ def test_compile_wrapper_keeps_math_status_but_marks_business_incomplete_when_de
     assert out['status']=='READY'
     assert out['phase2_business_status']=='TO_VERIFY'
     assert out['phase2_economics_offer_authority']['pricing_decision']['decision'] is None
+
+def test_strategy_wrapper_projects_same_phase2_authority_and_validator_blocks_incomplete_economics():
+    req=explicit_request()
+    strict=mod.wrap_compile_pricing_economics_authority(lambda request, market_analysis=None, legacy_economics=None: strict_payload(request))(req,None,{'status':'LEGACY'})
+    economics={'status':'LEGACY_READY','pricing_economics_authority':strict}
+    def base_strategy(request,*args,**kwargs):
+        return {'delivery_mode':request['delivery_mode'],'sections':{'04_marketing_core_strategy':{'sentinel':'keep'}}}
+    strategy=mod.wrap_build_master_strategy(base_strategy)(req,economics=economics)
+    projected=strategy['sections']['04_marketing_core_strategy']['pricing_economics_offer']
+    assert projected==strict['phase2_economics_offer_authority']
+    assert strategy['sections']['04_marketing_core_strategy']['sentinel']=='keep'
+    def base_validator(strategy): return {'status':'PASS','issues':[]}
+    assert mod.wrap_validate_strategy_delivery(base_validator)(strategy)['status']=='PASS'
+
+    incomplete=explicit_request(); incomplete['offer_economics']['costs'].pop('payment_fee')
+    strict2=mod.wrap_compile_pricing_economics_authority(lambda request, market_analysis=None, legacy_economics=None: strict_payload(request))(incomplete,None,{'status':'LEGACY'})
+    strategy2=mod.wrap_build_master_strategy(base_strategy)(incomplete,economics={'pricing_economics_authority':strict2})
+    result=mod.wrap_validate_strategy_delivery(base_validator)(strategy2)
+    assert result['status']=='INCOMPLETE'
+    assert any(x['code']=='FULL_ECONOMICS_REQUIRED_INPUT_MISSING_V0676' and x['input']=='payment_fee' for x in result['issues'])
