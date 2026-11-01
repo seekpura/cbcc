@@ -154,14 +154,22 @@ def _normalize_next_input(raw:Any,i:int,sources:Mapping[str,Mapping[str,Any]],me
 
 def _ab_projection(row:Mapping[str,Any])->dict[str,Any]:
     return {
-        'id':row.get('measurement_id'),'hypothesis':row.get('hypothesis'),'variable':row.get('changed_variable'),
-        'variants':deepcopy(row.get('variants') or []),'hold_constant':deepcopy(row.get('held_constants') or []),
-        'deployment_pool':row.get('deployment_pool'),'metric':row.get('primary_metric'),'guardrail':deepcopy(row.get('guardrails') or []),
-        'next_decision_rule':row.get('next_decision'),'measurement_authority_ref':row.get('measurement_id'),
+        'id':row.get('measurement_id'),
+        'hypothesis':row.get('hypothesis'),
+        'variable':row.get('changed_variable'),
+        'variants':deepcopy(row.get('variants') or []),
+        'hold_constant':deepcopy(row.get('held_constants') or []),
+        'deployment_pool':row.get('deployment_pool'),
+        'metric':row.get('primary_metric'),
+        'guardrail':deepcopy(row.get('guardrails') or []),
+        'next_decision_rule':row.get('next_decision'),
+        'measurement_authority_ref':row.get('measurement_id'),
     }
 
 def _priority_projection(row:Mapping[str,Any])->dict[str,Any]:
-    out=deepcopy(dict(row)); out.setdefault('measure',out.get('measurement')); return out
+    out=deepcopy(dict(row))
+    out.setdefault('measure',out.get('measurement'))
+    return out
 
 def measurement_issues(strategy:Mapping[str,Any])->list[dict[str,Any]]:
     auth=_d(strategy.get('measurement_authority_v0676'))
@@ -177,6 +185,7 @@ def measurement_issues(strategy:Mapping[str,Any])->list[dict[str,Any]]:
         if row.get('lineage_status')!='READY':issues.append({'code':'FULL_MEASUREMENT_LINEAGE_INCOMPLETE_V0676','row':i,'fields':row.get('lineage_gaps') or []})
         if row.get('metric_source_status')!='READY':issues.append({'code':'FULL_MEASUREMENT_METRIC_SOURCE_INCOMPLETE_V0676','row':i,'refs':row.get('unresolved_metric_source_refs') or []})
         if row.get('test_contract_status')!='READY':issues.append({'code':'FULL_MEASUREMENT_AB_TEST_CONTRACT_INVALID_V0676','row':i,'fields':row.get('test_contract_gaps') or []})
+    if auth.get('measurement_id_uniqueness_status')!='READY':issues.append({'code':'FULL_MEASUREMENT_ID_DUPLICATE_V0676','duplicates':auth.get('duplicate_measurement_ids') or []})
     if auth.get('priority_status')!='READY':issues.append({'code':'FULL_MEASUREMENT_PRIORITY_PLAN_INCOMPLETE_V0676','actual':auth.get('priority_order') or [],'expected':list(PRIORITY_ORDER)})
     if auth.get('next_input_status')!='READY':issues.append({'code':'FULL_MEASUREMENT_NEXT_INPUT_PLAN_INCOMPLETE_V0676'})
     dedup=[]
@@ -191,7 +200,10 @@ def materialize_measurement_authority(strategy:Mapping[str,Any],request:Mapping[
     legacy={'ab_test_hypotheses':deepcopy(s9.get('ab_test_hypotheses') or []),'priority_plan':deepcopy(s9.get('priority_plan') or {}),'experiment':deepcopy(s9.get('experiment'))}
     plan=_measurement_plan(req); sources=_source_index(req)
     rows=[_normalize_measurement(x,i,sources) for i,x in enumerate(_l(plan.get('rows') or plan.get('measurement_rows'))) if isinstance(x,Mapping)]
-    measurement_ids={str(x.get('measurement_id')) for x in rows if _p(x.get('measurement_id'))}
+    measurement_id_list=[str(x.get('measurement_id')) for x in rows if _p(x.get('measurement_id'))]
+    measurement_ids=set(measurement_id_list)
+    duplicate_measurement_ids=sorted({x for x in measurement_id_list if measurement_id_list.count(x)>1})
+    measurement_id_uniqueness_status='READY' if not duplicate_measurement_ids else 'TO_VERIFY'
     priorities=[_normalize_priority(x,i,sources,measurement_ids) for i,x in enumerate(_l(plan.get('priorities') or plan.get('priority_rows'))) if isinstance(x,Mapping)]
     next_inputs=[_normalize_next_input(x,i,sources,measurement_ids) for i,x in enumerate(_l(plan.get('next_inputs') or plan.get('next_input_plan'))) if isinstance(x,Mapping)]
     priority_order=[str(x.get('priority') or '').upper() for x in priorities]
@@ -207,10 +219,22 @@ def materialize_measurement_authority(strategy:Mapping[str,Any],request:Mapping[
     if exp is not None:s9['experiment']=deepcopy(exp)
     sections['09_risk_measurement_priority_next_steps']=s9; out['sections']=sections
     auth={
-        'schema':'cbcc-measurement-authority-v0.6.76','status':'TO_VERIFY','asset_dependency':'NOT_REQUIRED_FOR_PHASE2_BUSINESS_AUTHORITY','production_learning_dependency':'NOT_REQUIRED_FOR_PHASE2_MEASUREMENT_PLAN_AUTHORITY',
-        'measurement_rows':rows,'priorities':priorities,'priority_order':priority_order,'priority_status':priority_status,'next_inputs':next_inputs,'next_input_status':next_input_status,
-        'experiment_evidence':exp,'experiment_calculator_authority':'runtime/cbcc/tools/experiment.py','experiment_decision_does_not_author_measurement_plan':True,'legacy_strategy_advisory':legacy,
-        'boundaries':{'post_production_learning_status':'DEFERRED_TO_LEARNING_LOOP_WHEN_REAL_RESULTS_EXIST','human_workspace_projection':'PENDING_PHASE6','measurement_plan_completion_is_not_experiment_success':True,'real_k01_full':'PENDING_PHASE10','built_plugin_readback':'PENDING_PHASE11','provider_actual_output':'E2E_PENDING'},
+        'schema':'cbcc-measurement-authority-v0.6.76','status':'TO_VERIFY',
+        'asset_dependency':'NOT_REQUIRED_FOR_PHASE2_BUSINESS_AUTHORITY',
+        'production_learning_dependency':'NOT_REQUIRED_FOR_PHASE2_MEASUREMENT_PLAN_AUTHORITY',
+        'measurement_rows':rows,
+        'measurement_id_uniqueness_status':measurement_id_uniqueness_status,
+        'duplicate_measurement_ids':duplicate_measurement_ids,
+        'priorities':priorities,'priority_order':priority_order,'priority_status':priority_status,
+        'next_inputs':next_inputs,'next_input_status':next_input_status,
+        'experiment_evidence':exp,'experiment_calculator_authority':'runtime/cbcc/tools/experiment.py','experiment_decision_does_not_author_measurement_plan':True,
+        'legacy_strategy_advisory':legacy,
+        'boundaries':{
+            'post_production_learning_status':'DEFERRED_TO_LEARNING_LOOP_WHEN_REAL_RESULTS_EXIST',
+            'human_workspace_projection':'PENDING_PHASE6',
+            'measurement_plan_completion_is_not_experiment_success':True,
+            'real_k01_full':'PENDING_PHASE10','built_plugin_readback':'PENDING_PHASE11','provider_actual_output':'E2E_PENDING',
+        },
         'principle':'Measurement is a first-class business authority. It defines the decision question, metric truth, baseline/target, isolated test, P0/P1/P2 priorities, stop/success/failure rules, exact next input and learning handoff. Deterministic experiment statistics remain in tools.experiment and observed results never author missing business decisions.',
     }
     out['measurement_authority_v0676']=auth
@@ -219,18 +243,25 @@ def materialize_measurement_authority(strategy:Mapping[str,Any],request:Mapping[
 
 def wrap_build_master_strategy(fn:Callable[...,dict[str,Any]]):
     def built(request:dict[str,Any],*args:Any,**kwargs:Any):
-        strategy=fn(request,*args,**kwargs); exp=kwargs.get('experiment')
-        if exp is None:exp=_d(_d(strategy.get('sections')).get('09_risk_measurement_priority_next_steps')).get('experiment')
+        strategy=fn(request,*args,**kwargs)
+        exp=kwargs.get('experiment')
+        if exp is None:
+            exp=_d(_d(strategy.get('sections')).get('09_risk_measurement_priority_next_steps')).get('experiment')
         return materialize_measurement_authority(strategy,request,exp)
-    setattr(built,'_cbcc_v0676_measurement_authority',True); return built
+    setattr(built,'_cbcc_v0676_measurement_authority',True)
+    return built
 
 def wrap_validate_strategy_delivery(fn:Callable[[dict[str,Any]],dict[str,Any]]):
     def validated(strategy:dict[str,Any]):
         result=fn(strategy)
         if not _d(strategy.get('measurement_authority_v0676')) and not _is_full(strategy):return result
-        current=measurement_issues(strategy); issues=list(result.get('issues') or [])+current; dedup=[]
+        current=measurement_issues(strategy)
+        issues=list(result.get('issues') or [])+current
+        dedup=[]
         for item in issues:
             if item not in dedup:dedup.append(item)
-        result['issues']=dedup; result['status']='PASS' if not dedup else 'INCOMPLETE'; result['measurement_authority_v0676_audit']={'status':'PASS' if not current else 'INCOMPLETE','issues':current}
+        result['issues']=dedup; result['status']='PASS' if not dedup else 'INCOMPLETE'
+        result['measurement_authority_v0676_audit']={'status':'PASS' if not current else 'INCOMPLETE','issues':current}
         return result
-    setattr(validated,'_cbcc_v0676_measurement_authority',True); return validated
+    setattr(validated,'_cbcc_v0676_measurement_authority',True)
+    return validated
