@@ -18,6 +18,7 @@ from .culture import compile_culture_context
 from .locale import compile_language_profiles
 from .asset_architecture import build_asset_architecture
 from .opportunity_family_authority import compile_opportunity_family_evaluation, compile_asset_universe_matrix
+from .visual_master_authority import bind_visual_master_upstream, visual_master_ref
 from .category_strategy import infer_category_family
 from .asset_compiler import compile_asset_packages, validate_asset_packages
 from .decision import compile_persuasion_frameworks
@@ -379,7 +380,14 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     phase3_context=dict(tc); phase3_context['delivery_mode']=request.get('delivery_mode') or request.get('scope_mode')
     phase3_opportunity_family_evaluation=compile_opportunity_family_evaluation(phase3_decisions,context=phase3_context)
     _write(p/'artifacts/asset_universe_matrix.json',compile_asset_universe_matrix(phase3_opportunity_family_evaluation))
+    phase4_visual_master=bind_visual_master_upstream(
+        ((agent_plan.get('creative_exploration') or {}).get('visual_master') or {}),
+        phase3_opportunity_family_evaluation=phase3_opportunity_family_evaluation,
+        content_object_ids=[o.get('object_id') for o in objects if o.get('object_id')],
+    )
+    _write(p/'artifacts/visual_master.json',phase4_visual_master)
     architecture_target=dict(tc); architecture_target['phase3_opportunity_family_evaluation']=phase3_opportunity_family_evaluation
+    architecture_target['phase4_visual_master']=phase4_visual_master
     architecture=build_asset_architecture(request.get('project_id','project'),architecture_target,questions,objects,request.get('asset_jobs'),{'listing_objections':((domain.get('listing') or {}).get('compiled') or {}).get('objection_resolution_plan',[]),'feedback_issues':(domain.get('feedback') or {}).get('issues',[]),'market_theme_jobs':market_theme_jobs},category_family)
     phase3_opportunity_family_evaluation=architecture.get('phase3_opportunity_family_evaluation') or phase3_opportunity_family_evaluation
     opportunity_family_fulfillment=architecture.get('opportunity_family_fulfillment') or {}
@@ -420,6 +428,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
               'foundation_asset_ids':[x['asset_id'] for x in foundation['roles']], 'source_truth_binding':st.data['gates']['PRODUCT_TRUTH']['authority_hash'],
               'culture_context_hash':st.data['gates']['CULTURE_CONTEXT']['authority_hash'],'language_profiles':culture['language_profiles'],
               'curation':curation,'creative_opportunity_universe':creative_opportunity_universe,'creative_council':council,'cmf':cmf,'inclusive_photography':inclusive,
+              'visual_master':phase4_visual_master,'visual_master_ref':visual_master_ref(phase4_visual_master),
               'surface_architecture':surface_architecture,'asset_expression_assignment':architecture.get('creative_system_assignment'),'product_visual_intelligence':product_visual_intelligence,'creative_anchor_plan':creative_anchors,
               'agent_autonomy_plan':agent_plan}
     crp=_write(p/'artifacts/creative_contract.json',creative)

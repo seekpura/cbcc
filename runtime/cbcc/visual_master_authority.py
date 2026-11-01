@@ -59,6 +59,42 @@ def compile_visual_master(
     }
 
 
+def bind_visual_master_upstream(
+    master: Mapping[str, Any] | None,
+    *,
+    phase3_opportunity_family_evaluation: Mapping[str, Any] | None = None,
+    content_object_ids: list[str] | None = None,
+) -> dict[str, Any]:
+    """Attach upstream decision lineage without creating or mutating a second visual program.
+
+    The Portfolio Visual Program remains the Visual Master's sole visual-content authority. Phase 3
+    family decisions and content-object identifiers are reference metadata proving why this master is
+    relevant before asset architecture; they do not synthesize scenes, layouts, cameras or styles.
+    """
+    if not isinstance(master, Mapping) or not master:
+        return {}
+    out = deepcopy(dict(master))
+    evaluation = (
+        dict(phase3_opportunity_family_evaluation)
+        if isinstance(phase3_opportunity_family_evaluation, Mapping)
+        else {}
+    )
+    upstream = dict(out.get('upstream_lineage') or {})
+    upstream['phase3_opportunity_family_evaluation'] = {
+        'schema_version': evaluation.get('schema_version'),
+        'status': evaluation.get('status'),
+        'needed_family_ids': deepcopy(evaluation.get('needed_family_ids') or []),
+        'not_needed_family_ids': deepcopy(evaluation.get('not_needed_family_ids') or []),
+        'unresolved_family_ids': deepcopy(evaluation.get('unresolved_family_ids') or []),
+    }
+    upstream['content_object_ids'] = [str(x) for x in (content_object_ids or []) if str(x or '').strip()]
+    upstream['lineage_role'] = 'REFERENCE_METADATA_ONLY'
+    out['upstream_lineage'] = upstream
+    out['upstream_lineage_stage'] = 'PHASE3_TO_PHASE4_PRE_ASSET_ARCHITECTURE'
+    out['runtime_may_invent_visual_strategy'] = False
+    return out
+
+
 def visual_master_ref(master: Mapping[str, Any] | None) -> dict[str, Any]:
     master = master if isinstance(master, Mapping) else {}
     if not master.get('visual_master_id') or not master.get('authority_hash'):
