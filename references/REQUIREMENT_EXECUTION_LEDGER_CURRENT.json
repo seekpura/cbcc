@@ -6,7 +6,7 @@
   "completion_rule": "No requirement is complete from document existence, headings, file counts or boolean flags. Require concrete consumer, proof object, verification and where applicable real K01 FULL evidence.",
   "new_requirements": [
     {"req":"REQ-061","title":"Canonical commerce object graph","phase":"1,6,7","status":"PARTIAL_PHASE_1_GRAPH_AUTHORITY_VERIFIED"},
-    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_PRODUCT_TRUTH_AND_MARKET_RESEARCH_VERIFIED"},
+    {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_AND_MARKET_RESEARCH_VERIFIED"},
     {"req":"REQ-063","title":"Explicit opportunity-family evaluation","phase":"3","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-064","title":"Scenario/Lifestyle/Context/Human-use","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-065","title":"Negative/Counterexample/Expectation management","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
@@ -32,14 +32,14 @@
     {"req":"REQ-085","title":"Concrete human/culture/inclusion execution","phase":"4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-086","title":"Scene-derived photography/lighting/CMF closure","phase":"4,5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-087","title":"Listing/Economics/Ads/Reviews/Research remain first-class","phase":"1,2","status":"PARTIAL_PHASE2_RESEARCH_FIRST_CLASS_VERIFIED"},
-    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE2_PRODUCT_TRUTH_AND_RESEARCH_LINEAGE_VERIFIED"},
+    {"req":"REQ-088","title":"Source/Evidence/Assumption/Decision lineage","phase":"1,2,7","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_AND_RESEARCH_LINEAGE_VERIFIED"},
     {"req":"REQ-089","title":"Human Workspace full canonical projection","phase":"6","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-090","title":"FULL package lineage and actual-output boundary","phase":"7,8,10","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"}
   ],
   "phase_status": {
     "0":"IN_PROGRESS_BUILT_PLUGIN_READBACK_DEFERRED_PHASE11",
     "1":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY",
-    "2":"IN_PROGRESS_PRODUCT_TRUTH_AND_MARKET_RESEARCH_SUBTASKS_VERIFIED",
+    "2":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_AND_MARKET_RESEARCH_SUBTASKS_VERIFIED",
     "3":"NOT_STARTED",
     "4":"NOT_STARTED",
     "5":"NOT_STARTED",
@@ -101,25 +101,33 @@
       ]
     },
     "2": {
-      "status":"IN_PROGRESS_PRODUCT_TRUTH_AND_MARKET_RESEARCH_SUBTASKS_VERIFIED",
+      "status":"IN_PROGRESS_INFORMATION_AUDIT_PRODUCT_TRUTH_AND_MARKET_RESEARCH_SUBTASKS_VERIFIED",
       "verified_subtasks":[
+        "Information Audit / Pending Questions / Assumption-Decision authority",
         "Product Truth / Evidence authority",
         "Market / Search / Competition / Price-band / Review Opportunity Research authority"
       ],
       "focused_tests": {
+        "information_audit":"7 passed core authority",
+        "information_audit_full_alias":"2 passed after 1/2 RED proved FULL_PROJECT regression",
         "product_truth":"9 passed",
         "market_research":"6 passed",
         "canonical_graph_market_binding":"1 passed behavioral verification",
-        "runtime_market_binding":"GitHub main source readback verified"
+        "runtime_bindings":"GitHub main source readback verified for Market Research and v0.6.76 Information Audit closure"
       },
-      "cross_scope_tests":"23 passed for canonical graph + Product Truth + Market Research, plus Phase 0 authority guard 1 passed and frozen K01 negative fixture guard 3 passed",
+      "cross_scope_tests":"32 passed for canonical graph + Product Truth + Market Research + Information Audit, plus Phase 0 authority guard 1 passed and frozen K01 negative fixture guard 3 passed",
       "proof_objects":[
+        "runtime/cbcc/information_audit_authority.py",
+        "runtime/cbcc/v0676_phase2_closure.py",
+        "runtime/cbcc/__init__.py",
+        "tests/test_v0676_information_audit_authority.py",
+        "tests/test_v0676_information_audit_full_alias_regression.py",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_INFORMATION_AUDIT.json",
         "runtime/cbcc/product_truth_evidence_authority.py",
         "tests/test_v0676_product_truth_evidence_authority.py",
         "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_PRODUCT_TRUTH.json",
         "runtime/cbcc/market_research_authority.py",
         "runtime/cbcc/tools/market.py",
-        "runtime/cbcc/__init__.py",
         "runtime/cbcc/compiler.py",
         "runtime/cbcc/canonical_commerce_graph.py",
         "tests/test_v0676_market_research_authority.py",
@@ -127,6 +135,12 @@
         "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE2_MARKET_RESEARCH.json"
       ],
       "verified_behaviors":[
+        "Information Audit preserves all unresolved inputs while exposing at most 10 user-facing pending confirmations and explicit overflow",
+        "missing inputs, pending confirmations and assumptions keep exact_fact=null and cannot silently become facts",
+        "FACT / ASSUMPTION / DECISION remain explicitly separated and carry source/evidence/recency/confidence/assumption-boundary/downstream/conflict/proof-object lineage",
+        "pending questions, assumptions and decisions carry WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT density",
+        "Information Audit continues unrelated work under explicit assumptions/TO_VERIFY/MISSING_INPUT boundaries",
+        "v0.6.76 Information Audit installs after mature bootstrap + v0.6.74 and preserves v0.6.74 FULL_PROJECT/FULL_DELIVERY/etc alias semantics",
         "FACT / TRUE_SELLING_POINT / PERCEIVED_BENEFIT / EMOTIONAL_VALUE / NON_CLAIMABLE remain separate",
         "A/B/C evidence semantics are machine-explicit and C-grade/unbound rows cannot become hard claims",
         "Claim→Evidence trace exposes SOURCE_BOUND / UNBOUND_HOLD and fact conflicts are quarantined",
@@ -139,7 +153,8 @@
         "real Runtime package initialization wraps tools.market.analyze_market additively, preserving compiler analyze_market -> market_analysis.json",
         "canonical RESEARCH graph node prefers enriched market_analysis.json while retaining research_gate.json as compatibility fallback"
       ],
-      "remaining_phase2":"Information audit/questions/assumption-decision density closure; Platform×Region×Audience×Culture WHY; intersectionality/culture adaptation; applied Positioning/VP/STP/JTBD/AIDA/FABE/4P/Funnel/RACE decisions; Economics/Offer; complete Listing/Search; Content Matrix/RACE; Ads optimization; Review Analysis root-cause/repair loop; Measurement/A-B/P0-P1-P2/next-input plan; full major-row WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT coverage across those objects.",
+      "produced_object_inspection":"A 12-question upstream state already split into 10 visible + 2 overflow remained total=12/visible=10/overflow=2 after compilation; unresolved items were preserved; all questions and the assumption retained exact_fact=null; the Product Truth FACT retained exact_fact=30g; information_audit_issues returned an empty list.",
+      "remaining_phase2":"Platform×Region×Audience×Culture WHY; intersectionality/culture adaptation; applied Positioning/VP/STP/JTBD/AIDA/FABE/4P/Funnel/RACE decisions; Economics/Offer; complete Listing/Search; Content Matrix/RACE; Ads optimization; Review Analysis root-cause/repair loop; Measurement/A-B/P0-P1-P2/next-input plan; full major-row WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT coverage across those objects.",
       "real_k01_full":"PENDING_PHASE10",
       "built_plugin_readback":"PENDING_PHASE11",
       "provider_actual_output":"E2E_PENDING",
@@ -153,7 +168,12 @@
         "94be2bc02c5ab93f96fe3ca86afeae7dc0511fef",
         "dce49ebb578b266523f01c4486c155fc289a696d",
         "54ab48b9f5aedbcd0c56686c54b078dd8ae2372e",
-        "13f6c30103d570ed4aefcf6476d19631315054c1"
+        "13f6c30103d570ed4aefcf6476d19631315054c1",
+        "c33a23502aae6e04aa18b68b02a9ec35644c835b",
+        "b93286595d82b683859e98714dde0cdb1cc3fd83",
+        "29d8b5759c1cf87aacf22a9ebea790fba13c34af",
+        "eb567864664934943a30745f7c6c9f6d1aa2149e",
+        "640043bf96d4fb759d9a986e373019ba8f403fa2"
       ]
     }
   }
