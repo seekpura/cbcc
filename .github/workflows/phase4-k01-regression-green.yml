@@ -1,0 +1,64 @@
+name: phase4-k01-regression-green
+
+on:
+  push:
+    branches: [phase4-k01-regression]
+    paths:
+      - '.github/phase4_k01_regression_patch.py'
+      - '.github/workflows/phase4-k01-regression-green.yml'
+  workflow_dispatch:
+
+permissions: {contents: write}
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    env: {PYTHONPATH: runtime}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase4-k01-regression
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install -q pytest pyyaml pillow
+      - name: Apply minimal photographic-route activation fix
+        run: python .github/phase4_k01_regression_patch.py
+      - name: Focused RED-to-GREEN proof
+        run: |
+          pytest -q \
+            tests/test_v0676_phase4_nonphoto_camera_view_regression.py \
+            tests/test_v0672_fresh_k01_portfolio_delta.py \
+            tests/test_v0676_phase4_scene_derived_photography_authority.py
+      - name: Full Phase 4 regression proof
+        run: |
+          files=(tests/test_v0676_phase4_*.py)
+          pytest -q "${files[@]}"
+      - name: Full v0.6.72 Fresh K01 regression proof
+        run: |
+          pytest -q \
+            tests/test_v0672_fresh_k01_portfolio_delta.py \
+            tests/test_v0672_fresh_k01_projection_closure.py \
+            tests/test_v0672_global_language_closure.py \
+            tests/test_v0672_canonical_human_compaction.py \
+            tests/test_v0672_fresh_k01_materialization_closure.py \
+            tests/test_v0672_fresh_k01_final_export_closure.py \
+            tests/test_v0672_prompt_relevance_and_nested_execution.py \
+            tests/test_v0672_integrated_copy_negative_constraint.py \
+            tests/test_v0672_nonblocking_platform_research.py
+      - name: Direct cross-scope consumers
+        run: |
+          pytest -q \
+            tests/test_v0676_listing_search_authority.py \
+            tests/test_v0676_listing_search_context_bridge.py \
+            tests/test_v0676_listing_search_runtime_binding.py \
+            tests/test_v0676_canonical_commerce_graph.py \
+            tests/test_v0635_native_reference_provider_integrity.py
+      - name: Commit production fix only
+        run: |
+          git config user.name 'cbcc-phase4-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add runtime/cbcc/portfolio_visual_authority.py
+          git diff --cached --check
+          git commit -m 'fix(phase4): avoid false photography activation from camera labels'
+          git push origin HEAD:phase4-k01-regression
