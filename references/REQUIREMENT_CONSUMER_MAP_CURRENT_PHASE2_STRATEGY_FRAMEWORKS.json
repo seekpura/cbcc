@@ -1,0 +1,62 @@
+{
+  "authority": "CBCC Phase 2 Applied Strategy / Frameworks consumer accounting",
+  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
+  "requirements": ["REQ-007", "REQ-010", "REQ-012", "REQ-054", "REQ-060", "REQ-062", "REQ-088"],
+  "status": "PHASE2_SUBTASK_VERIFIED_PENDING_ECONOMICS_LISTING_CONTENT_HUMAN_K01_RELEASE",
+  "locked_behavior": {
+    "strategy_objects": ["positioning", "value_proposition", "message_hierarchy"],
+    "framework_registry": ["RACE", "STP", "JTBD", "AIDA", "FABE", "4P", "FUNNEL"],
+    "race_order": ["RESEARCH", "ACTION", "COMMUNICATION", "EVALUATION"],
+    "major_row_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
+    "rule": "Framework names, roles, glossary definitions and generic measurement defaults are not applied strategy. APPLIED requires a named changed current-project decision plus six-field density. NOT_NEEDED requires equally explicit reason/tradeoff density. Runtime does not invent missing value proposition, framework application or RACE evidence."
+  },
+  "consumers": [
+    "runtime/cbcc/strategy_authority.py",
+    "runtime/cbcc/strategy_depth_projection_v3.py",
+    "runtime/cbcc/strategy_culture_materialization.py",
+    "runtime/cbcc/strategy_culture_completion_v0670.py",
+    "runtime/cbcc/strategy_execution_completion_v0671.py",
+    "runtime/cbcc/strategy_framework_authority.py",
+    "runtime/cbcc/v0676_phase2_closure.py",
+    "runtime/cbcc/delivery_contract.py",
+    "runtime/cbcc/delivery_export.py"
+  ],
+  "proof_objects": [
+    "strategy.strategy_framework_authority_v0676.positioning",
+    "strategy.strategy_framework_authority_v0676.value_proposition",
+    "strategy.strategy_framework_authority_v0676.message_hierarchy[*]",
+    "strategy.strategy_framework_authority_v0676.frameworks.*",
+    "strategy.strategy_framework_authority_v0676.race[*]",
+    "delivery_contract.strategy_framework_authority_v0676_audit"
+  ],
+  "regression_tests": [
+    "tests/test_v0676_strategy_framework_authority.py",
+    "tests/test_v0676_context_why_authority.py",
+    "tests/test_v0676_intersectionality_culture_authority.py"
+  ],
+  "verification": {
+    "red": "Before runtime/cbcc/strategy_framework_authority.py existed, focused test collection failed with FileNotFoundError for the intended missing authority.",
+    "focused_green": "6/6 strategy/framework authority tests passed.",
+    "adjacent_cross_scope": "18/18 passed: 6 Strategy/Frameworks + 6 Context WHY + 6 Intersectionality/Culture. The earlier 32-test Phase 1/Product Truth/Research/Information Audit baseline was not claimed as rerun in this batch.",
+    "source_readback": "GitHub main readback confirms strategy_framework_authority.py and v0676_phase2_closure.py binding are persisted.",
+    "human_json_md_html_parity": "PENDING_PHASE6",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11"
+  },
+  "verified_behavior": [
+    "Positioning, Value Proposition and Message Hierarchy are explicit six-field decision objects; missing Value Proposition remains TO_VERIFY with exact_fact=null rather than generated copy.",
+    "Generic v0.6.69/v0.6.70 framework role/basis/tradeoff/execution/measurement rows cannot false-pass as applied decisions.",
+    "Framework application is complete only when each registry row is explicitly APPLIED or NOT_NEEDED, carries a named changed_decision and full six-field density.",
+    "NOT_NEEDED is a real decision state, not an omission shortcut; a bare status + short reason remains TO_VERIFY.",
+    "RACE stage definitions/objective/KPI labels do not substitute for applied decision evidence/tradeoff; all four stages need explicit decision density.",
+    "FULL aliases reuse mature v0.6.74 semantics; TASK_SCOPED remains unchanged.",
+    "Information Audit, Product Truth, Market/Audience/Culture and Culture Adaptation sibling objects are not mutated; pre-existing validator issues remain preserved."
+  ],
+  "deferred_boundaries": [
+    "Pricing/Economics/Offer remains Phase 2 subtask 7 and is not inferred from 4P or market price bands.",
+    "Complete Listing/Search remains Phase 2 subtask 8.",
+    "Content Matrix per-row platform/RACE/culture/attribution execution remains Phase 2 subtask 9.",
+    "Human Workspace JSON→MD→HTML same-source projection remains Phase 6.",
+    "Fresh real K01 FULL remains Phase 10; built plugin readback remains Phase 11."
+  ]
+}
