@@ -1,0 +1,47 @@
+{
+  "authority": "CBCC Phase 2 Platform×Region×Audience×Culture WHY consumer accounting",
+  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
+  "requirements": ["REQ-007", "REQ-010", "REQ-054", "REQ-062", "REQ-088"],
+  "status": "PHASE2_SUBTASK_VERIFIED_PENDING_REAL_K01_PHASE10_AND_HUMAN_PARITY_PHASE6",
+  "locked_behavior": {
+    "major_decision_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
+    "context_axes": ["platform", "region", "audience", "race_ethnicity_culture"],
+    "rule": "Project-level context may inform a major decision but cannot false-pass as decision-specific causal WHY. Missing decision-specific context remains TO_VERIFY; Runtime does not invent platform, market, audience or culture causality."
+  },
+  "consumers": [
+    "runtime/cbcc/strategy_execution_completion_v0671.py",
+    "runtime/cbcc/context_why_authority.py",
+    "runtime/cbcc/v0676_phase2_closure.py",
+    "runtime/cbcc/strategy_authority.py",
+    "runtime/cbcc/delivery_contract.py",
+    "runtime/cbcc/delivery_export.py"
+  ],
+  "proof_objects": [
+    "strategy.sections.04_marketing_core_strategy.major_decision_context_why[*]",
+    "strategy.sections.04_marketing_core_strategy.major_decision_context_why[*].context_why.platform",
+    "strategy.sections.04_marketing_core_strategy.major_decision_context_why[*].context_why.region",
+    "strategy.sections.04_marketing_core_strategy.major_decision_context_why[*].context_why.audience",
+    "strategy.sections.04_marketing_core_strategy.major_decision_context_why[*].context_why.race_ethnicity_culture",
+    "strategy.context_why_authority_v0676",
+    "delivery_contract.context_why_authority_v0676_audit"
+  ],
+  "regression_tests": [
+    "tests/test_v0676_context_why_authority.py"
+  ],
+  "verification": {
+    "red": "Before runtime/cbcc/context_why_authority.py existed, focused test collection failed with FileNotFoundError for the intended missing authority.",
+    "focused_green": "4 core context-WHY tests passed.",
+    "cross_scope": "6 tests passed after adding adjacent-object preservation and existing-validator-issue preservation checks.",
+    "source_readback": "GitHub main readback confirms the authority and v0.6.76 closure binding are persisted.",
+    "real_k01_full": "PENDING_PHASE10",
+    "human_json_md_html_parity": "PENDING_PHASE6",
+    "built_plugin_readback": "PENDING_PHASE11"
+  },
+  "non_regression": [
+    "Information Audit / Product Truth / Market-Audience-Culture sibling sections are not mutated by this authority.",
+    "Existing validator issues are preserved; the context-WHY validator only adds its own concrete issues.",
+    "FULL_PROJECT and other explicit FULL aliases use the mature v0.6.74 semantics.",
+    "TASK_SCOPED / PARTIAL paths remain unchanged.",
+    "Inherited project_context or missing axes cannot be promoted to READY merely because a WHY sentence exists."
+  ]
+}
