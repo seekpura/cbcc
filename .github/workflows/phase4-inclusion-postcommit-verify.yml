@@ -1,0 +1,41 @@
+name: phase4-inclusion-postcommit-verify
+
+on:
+  push:
+    paths:
+      - '.github/phase4_verify_inclusion.py'
+      - '.github/workflows/phase4-inclusion-postcommit-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pyyaml
+      - name: Independent cross-scope verification
+        run: |
+          pytest -q \
+            tests/test_v0676_phase4_inclusion_execution_authority.py \
+            tests/test_v0676_intersectionality_culture_authority.py \
+            tests/test_v0670_human_projection_integrity.py \
+            tests/test_v0676_phase4_visual_route_art_direction.py \
+            tests/test_v0676_phase4_scene_derived_photography_authority.py \
+            tests/test_v0676_phase4_visual_master_authority.py \
+            tests/test_v0676_phase4_visual_master_runtime_binding.py \
+            tests/test_v0635_native_reference_provider_integrity.py \
+            tests/test_v0646_subject_*.py \
+            tests/test_reference_guided_optional_prompt_and_capability_continuity.py
+      - name: Produced-object inspection
+        run: python .github/phase4_verify_inclusion.py
