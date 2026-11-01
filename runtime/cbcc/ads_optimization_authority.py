@@ -8,8 +8,8 @@ import re
 DENSITY_FIELDS=('what','why','evidence','tradeoff','execution','measurement')
 BUSINESS_FIELDS=(
     'objective','funnel_state','audience_state','consumer_tension','creative_hypothesis','creative_mechanism',
-    'proof','offer','landing_handoff','spend_boundary','attribution','test_structure','failure_diagnosis',
-    'repair_route','learning_handoff',
+    'proof','offer','landing_handoff','spend_boundary','economics_boundary_ref','attribution','test_structure',
+    'test_variable','hold_constant','success_rule','failure_rule','failure_diagnosis','repair_route','learning_handoff',
 )
 _FULL_DENY={'TASK_SCOPED','TASK_SCOPE','PARTIAL','NOT_FULL','NON_FULL','SCOPED','MINIMAL'}
 _FULL_EXACT={'FULL','FULL_PROJECT','FULL_DELIVERY','FULL_PACKAGE','FULL_COMMERCE','FULL_STRATEGY','FULL_WORKSPACE','FULL_E2E','END_TO_END','COMPLETE_DELIVERY','COMPLETE_PROJECT','完整交付','全量交付','完整项目','全量项目'}
@@ -146,11 +146,25 @@ def _attribution_boundary(legacy:Mapping[str,Any], request:Mapping[str,Any])->di
         'causal_sales_claim_allowed':bool(established),
         'rule':'Platform-attributed conversions are not automatically incremental conversions. Causal sales/lift claims require an explicit incrementality decision backed by defensible counterfactual evidence.'
     }
-
 def _optimization_rows(request:Mapping[str,Any])->list[Any]:
     obj=request.get('advertising_optimization') or request.get('ads_optimization') or {}
     if isinstance(obj,Mapping): return _l(obj.get('rows') or obj.get('decisions') or obj.get('optimization_rows'))
     return _l(obj)
+
+def _norm_text(v:Any)->str:
+    return re.sub(r'\s+',' ',str(v or '')).strip().casefold()
+
+def _bind_row_to_economics(row:dict[str,Any], econ:Mapping[str,Any])->dict[str,Any]:
+    out=deepcopy(row)
+    expected_offer=_d(econ.get('offer_decision')).get('decision')
+    offer_ready=_p(expected_offer) and _norm_text(out.get('offer'))==_norm_text(expected_offer)
+    out['offer_alignment_status']='READY' if offer_ready else 'TO_VERIFY'
+    out['verified_offer_decision']=deepcopy(expected_offer) if _p(expected_offer) else None
+    expected_ref='phase2_economics_offer_authority.break_even'
+    out['economics_binding_status']='READY' if econ.get('status')=='READY' and str(out.get('economics_boundary_ref') or '')==expected_ref else 'TO_VERIFY'
+    out['economics_boundary_expected_ref']=expected_ref
+    out['row_status']='READY' if all(out.get(k)=='READY' for k in ('business_contract_status','density_status','lineage_status','offer_alignment_status','economics_binding_status')) else 'TO_VERIFY'
+    return out
 
 def ads_optimization_issues(authority:Mapping[str,Any])->list[dict[str,Any]]:
     auth=_d(authority); issues=[]
@@ -163,6 +177,10 @@ def ads_optimization_issues(authority:Mapping[str,Any])->list[dict[str,Any]]:
             issues.append({'code':'FULL_ADS_OPTIMIZATION_BUSINESS_DENSITY_INCOMPLETE_V0676','row':i,'fields':row.get('density_gaps') or list(DENSITY_FIELDS)})
         if row.get('lineage_status')!='READY':
             issues.append({'code':'FULL_ADS_OPTIMIZATION_LINEAGE_INCOMPLETE_V0676','row':i,'fields':row.get('lineage_gaps') or []})
+        if row.get('offer_alignment_status')!='READY':
+            issues.append({'code':'FULL_ADS_OFFER_ALIGNMENT_INCOMPLETE_V0676','row':i,'offer':row.get('offer'),'verified_offer_decision':row.get('verified_offer_decision')})
+        if row.get('economics_binding_status')!='READY':
+            issues.append({'code':'FULL_ADS_ECONOMICS_BINDING_INCOMPLETE_V0676','row':i,'economics_boundary_ref':row.get('economics_boundary_ref'),'expected_ref':row.get('economics_boundary_expected_ref')})
     if _d(auth.get('economics_context')).get('status')!='READY':
         issues.append({'code':'FULL_ADS_ECONOMICS_BOUNDARY_INCOMPLETE_V0676'})
     dedup=[]
@@ -176,6 +194,7 @@ def materialize_ads_optimization_authority(legacy_ads:Mapping[str,Any], request:
     sources=_source_index(req)
     rows=[_normalize_row(x,i,sources) for i,x in enumerate(_optimization_rows(req)) if isinstance(x,Mapping)]
     econ=_phase2_economics(pricing_economics)
+    rows=[_bind_row_to_economics(row,econ) for row in rows]
     attr=_attribution_boundary(base,req)
     authority={
         'schema':'cbcc-ads-optimization-authority-v0.6.76',
@@ -237,21 +256,25 @@ def _ads_analyzer_scope(request:Mapping[str,Any])->bool:
 
 def wrap_compile_pricing_economics_for_ads_context(fn):
     def compiled(request:dict[str,Any], market_analysis=None, legacy_economics=None):
+        _ADS_CONTEXT.set(None)
         out=fn(request,market_analysis,legacy_economics)
         if _is_full(request,out) and _ads_analyzer_scope(request):
             _ADS_CONTEXT.set({'request':deepcopy(request),'pricing_economics':deepcopy(out)})
-        else:
-            _ADS_CONTEXT.set(None)
         return out
     setattr(compiled,'_cbcc_v0676_ads_optimization_context_bridge',True)
     return compiled
 
 def wrap_analyze_ads(fn):
     def compiled(*args:Any, **kwargs:Any):
-        legacy=fn(*args,**kwargs)
-        if _ADS_PORTFOLIO_DEPTH.get()>0:
-            return legacy
+        in_portfolio=_ADS_PORTFOLIO_DEPTH.get()>0
         ctx=_d(_ADS_CONTEXT.get())
+        try:
+            legacy=fn(*args,**kwargs)
+        except Exception:
+            if ctx and not in_portfolio: _ADS_CONTEXT.set(None)
+            raise
+        if in_portfolio:
+            return legacy
         if not ctx:
             return legacy
         try:
@@ -266,6 +289,9 @@ def wrap_analyze_ad_portfolio(fn):
         token=_ADS_PORTFOLIO_DEPTH.set(_ADS_PORTFOLIO_DEPTH.get()+1)
         try:
             legacy=fn(*args,**kwargs)
+        except Exception:
+            _ADS_CONTEXT.set(None)
+            raise
         finally:
             _ADS_PORTFOLIO_DEPTH.reset(token)
         ctx=_d(_ADS_CONTEXT.get())
