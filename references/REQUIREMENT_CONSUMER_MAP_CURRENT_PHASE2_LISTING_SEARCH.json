@@ -1,0 +1,116 @@
+{
+  "authority": "CBCC Phase 2 Complete Listing / Search consumer accounting",
+  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
+  "requirements": ["REQ-006", "REQ-009", "REQ-014", "REQ-016", "REQ-017", "REQ-045", "REQ-062", "REQ-087", "REQ-088"],
+  "status": "PHASE2_SUBTASK_VERIFIED_PENDING_CONTENT_MATRIX_ADS_HUMAN_K01_RELEASE",
+  "locked_behavior": {
+    "major_listing_search_objects": ["search", "title", "bullets", "description", "attributes", "usage", "package", "faq", "claim_mapping"],
+    "decision_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
+    "lineage": ["source_refs", "source_type", "recency", "exact_fact", "interpretation", "confidence", "assumption_boundary", "downstream_use", "conflict_status", "proof_object"],
+    "search_evidence_rule": "Search terms/keyword architecture retain explicit source IDs. Unsourced terms remain TO_VERIFY; search volume, rank, sales and demand are never invented.",
+    "claim_evidence_rule": "Factual/claim-bearing Listing fields retain Product Truth / Claim trace. Existing copy is not evidence by itself.",
+    "pricing_offer_rule": "Listing consumes only the explicit Phase 2 Pricing/Offer decision from the verified Economics authority. Market price bands/valleys remain evidence and cannot author product price or offer.",
+    "publishability_rule": "Legacy LISTING_CONTRACT_COMPILED or copy existence is not publish readiness. Required target locales must expose current-version APPROVED_FINAL copy.",
+    "language_rule": "Non-English market Listing preserves target-market exact copy, an English semantic baseline, and the operator delivery-language companion (zh-CN in the locked project pattern) without silently inventing missing copy.",
+    "canonical_rule": "The mature Listing engine remains the only Listing compiler. Phase 2 enriches its existing listing_analysis.json output; canonical graph binds that real artifact instead of creating a second Listing payload."
+  },
+  "consumers": [
+    "runtime/cbcc/tools/listing.py",
+    "runtime/cbcc/listing_search_authority.py",
+    "runtime/cbcc/pricing_economics_authority.py",
+    "runtime/cbcc/economics_offer_authority.py",
+    "runtime/cbcc/v0676_phase2_closure.py",
+    "runtime/cbcc/compiler.py",
+    "runtime/cbcc/seven_tool_continuity.py",
+    "runtime/cbcc/canonical_commerce_graph.py"
+  ],
+  "proof_objects": [
+    "artifacts/listing_analysis.json.compiled.phase2_listing_search_authority",
+    "artifacts/listing_analysis.json.compiled.phase2_business_status",
+    "artifacts/listing_analysis.json.compiled.phase2_listing_search_authority.decisions",
+    "artifacts/listing_analysis.json.compiled.phase2_listing_search_authority.search_evidence",
+    "artifacts/listing_analysis.json.compiled.phase2_listing_search_authority.claim_evidence_mapping",
+    "artifacts/listing_analysis.json.compiled.phase2_listing_search_authority.pricing_offer_context",
+    "artifacts/listing_analysis.json.compiled.phase2_listing_search_authority.publishability",
+    "artifacts/listing_analysis.json.compiled.phase2_listing_search_authority.language_continuity",
+    "seven_tool_continuity.capabilities[id=03_LISTING_CREATIVE].business_readiness_status",
+    "seven_tool_continuity.listing_search_integrity",
+    "canonical_commerce_graph.LISTING_SEARCH.authority_ref"
+  ],
+  "regression_tests": [
+    "tests/test_v0676_listing_search_authority.py",
+    "tests/test_v0676_listing_search_context_bridge.py",
+    "tests/test_v0676_listing_search_runtime_binding.py",
+    "tests/test_v0676_economics_offer_authority.py",
+    "tests/test_v0676_canonical_commerce_graph.py"
+  ],
+  "verification": {
+    "red": [
+      "Initial focused RED failed during collection with FileNotFoundError for runtime/cbcc/listing_search_authority.py, proving the missing first-class Phase 2 authority rather than a generic test failure.",
+      "Runtime-binding RED proved that the real compiler artifact listing_analysis.json was not a LISTING_SEARCH canonical candidate and that the v0.6.76 closure had no Listing business-readiness bridge.",
+      "Pricing-to-Listing context RED proved the mature compiler had no route to consume the final verified #7 Economics/Offer authority without changing compiler.py.",
+      "Leakage-boundary RED failed because a FULL request without listing_input could seed stale Listing context for a later unrelated Listing call."
+    ],
+    "green": "Focused verification passed 12/12: Listing/Search authority 7 + Pricing-to-Listing context bridge 3 + runtime/canonical binding 2.",
+    "cross_scope": "Adjacent verification passed 18/18 in the current session: existing Phase 2 Economics/Offer authority 11 + existing canonical commerce graph 7. These are current reruns, not historical pass counts.",
+    "produced_object_inspection": {
+      "ready_fixture": {
+        "status": "READY",
+        "publishability": "READY",
+        "major_decisions_ready": "9/9",
+        "search_status": "READY",
+        "search_first_source": "SRC-SEARCH",
+        "selected_price": "MYR 59 base price",
+        "selected_offer": "No automatic launch discount",
+        "primary_locale": "ms-MY",
+        "english_semantic_baseline": "READY",
+        "delivery_locale": "zh-CN",
+        "delivery_companion": "READY",
+        "issue_count": 0
+      },
+      "negative_fixture": {
+        "change": "remove FAQ Phase 2 decision while retaining existing FAQ copy",
+        "status": "TO_VERIFY",
+        "faq_density_status": "TO_VERIFY",
+        "issue": "FULL_LISTING_MAJOR_DECISION_INCOMPLETE_V0676"
+      }
+    },
+    "compiler_change": "NOT_REQUIRED: compiler.py already calculates Pricing/Economics before Listing and writes listing_analysis.json. A request-local one-use context bridge preserves that mature call order without rewriting the compiler.",
+    "human_json_md_html_parity": "PENDING_PHASE6",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11",
+    "provider_actual_output": "E2E_PENDING"
+  },
+  "verified_behavior": [
+    "Complete Listing/Search business readiness is independent from legacy LISTING_CONTRACT_COMPILED and legacy pass booleans.",
+    "Nine major Listing/Search objects require explicit WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT plus REQ-088 lineage before FULL business readiness can be READY.",
+    "Missing major decisions remain TO_VERIFY even when corresponding copy already exists; copy existence cannot false-pass business depth.",
+    "Search terms preserve source IDs. Unsourced keywords remain visible but keep Search authority TO_VERIFY rather than receiving invented demand/rank evidence.",
+    "Product price and offer come only from the verified Phase 2 Economics/Offer decision. Market price bands never auto-author Listing price.",
+    "Required target-locale copy must be current-version APPROVED_FINAL; drafts/review-pending copy do not become publishable merely because deterministic field compilation passed.",
+    "Non-English FULL Listing requires an English semantic baseline and delivery-language companion alongside target-market copy.",
+    "Seven-tool Listing Creative now exposes business_readiness_status separately from legacy compiler status.",
+    "The Pricing-to-Listing context bridge is request-local, used only when listing_input exists, consumed once, and cleared so it cannot silently contaminate a second unrelated Listing call.",
+    "Canonical LISTING_SEARCH now binds the existing real listing_analysis.json ahead of legacy aliases while preserving fallback compatibility."
+  ],
+  "deferred_boundaries": [
+    "Content Matrix per-row platform/RACE/culture/attribution execution remains Phase 2 subtask 9 and is not implemented by this Listing/Search closure.",
+    "Advertising Optimization remains Phase 2 subtask 10; this subtask only consumes verified Pricing/Offer context and does not build Ads loops.",
+    "Review Analysis/root-cause/repair remains Phase 2 subtask 11.",
+    "Measurement/A-B/P0-P1-P2/next-input closure remains Phase 2 subtask 12.",
+    "JSON→MD→HTML same-source Human Workspace projection remains Phase 6; no HTML was modified in this subtask.",
+    "Fresh real K01 FULL remains Phase 10; built-plugin install/readback remains Phase 11.",
+    "Provider Result / actual-output QA remains E2E_PENDING and is not implied by this business-object closure."
+  ],
+  "source_commits": [
+    "133f204403ec2d7d9543a385d930f1eb0906a352",
+    "27e03947902059076c26d6f1208e5cf9f131dd58",
+    "a3f38f15328e966c7ce1c8a189e5eb7c76e0edea",
+    "78bd5420934c82933996fef7f56f7954f37b2a94",
+    "0f5d8f8ee2bfcd13a65353a24f3d091609081a6e",
+    "857b07b04f865cc97efe230bcffdb5007c928dca",
+    "2550abbaab9d6dcc23af23e7d732a1d110a5f2ec",
+    "714023e5ef9640bbcf08e78f47af4e0a866f252d",
+    "503f5810a2bb820149ebe5127dda448bac39a81b"
+  ]
+}
