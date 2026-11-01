@@ -1,0 +1,20 @@
+{
+  "task": "T22",
+  "name": "Routed Human Workspace full-object interaction",
+  "local_source_commit": "d05fd652694f29ff8773e881562b27ce75b0e963",
+  "parent_local_commit": "fc5ce2aba9665e9a69a1326ac0289f905ac39d2c",
+  "patch_bytes": 24051,
+  "patch_sha256": "1fa0ed8aefc7443527ca72b173373991c51722857e3b78af4f5adad9f2846019",
+  "patch_gzip_sha256": "e10a5bd17cd48b50496be25ebf49878e79db02a5875297c37f080f9aa29a31f7",
+  "focused_and_cross_scope": "22 passed",
+  "k01_object_count": 58,
+  "k01_visible_detail_routes": 58,
+  "current_plugin_build": {
+    "status": "PASS",
+    "issue_count": 0,
+    "bytes": 2596202,
+    "sha256": "15603f013c4ccaa0db3fe6005f6dd93a98151d3c3f7639219d27c2e6ec253816"
+  },
+  "actions_waited": false,
+  "main_touched": false
+}
