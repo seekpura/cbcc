@@ -17,6 +17,7 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     from . import delivery_contract
     from . import delivery_export
     from . import pricing_economics_authority as pricing_economics_module
+    from . import seven_tool_continuity as seven_tool_module
     from .information_audit_authority import (
         wrap_build_master_strategy as wrap_information_audit_strategy,
         wrap_validate_strategy_delivery as wrap_information_audit_validator,
@@ -38,6 +39,7 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         wrap_build_master_strategy as wrap_economics_offer_strategy,
         wrap_validate_strategy_delivery as wrap_economics_offer_validator,
     )
+    from .economics_offer_seven_tool_bridge import wrap_compile_seven_tool_continuity
 
     installed: list[str] = []
 
@@ -79,6 +81,14 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_economics_offer_authority', False):
         delivery_contract.validate_strategy_delivery = wrap_economics_offer_validator(delivery_contract.validate_strategy_delivery)
 
+    # Seven-tool continuity remains mature; only its Economics evidence status is enriched so calculation
+    # readiness cannot masquerade as Pricing/Offer business readiness.
+    if not getattr(seven_tool_module.compile_seven_tool_continuity, '_cbcc_v0676_economics_offer_authority', False):
+        seven_tool_module.compile_seven_tool_continuity = wrap_compile_seven_tool_continuity(
+            seven_tool_module.compile_seven_tool_continuity
+        )
+        installed.append('SEVEN_TOOL_ECONOMICS_BUSINESS_READINESS_BRIDGE')
+
     delivery_export.validate_strategy_delivery = delivery_contract.validate_strategy_delivery
 
     closures = [
@@ -103,6 +113,7 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'BREAK_EVEN_INPUT_CONDITIONALITY',
         'MARKET_PRICE_EVIDENCE_NOT_PRICE_RECOMMENDATION',
         'LEGACY_SENSITIVITY_NOT_OFFER_AUTHORITY',
+        'SEVEN_TOOL_ECONOMICS_BUSINESS_READINESS_BRIDGE',
     ]
     return {
         'status':'INSTALLED' if installed else 'ALREADY_INSTALLED',
