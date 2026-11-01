@@ -1,0 +1,32 @@
+name: phase4-photography-compat-verify
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install -q pytest pyyaml openpyxl
+      - name: Verify fixed historical RED and Phase 4 regressions
+        run: |
+          pytest -q \
+            tests/test_v069_photography_execution_continuity.py::test_prompt_consumes_lighting_camera_and_color_execution_contract \
+            tests/test_v0676_phase4_visual_master_runtime_binding.py \
+            tests/test_v0676_phase4_visual_master_authority.py \
+            tests/test_v0676_phase4_visual_route_art_direction.py \
+            tests/test_v0632_portfolio_visual_authority.py \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0676_phase3_opportunity_family_evaluation.py \
+            tests/test_v0676_phase3_opportunity_family_runtime_binding.py
