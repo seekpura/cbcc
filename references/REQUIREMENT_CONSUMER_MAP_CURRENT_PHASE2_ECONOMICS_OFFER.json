@@ -1,0 +1,76 @@
+{
+  "authority": "CBCC Phase 2 Pricing / Economics / Offer consumer accounting",
+  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
+  "requirements": ["REQ-006", "REQ-013", "REQ-059", "REQ-062", "REQ-087", "REQ-088"],
+  "status": "PHASE2_SUBTASK_VERIFIED_PENDING_LISTING_ADS_HUMAN_K01_RELEASE",
+  "locked_behavior": {
+    "required_input_accounting": ["price", "landed_cost", "platform_fee", "payment_fee", "fulfillment", "affiliate_commission", "tax", "refund_allowance"],
+    "conditional_inputs": ["click_to_order_cvr", "target_contribution"],
+    "decision_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
+    "lineage": ["source_refs", "source_type", "recency", "exact_fact", "interpretation", "confidence", "assumption_boundary", "downstream_use", "conflict_status", "proof_object"],
+    "rule": "Missing economics inputs remain MISSING_INPUT and are never silently treated as zero. Explicit zero is valid. Market price bands/valleys are evidence only and cannot author the product price. Calculation readiness is distinct from Pricing/Offer business readiness. Break-even CPA/CPC/ROAS are usable operating boundaries only when their required explicit inputs are complete; a zero-contribution floor remains a labeled mathematical baseline."
+  },
+  "consumers": [
+    "runtime/cbcc/tools/economics.py",
+    "runtime/cbcc/pricing_economics_authority.py",
+    "runtime/cbcc/economics_offer_authority.py",
+    "runtime/cbcc/economics_offer_refinement_v0676.py",
+    "runtime/cbcc/economics_offer_seven_tool_bridge.py",
+    "runtime/cbcc/v0676_phase2_closure.py",
+    "runtime/cbcc/compiler.py",
+    "runtime/cbcc/strategy_authority.py",
+    "runtime/cbcc/seven_tool_continuity.py",
+    "runtime/cbcc/canonical_commerce_graph.py",
+    "runtime/cbcc/delivery_contract.py",
+    "runtime/cbcc/delivery_export.py"
+  ],
+  "proof_objects": [
+    "artifacts/pricing_economics_authority.json",
+    "pricing_economics_authority.phase2_economics_offer_authority",
+    "pricing_economics_authority.phase2_business_status",
+    "strategy.sections.04_marketing_core_strategy.pricing_economics_offer",
+    "seven_tool_continuity.pricing_economics_integrity.calculation_status",
+    "seven_tool_continuity.pricing_economics_integrity.business_readiness_status",
+    "seven_tool_continuity.capabilities[id=02_PRODUCT_STRATEGY].evidence.pricing_status",
+    "canonical_commerce_graph.ECONOMICS.authority_ref"
+  ],
+  "regression_tests": [
+    "tests/test_v0676_economics_offer_authority.py",
+    "tests/test_v0676_economics_offer_refinement.py",
+    "tests/test_v0676_economics_offer_seven_tool_bridge.py",
+    "tests/test_v0676_strategy_framework_authority.py",
+    "tests/test_v0676_intersectionality_culture_authority.py",
+    "tests/test_v0676_context_why_authority.py"
+  ],
+  "verification": {
+    "red": "Before runtime/cbcc/economics_offer_authority.py existed, the focused suite failed during collection with FileNotFoundError for the intended missing authority. A later refinement RED separately proved that zero-target break-even was falsely AVAILABLE and REQ-088 lineage fields were incomplete.",
+    "green": "Production-separated verification passed: Economics core 11, Seven-tool bridge 2, Economics lineage/break-even refinement 2, adjacent Strategy/Frameworks 6, Intersectionality/Culture 6 and Context-WHY 6 = 33/33.",
+    "installed_baseline_readback": "The actual installed v0.6.75 pricing_economics_authority.py was re-read. payment_fee is in OPTIONAL cost aliases and legacy strict status can be READY without it, confirming the Phase 2 business-readiness gap rather than assuming it.",
+    "source_readback": "GitHub main readback confirms economics_offer_authority.py, economics_offer_refinement_v0676.py and the v0.6.76 closure binding are persisted.",
+    "full_package_import_current_session": "NOT_CLAIMED: container DNS/archive materialization prevented reconstructing the complete installed package locally. This is not substituted with a fake PASS; built-plugin readback remains Phase 11.",
+    "human_json_md_html_parity": "PENDING_PHASE6",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11"
+  },
+  "verified_behavior": [
+    "The mature pricing_economics_authority remains the only deterministic calculator; Phase 2 wraps its real output instead of creating a second price calculator.",
+    "price, landed cost, platform fee, payment fee, fulfillment, affiliate commission, tax and refund allowance are all explicitly accounted for; missing values remain MISSING_INPUT while explicit zero remains valid.",
+    "A legacy calculation-level READY may remain for backward compatibility, but phase2_business_status is independently READY/TO_VERIFY and blocks false FULL business readiness.",
+    "Pricing Decision and Offer Decision require explicit WHAT / WHY / EVIDENCE / TRADEOFF / EXECUTION / MEASUREMENT. Math alone cannot author either decision.",
+    "Market price bands, price valleys and price/configuration evidence cannot become the product price or recommendation without an explicit Agent Pricing Decision.",
+    "Legacy sensitivity defaults such as synthetic discount or affiliate-rate steps remain compatibility analysis and cannot become an Offer decision.",
+    "Missing CVR leaves break-even CPC unresolved while CPA/ROAS may remain available when their own inputs and operating target are explicit.",
+    "Missing target contribution preserves zero-contribution break-even numbers only as BASELINE_ZERO_CONTRIBUTION_FLOOR_ONLY; those numbers are not Ads/Offer operating boundaries.",
+    "Required economics inputs plus Pricing/Offer decisions carry REQ-088 lineage fields through source/type/recency/exact fact/interpretation/confidence/assumption boundary/downstream/conflict/proof object.",
+    "The same Phase 2 Economics/Offer object is projected into FULL Strategy; Strategy delivery validation becomes INCOMPLETE when required economics input, Pricing decision or Offer decision is incomplete.",
+    "Seven-tool Product Strategy distinguishes calculation_status from business_readiness_status and cannot report Pricing READY merely because arithmetic calculated.",
+    "Canonical graph already prefers pricing_economics_authority.json over legacy offer_economics.json, so Phase 2 enriches the existing canonical ECONOMICS authority rather than changing graph parentage."
+  ],
+  "deferred_boundaries": [
+    "Complete Listing/Search consumption of selected price/offer remains Phase 2 subtask 8.",
+    "Advertising Optimization spend/creative/landing/economics decision loops remain Phase 2 subtask 10; this subtask only provides truthful economics boundaries.",
+    "Creator/Affiliate execution remains downstream; this subtask only preserves the explicit commission/offer boundary.",
+    "Human Workspace JSON→MD→HTML same-source projection remains Phase 6.",
+    "Fresh real K01 FULL remains Phase 10; built-plugin install/readback remains Phase 11."
+  ]
+}
