@@ -47,6 +47,7 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     )
     from .economics_offer_seven_tool_bridge import wrap_compile_seven_tool_continuity
     from .listing_search_authority import (
+        wrap_compile_pricing_economics_for_listing_context,
         wrap_compile_listing,
         wrap_compile_seven_tool_continuity as wrap_listing_search_seven_tool_continuity,
     )
@@ -95,9 +96,18 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         )
         installed.append('ECONOMICS_OFFER_LINEAGE_AND_BREAK_EVEN_REFINEMENT')
 
+    # The mature compiler calls Pricing/Economics before Listing. Preserve that path and carry the final
+    # verified #7 object through a request-local ContextVar rather than changing compiler.py or creating a
+    # second Listing engine. The Listing wrapper consumes and clears this context on its next call.
+    if not getattr(pricing_economics_module.compile_pricing_economics_authority, '_cbcc_v0676_listing_search_context_bridge', False):
+        pricing_economics_module.compile_pricing_economics_authority = wrap_compile_pricing_economics_for_listing_context(
+            pricing_economics_module.compile_pricing_economics_authority
+        )
+        installed.append('LISTING_SEARCH_PRICING_CONTEXT_BRIDGE')
+
     # Listing 2.0 remains the mature field/search/localization compiler. Phase 2 wraps that same compiler;
     # it does not introduce a second copy generator. The wrapper adds first-class publishability, decision
-    # density, source lineage and explicit Pricing/Offer handoff when a FULL project supplies phase2_context.
+    # density, source lineage and explicit Pricing/Offer handoff in FULL project scope.
     if not getattr(listing_module.compile_listing, '_cbcc_v0676_listing_search_authority', False):
         listing_module.compile_listing = wrap_compile_listing(listing_module.compile_listing)
         installed.append('LISTING_SEARCH_BUSINESS_AUTHORITY')
@@ -152,6 +162,7 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'ECONOMICS_REQ088_LINEAGE_REFINEMENT',
         'ZERO_CONTRIBUTION_BREAK_EVEN_BASELINE_NOT_OPERATING_BOUNDARY',
         'SEVEN_TOOL_ECONOMICS_BUSINESS_READINESS_BRIDGE',
+        'LISTING_SEARCH_PRICING_CONTEXT_BRIDGE',
         'LISTING_SEARCH_BUSINESS_AUTHORITY',
         'LISTING_SEARCH_NINE_OBJECT_DECISION_DENSITY',
         'LISTING_SEARCH_REQ088_LINEAGE',
