@@ -7,14 +7,15 @@ import re
 DENSITY_FIELDS=('what','why','evidence','tradeoff','execution','measurement')
 MEASUREMENT_BUSINESS_FIELDS=(
     'business_question','decision_object','hypothesis','primary_metric','metric_definition','desired_direction',
-    'baseline','target_or_mde','metric_source_ref','guardrails','next_decision',
+    'baseline','target_or_mde','metric_source_ref','attribution_method','observation_window','analysis_unit',
+    'guardrails','learning_handoff','next_decision',
 )
 AB_TEST_FIELDS=(
     'test_type','changed_variable','held_constants','variants','deployment_pool','randomization_unit',
-    'sample_size_rule','duration_or_stop_rule','success_rule','failure_rule',
+    'sample_size_rule','duration_or_stop_rule','sequential_monitoring_policy','success_rule','failure_rule',
 )
 PRIORITY_FIELDS=('priority','status','action','decision_ref','next_decision')
-NEXT_INPUT_FIELDS=('input_id','status','exact_missing_input','source_or_owner','downstream_unblock','decision_trigger')
+NEXT_INPUT_FIELDS=('input_id','status','decision_ref','exact_missing_input','source_or_owner','downstream_unblock','decision_trigger')
 PRIORITY_ORDER=('P0','P1','P2')
 _FULL_DENY={'TASK_SCOPED','TASK_SCOPE','PARTIAL','NOT_FULL','NON_FULL','SCOPED','MINIMAL'}
 _FULL_EXACT={'FULL','FULL_PROJECT','FULL_DELIVERY','FULL_PACKAGE','FULL_COMMERCE','FULL_STRATEGY','FULL_WORKSPACE','FULL_E2E','END_TO_END','COMPLETE_DELIVERY','COMPLETE_PROJECT','完整交付','全量交付','完整项目','全量项目'}
@@ -105,12 +106,9 @@ def _normalize_measurement(raw:Any,i:int,sources:Mapping[str,Mapping[str,Any]])-
     for k,v in _lineage(src,sources,f'measurement_authority.measurement_rows[{i}]','MEASUREMENT_DECISION_NOT_SOURCE_BOUND').items():out[k]=deepcopy(v)
     metric_ref=str(src.get('metric_source_ref') or '')
     unresolved_metric=[] if metric_ref and metric_ref in sources else ([metric_ref] if metric_ref else ['metric_source_ref'])
-    out['unresolved_metric_source_refs']=unresolved_metric
-    out['metric_source_status']='READY' if not unresolved_metric else 'TO_VERIFY'
+    out['unresolved_metric_source_refs']=unresolved_metric; out['metric_source_status']='READY' if not unresolved_metric else 'TO_VERIFY'
     test_gaps=[k for k in AB_TEST_FIELDS if not _p(src.get(k))]
-    changed=str(src.get('changed_variable') or '').upper()
-    held={str(x).upper() for x in _l(src.get('held_constants')) if _p(x)}
-    variants=[str(x) for x in _l(src.get('variants')) if _p(x)]
+    changed=str(src.get('changed_variable') or '').upper(); held={str(x).upper() for x in _l(src.get('held_constants')) if _p(x)}; variants=[str(x) for x in _l(src.get('variants')) if _p(x)]
     if changed and changed in held:test_gaps.append('changed_variable_is_held_constant')
     if len(set(variants))<2:test_gaps.append('at_least_two_distinct_variants')
     if str(src.get('test_type') or '').upper() not in {'A_B','AB','A/B','MULTIVARIATE'}:test_gaps.append('test_type')
@@ -118,24 +116,28 @@ def _normalize_measurement(raw:Any,i:int,sources:Mapping[str,Mapping[str,Any]])-
     out['row_status']='READY' if all(out.get(k)=='READY' for k in ('business_contract_status','density_status','lineage_status','metric_source_status','test_contract_status')) else 'TO_VERIFY'
     return out
 
-def _normalize_priority(raw:Any,i:int,sources:Mapping[str,Mapping[str,Any]])->dict[str,Any]:
-    src=_d(raw); out=deepcopy(src); out['priority']=str(src.get('priority') or '').upper()
+def _normalize_priority(raw:Any,i:int,sources:Mapping[str,Mapping[str,Any]],measurement_ids:set[str])->dict[str,Any]:
+    src=_d(raw); out=deepcopy(src); out['priority']=str(src.get('priority') or '').upper(); out['status']=str(src.get('status') or '').upper()
     gaps=[k for k in PRIORITY_FIELDS if not _p(out.get(k))]
+    if out['status'] not in {'ACTIVE','NOT_NEEDED','HOLD'}:gaps.append('status')
     dg=_density(src); out['density_status']=dg[0]; out['density_gaps']=dg[1]
     for k,v in _lineage(src,sources,f'measurement_authority.priorities[{i}]','MEASUREMENT_PRIORITY_NOT_SOURCE_BOUND').items():out[k]=deepcopy(v)
-    out['priority_contract_gaps']=gaps
-    out['priority_contract_status']='READY' if not gaps and out['priority'] in PRIORITY_ORDER else 'TO_VERIFY'
-    out['row_status']='READY' if all(out.get(k)=='READY' for k in ('priority_contract_status','density_status','lineage_status')) else 'TO_VERIFY'
+    decision_ref=str(src.get('decision_ref') or ''); out['decision_link_status']='READY' if decision_ref in measurement_ids else 'TO_VERIFY'; out['decision_link_gaps']=[] if out['decision_link_status']=='READY' else ['decision_ref_not_found']
+    out['priority_contract_gaps']=list(dict.fromkeys(gaps)); out['priority_contract_status']='READY' if not out['priority_contract_gaps'] and out['priority'] in PRIORITY_ORDER else 'TO_VERIFY'
+    out['row_status']='READY' if all(out.get(k)=='READY' for k in ('priority_contract_status','density_status','lineage_status','decision_link_status')) else 'TO_VERIFY'
     return out
 
-def _normalize_next_input(raw:Any,i:int,sources:Mapping[str,Mapping[str,Any]])->dict[str,Any]:
+def _normalize_next_input(raw:Any,i:int,sources:Mapping[str,Mapping[str,Any]],measurement_ids:set[str])->dict[str,Any]:
     src=_d(raw); out=deepcopy(src); out.setdefault('input_id',f'NEXT-{i+1:02d}')
     gaps=[k for k in NEXT_INPUT_FIELDS if not _p(out.get(k))]
     dg=_density(src); out['density_status']=dg[0]; out['density_gaps']=dg[1]
     for k,v in _lineage(src,sources,f'measurement_authority.next_inputs[{i}]','MEASUREMENT_NEXT_INPUT_NOT_SOURCE_BOUND').items():out[k]=deepcopy(v)
-    out['next_input_contract_gaps']=gaps
-    out['next_input_contract_status']='READY' if not gaps else 'TO_VERIFY'
-    out['row_status']='READY' if all(out.get(k)=='READY' for k in ('next_input_contract_status','density_status','lineage_status')) else 'TO_VERIFY'
+    decision_ref=str(src.get('decision_ref') or ''); out['decision_link_status']='READY' if decision_ref in measurement_ids else 'TO_VERIFY'; out['decision_link_gaps']=[] if out['decision_link_status']=='READY' else ['decision_ref_not_found']
+    exact=str(src.get('exact_missing_input') or '').strip(); generic=re.sub(r'[^a-z0-9\u3400-\u9fff]+',' ',exact.lower()).strip(); generic_tokens={'need more data','more data','additional data','need data','data needed','更多数据','需要更多数据','补充数据'}
+    out['exact_input_status']='READY' if exact and generic not in generic_tokens and len(exact)>=12 else 'TO_VERIFY'
+    if out['exact_input_status']!='READY':gaps.append('exact_missing_input_not_specific')
+    out['next_input_contract_gaps']=list(dict.fromkeys(gaps)); out['next_input_contract_status']='READY' if not out['next_input_contract_gaps'] else 'TO_VERIFY'
+    out['row_status']='READY' if all(out.get(k)=='READY' for k in ('next_input_contract_status','density_status','lineage_status','decision_link_status','exact_input_status')) else 'TO_VERIFY'
     return out
 
 def measurement_issues(strategy:Mapping[str,Any])->list[dict[str,Any]]:
@@ -143,8 +145,7 @@ def measurement_issues(strategy:Mapping[str,Any])->list[dict[str,Any]]:
     if not auth:
         if not _is_full(strategy):return []
         return [{'code':'FULL_MEASUREMENT_AUTHORITY_MISSING_V0676'}]
-    issues=[]
-    rows=[x for x in _l(auth.get('measurement_rows')) if isinstance(x,Mapping)]
+    issues=[]; rows=[x for x in _l(auth.get('measurement_rows')) if isinstance(x,Mapping)]
     if not rows:issues.append({'code':'FULL_MEASUREMENT_DECISION_MISSING_V0676'})
     for i,row in enumerate(rows):
         if row.get('business_contract_status')!='READY':issues.append({'code':'FULL_MEASUREMENT_BUSINESS_OBJECT_INCOMPLETE_V0676','row':i,'fields':row.get('business_contract_gaps') or []})
@@ -166,37 +167,16 @@ def materialize_measurement_authority(strategy:Mapping[str,Any],request:Mapping[
     legacy={'ab_test_hypotheses':deepcopy(s9.get('ab_test_hypotheses') or []),'priority_plan':deepcopy(s9.get('priority_plan') or {}),'experiment':deepcopy(s9.get('experiment'))}
     plan=_measurement_plan(req); sources=_source_index(req)
     rows=[_normalize_measurement(x,i,sources) for i,x in enumerate(_l(plan.get('rows') or plan.get('measurement_rows'))) if isinstance(x,Mapping)]
-    priorities=[_normalize_priority(x,i,sources) for i,x in enumerate(_l(plan.get('priorities') or plan.get('priority_rows'))) if isinstance(x,Mapping)]
-    next_inputs=[_normalize_next_input(x,i,sources) for i,x in enumerate(_l(plan.get('next_inputs') or plan.get('next_input_plan'))) if isinstance(x,Mapping)]
-    priority_order=[str(x.get('priority') or '').upper() for x in priorities]
-    priority_status='READY' if priority_order==list(PRIORITY_ORDER) and all(x.get('row_status')=='READY' for x in priorities) else 'TO_VERIFY'
-    next_input_status='READY' if bool(next_inputs) and all(x.get('row_status')=='READY' for x in next_inputs) else 'TO_VERIFY'
+    measurement_ids={str(x.get('measurement_id')) for x in rows if _p(x.get('measurement_id'))}
+    priorities=[_normalize_priority(x,i,sources,measurement_ids) for i,x in enumerate(_l(plan.get('priorities') or plan.get('priority_rows'))) if isinstance(x,Mapping)]
+    next_inputs=[_normalize_next_input(x,i,sources,measurement_ids) for i,x in enumerate(_l(plan.get('next_inputs') or plan.get('next_input_plan'))) if isinstance(x,Mapping)]
+    priority_order=[str(x.get('priority') or '').upper() for x in priorities]; priority_status='READY' if priority_order==list(PRIORITY_ORDER) and all(x.get('row_status')=='READY' for x in priorities) else 'TO_VERIFY'; next_input_status='READY' if bool(next_inputs) and all(x.get('row_status')=='READY' for x in next_inputs) else 'TO_VERIFY'
     exp=deepcopy(dict(experiment)) if isinstance(experiment,Mapping) else deepcopy(s9.get('experiment'))
-    s9['legacy_advisory_v0676']=legacy
-    s9['measurement_plan']=deepcopy(rows)
-    s9['ab_test_hypotheses']=deepcopy(rows)
-    s9['priority_plan']={p:[deepcopy(x) for x in priorities if x.get('priority')==p] for p in PRIORITY_ORDER}
-    s9['priority_plan']['next_information_needed']=[x.get('exact_missing_input') for x in next_inputs if _p(x.get('exact_missing_input'))]
-    s9['next_input_plan']=deepcopy(next_inputs)
+    s9['legacy_advisory_v0676']=legacy; s9['measurement_plan']=deepcopy(rows); s9['ab_test_hypotheses']=deepcopy(rows); s9['priority_plan']={p:[deepcopy(x) for x in priorities if x.get('priority')==p] for p in PRIORITY_ORDER}; s9['priority_plan']['next_information_needed']=[x.get('exact_missing_input') for x in next_inputs if _p(x.get('exact_missing_input'))]; s9['next_input_plan']=deepcopy(next_inputs)
     if exp is not None:s9['experiment']=deepcopy(exp)
     sections['09_risk_measurement_priority_next_steps']=s9; out['sections']=sections
-    auth={
-        'schema':'cbcc-measurement-authority-v0.6.76','status':'TO_VERIFY',
-        'asset_dependency':'NOT_REQUIRED_FOR_PHASE2_BUSINESS_AUTHORITY',
-        'production_learning_dependency':'NOT_REQUIRED_FOR_PHASE2_MEASUREMENT_PLAN_AUTHORITY',
-        'measurement_rows':rows,'priorities':priorities,'priority_order':priority_order,'priority_status':priority_status,
-        'next_inputs':next_inputs,'next_input_status':next_input_status,
-        'experiment_evidence':exp,'experiment_calculator_authority':'runtime/cbcc/tools/experiment.py','experiment_decision_does_not_author_measurement_plan':True,
-        'legacy_strategy_advisory':legacy,
-        'boundaries':{
-            'post_production_learning_status':'DEFERRED_TO_LEARNING_LOOP_WHEN_REAL_RESULTS_EXIST','human_workspace_projection':'PENDING_PHASE6',
-            'measurement_plan_completion_is_not_experiment_success':True,'real_k01_full':'PENDING_PHASE10','built_plugin_readback':'PENDING_PHASE11','provider_actual_output':'E2E_PENDING',
-        },
-        'principle':'Measurement is a first-class business authority. It defines the decision question, metric truth, baseline/target, isolated test, P0/P1/P2 priorities, stop/success/failure rules, exact next input and learning handoff. Deterministic experiment statistics remain in tools.experiment and observed results never author missing business decisions.',
-    }
-    out['measurement_authority_v0676']=auth
-    auth['issues']=measurement_issues(out); auth['status']='READY' if not auth['issues'] else 'TO_VERIFY'
-    return out
+    auth={'schema':'cbcc-measurement-authority-v0.6.76','status':'TO_VERIFY','asset_dependency':'NOT_REQUIRED_FOR_PHASE2_BUSINESS_AUTHORITY','production_learning_dependency':'NOT_REQUIRED_FOR_PHASE2_MEASUREMENT_PLAN_AUTHORITY','measurement_rows':rows,'priorities':priorities,'priority_order':priority_order,'priority_status':priority_status,'next_inputs':next_inputs,'next_input_status':next_input_status,'experiment_evidence':exp,'experiment_calculator_authority':'runtime/cbcc/tools/experiment.py','experiment_decision_does_not_author_measurement_plan':True,'legacy_strategy_advisory':legacy,'boundaries':{'post_production_learning_status':'DEFERRED_TO_LEARNING_LOOP_WHEN_REAL_RESULTS_EXIST','human_workspace_projection':'PENDING_PHASE6','measurement_plan_completion_is_not_experiment_success':True,'real_k01_full':'PENDING_PHASE10','built_plugin_readback':'PENDING_PHASE11','provider_actual_output':'E2E_PENDING'},'principle':'Measurement is a first-class business authority. It defines the decision question, metric truth, baseline/target, isolated test, P0/P1/P2 priorities, stop/success/failure rules, exact next input and learning handoff. Deterministic experiment statistics remain in tools.experiment and observed results never author missing business decisions.'}
+    out['measurement_authority_v0676']=auth; auth['issues']=measurement_issues(out); auth['status']='READY' if not auth['issues'] else 'TO_VERIFY'; return out
 
 def wrap_build_master_strategy(fn:Callable[...,dict[str,Any]]):
     def built(request:dict[str,Any],*args:Any,**kwargs:Any):
@@ -212,6 +192,5 @@ def wrap_validate_strategy_delivery(fn:Callable[[dict[str,Any]],dict[str,Any]]):
         current=measurement_issues(strategy); issues=list(result.get('issues') or [])+current; dedup=[]
         for item in issues:
             if item not in dedup:dedup.append(item)
-        result['issues']=dedup; result['status']='PASS' if not dedup else 'INCOMPLETE'; result['measurement_authority_v0676_audit']={'status':'PASS' if not current else 'INCOMPLETE','issues':current}
-        return result
+        result['issues']=dedup; result['status']='PASS' if not dedup else 'INCOMPLETE'; result['measurement_authority_v0676_audit']={'status':'PASS' if not current else 'INCOMPLETE','issues':current}; return result
     setattr(validated,'_cbcc_v0676_measurement_authority',True); return validated
