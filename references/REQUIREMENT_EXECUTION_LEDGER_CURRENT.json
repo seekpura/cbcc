@@ -7,23 +7,23 @@
   "new_requirements": [
     {"req":"REQ-061","title":"Canonical commerce object graph","phase":"1,6,7","status":"PARTIAL_PHASE_1_GRAPH_AUTHORITY_VERIFIED"},
     {"req":"REQ-062","title":"Whole-commerce FULL scope, not asset-centric","phase":"1,2","status":"PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_MARKET_RESEARCH_CONTEXT_WHY_INTERSECTIONALITY_CULTURE_STRATEGY_FRAMEWORKS_ECONOMICS_OFFER_LISTING_SEARCH_CONTENT_MATRIX_RACE_ADS_OPTIMIZATION_REVIEW_ANALYSIS_AND_MEASUREMENT_VERIFIED"},
-    {"req":"REQ-063","title":"Explicit opportunity-family evaluation","phase":"3","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-064","title":"Scenario/Lifestyle/Context/Human-use","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-065","title":"Negative/Counterexample/Expectation management","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-066","title":"Brand IP/Distinctive memory/Brand world","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-067","title":"Packaging trust/Unboxing/Contents/Size/Compatibility","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-068","title":"Ingredient/Formula/Material/Texture/Detail/Macro/Proof","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-069","title":"How-to/Routine/Usage/FAQ/Objection/Comparison","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-070","title":"A+/PDP/Longform/Specification/Source-document","phase":"3,6,7","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-071","title":"Paid media/Performance creative","phase":"2,3,4","status":"PARTIAL_PHASE2_ADS_OPTIMIZATION_BUSINESS_AUTHORITY_VERIFIED"},
-    {"req":"REQ-072","title":"Social/Seeding/Organic","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-073","title":"Creator/UGC/Affiliate","phase":"3,4,5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-074","title":"Product/PDP/Short video","phase":"3,4,5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-075","title":"LIVE commerce","phase":"3,4,5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-076","title":"Store/Banner/Landing/Campaign/Seasonal","phase":"3,4,6","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-077","title":"CRM/Lifecycle/Post-purchase","phase":"3,6","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
-    {"req":"REQ-078","title":"Test/Rotation/A-B/Multivariate","phase":"2,3","status":"PARTIAL_PHASE2_ADS_AND_MEASUREMENT_TEST_CONTRACTS_VERIFIED"},
-    {"req":"REQ-079","title":"Surface-native specialization and activation boundary","phase":"3,4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
+    {"req":"REQ-063","title":"Explicit opportunity-family evaluation","phase":"3","status":"PASS_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED"},
+    {"req":"REQ-064","title":"Scenario/Lifestyle/Context/Human-use","phase":"3,4","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_EXECUTION_PENDING"},
+    {"req":"REQ-065","title":"Negative/Counterexample/Expectation management","phase":"3,4","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_EXECUTION_PENDING"},
+    {"req":"REQ-066","title":"Brand IP/Distinctive memory/Brand world","phase":"3,4","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_EXECUTION_PENDING"},
+    {"req":"REQ-067","title":"Packaging trust/Unboxing/Contents/Size/Compatibility","phase":"3,4","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_EXECUTION_PENDING"},
+    {"req":"REQ-068","title":"Ingredient/Formula/Material/Texture/Detail/Macro/Proof","phase":"3,4","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_EXECUTION_PENDING"},
+    {"req":"REQ-069","title":"How-to/Routine/Usage/FAQ/Objection/Comparison","phase":"3,4","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_EXECUTION_PENDING"},
+    {"req":"REQ-070","title":"A+/PDP/Longform/Specification/Source-document","phase":"3,6,7","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE6_PHASE7_EXECUTION_PENDING"},
+    {"req":"REQ-071","title":"Paid media/Performance creative","phase":"2,3,4","status":"PARTIAL_PHASE2_ADS_AND_PHASE3_OPPORTUNITY_FAMILY_VERIFIED_PHASE4_EXECUTION_PENDING"},
+    {"req":"REQ-072","title":"Social/Seeding/Organic","phase":"3,4","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_EXECUTION_PENDING"},
+    {"req":"REQ-073","title":"Creator/UGC/Affiliate","phase":"3,4,5","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_PHASE5_EXECUTION_PENDING"},
+    {"req":"REQ-074","title":"Product/PDP/Short video","phase":"3,4,5","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_PHASE5_EXECUTION_PENDING"},
+    {"req":"REQ-075","title":"LIVE commerce","phase":"3,4,5","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_PHASE5_EXECUTION_PENDING"},
+    {"req":"REQ-076","title":"Store/Banner/Landing/Campaign/Seasonal","phase":"3,4,6","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE4_PHASE6_EXECUTION_PENDING"},
+    {"req":"REQ-077","title":"CRM/Lifecycle/Post-purchase","phase":"3,6","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED_PHASE6_EXECUTION_PENDING"},
+    {"req":"REQ-078","title":"Test/Rotation/A-B/Multivariate","phase":"2,3","status":"PASS_PHASE2_PHASE3_TEST_ROTATION_AB_MULTIVARIATE_VERIFIED"},
+    {"req":"REQ-079","title":"Surface-native specialization and activation boundary","phase":"3,4","status":"PARTIAL_PHASE3_OPPORTUNITY_FAMILY_AND_ACTIVATION_BOUNDARY_VERIFIED_PHASE4_SURFACE_SPECIALIZATION_PENDING"},
     {"req":"REQ-080","title":"Visual Master and portfolio rhythm","phase":"4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-081","title":"Per-object Art Direction beyond still images","phase":"4","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
     {"req":"REQ-082","title":"Commercial-grade Prompt density and concrete parameter consumption","phase":"5","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"},
@@ -40,7 +40,7 @@
     "0":"IN_PROGRESS_BUILT_PLUGIN_READBACK_DEFERRED_PHASE11",
     "1":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY",
     "2":"PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED",
-    "3":"NOT_STARTED",
+    "3":"PASS_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED",
     "4":"NOT_STARTED",
     "5":"NOT_STARTED",
     "6":"NOT_STARTED",
@@ -447,6 +447,125 @@
         "5f374894f5424b5ff5336022b9591abf55833367"
       ],
       "ci_status": "NO_GITHUB_COMMIT_STATUS_OR_WORKFLOW_RUN_AVAILABLE_FOR_FINAL_PHASE2_CODE_COMMIT"
+    },
+    "3": {
+      "status": "PASS_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED",
+      "requirements": [
+        "REQ-019",
+        "REQ-020",
+        "REQ-021",
+        "REQ-063",
+        "REQ-064",
+        "REQ-065",
+        "REQ-066",
+        "REQ-067",
+        "REQ-068",
+        "REQ-069",
+        "REQ-070",
+        "REQ-071",
+        "REQ-072",
+        "REQ-073",
+        "REQ-074",
+        "REQ-075",
+        "REQ-076",
+        "REQ-077",
+        "REQ-078",
+        "REQ-079"
+      ],
+      "verified_subtasks": [
+        "23-family pre-asset Opportunity-Family Evaluation, deliberate omission accounting, no-quota semantics, post-asset fulfillment, asset_universe_matrix materialization and Human Asset-Universe projection"
+      ],
+      "focused_tests": "13/13 passed: 7 core opportunity-family behaviors + 6 runtime/compiler/Human/legacy-compatibility bindings",
+      "cross_scope_tests": "48/48 fresh GitHub runner PASS after setting historical package import path PYTHONPATH=runtime. Batch covered Phase 3 authority/runtime, legacy open-world/no-quota/activation/workspace behavior and complete Phase 2 Measurement suites. The preceding attempt produced 45 pass / 3 environment-only ModuleNotFoundError: cbcc failures in legacy v0.6.33 tests and caused no production-code change.",
+      "red_evidence": [
+        "Initial Phase 3 RED failed during collection with FileNotFoundError for runtime/cbcc/opportunity_family_authority.py, proving the first-class 23-family pre-asset authority was absent rather than a downstream asset regression.",
+        "Runtime/compiler/Human RED produced 5 failed / 1 passed. The only passing assertion proved the legacy 12-axis family audit contract stayed unchanged; failures were exactly the missing matrix helper, Phase 3 runtime installation, compiler pre/post materialization, commerce-context transport and Human Workspace projection."
+      ],
+      "proof_objects": [
+        "phase3_opportunity_family_evaluation",
+        "phase3_opportunity_family_evaluation.families[23]",
+        "phase3_opportunity_family_evaluation.needed_family_ids",
+        "phase3_opportunity_family_evaluation.not_needed_family_ids",
+        "phase3_opportunity_family_evaluation.unresolved_family_ids",
+        "opportunity_family_fulfillment",
+        "opportunity_family_fulfillment.rows[*].fulfillment_status",
+        "artifacts/asset_universe_matrix.json.opportunity_family_evaluation",
+        "artifacts/asset_universe_matrix.json.opportunity_family_fulfillment",
+        "artifacts/asset_universe_matrix.json.asset_universe",
+        "artifacts/asset_architecture.json.phase3_opportunity_family_evaluation",
+        "artifacts/asset_architecture.json.opportunity_family_fulfillment",
+        "artifacts/commerce_decision_context.json.asset_portfolio.phase3_opportunity_family_evaluation",
+        "artifacts/commerce_decision_context.json.asset_portfolio.opportunity_family_fulfillment",
+        "Human Workspace Commerce / Asset Universe opportunity-family table"
+      ],
+      "verified_behaviors": [
+        "All 23 locked opportunity families are always present in the evaluation authority in stable order.",
+        "The absence of an authored decision leaves that family TO_VERIFY rather than hiding it or auto-marking it NOT_NEEDED.",
+        "NEEDED requires WHY plus at least one planned satisfying object; NOT_NEEDED requires a deliberate omission reason.",
+        "One planned object may satisfy multiple families, and the authority explicitly disables fixed per-family quotas and one-family-one-asset semantics.",
+        "The Phase 3 evaluation is injected before the mature asset architecture function executes.",
+        "Post-asset fulfillment audits NEEDED families against actual architecture objects and fails closed when planned satisfaction is absent.",
+        "The compiler materializes asset_universe_matrix.json before asset generation and finalizes the same artifact after architecture with fulfillment evidence.",
+        "The existing open-world asset-universe semantics and platform activation boundary remain intact.",
+        "The historical 12-axis post-asset family audit remains unchanged for compatibility.",
+        "The existing Commerce / Asset Universe Human Workspace exposes opportunity-family decisions, deliberate omissions and fulfillment from the same architecture authority.",
+        "Phase 2 Measurement behavior remains green in the fresh cross-scope regression batch.",
+        "Phase 4 Visual/Art Direction has not been started by this work."
+      ],
+      "produced_object_inspection": {
+        "ready_fixture": {
+          "status": "READY",
+          "family_count": 23,
+          "needed_family_ids": [
+            "F01_HERO_IDENTITY",
+            "F02_SELLING_POINT"
+          ],
+          "shared_object": true,
+          "shared_satisfying_object": "ASSET-HERO-01",
+          "fulfillment_status": "READY",
+          "fulfilled_needed_family_count": 2,
+          "matrix_status": "READY",
+          "matrix_stage": "PRE_ASSET_ARCHITECTURE_WITH_POST_ASSET_FULFILLMENT",
+          "fixed_asset_quota_per_family": false,
+          "human_has_family_workspace": true
+        },
+        "negative_missing_family": {
+          "change": "Remove only F03_LIFESTYLE_SCENARIO from the authored decision map.",
+          "evaluation_status": "TO_VERIFY",
+          "family_still_visible": true,
+          "family_status": "TO_VERIFY"
+        }
+      },
+      "legacy_12_axis_status": "PRESERVED_UNCHANGED",
+      "scope_diff": "GitHub compare from Phase 2 final cleanup 9b90d62bee1334f0a7a0cd4c9f1a420d846e5911 through post-verification cleanup 2b1e4ab7dfdf63fef5bc634d8700d4799fb652f2 leaves exactly eight persistent Phase 3 files: six runtime/compiler/Human files and two Phase 3 tests. No Phase 4 Art Direction, Prompt, real K01 or Provider implementation file is changed. Compare from production bind commit 4c4f00728eab29f153afa7ba4b39e6c929d537c2 through 2b1e4ab7dfdf63fef5bc634d8700d4799fb652f2 changes only removal of the temporary GREEN workflow, proving successful verification did not mutate production code.",
+      "deferred_boundaries": [
+        "Phase 4 Visual/Art Direction converts active opportunity families into project-specific visual systems, concrete per-object execution and inclusive photography; it is not claimed here.",
+        "Full Human Workspace JSON→MD→HTML canonical projection remains Phase 6; this Phase 3 closure verifies only the existing Commerce/Asset Universe component projection.",
+        "Fresh real K01 FULL remains Phase 10.",
+        "Built-plugin install/readback remains Phase 11.",
+        "Provider Result / actual-output QA remains E2E_PENDING."
+      ],
+      "remaining_phase3": "NONE — the locked Phase 3 Opportunity-Family Evaluation acceptance contract is verified; Phase 4 Visual/Art Direction remains separate and NOT_STARTED.",
+      "phase4_status": "NOT_STARTED",
+      "human_json_md_html_parity": "PENDING_PHASE6",
+      "real_k01_full": "PENDING_PHASE10",
+      "built_plugin_readback": "PENDING_PHASE11",
+      "provider_actual_output": "E2E_PENDING",
+      "source_truth": "GITHUB_MAIN_PERSISTED",
+      "source_commits": [
+        "02918cf29ad3014ed54627e91af41122f78b1127",
+        "26d347adedbaf772734010c36385b381b85f4405",
+        "340d7a763586e02b54cd0b07dd91c2ef0827c303",
+        "52754f86fdfeefe9de2514f0fe866c2e7254d20b",
+        "4c4f00728eab29f153afa7ba4b39e6c929d537c2",
+        "2b1e4ab7dfdf63fef5bc634d8700d4799fb652f2",
+        "0b7681aff2f72f3544f233624a9c3325a5ac1762"
+      ],
+      "verification_workflow": {
+        "run_id": 41337145114,
+        "status": "SUCCESS",
+        "verified_tree_note": "Successful verification ran after production commit 4c4f00728eab29f153afa7ba4b39e6c929d537c2; subsequent commits through 2b1e4ab7dfdf63fef5bc634d8700d4799fb652f2 only removed temporary workflows. GitHub compare confirms no production-code mutation after the verified bind."
+      }
     }
   }
 }
