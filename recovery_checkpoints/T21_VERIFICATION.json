@@ -1,0 +1,18 @@
+{
+  "task": "T21",
+  "name": "Canonical projection engine for JSON → MD / HTML",
+  "local_source_commit": "fc5ce2aba9665e9a69a1326ac0289f905ac39d2c",
+  "base_recovery_commit": "6086ddb",
+  "patch_bytes": 40108,
+  "patch_sha256": "8bc422f90793f1a30114a4fa695794aa2a63b8110df187919ccef99da79e965f",
+  "focused_and_cross_scope": "27 passed",
+  "current_plugin_build": {
+    "status": "PASS",
+    "issue_count": 0,
+    "bytes": 2589110,
+    "sha256": "98489ec7894db9fa51412393e06b2583bbd50d05fa4d9960262797d627758816"
+  },
+  "actions_waited": false,
+  "integration_branch_touched": false,
+  "main_touched": false
+}
