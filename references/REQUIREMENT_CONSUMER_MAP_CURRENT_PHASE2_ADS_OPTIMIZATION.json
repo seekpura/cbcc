@@ -1,0 +1,163 @@
+{
+  "authority": "CBCC Phase 2 Advertising Optimization consumer accounting",
+  "plan": "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md#phase-2",
+  "requirements": ["REQ-006", "REQ-009", "REQ-013", "REQ-015", "REQ-041", "REQ-045", "REQ-053", "REQ-054", "REQ-055", "REQ-056", "REQ-057", "REQ-058", "REQ-059", "REQ-060", "REQ-062", "REQ-071", "REQ-078", "REQ-087", "REQ-088"],
+  "status": "PHASE2_SUBTASK_VERIFIED_PENDING_REVIEW_MEASUREMENT_HUMAN_K01_RELEASE",
+  "locked_behavior": {
+    "first_class_object": "Advertising Optimization is a business authority independent from Product Image/Asset Universe/Paid Campaign materialization. Mature tools.ads remains the deterministic performance calculator; Phase 2 adds authored optimization decisions and verified commercial boundaries rather than replacing the calculator.",
+    "optimization_row_contract": ["objective", "funnel_state", "audience_state", "consumer_tension", "creative_hypothesis", "creative_mechanism", "proof", "offer", "landing_handoff", "spend_boundary", "economics_boundary_ref", "attribution", "test_structure", "test_variable", "hold_constant", "success_rule", "failure_rule", "failure_diagnosis", "repair_route", "learning_handoff"],
+    "decision_density": ["what", "why", "evidence", "tradeoff", "execution", "measurement"],
+    "lineage": ["source_refs", "source_type", "recency", "exact_fact_or_explicit_assumption_boundary", "interpretation", "confidence", "downstream_use", "conflict_status", "proof_object"],
+    "economics_rule": "Ads consumes only the verified Phase 2 Economics/Offer authority. CPA/ROAS require their explicit economics inputs; CPC additionally requires explicit CVR. Missing economics never becomes zero or a scale signal.",
+    "offer_rule": "The Ads row offer must match the verified Phase 2 Offer Decision. A different discount/bundle/promotion remains TO_VERIFY until Economics/Offer authors it.",
+    "economics_binding_rule": "Each optimization row explicitly binds spend decisions to phase2_economics_offer_authority.break_even; generic text saying 'within economics' does not satisfy the binding.",
+    "test_rule": "A/B intent must expose one test_variable, hold_constant set, success_rule and failure_rule in machine-auditable fields; generic test prose alone cannot close the test contract.",
+    "attribution_rule": "Platform attribution never equals incrementality. Causal sales/lift claims require both a defensible counterfactual result from the mature analyzer and an explicit authored incrementality decision; a self-declared ESTABLISHED label cannot bypass missing counterfactual evidence.",
+    "no_performance_rule": "An explicit Ads Optimization plan can materialize before historical performance exists. The runtime writes NO_AD_PERFORMANCE_DATA_SUPPLIED, does not call the metrics calculator, leaves metrics empty and platform attribution NOT_SUPPLIED, while still validating the authored business plan against Economics/Offer.",
+    "input_integrity_rule": "The internal no-performance stub is request-local and temporary. It is removed after consumption, or the user's original ad_analysis configuration is restored exactly; empty ad_data is not treated as measured zero performance.",
+    "canonical_rule": "ADS canonical authority prefers the enriched existing ad_analysis.json. paid_campaign_architecture.json remains a later fallback/consumer and does not substitute for Phase 2 Ads Optimization."
+  },
+  "consumers": [
+    "runtime/cbcc/tools/ads.py",
+    "runtime/cbcc/ads_optimization_authority.py",
+    "runtime/cbcc/pricing_economics_authority.py",
+    "runtime/cbcc/economics_offer_authority.py",
+    "runtime/cbcc/v0676_phase2_closure.py",
+    "runtime/cbcc/compiler.py",
+    "runtime/cbcc/seven_tool_continuity.py",
+    "runtime/cbcc/canonical_commerce_graph.py",
+    "runtime/cbcc/tools/seven_agent.py"
+  ],
+  "proof_objects": [
+    "artifacts/ad_analysis.json.phase2_ads_optimization_authority",
+    "artifacts/ad_analysis.json.phase2_business_status",
+    "artifacts/ad_analysis.json.phase2_ads_optimization_authority.optimization_rows[*].business_contract_status",
+    "artifacts/ad_analysis.json.phase2_ads_optimization_authority.optimization_rows[*].density_status",
+    "artifacts/ad_analysis.json.phase2_ads_optimization_authority.optimization_rows[*].lineage_status",
+    "artifacts/ad_analysis.json.phase2_ads_optimization_authority.optimization_rows[*].offer_alignment_status",
+    "artifacts/ad_analysis.json.phase2_ads_optimization_authority.optimization_rows[*].economics_binding_status",
+    "artifacts/ad_analysis.json.phase2_ads_optimization_authority.economics_context",
+    "artifacts/ad_analysis.json.phase2_ads_optimization_authority.attribution_boundary",
+    "seven_tool_continuity.capabilities[id=06_ADVERTISING_OPTIMIZATION].business_readiness_status",
+    "seven_tool_continuity.ads_optimization_integrity",
+    "canonical_commerce_graph.ADS.authority_ref=ad_analysis.json"
+  ],
+  "regression_tests": [
+    "tests/test_v0676_ads_optimization_authority.py",
+    "tests/test_v0676_ads_optimization_context_bridge.py",
+    "tests/test_v0676_ads_optimization_review_regressions.py",
+    "tests/test_v0676_ads_optimization_runtime_binding.py",
+    "tests/test_v0676_content_matrix_race_authority.py",
+    "tests/test_v0676_content_matrix_race_review_regressions.py",
+    "tests/test_v0676_content_matrix_race_runtime_binding.py",
+    "tests/test_v0676_listing_search_authority.py",
+    "tests/test_v0676_listing_search_context_bridge.py",
+    "tests/test_v0676_listing_search_runtime_binding.py",
+    "tests/test_v0676_economics_offer_authority.py",
+    "tests/test_v0676_canonical_commerce_graph.py"
+  ],
+  "verification": {
+    "red": [
+      "Initial focused RED failed during collection with FileNotFoundError for runtime/cbcc/ads_optimization_authority.py, proving the first-class Phase 2 Ads authority was absent rather than an Ads-metrics regression.",
+      "Runtime RED proved the missing domain/Seven-tool business-readiness bridge and was refined away from an over-constrained compiler implementation assertion to observable runtime wiring.",
+      "Economics-context RED failed 3/3 because no request-local Pricing→Ads bridge existed; GREEN then proved direct one-use consumption, portfolio inner-call isolation and no-Ads-scope cleanup.",
+      "Review RED failed 5/5 for Offer mismatch, non-auditable A/B isolation, missing Economics binding, direct-analyzer exception leakage and upstream-pricing exception leakage.",
+      "First-class no-performance RED failed because an explicit Ads Optimization plan without historical performance did not trigger ad_analysis materialization.",
+      "Attribution/stub hardening RED failed 3/3 because no-performance attribution could appear AVAILABLE, self-declared incrementality could bypass missing counterfactual evidence, and an internal no-data stub could remain in the request.",
+      "Input-preservation RED failed because a user-supplied ad_analysis configuration with empty ad_data could be mistaken for performance input and the internal stub restoration contract was not yet explicit."
+    ],
+    "green": "Final focused behavioral verification passed 24/24. One source-wiring static test is intentionally deselected locally because the local v0676_phase2_closure.py is a prior focused-test mirror rather than the real repository source; GitHub main readback independently verifies the Ads imports/wrappers/closure markers.",
+    "cross_scope": "Fresh current-session rerun passed 68/68 behavioral tests: Advertising Optimization 24 + Content Matrix/RACE 13 + Complete Listing/Search 13 + Economics/Offer 11 + canonical commerce graph 7. One local closure-source static check remains intentionally deselected and is covered by GitHub main source readback, not by a fabricated local mirror.",
+    "produced_object_inspection": {
+      "ready_fixture": {
+        "status": "READY",
+        "row_status": "READY",
+        "business_contract_status": "READY",
+        "density_status": "READY",
+        "lineage_status": "READY",
+        "offer_alignment_status": "READY",
+        "economics_binding_status": "READY",
+        "offer": "No automatic launch discount",
+        "verified_offer_decision": "No automatic launch discount",
+        "economics_boundary_ref": "phase2_economics_offer_authority.break_even",
+        "test_variable": "first_impression_hook",
+        "hold_constant": ["audience", "price", "PDP", "placement"],
+        "break_even_cpa": 17.0,
+        "break_even_cpc": 0.68,
+        "break_even_roas": 3.47,
+        "incrementality_status": "NOT_ESTABLISHED",
+        "causal_sales_claim_allowed": false,
+        "issue_count": 0
+      },
+      "negative_offer_mismatch": {
+        "change": "replace verified no-discount offer with 20% launch discount",
+        "status": "TO_VERIFY",
+        "offer_alignment_status": "TO_VERIFY",
+        "issue": "FULL_ADS_OFFER_ALIGNMENT_INCOMPLETE_V0676"
+      },
+      "negative_economics_binding": {
+        "change": "remove economics_boundary_ref",
+        "status": "TO_VERIFY",
+        "economics_binding_status": "TO_VERIFY",
+        "issues": ["FULL_ADS_OPTIMIZATION_BUSINESS_OBJECT_INCOMPLETE_V0676", "FULL_ADS_ECONOMICS_BINDING_INCOMPLETE_V0676"]
+      },
+      "no_performance_fixture": {
+        "status": "NO_AD_PERFORMANCE_DATA_SUPPLIED",
+        "phase2_business_status": "READY",
+        "metrics": {},
+        "platform_attribution_status": "NOT_SUPPLIED",
+        "metrics_calculator_executed": false,
+        "user_request_restored": true
+      }
+    },
+    "runtime_source_readback": "GitHub main confirms v0676_phase2_closure imports tools.ads, installs Pricing→Ads context, wraps analyze_ads/analyze_ad_portfolio and adds Seven-tool Ads business readiness. GitHub main also confirms the final no-performance input-preservation logic in ads_optimization_authority.py.",
+    "scope_diff": "Compared with Phase 2 #9 closure commit 5c449779ce1a94aa8c0750b7d6043529260d0947, frozen #10 code commit 8b88db6a15860cfd32fff260df46f3dc50ac60fc changes only runtime/cbcc/ads_optimization_authority.py, runtime/cbcc/v0676_phase2_closure.py and four #10 Ads test files. HTML, Listing, Content Matrix, Review, Measurement, K01 and Provider files are untouched.",
+    "human_json_md_html_parity": "PENDING_PHASE6",
+    "real_k01_full": "PENDING_PHASE10",
+    "built_plugin_readback": "PENDING_PHASE11",
+    "provider_actual_output": "E2E_PENDING"
+  },
+  "verified_behavior": [
+    "Advertising Optimization business readiness is separate from legacy CALCULATED/PORTFOLIO_CALCULATED metric-analysis status.",
+    "A mature Ads metric result cannot false-pass a missing Agent-authored optimization decision.",
+    "Each optimization row requires objective/funnel/audience/tension/creative mechanism/proof/offer/landing/spend boundary/attribution/test/failure diagnosis/smallest repair/learning handoff plus six-field WHAT/WHY/EVIDENCE/TRADEOFF/EXECUTION/MEASUREMENT density and REQ-088 lineage.",
+    "A/B optimization exposes a named test variable, hold-constant set, success rule and failure rule instead of relying on generic testing prose.",
+    "Ads consumes verified Phase 2 Economics/Offer values; missing economics keeps business readiness TO_VERIFY, while missing CVR only keeps break-even CPC unavailable when CPA/ROAS remain valid on their own inputs.",
+    "Ads offer must align with the verified Phase 2 Offer Decision and cannot silently invent a launch discount/bundle/promotion.",
+    "Every row carries an explicit Economics authority reference for spend/scale boundaries.",
+    "Platform-attributed conversions do not establish incrementality. Causal sales claims remain disabled without mature counterfactual evidence plus an explicit authored incrementality decision.",
+    "Unknown source IDs remain visible and unresolved; they cannot satisfy Ads REQ-088 lineage.",
+    "Direct and portfolio Ads analyzers consume the Pricing/Economics context exactly once; portfolio internal analyze_ads calls cannot steal the context before aggregate analysis.",
+    "Pricing/analyzer exceptions clear request-local context so a failed project cannot contaminate a later Ads call.",
+    "An explicit Ads Optimization plan with no performance data still materializes before asset work as NO_AD_PERFORMANCE_DATA_SUPPLIED; no metrics are fabricated or defaulted to zero.",
+    "Empty ad_data is not treated as observed zero performance. Temporary materialization stubs restore the user's original ad_analysis configuration after consumption.",
+    "Seven-tool Advertising Optimization exposes business_readiness_status separately from legacy project_status.",
+    "Canonical ADS prefers enriched ad_analysis.json over later paid_campaign_architecture.json, preserving one first-class Ads authority."
+  ],
+  "deferred_boundaries": [
+    "Review Analysis/root-cause/repair remains Phase 2 subtask 11; Ads learning_handoff only names responsible downstream layers and does not claim Review closure.",
+    "Measurement/A-B/P0-P1-P2/next-input closure remains Phase 2 subtask 12; Ads contains local test/success/failure/attribution contracts but does not claim the global measurement authority.",
+    "Paid Campaign Architecture and asset-level paid creative remain later asset/production consumers; #10 does not make them prerequisites for Ads business readiness.",
+    "JSON→MD→HTML same-source Human Workspace projection remains Phase 6; no HTML was modified.",
+    "Fresh real K01 FULL remains Phase 10; built-plugin install/readback remains Phase 11.",
+    "Provider Result / actual-output QA remains E2E_PENDING."
+  ],
+  "source_commits": [
+    "dc3dd889bc62090218e944c49db266dc8af1bc90",
+    "be19a8a1a275ab24abd497548c8607dacf130abb",
+    "4537347b5923fe9b6fb4c4ef819468e8ee969bbf",
+    "1cc5316cd91a5d7f160673670d7942077c6bffbe",
+    "82ecc35acbfa9a96076707d1c6648a6da1b25407",
+    "6cac4382d1f6423e55fbede4ecaefdff0e7e106b",
+    "9543f3e2c92362ad1411243e2d75623576f8627c",
+    "f65f577abef84e38c954a38f57d2b73362839ad4",
+    "f41d36fab7a4bcdeeef325829d9628df23ba7e1b",
+    "199e8c9b7dab72b012f3a4c3d51f24819cef9134",
+    "6b82ddd1c17aabaed94c1681a28abf571841adef",
+    "09bebd421f48618853204c410e2c7827b025462d",
+    "c1db65950d8ba0e36111e7fec887aa70ac484539",
+    "34150ff8adcefb6bc6e76c01b724d294754a4649",
+    "614a34f94f708c6de113cd5300a82d897b201f1d",
+    "8b88db6a15860cfd32fff260df46f3dc50ac60fc"
+  ]
+}
