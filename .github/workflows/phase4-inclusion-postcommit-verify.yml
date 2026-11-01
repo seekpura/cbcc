@@ -1,6 +1,6 @@
 name: phase4-inclusion-postcommit-verify
 
-# Read-only verification of already-committed production code.
+# Read-only verification of already-committed production code after reference-continuity repair.
 on:
   push:
     paths:
