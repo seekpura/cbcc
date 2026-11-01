@@ -38,6 +38,10 @@ def required_release_paths() -> list[str]:
     return [
         'references/CONVERSATION_REQUIREMENT_AUDIT.md',
         'references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md',
+        'references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md',
+        'references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md',
+        'references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json',
+        'references/K01_2026-10-30_REAL_OUTPUT_REGRESSION.md',
         'references/USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md',
         'references/REQUIREMENT_CONSUMER_MAP_V0664.json',
         CURRENT_OVERRIDE_FILE,
