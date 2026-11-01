@@ -72,3 +72,20 @@ def test_production_review_metadata_cannot_substitute_for_customer_review_root_c
     assert out['status']=='TO_VERIFY'
     assert out['production_review_dependency']=='NOT_REQUIRED_FOR_PHASE2_CUSTOMER_REVIEW_AUTHORITY'
     assert any(x['code']=='FULL_REVIEW_ROOT_CAUSE_REPAIR_DECISION_MISSING_V0676' for x in mod.review_analysis_issues(out))
+
+
+def test_unknown_root_cause_status_cannot_false_pass_as_evidence_supported_hypothesis():
+    req=fx.request(); req['review_analysis']['rows'][0]['root_cause_status']='CONFIRMED_BY_REVIEW_COUNT'
+    out=mod.materialize_review_analysis_authority(fx.legacy_feedback(),req)
+    rr=out['repair_rows'][0]
+    assert rr['causal_boundary_status']=='TO_VERIFY'
+    assert any(x['code']=='FULL_REVIEW_CAUSAL_ROOT_CAUSE_OVERCLAIM_V0676' for x in mod.review_analysis_issues(out))
+
+
+def test_responsible_layer_cannot_also_be_frozen_by_same_repair_decision():
+    req=fx.request(); row=req['review_analysis']['rows'][0]
+    row['responsible_layer']='LISTING'; row['frozen_layers']=['LISTING','PRODUCT_TRUTH']
+    out=mod.materialize_review_analysis_authority(fx.legacy_feedback(),req)
+    rr=out['smallest_repair_status']
+    assert rr=='TO_VERIFY'
+    assert any(x['code']=='FULL_REVIEW_SMALLEST_REPAIR_ROUTE_INCOMPLETE_V0676' for x in mod.review_analysis_issues(out))
