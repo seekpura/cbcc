@@ -1,0 +1,28 @@
+{
+  "task": "T23",
+  "name": "Canonical FULL materialization + semantic package audit",
+  "local_source_commit": "b06cb4554c8133592b2e6927b897f0528d2c8e04",
+  "parent_local_commit": "d05fd652694f29ff8773e881562b27ce75b0e963",
+  "patch_bytes": 33727,
+  "patch_sha256": "650a258a02850830fe12b790eccf0a76f26b229af95162d2a3c43bbb691b988a",
+  "patch_gzip_sha256": "67796f3ffa75a3d5ae3f7e3dbf58d1dc772e8e61df5e4eeab7db60eac799091d",
+  "focused_and_cross_scope": "78 passed",
+  "known_baseline_only_failures": "test_v0647_full_delivery_depth_materialization.py: 3 failures reproduced identically on pre-T23 T22 commit d05fd65",
+  "bad_k01_negative_fixture": {
+    "status": "INCOMPLETE",
+    "issue_count": 11,
+    "codes": [
+      "FULL_CANONICAL_GRAPH_MISSING_OR_INVALID",
+      "FULL_CANONICAL_REQUIRED_FILE_MISSING"
+    ]
+  },
+  "current_plugin_build": {
+    "status": "PASS",
+    "issue_count": 0,
+    "bytes": 2603463,
+    "sha256": "407941d9038382f440e88fe31f198a7a95d0387e24f08a82225724ebc053550f"
+  },
+  "actions_waited": false,
+  "main_touched": false,
+  "integration_branch_touched": false
+}
