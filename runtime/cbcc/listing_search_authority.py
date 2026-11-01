@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
+from contextvars import ContextVar
 from typing import Any, Callable, Mapping
 import re
 
@@ -9,6 +10,7 @@ LINEAGE_FIELDS=('source_refs','source_type','recency','exact_fact','interpretati
 MAJOR_OBJECTS=('search','title','bullets','description','attributes','usage','package','faq','claim_mapping')
 _FULL_DENY={'TASK_SCOPED','TASK_SCOPE','PARTIAL','NOT_FULL','NON_FULL','SCOPED','MINIMAL'}
 _FULL_EXACT={'FULL','FULL_PROJECT','FULL_DELIVERY','FULL_PACKAGE','FULL_COMMERCE','FULL_STRATEGY','FULL_WORKSPACE','FULL_E2E','END_TO_END','COMPLETE_DELIVERY','COMPLETE_PROJECT','完整交付','全量交付','完整项目','全量项目'}
+_LISTING_CONTEXT:ContextVar[dict[str,Any]|None]=ContextVar('cbcc_v0676_listing_context', default=None)
 
 
 def _p(v:Any)->bool: return v not in (None,'',[],{})
@@ -237,15 +239,32 @@ def materialize_listing_search_authority(compiled_listing:Mapping[str,Any], requ
     return authority
 
 
+def wrap_compile_pricing_economics_for_listing_context(fn:Callable[...,dict[str,Any]]):
+    def compiled(request:dict[str,Any], market_analysis:dict[str,Any]|None=None, legacy_economics:dict[str,Any]|None=None):
+        out=fn(request,market_analysis,legacy_economics)
+        if _is_full_context(request,out):
+            _LISTING_CONTEXT.set({'request':deepcopy(request),'market_analysis':deepcopy(market_analysis or {}),'pricing_economics':deepcopy(out)})
+        else:
+            _LISTING_CONTEXT.set(None)
+        return out
+    setattr(compiled,'_cbcc_v0676_listing_search_context_bridge',True)
+    return compiled
+
+
 def wrap_compile_listing(fn:Callable[...,dict[str,Any]]):
     def compiled(*args:Any, **kwargs:Any):
-        phase2_context=_d(kwargs.pop('phase2_context',None))
-        legacy=fn(*args,**kwargs)
-        request=_d(phase2_context.get('request'))
-        if not phase2_context or not _is_full_context(request,legacy): return legacy
-        authority=materialize_listing_search_authority(legacy,request,phase2_context.get('market_analysis'),phase2_context.get('pricing_economics'))
-        out=deepcopy(dict(legacy)); out['phase2_listing_search_authority']=authority; out['phase2_business_status']=authority.get('status')
-        return out
+        explicit=_d(kwargs.pop('phase2_context',None))
+        implicit=_d(_LISTING_CONTEXT.get())
+        phase2_context=explicit or implicit
+        try:
+            legacy=fn(*args,**kwargs)
+            request=_d(phase2_context.get('request'))
+            if not phase2_context or not _is_full_context(request,legacy): return legacy
+            authority=materialize_listing_search_authority(legacy,request,phase2_context.get('market_analysis'),phase2_context.get('pricing_economics'))
+            out=deepcopy(dict(legacy)); out['phase2_listing_search_authority']=authority; out['phase2_business_status']=authority.get('status')
+            return out
+        finally:
+            if implicit and not explicit: _LISTING_CONTEXT.set(None)
     setattr(compiled,'_cbcc_v0676_listing_search_authority',True)
     return compiled
 
