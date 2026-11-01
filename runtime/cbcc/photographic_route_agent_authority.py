@@ -134,5 +134,10 @@ def wrap_derived_photo_contract(fn):
                 if _meaningful(art.get('post_look')):
                     execution['post_look']=deepcopy(art.get('post_look'))
 
-        return fn(work,strategy_authority,execution)
+        out=fn(work,strategy_authority,execution)
+        if _agent_selected_photographic_route(work) and isinstance(out,dict):
+            out.setdefault('authority','AGENT_ASSET_ART_DIRECTION')
+            out.setdefault('authority_stage','PER_ASSET_ART_DIRECTION')
+            out.setdefault('runtime_may_invent_execution',False)
+        return out
     return derived
