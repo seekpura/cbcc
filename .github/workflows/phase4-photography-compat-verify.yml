@@ -22,7 +22,7 @@ jobs:
       - name: Verify fixed historical RED and Phase 4 regressions
         run: |
           pytest -q \
-            tests/test_v069_photography_execution_continuity.py::test_prompt_consumes_lighting_camera_and_color_execution_contract \
+            tests/test_v069_photography_execution_continuity.py::test_photography_execution_contract_survives_design_card_prompt_and_trace \
             tests/test_v0676_phase4_visual_master_runtime_binding.py \
             tests/test_v0676_phase4_visual_master_authority.py \
             tests/test_v0676_phase4_visual_route_art_direction.py \
