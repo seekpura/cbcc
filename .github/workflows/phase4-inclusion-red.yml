@@ -1,0 +1,28 @@
+name: phase4-inclusion-red
+
+on:
+  push:
+    paths:
+      - 'tests/test_v0676_phase4_inclusion_execution_authority.py'
+      - '.github/workflows/phase4-inclusion-red.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase4-inclusion-red:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pyyaml
+          python -m pip install -e .
+      - name: Run Phase 4 inclusion behavior RED
+        run: |
+          pytest -q tests/test_v0676_phase4_inclusion_execution_authority.py
