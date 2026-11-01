@@ -24,6 +24,10 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         wrap_build_master_strategy as wrap_context_why_strategy,
         wrap_validate_strategy_delivery as wrap_context_why_validator,
     )
+    from .intersectionality_culture_authority import (
+        wrap_build_master_strategy as wrap_intersectionality_culture_strategy,
+        wrap_validate_strategy_delivery as wrap_intersectionality_culture_validator,
+    )
 
     installed: list[str] = []
 
@@ -42,6 +46,15 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
     if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_context_why_authority', False):
         delivery_contract.validate_strategy_delivery = wrap_context_why_validator(delivery_contract.validate_strategy_delivery)
 
+    # Preserve the mature v0.6.69/v0.6.71 intersectionality and culture objects, then enforce business
+    # density and evidence boundaries on those same objects. Missing identity/cultural facts remain
+    # TO_VERIFY; Runtime never manufactures demographic causality or tokenistic cultural conclusions.
+    if not getattr(strategy_authority.build_master_strategy, '_cbcc_v0676_intersectionality_culture_authority', False):
+        strategy_authority.build_master_strategy = wrap_intersectionality_culture_strategy(strategy_authority.build_master_strategy)
+        installed.append('INTERSECTIONALITY_CULTURE_DENSITY_AUTHORITY')
+    if not getattr(delivery_contract.validate_strategy_delivery, '_cbcc_v0676_intersectionality_culture_authority', False):
+        delivery_contract.validate_strategy_delivery = wrap_intersectionality_culture_validator(delivery_contract.validate_strategy_delivery)
+
     # delivery_export imported this symbol before the final closure. Refresh only that cached consumer;
     # strategy_authority.materialize_strategy imports validate_strategy_delivery dynamically.
     delivery_export.validate_strategy_delivery = delivery_contract.validate_strategy_delivery
@@ -54,6 +67,10 @@ def apply_v0676_phase2_patches() -> dict[str, Any]:
         'DECISION_SPECIFIC_CONTEXT_WHY_AUTHORITY',
         'PLATFORM_REGION_AUDIENCE_CULTURE_SIX_FIELD_DENSITY_AUDIT',
         'PROJECT_CONTEXT_CANNOT_FALSE_PASS_AS_CAUSAL_WHY',
+        'INTERSECTIONALITY_CULTURE_DENSITY_AUTHORITY',
+        'CORE_INTERSECTION_DIMENSION_COVERAGE_WITHOUT_BEHAVIOR_INFERENCE',
+        'CULTURE_SCRIPT_CASTING_WARDROBE_COLOR_CTA_EXECUTION_AUDIT',
+        'RELEVANCE_AWARE_CULTURAL_CONTEXT_COVERAGE',
     ]
     return {
         'status':'INSTALLED' if installed else 'ALREADY_INSTALLED',
