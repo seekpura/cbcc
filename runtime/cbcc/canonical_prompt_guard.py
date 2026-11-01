@@ -83,20 +83,25 @@ def _install_positive_prompt_projection()->None:
     def projected_compile(*args,**kwargs):
         if args:
             call_args=list(args)
+            call_kwargs=dict(kwargs)
             projected=project_named_art_direction(call_args[0] or {})
             call_args[0]=projected
             photo=canonical_photography_contract(projected)
             # signature: asset, product, target, culture, language_contract, locale_profiles=None, photography=None, ...
+            # Never inject photography positionally when the caller already supplied the named
+            # photography argument. Padding positional slots while preserving photography=...
+            # binds the same parameter twice in downstream explicit-signature wrappers.
             if photo:
-                if len(call_args)>=7:
+                if 'photography' in call_kwargs:
+                    if call_kwargs.get('photography') in (None,'',{},[]):
+                        call_kwargs['photography']=photo
+                elif len(call_args)>=7:
                     if call_args[6] in (None,'',{},[]):call_args[6]=photo
-                elif len(call_args)==6:
-                    call_args.append(photo)
-                elif len(call_args)==5:
-                    call_args.extend([None,photo])
                 else:
-                    kwargs=dict(kwargs);kwargs.setdefault('photography',photo)
-            return current(*call_args,**kwargs)
+                    # Keep optional argument positions stable and let Python bind the explicit
+                    # photography keyword; do not manufacture locale_profiles positional padding.
+                    call_kwargs['photography']=photo
+            return current(*call_args,**call_kwargs)
         call_kwargs=dict(kwargs)
         if 'asset' in call_kwargs:
             projected=project_named_art_direction(call_kwargs.get('asset') or {})
