@@ -37,7 +37,7 @@
     {"req":"REQ-090","title":"FULL package lineage and actual-output boundary","phase":"7,8,10","status":"LOCKED_NOT_YET_FULLY_IMPLEMENTED"}
   ],
   "phase_status": {
-    "0":"IN_PROGRESS_RELEASE_CHECKER_BINDING_PENDING",
+    "0":"IN_PROGRESS_BUILT_PLUGIN_READBACK_DEFERRED_PHASE11",
     "1":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY",
     "2":"IN_PROGRESS_PRODUCT_TRUTH_EVIDENCE_SUBTASK_VERIFIED",
     "3":"NOT_STARTED",
@@ -54,16 +54,28 @@
     "0": {
       "source_authority_lock":"PASS",
       "negative_fixture_guard":"PASS",
+      "release_checker_binding":"PASS_CURRENT_CHECKER_REQUIRED_PATHS",
       "built_plugin_readback":"PENDING_PHASE_11_RELEASE_BUILD",
+      "focused_red":"1 failed with exactly four missing required paths",
+      "focused_green":"1 passed",
+      "cross_scope_tests":"16 passed for Phase 1 canonical graph + Phase 2 Product Truth suites",
       "proof_objects":[
         "references/CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md",
         "references/LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
         "references/K01_2026-10-30_REAL_OUTPUT_REGRESSION.md",
-        "tests/test_v0676_k01_negative_fixture_guard.py",
+        "references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE0_AUTHORITY_GUARD.json",
+        "tests/test_v0676_current_authority_package_guard.py",
         "scripts/check_current_release_package.py"
       ],
-      "note":"Extension 02, locked plan, execution ledger and source lock are present in GitHub main. Current release checker still needs explicit required-path binding before Phase 0 source-guard acceptance; built-plugin readback remains intentionally pending until Phase 11.",
-      "release_checker_binding":"PENDING_CURRENT_CHECKER_REQUIRED_PATHS"
+      "verified_behavior":"CURRENT release checker now requires Extension 02, Locked Plan, Execution Ledger and the frozen K01 negative fixture under packaged resources; omission produces REQUIRED_CURRENT_RELEASE_FILE_MISSING.",
+      "deferred_by_plan":"Built-plugin package readback remains Phase 11 release-build evidence. Phase 0 is not globally marked PASS until that real built artifact is checked.",
+      "source_truth":"GITHUB_MAIN_PERSISTED",
+      "source_commits":[
+        "4f96ba58ca20af0bb6cceaf2eb00e5261f1d32e4",
+        "08c4ff99813a3bb315400683a28be88e0845e471",
+        "79c998284b60f8512937f2432b31d35460778447"
+      ]
     },
     "1": {
       "status":"PASS_PHASE1_CANONICAL_GRAPH_AUTHORITY",
