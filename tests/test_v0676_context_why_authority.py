@@ -82,3 +82,27 @@ def test_missing_axes_remain_to_verify_instead_of_inventing_causal_claims():
 def test_task_scoped_strategy_is_unchanged():
     raw = _strategy('TASK_SCOPED')
     assert mod.materialize_context_why_authority(raw) == raw
+
+
+def test_materializer_does_not_mutate_adjacent_business_objects():
+    raw = _strategy('FULL')
+    raw['sections']['01_information_completeness_assumptions_decisions'] = {'sentinel':'info'}
+    raw['sections']['02_product_truth_value_ladder'] = {'sentinel':'truth'}
+    raw['sections']['03_platform_region_audience_culture_insight'] = {'sentinel':'market-audience-culture'}
+    out = mod.materialize_context_why_authority(raw)
+    assert out['sections']['01_information_completeness_assumptions_decisions'] == {'sentinel':'info'}
+    assert out['sections']['02_product_truth_value_ladder'] == {'sentinel':'truth'}
+    assert out['sections']['03_platform_region_audience_culture_insight'] == {'sentinel':'market-audience-culture'}
+
+
+def test_validator_preserves_existing_issues_and_adds_only_context_why_issues():
+    raw = _strategy('FULL', detailed=False)
+    compiled = mod.materialize_context_why_authority(raw)
+    def base_validator(strategy):
+        return {'status':'INCOMPLETE','issues':[{'code':'EXISTING_PRODUCT_TRUTH_ISSUE'}]}
+    wrapped = mod.wrap_validate_strategy_delivery(base_validator)
+    result = wrapped(compiled)
+    codes = {x['code'] for x in result['issues']}
+    assert 'EXISTING_PRODUCT_TRUTH_ISSUE' in codes
+    assert 'FULL_MAJOR_DECISION_CONTEXT_AXIS_DENSITY_INCOMPLETE_V0676' in codes
+    assert result['status'] == 'INCOMPLETE'
