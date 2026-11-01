@@ -1,0 +1,83 @@
+name: phase4-visual-master-binding-green
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  green:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install -q pytest pyyaml openpyxl
+      - name: Bind canonical Visual Master through real compiler flow
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          vm = Path('runtime/cbcc/visual_master_authority.py')
+          text = vm.read_text(encoding='utf-8')
+          if 'def bind_visual_master_upstream' not in text:
+              anchor = "\ndef visual_master_ref(master: Mapping[str, Any] | None) -> dict[str, Any]:\n"
+              addition = '''\ndef bind_visual_master_upstream(\n    master: Mapping[str, Any] | None,\n    *,\n    phase3_opportunity_family_evaluation: Mapping[str, Any] | None = None,\n    content_object_ids: list[str] | None = None,\n) -> dict[str, Any]:\n    \"\"\"Attach upstream decision lineage without creating or mutating a second visual program.\n\n    The Portfolio Visual Program remains the Visual Master's sole visual-content authority. Phase 3\n    family decisions and content-object identifiers are reference metadata proving why this master is\n    relevant before asset architecture; they do not synthesize scenes, layouts, cameras or styles.\n    \"\"\"\n    if not isinstance(master, Mapping) or not master:\n        return {}\n    out = deepcopy(dict(master))\n    evaluation = (\n        dict(phase3_opportunity_family_evaluation)\n        if isinstance(phase3_opportunity_family_evaluation, Mapping)\n        else {}\n    )\n    upstream = dict(out.get('upstream_lineage') or {})\n    upstream['phase3_opportunity_family_evaluation'] = {\n        'schema_version': evaluation.get('schema_version'),\n        'status': evaluation.get('status'),\n        'needed_family_ids': deepcopy(evaluation.get('needed_family_ids') or []),\n        'not_needed_family_ids': deepcopy(evaluation.get('not_needed_family_ids') or []),\n        'unresolved_family_ids': deepcopy(evaluation.get('unresolved_family_ids') or []),\n    }\n    upstream['content_object_ids'] = [str(x) for x in (content_object_ids or []) if str(x or '').strip()]\n    upstream['lineage_role'] = 'REFERENCE_METADATA_ONLY'\n    out['upstream_lineage'] = upstream\n    out['upstream_lineage_stage'] = 'PHASE3_TO_PHASE4_PRE_ASSET_ARCHITECTURE'\n    out['runtime_may_invent_visual_strategy'] = False\n    return out\n\n'''
+              if text.count(anchor) != 1:
+                  raise SystemExit('visual_master_ref anchor mismatch')
+              text = text.replace(anchor, addition + anchor, 1)
+              vm.write_text(text, encoding='utf-8')
+
+          cp = Path('runtime/cbcc/compiler.py')
+          text = cp.read_text(encoding='utf-8')
+
+          import_anchor = 'from .opportunity_family_authority import compile_opportunity_family_evaluation, compile_asset_universe_matrix\n'
+          import_line = import_anchor + 'from .visual_master_authority import bind_visual_master_upstream, visual_master_ref\n'
+          if 'from .visual_master_authority import bind_visual_master_upstream, visual_master_ref' not in text:
+              if text.count(import_anchor) != 1:
+                  raise SystemExit('compiler import anchor mismatch')
+              text = text.replace(import_anchor, import_line, 1)
+
+          anchor = "    architecture_target=dict(tc); architecture_target['phase3_opportunity_family_evaluation']=phase3_opportunity_family_evaluation\n"
+          if "artifacts/visual_master.json" not in text:
+              addition = """    phase4_visual_master=bind_visual_master_upstream(\n        ((agent_plan.get('creative_exploration') or {}).get('visual_master') or {}),\n        phase3_opportunity_family_evaluation=phase3_opportunity_family_evaluation,\n        content_object_ids=[o.get('object_id') for o in objects if o.get('object_id')],\n    )\n    _write(p/'artifacts/visual_master.json',phase4_visual_master)\n    architecture_target=dict(tc); architecture_target['phase3_opportunity_family_evaluation']=phase3_opportunity_family_evaluation\n    architecture_target['phase4_visual_master']=phase4_visual_master\n"""
+              if text.count(anchor) != 1:
+                  raise SystemExit('compiler pre-architecture anchor mismatch')
+              text = text.replace(anchor, addition, 1)
+
+          creative_anchor = "              'curation':curation,'creative_opportunity_universe':creative_opportunity_universe,'creative_council':council,'cmf':cmf,'inclusive_photography':inclusive,\n"
+          if "'visual_master':phase4_visual_master" not in text and "'visual_master': phase4_visual_master" not in text:
+              replacement = "              'curation':curation,'creative_opportunity_universe':creative_opportunity_universe,'creative_council':council,'cmf':cmf,'inclusive_photography':inclusive,\n              'visual_master':phase4_visual_master,'visual_master_ref':visual_master_ref(phase4_visual_master),\n"
+              if text.count(creative_anchor) != 1:
+                  raise SystemExit('compiler creative contract anchor mismatch')
+              text = text.replace(creative_anchor, replacement, 1)
+
+          cp.write_text(text, encoding='utf-8')
+          PY
+          python -m py_compile runtime/cbcc/visual_master_authority.py runtime/cbcc/compiler.py
+      - name: Focused GREEN and cross-scope regressions
+        run: |
+          pytest -q \
+            tests/test_v0676_phase4_visual_master_runtime_binding.py \
+            tests/test_v0676_phase4_visual_master_authority.py \
+            tests/test_v0676_phase4_visual_route_art_direction.py \
+            tests/test_v0632_portfolio_visual_authority.py \
+            tests/test_v0630_agent_art_direction_authority.py \
+            tests/test_v0676_phase3_opportunity_family_evaluation.py \
+            tests/test_v0676_phase3_opportunity_family_runtime_binding.py
+      - name: Commit verified production changes
+        run: |
+          git config user.name 'cbcc-release-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add runtime/cbcc/visual_master_authority.py runtime/cbcc/compiler.py
+          git commit -m 'feat: GREEN bind canonical Visual Master through compiler'
+          git push origin HEAD:main
