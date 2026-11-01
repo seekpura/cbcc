@@ -30,8 +30,12 @@ def optimization_row():
         'creative_hypothesis':'A single oil-balance + hydration tension should improve qualified click intent.',
         'creative_mechanism':'Tension-to-proof first impression','proof':['CLM-SA','CLM-NIA'],
         'offer':'No automatic launch discount','landing_handoff':'PDP listing','spend_boundary':'Do not scale above available CPA/CPC/ROAS economics boundaries',
+        'economics_boundary_ref':'phase2_economics_offer_authority.break_even',
         'attribution':'Platform-attributed conversion is directional; incremental lift requires counterfactual evidence.',
         'test_structure':'A/B one first-impression variable; hold audience, price, PDP and placement constant where possible.',
+        'test_variable':'first_impression_hook','hold_constant':['audience','price','PDP','placement'],
+        'success_rule':'CTR improves without material CVR or contribution-per-click deterioration.',
+        'failure_rule':'Stop or reroute if CTR lift is offset by worse CVR, CPA or contribution-per-click.',
         'failure_diagnosis':'If CTR improves but contribution-per-click/CVR deteriorates, route to traffic-quality/message-match before scaling.',
         'repair_route':'FIRST_IMPRESSION_CREATIVE_ONLY','learning_handoff':['listing','creative','offer'],
         **decision_fields('ads optimization')
