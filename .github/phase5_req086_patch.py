@@ -1,105 +1,30 @@
 from pathlib import Path
 
-path = Path('runtime/cbcc/prompt_compiler.py')
-text = path.read_text(encoding='utf-8')
 
-marker = "def _derived_photo_contract(asset: dict[str, Any], strategy_authority: dict[str, Any] | None, explicit: dict[str, Any] | None) -> dict[str, Any]:\n"
-helper = '''def _asset_art_direction_photo_contract(asset: dict[str, Any]) -> dict[str, Any]:
-    """Project the canonical per-asset photography authority without inventing new decisions."""
-    art = asset.get('asset_art_direction') or {}
-    if not isinstance(art, dict):
-        return {}
-
-    camera: dict[str, Any] = {}
-    if _meaningful(art.get('camera_or_view')):
-        camera['preferred_view'] = art.get('camera_or_view')
-    if _meaningful(art.get('focal_length_mm')):
-        camera['focal_length_mm'] = art.get('focal_length_mm')
-    for nested_key in ('camera_position', 'focus_dof'):
-        nested = art.get(nested_key)
-        if isinstance(nested, dict):
-            camera.update({k: v for k, v in nested.items() if _meaningful(v)})
-    if _meaningful(camera):
-        camera['authority'] = 'AGENT_ASSET_ART_DIRECTION'
-
-    lighting = dict(art.get('lighting') or {}) if isinstance(art.get('lighting'), dict) else {}
-    if _meaningful(lighting):
-        lighting['authority'] = 'AGENT_ASSET_ART_DIRECTION'
-
-    cmf = dict(art.get('cmf') or {}) if isinstance(art.get('cmf'), dict) else {}
-    if _meaningful(cmf):
-        cmf['authority'] = 'AGENT_ASSET_ART_DIRECTION'
-
-    has_authority = any(_meaningful(v) for v in (camera, lighting, cmf))
-    return _compact({
-        'authority': 'AGENT_ASSET_ART_DIRECTION' if has_authority else None,
-        'camera': camera,
-        'lighting': lighting,
-        'cmf': cmf,
-    })
+def patch_photographic_authority() -> None:
+    path = Path('runtime/cbcc/photographic_route_agent_authority.py')
+    text = path.read_text(encoding='utf-8')
+    old = """        out=fn(work,strategy_authority,execution)\n        if _agent_selected_photographic_route(work) and isinstance(out,dict):\n            out.setdefault('authority','AGENT_ASSET_ART_DIRECTION')\n            out.setdefault('authority_stage','PER_ASSET_ART_DIRECTION')\n            out.setdefault('runtime_may_invent_execution',False)\n        return out\n"""
+    new = """        out=fn(work,strategy_authority,execution)\n        if _agent_selected_photographic_route(work) and isinstance(out,dict):\n            out.setdefault('authority','AGENT_ASSET_ART_DIRECTION')\n            out.setdefault('authority_stage','PER_ASSET_ART_DIRECTION')\n            out.setdefault('runtime_may_invent_execution',False)\n\n            # Phase 5 REQ-086: the already-authored per-asset Art Direction is the final\n            # photography execution authority. Strategy/runtime photography may fill fields\n            # that the Agent did not author, but it cannot override camera/light/CMF choices\n            # selected on this asset. Preserve field provenance for downstream Prompt audit.\n            if isinstance(art,Mapping):\n                camera_position=art.get('camera_position') if isinstance(art.get('camera_position'),Mapping) else {}\n                focus_dof=art.get('focus_dof') if isinstance(art.get('focus_dof'),Mapping) else {}\n                camera_authored={\n                    'focal_length_mm':_first(art,'focal_length_mm','focal_length'),\n                    'lens_family':_first(art,'lens_family','lens'),\n                    'preferred_view':_first(art,'camera_or_view','preferred_view','view'),\n                    'working_distance':_first(art,'working_distance') or camera_position.get('working_distance'),\n                    'camera_height':_first(art,'camera_height') or camera_position.get('camera_height'),\n                    'yaw':_first(art,'yaw','camera_yaw') or camera_position.get('yaw'),\n                    'pitch':_first(art,'pitch','camera_pitch') or camera_position.get('pitch'),\n                    'roll':_first(art,'roll','camera_roll') or camera_position.get('roll'),\n                    'shot_size':_first(art,'shot_size') or camera_position.get('shot_size'),\n                    'perspective':_first(art,'perspective','projection') or camera_position.get('perspective'),\n                    'focus_plane':_first(art,'focus_plane') or focus_dof.get('focus_plane'),\n                    'aperture':_first(art,'aperture','f_stop') or focus_dof.get('aperture'),\n                    'dof':_first(art,'dof','depth_of_field') or focus_dof.get('dof'),\n                    'shutter_speed':_first(art,'shutter','shutter_speed') or focus_dof.get('shutter'),\n                    'iso':_first(art,'iso','ISO') or focus_dof.get('iso'),\n                }\n                camera_authored={k:deepcopy(v) for k,v in camera_authored.items() if _meaningful(v)}\n                if camera_authored:\n                    camera=deepcopy(dict(out.get('camera') or {}))\n                    camera.update(camera_authored)\n                    camera['authority']='AGENT_ASSET_ART_DIRECTION'\n                    camera['authored_fields']=list(camera_authored)\n                    out['camera']=camera\n\n                lighting_source=art.get('lighting') if isinstance(art.get('lighting'),Mapping) else {}\n                lighting_authored={\n                    'key':_first(art,'key','key_light') or lighting_source.get('key'),\n                    'fill':_first(art,'fill','fill_light') or lighting_source.get('fill'),\n                    'negative_fill':_first(art,'negative_fill') or lighting_source.get('negative_fill'),\n                    'rim':_first(art,'rim','rim_light') or lighting_source.get('rim'),\n                    'modifier':_first(art,'modifier','modifier_geometry') or lighting_source.get('modifier'),\n                    'modifier_size':_first(art,'modifier_size') or lighting_source.get('modifier_size'),\n                    'modifier_distance':_first(art,'modifier_distance') or lighting_source.get('modifier_distance'),\n                    'modifier_angle':_first(art,'modifier_angle') or lighting_source.get('modifier_angle'),\n                    'cct':_first(art,'cct','CCT') or lighting_source.get('cct'),\n                    'white_balance':_first(art,'white_balance','wb','WB') or lighting_source.get('white_balance'),\n                    'exposure_ratio_plan':_first(art,'light_ratio','exposure_ratio','exposure_ratio_plan') or lighting_source.get('light_ratio') or lighting_source.get('exposure_ratio_plan'),\n                    'shadow':_first(art,'shadow_policy','shadow') or lighting_source.get('shadow_policy') or lighting_source.get('shadow'),\n                    'highlight_policy':_first(art,'highlight_policy') or lighting_source.get('highlight_policy'),\n                    'reflection':_first(art,'reflection','reflection_control') or lighting_source.get('reflection'),\n                    'polarization_plan':_first(art,'polarization','polarization_plan') or lighting_source.get('polarization') or lighting_source.get('polarization_plan'),\n                    'prelight_plan':_first(art,'prelight','prelight_plan') or lighting_source.get('prelight'),\n                }\n                lighting_authored={k:deepcopy(v) for k,v in lighting_authored.items() if _meaningful(v)}\n                if lighting_authored:\n                    lighting=deepcopy(dict(out.get('lighting') or {}))\n                    lighting.update(lighting_authored)\n                    lighting['authority']='AGENT_ASSET_ART_DIRECTION'\n                    lighting['authored_fields']=list(lighting_authored)\n                    out['lighting']=lighting\n\n                if isinstance(art.get('cmf'),Mapping) and _meaningful(art.get('cmf')):\n                    cmf_authored=deepcopy(dict(art.get('cmf') or {}))\n                    cmf=deepcopy(dict(out.get('cmf') or {}))\n                    cmf.update(cmf_authored)\n                    cmf['authority']='AGENT_ASSET_ART_DIRECTION'\n                    cmf['authored_fields']=list(cmf_authored)\n                    out['cmf']=cmf\n        return out\n"""
+    if new not in text:
+        if old not in text:
+            raise SystemExit('REQ086 photographic authority marker missing')
+        text = text.replace(old, new, 1)
+    path.write_text(text, encoding='utf-8')
 
 
-'''
-if helper not in text:
-    if marker not in text:
-        raise SystemExit('REQ086 helper insertion marker missing')
-    text = text.replace(marker, helper + marker, 1)
+def patch_final_consumption_audit() -> None:
+    path = Path('runtime/cbcc/model_native_prompt_audit_fix.py')
+    text = path.read_text(encoding='utf-8')
+    old = """    for key in all_keys:\n        cn=fields_cn.get(key)\n        en=fields_en.get(key)\n        if native._meaningful(cn):\n            checks.append(_check(key,cn,'MODEL_PROMPT_CN',_contains(prompt_cn,cn),language='CN'))\n        if native._meaningful(en):\n            checks.append(_check(key,en,'MODEL_PROMPT_EN',_contains(prompt_en,en),language='EN'))\n\n    presence=card.get('product_presence') or {}\n"""
+    new = """    for key in all_keys:\n        cn=fields_cn.get(key)\n        en=fields_en.get(key)\n        if native._meaningful(cn):\n            checks.append(_check(key,cn,'MODEL_PROMPT_CN',_contains(prompt_cn,cn),language='CN'))\n        if native._meaningful(en):\n            checks.append(_check(key,en,'MODEL_PROMPT_EN',_contains(prompt_en,en),language='EN'))\n\n    # Phase 5 REQ-086: prove that the final acting model Prompt consumed the exact\n    # per-asset camera / lighting / CMF decisions selected by Art Direction. The\n    # generic field checks above prove value presence; these rows preserve source\n    # authority and the authored subset so later wrappers cannot turn that proof\n    # back into a section-title or global-strategy claim.\n    photo=card.get('photography_execution') or {}\n    def across_prompts(value:Any)->bool:\n        if not native._meaningful(value):\n            return True\n        if isinstance(value,Mapping):\n            return all(across_prompts(v) for v in value.values() if native._meaningful(v))\n        if isinstance(value,(list,tuple,set,frozenset)):\n            return all(across_prompts(v) for v in value if native._meaningful(v))\n        token=str(value).strip()\n        return token in prompt_cn or token in prompt_en\n\n    for decision,block_name in (\n        ('scene_derived_camera','camera'),\n        ('scene_derived_lighting','lighting'),\n        ('scene_derived_cmf','cmf'),\n    ):\n        block=photo.get(block_name) or {}\n        if not isinstance(block,Mapping) or block.get('authority')!='AGENT_ASSET_ART_DIRECTION':\n            continue\n        authored=[str(x) for x in (block.get('authored_fields') or []) if str(x)]\n        payload={key:deepcopy(block.get(key)) for key in authored if native._meaningful(block.get(key))}\n        if not payload:\n            continue\n        row=_check(decision,payload,'MODEL_PROMPT_CN+EN',across_prompts(payload))\n        row['authority']='AGENT_ASSET_ART_DIRECTION'\n        row['value']=deepcopy(payload)\n        checks.append(row)\n\n    presence=card.get('product_presence') or {}\n"""
+    if new not in text:
+        if old not in text:
+            raise SystemExit('REQ086 final consumption audit marker missing')
+        text = text.replace(old, new, 1)
+    path.write_text(text, encoding='utf-8')
 
-old = "    explicit=dict(explicit or {})\n    sections=(strategy_authority or {}).get('sections') or {}\n"
-new = "    explicit=dict(explicit or {})\n    asset_direction_photo=_asset_art_direction_photo_contract(asset)\n    sections=(strategy_authority or {}).get('sections') or {}\n"
-if new not in text:
-    if old not in text:
-        raise SystemExit('REQ086 derived contract start marker missing')
-    text = text.replace(old, new, 1)
 
-old = "    if isinstance(explicit.get('camera'),dict): camera.update(explicit.get('camera') or {})\n"
-new = old + "    if isinstance(asset_direction_photo.get('camera'),dict): camera.update(asset_direction_photo.get('camera') or {})\n"
-if new not in text:
-    if old not in text:
-        raise SystemExit('REQ086 camera merge marker missing')
-    text = text.replace(old, new, 1)
-
-old = "    if isinstance(explicit.get('lighting'),dict): lighting.update(explicit.get('lighting') or {})\n"
-new = old + "    if isinstance(asset_direction_photo.get('lighting'),dict): lighting.update(asset_direction_photo.get('lighting') or {})\n"
-if new not in text:
-    if old not in text:
-        raise SystemExit('REQ086 lighting merge marker missing')
-    text = text.replace(old, new, 1)
-
-old = "    if isinstance(cmf,dict) and cmf:\n        cmf=_merge({\n            'material':material.get('material'),'finish':material.get('finish'),'surface_behavior':material.get('surface_behavior'),\n            'optical_risks':material.get('optical_risks'),\n        },cmf)\n\n    color_management=explicit.get('color_management')\n"
-new = "    if isinstance(cmf,dict) and cmf:\n        cmf=_merge({\n            'material':material.get('material'),'finish':material.get('finish'),'surface_behavior':material.get('surface_behavior'),\n            'optical_risks':material.get('optical_risks'),\n        },cmf)\n    if isinstance(asset_direction_photo.get('cmf'),dict):\n        cmf=_merge(cmf if isinstance(cmf,dict) else {}, asset_direction_photo.get('cmf') or {})\n\n    color_management=explicit.get('color_management')\n"
-if new not in text:
-    if old not in text:
-        raise SystemExit('REQ086 CMF merge marker missing')
-    text = text.replace(old, new, 1)
-
-old = "    base={\n        'status':'ASSET_RELEVANCE_DERIVED_EXECUTION_CONTRACT',\n        'capture_mode':capture_mode,\n"
-new = "    base={\n        'status':'ASSET_RELEVANCE_DERIVED_EXECUTION_CONTRACT',\n        'authority':asset_direction_photo.get('authority'),\n        'capture_mode':capture_mode,\n"
-if new not in text:
-    if old not in text:
-        raise SystemExit('REQ086 authority marker missing')
-    text = text.replace(old, new, 1)
-
-old = "            f\"Prelight：{_txt(_cn_phrase(lm.get('prelight_plan')))}\",\n            f\"CMF：{_txt(_cn_phrase(lm.get('cmf')))}\", f\"需要表现的材质响应：{_txt(_cn_phrase(lm.get('material_response_to_show')))}\",\n"
-new = "            f\"Prelight：{_txt(_cn_phrase(lm.get('prelight_plan')))}\",\n            f\"灯光执行合同：{_txt(_cn_phrase(photo_exec.get('lighting')))}\",\n            f\"CMF：{_txt(_cn_phrase(lm.get('cmf')))}\", f\"需要表现的材质响应：{_txt(_cn_phrase(lm.get('material_response_to_show')))}\",\n"
-if new not in text:
-    if old not in text:
-        raise SystemExit('REQ086 CN lighting prompt marker missing')
-    text = text.replace(old, new, 1)
-
-old = "            f\"Prelight plan: {_txt(lm.get('prelight_plan'))}\", f\"Lighting diagram: {_txt(lm.get('lighting_diagram'))}\",\n            f\"CMF: {_txt(lm.get('cmf'))}\", f\"Material response to show: {_txt(lm.get('material_response_to_show'))}\",\n"
-new = "            f\"Prelight plan: {_txt(lm.get('prelight_plan'))}\", f\"Lighting diagram: {_txt(lm.get('lighting_diagram'))}\",\n            f\"Lighting execution contract: {_txt(photo_exec.get('lighting'))}\",\n            f\"CMF: {_txt(lm.get('cmf'))}\", f\"Material response to show: {_txt(lm.get('material_response_to_show'))}\",\n"
-if new not in text:
-    if old not in text:
-        raise SystemExit('REQ086 EN lighting prompt marker missing')
-    text = text.replace(old, new, 1)
-
-old = "    add('visual_boundaries_editability',relevance['boundaries'],'【视觉执行边界 / 可编辑性】','[VISUAL EXECUTION BOUNDARIES / EDITABILITY]')\n    focal=(card.get('composition_camera') or {}).get('focal_length_mm')\n"
-new = "    add('visual_boundaries_editability',relevance['boundaries'],'【视觉执行边界 / 可编辑性】','[VISUAL EXECUTION BOUNDARIES / EDITABILITY]')\n\n    photo_exec=card.get('photography_execution') or {}\n    def add_scene_derived(name:str, value:Any):\n        if not isinstance(value,dict) or value.get('authority')!='AGENT_ASSET_ART_DIRECTION':\n            return\n        payload={k:v for k,v in value.items() if k!='authority' and _meaningful(v)}\n        def leaves(v:Any)->list[str]:\n            if isinstance(v,dict):\n                out=[]\n                for child in v.values(): out.extend(leaves(child))\n                return out\n            if isinstance(v,(list,tuple,set,frozenset)):\n                out=[]\n                for child in v: out.extend(leaves(child))\n                return out\n            return [str(v)] if _meaningful(v) else []\n        tokens=leaves(payload)\n        projected=bool(tokens) and all(token in prompt_en or token in prompt_cn for token in tokens)\n        checks.append({\n            'decision':name, 'required':True, 'projected':projected,\n            'authority':'AGENT_ASSET_ART_DIRECTION', 'value':payload,\n        })\n    add_scene_derived('scene_derived_camera',photo_exec.get('camera'))\n    add_scene_derived('scene_derived_lighting',photo_exec.get('lighting'))\n    add_scene_derived('scene_derived_cmf',photo_exec.get('cmf'))\n\n    focal=(card.get('composition_camera') or {}).get('focal_length_mm')\n"
-if new not in text:
-    if old not in text:
-        raise SystemExit('REQ086 consumption audit marker missing')
-    text = text.replace(old, new, 1)
-
-path.write_text(text, encoding='utf-8')
-print('REQ-086 patch applied')
+patch_photographic_authority()
+patch_final_consumption_audit()
+print('REQ-086 existing authority consumers patched')
