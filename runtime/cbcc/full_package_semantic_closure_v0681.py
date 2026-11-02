@@ -337,15 +337,24 @@ def materialize_final_package_semantics(
     _write_json(package / OBJECT_MANIFEST_FILE, inventory)
     semantic_issues = audit_final_semantic_inventory(package)
     actual_output = audit_actual_output_boundary(package)
-    if host_package_dir is None:
-        parity: dict[str, Any] = {
-            "status": "E2E_PENDING_INSTALLED_HOST_EXPORT",
-            "comparison_contract": "HOST_NATIVE_RUNTIME_SEMANTIC_OBJECT_SIGNATURE_PARITY",
-            "runtime_semantic_signature_sha256": inventory["semantic_signature_sha256"],
-            "reason": "No independently materialized Host-native package was supplied to this finalizer. Source-level comparator exists, but installed-host parity is not fabricated from one Runtime package.",
-        }
-    else:
-        parity = compare_export_semantics(host_package_dir, package)
+
+    candidate_comparison: dict[str, Any] | None = None
+    if host_package_dir is not None:
+        candidate_comparison = compare_export_semantics(host_package_dir, package)
+        candidate_comparison["verification_scope"] = "UNAUTHENTICATED_CANDIDATE_DIRECTORY"
+        candidate_comparison["verified_host_native_origin"] = False
+
+    parity: dict[str, Any] = {
+        "status": "E2E_PENDING_INSTALLED_HOST_EXPORT",
+        "comparison_contract": "HOST_NATIVE_RUNTIME_SEMANTIC_OBJECT_SIGNATURE_PARITY",
+        "runtime_semantic_signature_sha256": inventory["semantic_signature_sha256"],
+        "reason": (
+            "A supplied candidate directory can be compared semantically, but Phase 7 has no installed-host provenance/readback authority. "
+            "Installed Host-native parity must remain pending until the Phase 11 build/install/readback path proves independent Host origin."
+            if candidate_comparison is not None
+            else "No independently materialized installed Host-native export/readback proof was supplied. Source-level comparator exists, but installed-host parity is not fabricated from one Runtime package."
+        ),
+    }
 
     audit = {
         "status": "PASS" if not semantic_issues else "INCOMPLETE",
@@ -355,6 +364,7 @@ def materialize_final_package_semantics(
         "semantic_object_count": inventory["semantic_object_count"],
         "host_native_runtime_export_parity": parity.get("status"),
         "host_runtime_parity": parity,
+        "host_candidate_semantic_comparison": candidate_comparison,
         "actual_output_boundary_status": actual_output["status"],
         "actual_output_boundary": actual_output,
         "issues": semantic_issues,
@@ -374,6 +384,7 @@ def materialize_final_package_semantics(
             "phase7_final_semantic_closure": "PASS",
             "final_semantic_signature_sha256": inventory["semantic_signature_sha256"],
             "host_native_runtime_export_parity": parity.get("status"),
+            "host_candidate_semantic_comparison_status": candidate_comparison.get("status") if candidate_comparison else None,
             "actual_output_boundary_status": actual_output["status"],
             "phase7_e2e_boundary": audit["e2e_boundary"],
         }
@@ -384,6 +395,7 @@ def materialize_final_package_semantics(
             "phase7_final_semantic_closure": "PASS",
             "final_semantic_object_inventory_dynamic": True,
             "host_runtime_semantic_comparator_implemented": True,
+            "host_candidate_directory_is_verified_host_native": False,
             "host_native_runtime_export_parity": parity.get("status"),
             "actual_output_boundary_status": actual_output["status"],
             "provider_planning_is_actual_output": False,
@@ -398,6 +410,7 @@ def materialize_final_package_semantics(
         "final_semantic_signature_sha256": inventory["semantic_signature_sha256"],
         "semantic_object_count": inventory["semantic_object_count"],
         "host_native_runtime_export_parity": parity.get("status"),
+        "host_candidate_semantic_comparison": candidate_comparison,
         "actual_output_boundary_status": actual_output["status"],
         "phase7_e2e_boundary": audit["e2e_boundary"],
         "manifest": final_manifest,
