@@ -1,0 +1,63 @@
+{
+  "version": "2026-11-02-phase5-product-fidelity-reference-v1",
+  "phase": "PHASE_5_COMMERCIAL_GRADE_PROMPT_COMPILER",
+  "subtask": "PRODUCT_PRESENCE_FIDELITY_REFERENCE_INDEPENDENCE",
+  "production_head_sha": "32c46dc40a3e13c15855ad771c014fca77a45a94",
+  "requirements": [
+    {
+      "requirement_id": "REQ-084",
+      "summary": "Product Presence remains an Agent creative decision while Product Fidelity/reference behavior remains an independent truth/production decision through the final model-facing and renderer planes.",
+      "source": "CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md + PROMPT_ART_DIRECTION_MASTER_CONTRACT.md + MODEL_PROMPT_SEMANTIC_MEMBRANE_CONTRACT.md",
+      "implementation_status": "PASS_PHASE4_PHASE5_PRODUCT_PRESENCE_FIDELITY_REFERENCE_INDEPENDENCE_TARGETED_VERIFIED_E2E_PENDING",
+      "upstream_authority": [
+        "asset_art_direction.product_presence",
+        "asset_art_direction.product_fidelity.mode",
+        "source_product_assets"
+      ],
+      "consumers": [
+        "runtime/cbcc/agent_authority_prompt_compiler.py",
+        "runtime/cbcc/reference_guided_native_authority.py",
+        "runtime/cbcc/integrated_render_route_authority.py"
+      ],
+      "evidence": [
+        "tests/test_v0676_phase5_product_fidelity_reference_prompt.py",
+        "tests/test_v0676_phase4_inclusion_execution_authority.py",
+        "tests/test_v0635_native_reference_provider_integrity.py",
+        "GitHub Actions run 41382792721",
+        "production commit 32c46dc40a3e13c15855ad771c014fca77a45a94"
+      ],
+      "verified_behavior": [
+        "Canonical per-object asset_art_direction.product_fidelity.mode outranks legacy top-level/default fidelity aliases.",
+        "EXACT_PIXEL_COMPOSITE remains exact through Design Card, reference authority, integrated-render finalizer, renderer recipe and production-parameter closure.",
+        "REFERENCE_GUIDED_NATIVE_LOCK remains native reference generation and preserves package identity instructions.",
+        "Product ABSENT/FORBIDDEN wins over fidelity machinery: no visible reference subject, exact-pixel layer or reference-input requirement is synthesized.",
+        "A visible native-reference product with no real bound source remains model-generation blocking; runtime does not invent a source binding."
+      ],
+      "residual_risk": "Fresh real K01 FULL and Provider actual media / pixel-frame QA remain pending; REQ-086 and broader Phase 5 Prompt density/surface closure remain open."
+    }
+  ],
+  "cross_scope_verification": {
+    "focused_red": "1 failed / 3 passed after invalid lighting fixture semantics were corrected; failure was exact-pixel fidelity downgraded to REFERENCE_GUIDED_NATIVE_LOCK.",
+    "focused_green": "4 passed",
+    "prior_phase5_dynamic": "4 passed",
+    "phase4_presence_fidelity_inclusion": "passed",
+    "native_reference_provider_integrity": "passed",
+    "phase4_regressions": "all tests/test_v0676_phase4_*.py passed",
+    "v0673_prompt_route": "passed",
+    "v0674_cross_scope": "passed"
+  },
+  "invariants": [
+    "Product Presence and Product Fidelity are independent axes.",
+    "Canonical per-object Art Direction outranks compatibility aliases.",
+    "Exact-pixel compositing is explicit-only and cannot be silently normalized into native generation.",
+    "Absent product never becomes visible because a fidelity/reference path exists.",
+    "Missing visible real-product reference remains blocking rather than fabricated."
+  ],
+  "pending": [
+    "REQ-086 scene-derived camera/lighting/CMF Prompt consumption",
+    "REQ-082 broader commercial Prompt density",
+    "REQ-083 remaining surface-specific Prompt closure",
+    "Fresh real K01 FULL",
+    "Provider actual media / Review / smallest Local Revision / provenance"
+  ]
+}
