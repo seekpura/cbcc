@@ -81,19 +81,19 @@
       "req": "REQ-073",
       "title": "Creator/UGC/Affiliate",
       "phase": "3,4,5",
-      "status": "PARTIAL_PHASE3_OPPORTUNITY_FAMILY_PHASE4_DYNAMIC_ART_DIRECTION_VERIFIED_PHASE5_PROMPT_PENDING"
+      "status": "PARTIAL_PHASE3_OPPORTUNITY_FAMILY_PHASE4_DYNAMIC_ART_DIRECTION_PHASE5_TEMPORAL_PROMPT_TARGETED_VERIFIED_REAL_OUTPUT_E2E_PENDING"
     },
     {
       "req": "REQ-074",
       "title": "Product/PDP/Short video",
       "phase": "3,4,5",
-      "status": "PARTIAL_PHASE3_OPPORTUNITY_FAMILY_PHASE4_DYNAMIC_ART_DIRECTION_VERIFIED_PHASE5_PROMPT_PENDING"
+      "status": "PARTIAL_PHASE3_OPPORTUNITY_FAMILY_PHASE4_DYNAMIC_ART_DIRECTION_PHASE5_TEMPORAL_PROMPT_TARGETED_VERIFIED_REAL_OUTPUT_E2E_PENDING"
     },
     {
       "req": "REQ-075",
       "title": "LIVE commerce",
       "phase": "3,4,5",
-      "status": "PARTIAL_PHASE3_OPPORTUNITY_FAMILY_PHASE4_DYNAMIC_ART_DIRECTION_VERIFIED_PHASE5_PROMPT_PENDING"
+      "status": "PARTIAL_PHASE3_OPPORTUNITY_FAMILY_PHASE4_DYNAMIC_ART_DIRECTION_PHASE5_TEMPORAL_PROMPT_TARGETED_VERIFIED_REAL_OUTPUT_E2E_PENDING"
     },
     {
       "req": "REQ-076",
@@ -141,7 +141,7 @@
       "req": "REQ-083",
       "title": "Dynamic/temporal prompt continuity",
       "phase": "5",
-      "status": "PARTIAL_PHASE5_CANONICAL_DYNAMIC_TEMPORAL_PROMPT_CONTINUITY_VERIFIED_REMAINING_PHASE5_SURFACE_PROMPT_CLOSURE_PENDING"
+      "status": "PASS_PHASE5_DYNAMIC_TEMPORAL_PROMPT_PRODUCTION_CONTINUITY_TARGETED_VERIFIED_E2E_PENDING"
     },
     {
       "req": "REQ-084",
@@ -192,7 +192,7 @@
     "2": "PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED",
     "3": "PASS_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED",
     "4": "PASS_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER_VERIFIED",
-    "5": "IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_SCENE_PHOTOGRAPHY_AND_BROAD_PROMPT_DENSITY_VERIFIED",
+    "5": "PASS_PHASE5_COMMERCIAL_PROMPT_COMPILER_PARAMETER_CONSUMPTION_VERIFIED",
     "6": "NOT_STARTED",
     "7": "NOT_STARTED",
     "8": "NOT_STARTED",
@@ -793,8 +793,8 @@
       }
     },
     "5": {
-      "status": "IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_SCENE_PHOTOGRAPHY_AND_BROAD_PROMPT_DENSITY_VERIFIED",
-      "subtask": "COMMERCIAL_GRADE_PROMPT_DENSITY_AND_CONCRETE_PARAMETER_CONSUMPTION",
+      "status": "PASS_PHASE5_COMMERCIAL_PROMPT_COMPILER_PARAMETER_CONSUMPTION_VERIFIED",
+      "subtask": "DYNAMIC_TEMPORAL_SURFACE_PROMPT_AND_PRODUCTION_CONTINUITY",
       "requirements_advanced": [
         "REQ-082",
         "REQ-083"
@@ -820,7 +820,10 @@
         "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PROMPT_DENSITY.json",
         "tests/test_v0678_phase5_req082_broad_prompt_density.py",
         "tests/test_v0678_phase5_req082_static_ad_prompt_consumption.py",
-        "tests/test_v0678_phase5_req082_integrated_render_language_purity.py"
+        "tests/test_v0678_phase5_req082_integrated_render_language_purity.py",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_TEMPORAL_PROMPT_CONTINUITY.json",
+        "tests/test_v0679_phase5_req083_temporal_surface_continuity.py",
+        "runtime/cbcc/video_creator.py"
       ],
       "verified_behaviors": [
         "Phase 4 canonical motion/timing/audio concrete values are projected into the model-facing Prompt and concrete consumption audit.",
@@ -833,7 +836,11 @@
         "Final Model Prompt consumption audit proves scene_derived_camera, scene_derived_lighting and scene_derived_cmf by concrete authored values rather than section presence.",
         "Rich static Art Direction geometry, scale/depth, focal path, material response, human/culture/inclusion semantics and locked visible copy survive into the final acting Prompt as concrete semantic values.",
         "A manually supplied short product/background/camera/light Prompt cannot bypass broad-density consumption auditing; unresolved concrete decisions keep the Prompt INCOMPLETE.",
-        "Integrated typography selects already-authored semantics per Prompt language and never dumps locale mappings/Python dict syntax or relabels Chinese-only typography as English."
+        "Integrated typography selects already-authored semantics per Prompt language and never dumps locale mappings/Python dict syntax or relabels Chinese-only typography as English.",
+        "Explicit subject motion, camera motion, transitions, product identity continuity, first-frame logic and cover logic survive video-job projection into canonical asset Art Direction motion authority.",
+        "Explicit text timing survives into canonical timing authority; explicit VO/subtitle roles survive into canonical audio authority.",
+        "The same concrete temporal decisions survive into final acting Model Prompt and Production Parameter Closure for PDP video, UGC/Creator and LIVE surfaces.",
+        "Runtime fallback shots/default locale/default duration remain non-authoritative execution conveniences and are never promoted into Agent Art Direction."
       ],
       "cross_scope": {
         "phase4": "all tests/test_v0676_phase4_*.py passed",
@@ -842,25 +849,23 @@
         "v0674_regression_closure": "40 passed"
       },
       "deferred_by_plan": [
-        "REQ-083 remaining surface-specific and temporal Prompt continuity",
-        "Fresh real K01 FULL",
-        "Provider actual media / pixel-frame Review / smallest Local Revision / provenance"
+        "Phase 6 JSON/MD/HTML same-source projection",
+        "Phase 7 FULL materialization/package continuity",
+        "Phase 10 Fresh real K01 FULL",
+        "Phase 11 installed-plugin readback and Provider actual media / Review / Local Revision / provenance"
       ],
       "source_truth": "GITHUB_SOURCE_AND_CURRENT_PACKAGE_TARGETED_VERIFIED",
       "verified_subtasks": [
         "Canonical dynamic motion/timing/audio Prompt continuity",
         "Product Presence × Fidelity × reference independence through final Prompt/render authority",
-        "Commercial-grade broad Prompt density, concrete static parameter consumption and bilingual integrated typography semantic purity"
+        "Commercial-grade broad Prompt density, concrete static parameter consumption and bilingual integrated typography semantic purity",
+        "Dynamic/temporal surface continuity across PDP Video, UGC/Creator and LIVE through canonical Art Direction, acting Prompt and Production Closure"
       ],
       "product_fidelity_reference_production_head": "32c46dc40a3e13c15855ad771c014fca77a45a94",
       "product_fidelity_reference_focused_red": "1 failed / 3 passed after fixture correction",
       "product_fidelity_reference_focused_green": "4 passed",
       "product_fidelity_reference_cross_scope": "prior Phase5 dynamic + Phase4 all + native provider + v0673/v0674 passed",
-      "remaining": [
-        "REQ-083 remaining surface-specific and temporal Prompt continuity",
-        "Fresh real K01 FULL",
-        "Provider actual output / Review / Local Revision / provenance"
-      ],
+      "remaining": [],
       "scene_photography_prompt_consumption": {
         "requirement": "REQ-086",
         "status": "PASS_TARGETED_E2E_PENDING",
@@ -874,7 +879,8 @@
       },
       "source_commits": [
         "50462319ba376b69bab7d71f7b4dc8620b83bd9d",
-        "b1a8571a6008345808c892a10975ca40188efed3"
+        "b1a8571a6008345808c892a10975ca40188efed3",
+        "09514f90db88591cdb0aa51528d97767cb80784c"
       ],
       "commercial_prompt_density": {
         "requirement": "REQ-082",
@@ -888,13 +894,31 @@
         "workflow_run": 41388592372,
         "consumer_map": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PROMPT_DENSITY.json",
         "verified_boundary": "Broad static Prompt density and concrete consumption are targeted-verified through the acting Prompt plane, including bilingual integrated typography purity. REQ-083 remaining temporal/surface continuity, Fresh K01 FULL and actual Provider output remain pending."
-      }
+      },
+      "temporal_prompt_continuity": {
+        "requirement": "REQ-083",
+        "status": "PASS_TARGETED_E2E_PENDING",
+        "production_commit": "09514f90db88591cdb0aa51528d97767cb80784c",
+        "focused_tests": "3/3 passed",
+        "phase4_dynamic_compatibility": "4/4 passed",
+        "prior_phase5_tests": "18/18 passed",
+        "complete_v067_cross_scope": "344/344 passed",
+        "workflow_run": 41389518562,
+        "consumer_map": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_TEMPORAL_PROMPT_CONTINUITY.json",
+        "surfaces": [
+          "PDP_VIDEO",
+          "UGC_BRIEF",
+          "LIVE"
+        ],
+        "verified_boundary": "Explicit Agent-authored temporal values are losslessly preserved through canonical motion/timing/audio, final acting Prompt and Production Closure. This is not a universal fixed-template requirement and does not claim actual Provider media."
+      },
+      "remaining_phase5": "NONE — locked Phase 5 Prompt compiler/parameter-consumption acceptance is targeted-verified at source and CURRENT-package level; later real-output and projection phases remain separate."
     }
   },
-  "version": "2026-11-02-phase5-in-progress-v2",
-  "current_phase": "PHASE_5_IN_PROGRESS",
+  "version": "2026-11-02-phase5-complete-v1",
+  "current_phase": "PHASE_5_COMPLETE",
   "previous_phase": "PHASE_4_COMPLETE",
-  "next_phase": "PHASE_5_REMAINING_REQ_083_PROMPT_CONTINUITY",
-  "current_head_sha": "b1a8571a6008345808c892a10975ca40188efed3",
+  "next_phase": "PHASE_6_JSON_MD_HTML_SAME_SOURCE_PROJECTION",
+  "current_head_sha": "09514f90db88591cdb0aa51528d97767cb80784c",
   "current_head_sha_semantics": "Latest Phase 5 production-code head proven by focused, adjacent and complete v067 cross-scope verification; durable closure documentation may be committed later."
 }
