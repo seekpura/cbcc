@@ -10,6 +10,46 @@ def _write_json(path: Path, value) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def _materialize_mature_surface(package: Path) -> None:
+    text_files = {
+        "index.html": "<html><body>成熟交付工作区</body></html>\n",
+        "00_PROJECT_HUB.md": "# 项目中心\n",
+        "strategy/MASTER_STRATEGY_CN.md": "# 中文策略\n",
+        "01_LISTING_UPLOAD_READY.md": "# 上架资料\n\n## 商品标题\n待真实商品数据投影。\n",
+    }
+    for rel, text in text_files.items():
+        path = package / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    for rel in (
+        "HUMAN_DELIVERY.json",
+        "FULL_DELIVERY_DEPTH_AUDIT.json",
+        "HUMAN_LANGUAGE_AUDIT.json",
+        "DELIVERY_LANGUAGE_MATRIX_AUDIT.json",
+        "PLATFORM_SCOPE.json",
+        "SOURCE_TRUTH_MEDIA_AUDIT.json",
+        "strategy/strategy_authority.json",
+        "strategy/STRATEGY_DECISION_INDEX.json",
+        "strategy/COMMERCE_DECISION_CONTEXT.json",
+        "strategy/COMMERCIAL_CONTINUITY_AUDIT.json",
+        "supporting_analysis/product_truth.json",
+        "supporting_analysis/target_context.json",
+        "supporting_analysis/culture_context.json",
+        "supporting_analysis/asset_architecture.json",
+        "supporting_analysis/seven_agent_synthesis.json",
+    ):
+        _write_json(package / rel, {"status": "READY"})
+    _write_json(
+        package / "ASSET_UNIVERSE.json",
+        {
+            "status": "DYNAMIC_ASSET_UNIVERSE",
+            "fixed_total_asset_limit": False,
+            "platform_capacity_is_activation_constraint_only": True,
+            "assets": [],
+        },
+    )
+
+
 def _package(root: Path) -> Path:
     package = root / "package"
     package.mkdir(parents=True)
@@ -37,11 +77,30 @@ def _package(root: Path) -> Path:
     }
     business = {
         "market_analysis": {"market_research_authority": {"domains": {"SEARCH": {"findings": [finding]}}}},
-        "human_delivery": {"listing": {"status": "ACTIVE"}},
+        "human_delivery": {"task_scope": {"listing_active": True}, "listing": {"status": "ACTIVE"}},
         "sources": {"sources": [{"source_id": "SRC-1", "kind": "PLATFORM_RESEARCH", "observed_at": "2026-10-01"}]},
     }
     _write_json(package / "CANONICAL_HUMAN_DATA.json", {"canonical_business_objects": business})
-    _write_json(package / "DELIVERY_MANIFEST.json", {"status": "DELIVERY_READY", "workspace_contract": {}})
+    _materialize_mature_surface(package)
+    _write_json(
+        package / "DELIVERY_MANIFEST.json",
+        {
+            "status": "DELIVERY_READY",
+            "workspace_contract": {},
+            "html_index": "index.html",
+            "project_hub": "00_PROJECT_HUB.md",
+            "listing_upload_ready": "01_LISTING_UPLOAD_READY.md",
+            "human_delivery_contract": "HUMAN_DELIVERY.json",
+            "human_language_audit": "HUMAN_LANGUAGE_AUDIT.json",
+            "delivery_language_matrix_audit": "DELIVERY_LANGUAGE_MATRIX_AUDIT.json",
+            "platform_scope": "PLATFORM_SCOPE.json",
+            "source_truth_media_audit": "SOURCE_TRUTH_MEDIA_AUDIT.json",
+            "full_delivery_depth_audit": "FULL_DELIVERY_DEPTH_AUDIT.json",
+            "strategy_authority": "strategy/MASTER_STRATEGY_CN.md",
+            "strategy_decision_index": "strategy/STRATEGY_DECISION_INDEX.json",
+            "supporting_analysis": "supporting_analysis/",
+        },
+    )
     _write_json(package / "FULL_MATERIALIZATION_AUDIT.json", {"status": "PASS", "legacy": True})
     return package
 
@@ -55,6 +114,7 @@ def test_req088_lineage_closure_is_materialized_into_final_manifest_and_zip(tmp_
 
     assert result["status"] == "PASS", result
     assert result["lineage_closure_status"] == "PASS"
+    assert result["final_mature_package_continuity"] == "PASS"
     assert (package / "LINEAGE_CLOSURE_INDEX.json").exists()
     assert (package / "LINEAGE_CLOSURE_AUDIT.json").exists()
 
@@ -66,12 +126,16 @@ def test_req088_lineage_closure_is_materialized_into_final_manifest_and_zip(tmp_
     assert manifest["lineage_closure_status"] == "PASS"
     assert manifest["lineage_closure_index"] == "LINEAGE_CLOSURE_INDEX.json"
     assert manifest["lineage_closure_audit"] == "LINEAGE_CLOSURE_AUDIT.json"
+    assert manifest["final_mature_package_continuity"] == "PASS"
     assert manifest["workspace_contract"]["req088_resolvable_lineage_closure"] == "PASS"
+    assert manifest["workspace_contract"]["final_mature_package_continuity"] == "PASS"
 
     with zipfile.ZipFile(zip_path) as zf:
         prefix = package.name + "/"
         names = set(zf.namelist())
         assert prefix + "LINEAGE_CLOSURE_INDEX.json" in names
         assert prefix + "LINEAGE_CLOSURE_AUDIT.json" in names
+        assert prefix + "FULL_MATERIALIZATION_AUDIT.json" in names
         zipped_manifest = json.loads(zf.read(prefix + "DELIVERY_MANIFEST.json").decode("utf-8"))
         assert zipped_manifest["lineage_closure_status"] == "PASS"
+        assert zipped_manifest["final_mature_package_continuity"] == "PASS"
