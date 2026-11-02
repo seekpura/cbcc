@@ -2,6 +2,11 @@ from pathlib import Path
 import json
 
 from runtime.cbcc import delivery_export
+from runtime.cbcc import commercial_delivery_continuity
+from runtime.cbcc import full_delivery_materialization
+from runtime.cbcc import canonical_delivery_parity_v0680
+from runtime.cbcc import delivery_family_workspace_v0680
+from runtime.cbcc import phase7_lineage_semantic_closure_v0681
 
 
 def _write_json(path: Path, value) -> None:
@@ -25,6 +30,20 @@ def test_final_delivery_preserves_canonical_commerce_graph_lineage(monkeypatch, 
     graph_path = project / "artifacts/canonical_commerce_graph.json"
     _write_json(graph_path, graph)
     original_bytes = graph_path.read_bytes()
+
+    # Keep the actual delivery_export copy/materialization behavior under test while isolating
+    # unrelated FULL package, Phase 6 family routing and Phase 7 finalizers. Those boundaries
+    # have their own focused tests and otherwise require an entire FULL commerce fixture.
+    monkeypatch.setattr(commercial_delivery_continuity, "materialize_commerce_decision_context", lambda _: {"status": "TEST"})
+    monkeypatch.setattr(commercial_delivery_continuity, "compile_continuity_audit", lambda project, context: {"status": "PASS"})
+    monkeypatch.setattr(full_delivery_materialization, "finalize_full_delivery_materialization", lambda project, manifest: manifest)
+    monkeypatch.setattr(canonical_delivery_parity_v0680, "finalize_export_canonical_delivery_parity", lambda manifest: manifest)
+    monkeypatch.setattr(delivery_family_workspace_v0680, "materialize_delivery_family_workspace", lambda package: {"status": "PASS", "families": {}})
+
+    def _phase7(package, zip_path=None):
+        return {"manifest": json.loads((Path(package) / "DELIVERY_MANIFEST.json").read_text(encoding="utf-8"))}
+
+    monkeypatch.setattr(phase7_lineage_semantic_closure_v0681, "materialize_phase7_lineage_and_semantics", _phase7)
 
     monkeypatch.setattr(delivery_export, "validate_strategy_delivery", lambda _: {"mode": "TASK_SCOPED", "status": "PASS"})
     monkeypatch.setattr(delivery_export, "materialize_source_truth_media", lambda project, package: {"status": "PASS", "copied_count": 0})
