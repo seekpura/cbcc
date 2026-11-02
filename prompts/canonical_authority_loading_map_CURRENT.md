@@ -16,9 +16,12 @@ For FULL / repair / release work, load current authorities in this order:
 ## Requirement-attribution rule
 - `USER_CANONICAL` may only point to direct user-source anchors;
 - `USER_LATER_CLARIFICATION` may only point to explicit later user clarifications;
-- `DERIVED_PRODUCT_PRINCIPLE` and `ENGINEERING_GUARD` require `derived_from` lineage and may not be rewritten as user wording;
+- `DERIVED_PRODUCT_PRINCIPLE` and `ENGINEERING_GUARD` require source-authored `derived_from` lineage and may not be rewritten as user wording;
 - `REJECTED_DEPRECATED` rules may have no active business consumer and must name the current rule(s) that supersede them;
-- tests, fixtures, workflows, validators and self-PASS outputs are proof/guard surfaces only and may not become strategy/creative authors.
+- tests, fixtures, workflows, validators and self-PASS outputs are proof/guard surfaces only and may not become strategy/creative authors;
+- machine strategy/listing consumers are not Human Projection evidence unless an actual Human/Delivery/Workspace/HTML/Projection consumer is bound.
+
+The R06-01 implementation and RED/GREEN/release evidence are sealed in `references/REQUIREMENT_AUTHORITY_R0601_CLOSURE.md`. That closure document is evidence/history only; `REQUIREMENT_AUTHORITY_CURRENT.json` remains the attribution authority and the detailed ledgers remain semantic authorities.
 
 ## Locked public path
 The public FULL path is no longer allowed to begin from an asset quota or HTML template. It is:
