@@ -4,13 +4,14 @@
 These authorities must be **read before every release change** affecting strategy, assets, Art Direction, Prompt, production, Human Workspace, language, compliance, economics, review or Runtime. A newer wording or summary may not erase an older semantic requirement.
 
 Read and consume all current sources below:
+- `REQUIREMENT_AUTHORITY_CURRENT.json` — **attribution authority only**. It classifies REQ-001..090 as `USER_CANONICAL / USER_LATER_CLARIFICATION / DERIVED_PRODUCT_PRINCIPLE / ENGINEERING_GUARD`, records `REJECTED_DEPRECATED`, and binds origin / derived_from / superseded_by / consumers. It does not author business semantics or replace the detailed ledgers;
 - `CONVERSATION_REQUIREMENT_AUDIT.md` — **detailed** cumulative REQ-001..050 definitions; heading-only projection is invalid;
 - `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md` — REQ-051..060;
 - `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md` — **REQ-061..090 explicit historical full-system lock**; specific scene / negative / brand-IP / longform / paid / social / creator / video / LIVE / store / lifecycle / test families and JSON-MD-HTML same-source requirements may not be summarized back into generic Asset Universe language;
 - `LOCKED_IMPLEMENTATION_PLAN_CURRENT.md` — current mandatory implementation order, RED/GREEN/verification protocol and phase acceptance evidence;
 - `REQUIREMENT_EXECUTION_LEDGER_CURRENT.json` — machine-readable REQ-061..090 + phase status; document existence does not imply implementation PASS;
 - `USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md` — verbatim long-form user authority; exact sequence, thresholds, table columns, P0/P1/P2 definitions, photography requirements and output-object requirements may not be summarized away;
-- `REQUIREMENT_CONSUMER_MAP_V0664.json` — historical machine-level one-to-one authority for REQ-001..060 until the cumulative 001..090 map supersedes it;
+- `REQUIREMENT_CONSUMER_MAP_V0664.json` + `REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json` — historical + CURRENT execution-wiring authority for REQ-001..060 until the cumulative 001..090 map supersedes it. Test/workflow paths are proof-only and may not be business consumers;
 - `REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md` — human-readable implementation summary; it never substitutes for the strict Consumer Map or execution ledger;
 - `HOST_SKILL_SNAPSHOT_PARITY_LOCK_V0664.md` — installed plugin release and active Host Skill snapshot must match before that Host context can supply positive E2E evidence;
 - `AUTHORITY_PARITY_REPAIR_V0664.md` — installed authority-drift regression history and repair proof;
@@ -30,6 +31,15 @@ Read and consume all current sources below:
 
 The latest user turn is never the whole specification unless the user explicitly replaces earlier requirements. Requirement IDs aid traceability; they may not replace the verbatim source or detailed cumulative definitions.
 
+## Requirement attribution invariant
+1. `USER_CANONICAL` may only point to direct user-source anchors from the verbatim/cumulative requirement sources.
+2. `USER_LATER_CLARIFICATION` may only point to explicit later user corrections/clarifications.
+3. `DERIVED_PRODUCT_PRINCIPLE` and `ENGINEERING_GUARD` require explicit `derived_from` lineage. They may not be rewritten as if the user said the derived wording.
+4. `REJECTED_DEPRECATED` rules may have no active business consumer and must identify the current requirement(s) that supersede them.
+5. Tests, fixtures, validators, CI workflows, Gate status and target self-PASS are proof/guard surfaces only. They may not become Strategy, Creative, Asset or Human-delivery authors.
+6. `REQUIREMENT_AUTHORITY_CURRENT.json` is an attribution overlay, not a second decision engine. The detailed ledgers remain semantic authorities and CURRENT consumer maps remain execution-wiring authorities.
+7. Example: the user requires price/sales/claim facts not to be fabricated. The engineering interpretation that competitor-price observations are research/scenario evidence but not verified own-price facts is derived guidance, not verbatim user wording.
+
 ## One-to-one implementation accounting
 Every REQ-001..090 must ultimately have all of the following simultaneously:
 1. a detailed/verbatim source requirement;
@@ -37,7 +47,8 @@ Every REQ-001..090 must ultimately have all of the following simultaneously:
 3. one or more concrete downstream proof objects;
 4. explicit deterministic tests where applicable;
 5. explicit Human Workspace surface(s) where human-relevant;
-6. an explicit status that distinguishes code/package/release enforcement from `E2E_PENDING` / real behavioral proof.
+6. an explicit status that distinguishes code/package/release enforcement from `E2E_PENDING` / real behavioral proof;
+7. an authority class plus origin/derivation lineage that does not over-attribute engineering interpretation to the user.
 
 Until the cumulative 001..090 map is implemented, REQ-061..090 remain `LOCKED_NOT_YET_FULLY_IMPLEMENTED` in `REQUIREMENT_EXECUTION_LEDGER_CURRENT.json`. **They may not be reported as implemented merely because this lock or Extension 02 exists.**
 
@@ -86,10 +97,11 @@ For every touched requirement:
 19. if the Host Skill snapshot is stale, record `HOST_SKILL_SNAPSHOT_STALE` and keep positive Host-native FULL E2E pending rather than treating stale execution as evidence;
 20. a fresh positive K01 FULL run through a Host context that actually loaded the current installed Skill remains mandatory before FULL behavioral closure;
 21. inspect the **actual FULL project materialization path** end to end; source contracts, unit tests, helper output or a hand-authored replacement package cannot substitute for the real Host/Runtime materialization path;
-22. verify `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md`, `LOCKED_IMPLEMENTATION_PLAN_CURRENT.md` and `REQUIREMENT_EXECUTION_LEDGER_CURRENT.json` are present in the built plugin under `resources/references/`; omission is a release failure.
+22. verify `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md`, `LOCKED_IMPLEMENTATION_PLAN_CURRENT.md` and `REQUIREMENT_EXECUTION_LEDGER_CURRENT.json` are present in the built plugin under `resources/references/`; omission is a release failure;
+23. verify `REQUIREMENT_AUTHORITY_CURRENT.json` is present **byte-identically** in the exact built plugin and run the attribution audit before release. A file existing in source without release consumption is not enough.
 
 ## Locked implementation order
-Implementation follows `LOCKED_IMPLEMENTATION_PLAN_CURRENT.md` Phase 0 → 11. Every production-code phase uses RED → GREEN → focused verification → cross-scope verification → ledger update. If the plan is materially wrong, update the authority/plan before changing product behavior.
+Implementation follows `LOCKED_IMPLEMENTATION_PLAN_CURRENT.md` Phase 0 → 11 plus the active R06 Superpowers repair task. Every production-code task uses RED → GREEN → focused verification → cross-scope verification → ledger update. If the plan is materially wrong, update the authority/plan before changing product behavior.
 
 ## Version-string hygiene
 Current release-proof instructions use version-agnostic wording such as `current installed release`. Do not hard-code a historical release number into a forward-carried completion gate. Stable current authorities use `CURRENT` filenames where their semantics are release-independent; historical addenda retain versioned names only for traceability.
