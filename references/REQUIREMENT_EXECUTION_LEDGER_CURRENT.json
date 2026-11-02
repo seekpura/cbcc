@@ -171,7 +171,7 @@
       "req": "REQ-088",
       "title": "Source/Evidence/Assumption/Decision lineage",
       "phase": "1,2,7",
-      "status": "PARTIAL_PHASE2_LINEAGE_PHASE7_FINAL_SEMANTIC_IDENTITY_BOUNDARY_TARGETED_VERIFIED_FULL_SOURCE_EVIDENCE_ASSUMPTION_DECISION_LINEAGE_PENDING"
+      "status": "PASS_PHASE2_PHASE7_RESOLVABLE_SOURCE_EVIDENCE_ASSUMPTION_DECISION_LINEAGE_TARGETED_VERIFIED"
     },
     {
       "req": "REQ-089",
@@ -183,7 +183,7 @@
       "req": "REQ-090",
       "title": "FULL package lineage and actual-output boundary",
       "phase": "7,8,10",
-      "status": "PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_INVENTORY_ACTUAL_OUTPUT_BOUNDARY_TARGETED_VERIFIED_HOST_PARITY_AND_FULL_LINEAGE_PENDING"
+      "status": "PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_INVENTORY_REQ088_LINEAGE_AND_ACTUAL_OUTPUT_BOUNDARY_TARGETED_VERIFIED_HOST_PARITY_AND_REAL_PROVIDER_OUTPUT_PENDING"
     }
   ],
   "phase_status": {
@@ -194,7 +194,7 @@
     "4": "PASS_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER_VERIFIED",
     "5": "PASS_PHASE5_COMMERCIAL_PROMPT_COMPILER_PARAMETER_CONSUMPTION_VERIFIED",
     "6": "PASS_PHASE6_JSON_MD_HTML_SAME_SOURCE_ROUTED_HUMAN_WORKSPACE_AND_ACTIVATED_DELIVERY_FAMILIES_VERIFIED",
-    "7": "IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_CLOSURE_TARGETED_VERIFIED_REQ088_REQ090_REMAINING",
+    "7": "IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_AND_REQ088_LINEAGE_TARGETED_VERIFIED_REQ090_HOST_PARITY_AND_REAL_PROVIDER_OUTPUT_PENDING",
     "8": "NOT_STARTED",
     "9": "NOT_STARTED",
     "10": "NOT_STARTED",
@@ -1008,7 +1008,39 @@
       ],
       "source_truth": "GITHUB_BRANCH_PHASE7_IN_PROGRESS_TARGETED_VERIFIED",
       "production_head_sha": "9000474846de7534be8409a9bbfc32c70fa31038",
-      "current_gate_head_sha": "34d51aefb4b4b05e8dfc34842c059c3b28b4d71a"
+      "current_gate_head_sha": "34d51aefb4b4b05e8dfc34842c059c3b28b4d71a",
+      "req088_lineage_status": "PASS_TARGETED_RESOLVABLE_LINEAGE",
+      "req088_authority_contract": "runtime/cbcc/information_audit_authority.py::LINEAGE_FIELDS",
+      "req088_runtime": [
+        "runtime/cbcc/lineage_normalization_v0681.py",
+        "runtime/cbcc/phase7_lineage_semantic_closure_v0681.py",
+        "runtime/cbcc/commercial_delivery_continuity.py"
+      ],
+      "req088_proof_objects": [
+        "LINEAGE_CLOSURE_INDEX.json",
+        "LINEAGE_CLOSURE_AUDIT.json",
+        "DELIVERY_MANIFEST.json lineage_closure_*",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json"
+      ],
+      "req088_verification": {
+        "normalization_red_run": 41409131132,
+        "normalization_first_green_run": 41409310465,
+        "final_export_red_run": 41409419368,
+        "orchestrator_green_run": 41409620978,
+        "production_wrapper_red_run": 41409703978,
+        "production_wrapper_green_run": 41409955437,
+        "mature_authority_scanner_red_run": 41410109202,
+        "focused_final_green_run": 41410264207,
+        "permanent_current_green_run": 41410654676
+      },
+      "req088_verified_behavior": [
+        "Canonical LINEAGE_FIELDS are normalized as authority bindings/resolution evidence rather than a second business payload.",
+        "Unresolved source/proof/downstream lineage cannot fake PASS.",
+        "Explicit TO_VERIFY/assumption boundaries remain explicit.",
+        "Nested evidence descriptors are not double-counted as independent business lineage records.",
+        "Production export materializes lineage before final semantic inventory/Manifest/ZIP rebuild."
+      ],
+      "remaining_boundary": "Phase 7 remains IN_PROGRESS. Independently materialized Host-native parity and real Provider Result→Review→Revision/hash evidence are not claimed by REQ-088 and remain pending under REQ-090/later planned proof."
     }
   },
   "version": "2026-11-02-phase7-in-progress-v1",
