@@ -1,9 +1,11 @@
 {
-  "version": "cbcc-current-phase7-final-mature-package-continuity-v2",
+  "version": "cbcc-current-phase7-final-mature-package-continuity-v3",
   "phase": 7,
   "subtask": "REQ-090 final-byte mature FULL package continuity",
   "requirement_id": "REQ-090",
   "status": "PASS_PHASE7_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED",
+  "production_module_commit_sha": "bf4071049193ecd710bd65c4ce8349b66f7b4df9",
+  "production_orchestrator_commit_sha": "c56e6c19043ebc3dabe1bc7f2b45d9e3ac123f0f",
   "focused_green_head_sha": "646f5dfc915642286b80a3aad86c569416cee044",
   "permanent_current_gate_head_sha": "3b6a0d2f7b52a618316bb880839b4f35aa19e47b",
   "authority_contract": {
@@ -65,23 +67,24 @@
   },
   "accounting_and_cleanup": {
     "consumer_map_initial_commit": "741375610388681122852a73ac473800a0699e70",
-    "accounting_cleanup_head_sha": "0f4f7387d4a56e049d20d61ef442298c672b6d85",
+    "accounting_cleanup_head_sha": "b540bbaf6cf2e57d8e8d772856102fcadfd8e6d3",
     "ledger_matrix_semantic_map_req088_map_synchronized": true,
     "temporary_phase7_workflows_present": false,
     "verified_removed_workflows": [
       ".github/workflows/phase7-mature-package-characterization.yml",
       ".github/workflows/phase7-wire-final-mature-package.yml",
       ".github/workflows/phase7-sync-mature-continuity-accounting.yml",
-      ".github/workflows/phase7-normalize-ledger-boundary.yml"
+      ".github/workflows/phase7-normalize-ledger-boundary.yml",
+      ".github/workflows/phase7-correct-ledger-production-boundary.yml"
     ],
-    "clean_head_rule": "This v2 map update is the ordinary-user commit that triggers the permanent CURRENT verifier after all temporary workflows and stale ledger boundary claims have been removed. No production or test semantics are changed by this freeze commit."
+    "clean_head_rule": "This v3 map update is the final ordinary-user commit after all temporary workflows and stale ledger boundary claims were removed. It intentionally changes no production or test semantics and exists to trigger the permanent CURRENT verifier on the exact clean head."
   },
   "invariants": [
     "Final-byte mature package continuity is a package-structure/business-surface continuity proof, not independently installed Host-native semantic parity.",
     "A semantic inventory PASS cannot waive missing mature Hub/Strategy/Supporting/Universe/activated delivery surfaces required by the existing FULL package authority.",
     "A mature package PASS cannot waive REQ-088 source/evidence/assumption/decision lineage; that authority remains separately enforced in the same permanent Phase 7 gate.",
-    "Actual Provider Result/Review/Revision/hash evidence is a later actual-output plane and is not fabricated by this Phase 7 subtask.",
-    "Fresh K01 FULL and installed-plugin readback remain later locked-plan proof and are not claimed here."
+    "Actual Provider Result/Review/Revision/hash evidence is a Phase 8 actual-output plane and is not fabricated by this Phase 7 subtask.",
+    "Fresh K01 FULL is Phase 10 and installed-plugin readback is Phase 11; neither is claimed here."
   ],
   "phase_boundary": {
     "phase7_status": "IN_PROGRESS_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY_NOT_YET_INDEPENDENTLY_PROVEN",
