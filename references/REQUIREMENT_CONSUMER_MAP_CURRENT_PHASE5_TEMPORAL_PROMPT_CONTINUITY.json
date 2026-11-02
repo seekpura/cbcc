@@ -1,0 +1,86 @@
+{
+  "version": "cbcc-current-phase5-temporal-prompt-continuity-v1",
+  "phase": 5,
+  "subtask": "REQ-083 dynamic/temporal Prompt and Production continuity",
+  "production_head_sha": "09514f90db88591cdb0aa51528d97767cb80784c",
+  "requirements": [
+    {
+      "requirement_id": "REQ-073",
+      "summary": "Creator/UGC/Affiliate objects preserve explicitly authored temporal execution instead of collapsing to a generic creator animation recipe.",
+      "implementation_status": "PHASE5_TEMPORAL_PROMPT_TARGETED_VERIFIED_E2E_PENDING",
+      "consumers": [
+        "runtime/cbcc/video_creator.py",
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/production_parameter_closure.py"
+      ]
+    },
+    {
+      "requirement_id": "REQ-074",
+      "summary": "Product/PDP short-video objects preserve explicit beat, subject/camera motion, text timing, transition, identity and first-frame/cover decisions through acting Prompt and Production.",
+      "implementation_status": "PHASE5_TEMPORAL_PROMPT_TARGETED_VERIFIED_E2E_PENDING",
+      "consumers": [
+        "runtime/cbcc/video_creator.py",
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/production_parameter_closure.py"
+      ]
+    },
+    {
+      "requirement_id": "REQ-075",
+      "summary": "LIVE dynamic objects use the same explicit-authorship continuity contract without promoting runtime fallback/default execution data to creative authority.",
+      "implementation_status": "PHASE5_TEMPORAL_PROMPT_TARGETED_VERIFIED_E2E_PENDING",
+      "consumers": [
+        "runtime/cbcc/video_creator.py",
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/production_parameter_closure.py"
+      ]
+    },
+    {
+      "requirement_id": "REQ-083",
+      "summary": "Explicit Agent-authored temporal decisions preserve timing/beat, subject motion, camera motion, text timing, VO/subtitle/audio roles, transitions, product identity continuity and first-frame/cover logic across canonical Art Direction, acting Prompt and Production Closure.",
+      "implementation_status": "PASS_PHASE5_TARGETED_VERIFIED_E2E_PENDING",
+      "upstream_authority": "explicit Agent video_jobs projected into the same per-object asset_art_direction.motion/timing/audio authority",
+      "consumers": [
+        "runtime/cbcc/video_creator.py",
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py",
+        "runtime/cbcc/production_parameter_closure.py"
+      ],
+      "evidence": [
+        "tests/test_v0679_phase5_req083_temporal_surface_continuity.py",
+        "tests/test_v0676_phase4_dynamic_surface_art_direction.py",
+        "tests/test_v0676_phase5_dynamic_prompt_continuity.py",
+        "GitHub Actions RED run 41389411153: 3 failed / 0 passed at the canonical projection boundary",
+        "GitHub Actions GREEN run 41389518562: REQ-083 focused 3/3; Phase4 dynamic 4/4; prior Phase5 18/18; complete v067 cross-scope 344/344"
+      ],
+      "verified_behavior": [
+        "Explicit subject_motion, camera_motion, transitions, product_identity_continuity, first_frame_logic and cover_logic are projected into canonical asset_art_direction.motion.",
+        "Explicit text_timing is projected into canonical asset_art_direction.timing alongside explicit duration/shot timing when authored.",
+        "Explicit vo_role and subtitle_role are projected into canonical asset_art_direction.audio alongside authored voice locale, subtitle locales, voice style and audio direction.",
+        "The same concrete temporal values survive into final Model Prompt and production_parameter_closure.selected_parameters.",
+        "PDP_VIDEO, UGC_BRIEF and LIVE use the same authorship-preserving contract without forcing one fixed narrative template.",
+        "Runtime fallback shots/default locale/default duration are not promoted into Agent creative authority; missing explicit decisions remain non-authoritative rather than invented."
+      ],
+      "residual_risk": "Targeted source/package continuity is proven. Fresh K01 FULL materialization, Provider Result/actual frames/audio, Review/QA, smallest Local Revision, provenance/hash and installed-plugin readback remain later E2E evidence and are not claimed here."
+    }
+  ],
+  "cross_scope_verification": {
+    "focused_req083": "3/3 passed",
+    "phase4_dynamic_compatibility": "4/4 passed",
+    "prior_phase5": "18/18 passed",
+    "complete_v067": "344/344 passed",
+    "workflow_run": 41389518562
+  },
+  "invariants": [
+    "Temporal continuity is open-world and route-specific; this contract preserves explicit decisions and does not impose a universal fixed beat template.",
+    "Runtime may serialize Agent-authored motion/timing/audio but may not invent missing creative decisions or promote fallback defaults to authority.",
+    "Product identity continuity and Product Presence/Fidelity remain independent; a temporal contract cannot silently redesign or force product presence.",
+    "Model Prompt receives acting semantics; provider/source/hash/QA governance metadata remains outside the model-facing semantic plane.",
+    "Targeted Prompt/Production continuity does not imply actual provider media proof."
+  ],
+  "pending": [
+    "Phase 6 JSON/MD/HTML same-source projection",
+    "Phase 7 FULL materialization/package continuity",
+    "Phase 10 Fresh K01 FULL",
+    "Phase 11 installed-plugin readback and actual Provider Result/Review/Revision proof"
+  ]
+}
