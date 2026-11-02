@@ -1,5 +1,5 @@
 {
-  "version": "r06-01-requirement-authority-v1",
+  "version": "r06-01-requirement-authority-v2-strict-attribution",
   "requirement_range": "REQ-001..REQ-090",
   "authority_classes": [
     "USER_CANONICAL",
@@ -16,7 +16,8 @@
     "rejected_deprecated_may_not_have_active_business_consumers": true,
     "engineering_guards_may_not_author_business_strategy": true,
     "test_and_workflow_paths_are_proof_only": true,
-    "tests_gates_and_self_pass_are_claims_not_business_truth": true
+    "tests_gates_and_self_pass_are_claims_not_business_truth": true,
+    "user_attribution_sets_are_source_authored_not_assignment_derived": true
   },
   "canonical_sources": {
     "direct_user_long_requirements": "references/USER_LONG_REQUIREMENTS_STRATEGY_CULTURE_EXECUTION_CN.md",
@@ -26,47 +27,54 @@
     "req_001_060_consumers": "references/REQUIREMENT_CONSUMER_MAP_V0664.json",
     "req_061_090_execution": "references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json"
   },
+  "direct_user_requirement_ids": [
+    "REQ-052", "REQ-053", "REQ-054", "REQ-055", "REQ-056", "REQ-057", "REQ-058", "REQ-059", "REQ-060"
+  ],
+  "later_user_requirement_ids": [
+    "REQ-004", "REQ-016", "REQ-018", "REQ-019", "REQ-027"
+  ],
   "product_goal_anchors": [
     {
       "source_id": "PG-CBCC-01",
-      "authority_class": "DERIVED_PRODUCT_PRINCIPLE"
+      "authority_class": "DERIVED_PRODUCT_PRINCIPLE",
+      "summary": "CBCC is a complete commerce operating system spanning truth, research, strategy, listing/content/visual, production, review/revision, measurement and learning; this anchor is a product-level synthesis, not verbatim user text."
     }
   ],
   "user_source_anchors": {
-    "UC-H-01": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-008","REQ-053"],"priority":"P0"},
-    "UC-H-02": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-010","REQ-054"]},
-    "UC-H-03": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-055"],"priority":"P0"},
-    "UC-H-04": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-011","REQ-056","REQ-085"]},
-    "UC-H-05": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-032","REQ-057","REQ-085"],"priority":"P0"},
-    "UC-H-06": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-058"]},
-    "UC-H-07": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-058"]},
-    "UC-H-08": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-059"]},
-    "UC-H-09": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-007","REQ-010","REQ-059"]},
-    "UC-H-10": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-007","REQ-055"]},
-    "UC-C-01": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-011","REQ-056"]},
-    "UC-C-02": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-012","REQ-060"]},
-    "UC-C-03": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-012"]},
-    "UC-C-04": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-056","REQ-060"]},
-    "UC-E-01": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-003","REQ-052"]},
-    "UC-E-02": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-032","REQ-057","REQ-086"]},
-    "UC-E-03": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-007","REQ-052"]},
-    "UC-E-04": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-055","REQ-058"]},
-    "UC-O-01": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"]},
-    "UC-O-02": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"]},
-    "UC-O-03": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"]},
-    "UC-O-04": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"]},
-    "UC-O-05": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"]},
-    "UC-O-06": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"]},
-    "UC-O-07": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"]},
-    "UC-O-08": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"]},
-    "UC-O-09": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"]},
-    "UL-01": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-016"]},
-    "UL-02": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-018","REQ-042","REQ-043","REQ-044","REQ-045","REQ-089"]},
-    "UL-03": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-061","REQ-089"]},
-    "UL-04": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-019","REQ-023","REQ-024","REQ-079"]},
-    "UL-05": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-029","REQ-031","REQ-033","REQ-034","REQ-035","REQ-036","REQ-082"]},
-    "UL-06": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-026","REQ-027","REQ-028","REQ-084"]},
-    "UL-07": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-002","REQ-004","REQ-028","REQ-029"]}
+    "UC-H-01": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-008","REQ-053"],"priority":"P0","summary":"产品事实审计四分法 + A/B/C 证据等级；C 不得硬宣称。"},
+    "UC-H-02": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-010","REQ-054"],"summary":"所有策略回答平台×区域×人群×族裔文化 WHY。"},
+    "UC-H-03": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-013","REQ-055"],"priority":"P0","summary":"合规与宣称证据 P0；功效/成分/认证/价格/销量等不可编造。"},
+    "UC-H-04": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-011","REQ-056","REQ-085"],"summary":"族裔×性别×年龄×收入×地域交叉性，避免标签化与刻板印象。"},
+    "UC-H-05": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-032","REQ-057","REQ-085"],"priority":"P0","summary":"包容性摄影 P0：深肤色曝光、发质、体型、残障、年龄、AI bias。"},
+    "UC-H-06": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-058"],"summary":"平台执行：尺寸、时长、封面、字幕、音乐版权、流量、CTA、landing、UTM、归因；不确定待查证。"},
+    "UC-H-07": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-058"],"summary":"区域本地化：回译、节日、支付物流、宗教禁忌、当地法规；不确定待查证。"},
+    "UC-H-08": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-059"],"summary":"预算/周期不足明确砍与保；P0/P1/P2 真实取舍。"},
+    "UC-H-09": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-007","REQ-010","REQ-059"],"summary":"策略给依据+取舍+执行+指标，避免空泛。"},
+    "UC-H-10": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-007","REQ-055"],"summary":"输出前检查编造、WHY、文化、合规、指标、假设。"},
+    "UC-C-01": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-011","REQ-056"],"summary":"族裔文化适配检查表与脚本/模特/服化道/配色/CTA校验。"},
+    "UC-C-02": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-012","REQ-060"],"summary":"RACE = Research-Action-Communication-Evaluation 传播骨架。"},
+    "UC-C-03": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-012"],"summary":"RACE+STP/JTBD+AIDA/FABE+4P/漏斗应用，不机械套模板。"},
+    "UC-C-04": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-056","REQ-060"],"summary":"Content Matrix含RACE阶段与文化适配/禁忌校验；文化判断标证据或假设。"},
+    "UC-E-01": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-003","REQ-052"],"summary":"信息审计→最多10问→明确假设→继续，不得停工。"},
+    "UC-E-02": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-032","REQ-057","REQ-086"],"summary":"视觉执行含HEX/对比、灯光/CCT/光比/柔硬、镜头/景别/机位、场景道具模特、平台尺寸；深肤色曝光/反光板/柔光。"},
+    "UC-E-03": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-007","REQ-052"],"summary":"假设与决策日志独立可见，事实/假设/取舍分离。"},
+    "UC-E-04": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-055","REQ-058"],"summary":"平台规则/算法/法规不确定标待查证，禁止编造。"},
+    "UC-O-01": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"],"summary":"九项输出完整度对象 1，不是固定页面/永久导航。"},
+    "UC-O-02": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"],"summary":"九项输出完整度对象 2，不是固定页面/永久导航。"},
+    "UC-O-03": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"],"summary":"九项输出完整度对象 3，不是固定页面/永久导航。"},
+    "UC-O-04": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"],"summary":"九项输出完整度对象 4，不是固定页面/永久导航。"},
+    "UC-O-05": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"],"summary":"九项输出完整度对象 5，不是固定页面/永久导航。"},
+    "UC-O-06": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"],"summary":"九项输出完整度对象 6，不是固定页面/永久导航。"},
+    "UC-O-07": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"],"summary":"九项输出完整度对象 7，不是固定页面/永久导航。"},
+    "UC-O-08": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"],"summary":"九项输出完整度对象 8，不是固定页面/永久导航。"},
+    "UC-O-09": {"authority_class":"USER_CANONICAL","bound_requirements":["REQ-060"],"summary":"九项输出完整度对象 9，不是固定页面/永久导航。"},
+    "UL-01": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-016","REQ-017"],"summary":"中文为基础语言；非中文消费者文案同时提供中文释义/注释。"},
+    "UL-02": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-018","REQ-042","REQ-043","REQ-044","REQ-045","REQ-089"],"summary":"Human Workspace不得流水席；SaaS式对象导航；HTML内完整可用内容。"},
+    "UL-03": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-061","REQ-088","REQ-089"],"summary":"HTML/JSON/MD/资产/Design Card/Visible Copy/Prompt同源，禁止多真源漂移。"},
+    "UL-04": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-019","REQ-020","REQ-021","REQ-023","REQ-024","REQ-063","REQ-079","REQ-080"],"summary":"Asset Universe动态策划；平台槽位只限制Activation，不固定6/9/12。"},
+    "UL-05": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-029","REQ-030","REQ-031","REQ-033","REQ-034","REQ-035","REQ-036","REQ-081","REQ-082","REQ-083","REQ-086"],"summary":"逐资产中英文Canonical Prompt；摄影/灯光/镜头/构图等真实参数进入提示词；内部治理噪声不污染模型Prompt。"},
+    "UL-06": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-022","REQ-025","REQ-026","REQ-027","REQ-028","REQ-084"],"summary":"真实商品默认reference-guided fidelity；exact pixel/composite仅在任务明确需要时启用。"},
+    "UL-07": {"authority_class":"USER_LATER_CLARIFICATION","bound_requirements":["REQ-001","REQ-002","REQ-004","REQ-024","REQ-028","REQ-029","REQ-046"],"summary":"包内不得保留施工垃圾、静态否定机制、死规则或限制Agent能力的机制。"}
   },
   "later_clarification_meanings": {
     "UL-01": "中文为基础语言；非中文消费者文案同时提供中文释义/注释。",
@@ -78,20 +86,25 @@
     "UL-07": "包内不得保留施工垃圾、静态否定机制、死规则或限制Agent能力的机制。"
   },
   "authority_assignments": {
-    "USER_CANONICAL": ["REQ-003","REQ-007","REQ-008","REQ-010","REQ-011","REQ-012","REQ-032","REQ-052","REQ-053","REQ-054","REQ-055","REQ-056","REQ-057","REQ-058","REQ-059","REQ-060","REQ-085","REQ-086"],
-    "USER_LATER_CLARIFICATION": ["REQ-002","REQ-004","REQ-016","REQ-018","REQ-019","REQ-023","REQ-024","REQ-026","REQ-027","REQ-028","REQ-029","REQ-031","REQ-033","REQ-034","REQ-035","REQ-036","REQ-042","REQ-043","REQ-044","REQ-045","REQ-061","REQ-079","REQ-082","REQ-084","REQ-089"],
-    "DERIVED_PRODUCT_PRINCIPLE": ["REQ-001","REQ-005","REQ-006","REQ-009","REQ-013","REQ-014","REQ-015","REQ-017","REQ-020","REQ-021","REQ-022","REQ-025","REQ-030","REQ-041","REQ-062","REQ-063","REQ-064","REQ-065","REQ-066","REQ-067","REQ-068","REQ-069","REQ-070","REQ-071","REQ-072","REQ-073","REQ-074","REQ-075","REQ-076","REQ-077","REQ-078","REQ-080","REQ-081","REQ-083","REQ-087"],
+    "USER_CANONICAL": ["REQ-052","REQ-053","REQ-054","REQ-055","REQ-056","REQ-057","REQ-058","REQ-059","REQ-060"],
+    "USER_LATER_CLARIFICATION": ["REQ-004","REQ-016","REQ-018","REQ-019","REQ-027"],
+    "DERIVED_PRODUCT_PRINCIPLE": ["REQ-001","REQ-002","REQ-003","REQ-005","REQ-006","REQ-007","REQ-008","REQ-009","REQ-010","REQ-011","REQ-012","REQ-013","REQ-014","REQ-015","REQ-017","REQ-020","REQ-021","REQ-022","REQ-023","REQ-024","REQ-025","REQ-026","REQ-028","REQ-029","REQ-030","REQ-031","REQ-032","REQ-033","REQ-034","REQ-035","REQ-036","REQ-041","REQ-042","REQ-043","REQ-044","REQ-045","REQ-061","REQ-062","REQ-063","REQ-064","REQ-065","REQ-066","REQ-067","REQ-068","REQ-069","REQ-070","REQ-071","REQ-072","REQ-073","REQ-074","REQ-075","REQ-076","REQ-077","REQ-078","REQ-079","REQ-080","REQ-081","REQ-082","REQ-083","REQ-084","REQ-085","REQ-086","REQ-087","REQ-089"],
     "ENGINEERING_GUARD": ["REQ-037","REQ-038","REQ-039","REQ-040","REQ-046","REQ-047","REQ-048","REQ-049","REQ-050","REQ-051","REQ-088","REQ-090"]
   },
   "derived_from_overrides": {
-    "REQ-013":["UC-H-03"],"REQ-014":["UC-O-04","PG-CBCC-01"],"REQ-015":["PG-CBCC-01"],"REQ-017":["UL-01"],"REQ-020":["UL-04","PG-CBCC-01"],"REQ-021":["UL-04","PG-CBCC-01"],"REQ-022":["UL-06","PG-CBCC-01"],"REQ-025":["UL-06","UL-05"],"REQ-030":["UL-05","PG-CBCC-01"],"REQ-037":["UL-05","PG-CBCC-01"],"REQ-038":["PG-CBCC-01"],"REQ-039":["PG-CBCC-01"],"REQ-040":["PG-CBCC-01"],"REQ-046":["UL-07","PG-CBCC-01"],"REQ-047":["PG-CBCC-01"],"REQ-048":["PG-CBCC-01"],"REQ-049":["PG-CBCC-01"],"REQ-050":["PG-CBCC-01"],"REQ-051":["UC-H-01","PG-CBCC-01"],"REQ-062":["PG-CBCC-01"],"REQ-063":["UL-04","PG-CBCC-01"],"REQ-080":["UL-04","PG-CBCC-01"],"REQ-081":["UL-05","PG-CBCC-01"],"REQ-083":["UL-05","PG-CBCC-01"],"REQ-087":["PG-CBCC-01"],"REQ-088":["PG-CBCC-01"],"REQ-090":["PG-CBCC-01"],"REQ-001":["PG-CBCC-01"],"REQ-005":["PG-CBCC-01"],"REQ-006":["PG-CBCC-01"],"REQ-009":["PG-CBCC-01"],"REQ-041":["PG-CBCC-01"],"REQ-064":["PG-CBCC-01"],"REQ-065":["PG-CBCC-01"],"REQ-066":["PG-CBCC-01"],"REQ-067":["PG-CBCC-01"],"REQ-068":["PG-CBCC-01"],"REQ-069":["PG-CBCC-01"],"REQ-070":["PG-CBCC-01"],"REQ-071":["PG-CBCC-01"],"REQ-072":["PG-CBCC-01"],"REQ-073":["PG-CBCC-01"],"REQ-074":["PG-CBCC-01"],"REQ-075":["PG-CBCC-01"],"REQ-076":["PG-CBCC-01"],"REQ-077":["PG-CBCC-01"],"REQ-078":["PG-CBCC-01"]
+    "REQ-001":["UL-07","PG-CBCC-01"],"REQ-002":["UL-07","PG-CBCC-01"],"REQ-003":["UC-E-01"],"REQ-005":["PG-CBCC-01"],"REQ-006":["PG-CBCC-01"],"REQ-007":["UC-H-09","UC-H-10","PG-CBCC-01"],"REQ-008":["UC-H-01"],"REQ-009":["PG-CBCC-01"],"REQ-010":["UC-H-02","UC-H-09"],"REQ-011":["UC-H-04","UC-C-01"],"REQ-012":["UC-C-02","UC-C-03"],"REQ-013":["UC-H-03"],"REQ-014":["UC-O-04","PG-CBCC-01"],"REQ-015":["PG-CBCC-01"],"REQ-017":["UL-01"],"REQ-020":["UL-04","PG-CBCC-01"],"REQ-021":["UL-04","PG-CBCC-01"],"REQ-022":["UL-06","PG-CBCC-01"],"REQ-023":["UL-04"],"REQ-024":["UL-04","UL-07"],"REQ-025":["UL-06","UL-05"],"REQ-026":["UL-06"],"REQ-028":["UL-06","UL-07"],"REQ-029":["UL-05","UL-06","UL-07"],"REQ-030":["UL-05","PG-CBCC-01"],"REQ-031":["UL-05","UC-E-02"],"REQ-032":["UC-H-05","UC-E-02"],"REQ-033":["UL-05"],"REQ-034":["UL-05"],"REQ-035":["UL-05"],"REQ-036":["UL-05"],"REQ-037":["UL-05","PG-CBCC-01"],"REQ-038":["PG-CBCC-01"],"REQ-039":["PG-CBCC-01"],"REQ-040":["PG-CBCC-01"],"REQ-041":["PG-CBCC-01"],"REQ-042":["UL-02"],"REQ-043":["UL-02"],"REQ-044":["UL-02"],"REQ-045":["UL-02"],"REQ-046":["UL-07","PG-CBCC-01"],"REQ-047":["PG-CBCC-01"],"REQ-048":["PG-CBCC-01"],"REQ-049":["PG-CBCC-01"],"REQ-050":["PG-CBCC-01"],"REQ-051":["UC-H-01","PG-CBCC-01"],"REQ-061":["UL-03","PG-CBCC-01"],"REQ-062":["PG-CBCC-01"],"REQ-063":["UL-04","PG-CBCC-01"],"REQ-064":["PG-CBCC-01"],"REQ-065":["PG-CBCC-01"],"REQ-066":["PG-CBCC-01"],"REQ-067":["PG-CBCC-01"],"REQ-068":["PG-CBCC-01"],"REQ-069":["PG-CBCC-01"],"REQ-070":["PG-CBCC-01"],"REQ-071":["PG-CBCC-01"],"REQ-072":["PG-CBCC-01"],"REQ-073":["PG-CBCC-01"],"REQ-074":["PG-CBCC-01"],"REQ-075":["PG-CBCC-01"],"REQ-076":["PG-CBCC-01"],"REQ-077":["PG-CBCC-01"],"REQ-078":["PG-CBCC-01"],"REQ-079":["UL-04"],"REQ-080":["UL-04","PG-CBCC-01"],"REQ-081":["UL-05","PG-CBCC-01"],"REQ-082":["UL-05"],"REQ-083":["UL-05","PG-CBCC-01"],"REQ-084":["UL-06"],"REQ-085":["UC-H-04","UC-H-05"],"REQ-086":["UC-E-02","UL-05"],"REQ-087":["PG-CBCC-01"],"REQ-088":["UL-03","PG-CBCC-01"],"REQ-089":["UL-02","UL-03"],"REQ-090":["PG-CBCC-01"]
   },
   "current_interpretation_overrides": {
-    "REQ-013":"用户要求价格/销量等事实不可编造。当前工程解释：竞品价格观察可以作为研究或情景输入，但不能被陈述为已验证的自身售价；缺失自身成本/费率/转化输入时，不伪造锁定经济结论。",
-    "REQ-026":"POST_COMPOSITE / EXACT_PIXEL_COMPOSITE / NO_VISIBLE_COPY / PRODUCT_ABSENT 均为逐资产可选路线；不得升级为全局默认。",
-    "REQ-027":"真实商品需要可见且有真实参考时，默认使用 reference-guided native fidelity；只有明确 exact-pixel intent 才使用原像素合成。",
-    "REQ-084":"Product Presence 与 Product Fidelity 独立；真实参考图不等于每个资产必须出现商品，也不等于默认 exact-pixel composite。",
-    "REQ-004":"验证、Gate、PASS 只提供证据和防回归，不拥有商业策略或创意作者权。",
+    "REQ-003":"派生工作流原则：来自用户‘信息审计→最多10问→明确假设→继续’的执行锁；何时 HOLD、如何恢复属于工程/产品实现，不冒充用户原话。",
+    "REQ-008":"派生的早期 Product Truth 归一化规则；用户直接要求由 REQ-053 / UC-H-01 承载。",
+    "REQ-013":"用户要求价格/销量等事实不可编造。当前派生解释：竞品价格观察可以作为研究或情景输入，但不能被陈述为已验证的自身售价；缺失自身成本/费率/转化输入时，不伪造锁定经济结论。",
+    "REQ-026":"派生的逐资产生产路线原则：POST_COMPOSITE / EXACT_PIXEL_COMPOSITE / NO_VISIBLE_COPY / PRODUCT_ABSENT 是可选路线，不是用户原话中的内部枚举，也不得升级为全局默认。",
+    "REQ-027":"用户后续明确纠偏的直接核心：普通真实商品源图默认 reference-guided fidelity；只有任务明确要求原始像素不变时才使用 exact-pixel/composite。",
+    "REQ-061":"派生架构：用 canonical commerce object graph 实现用户明确的多载体同源要求；对象图结构本身不是用户逐字规定。",
+    "REQ-084":"派生架构：以 Product Presence 与 Product Fidelity 独立轴实现 UL-06；独立轴/字段命名不是用户原话。",
+    "REQ-086":"派生的 scene-derived photography/lighting/CMF closure；用户直接视觉参数执行锁由 UC-E-02 / REQ-057/060 等承载。",
+    "REQ-089":"派生的人类工作区完整投影合同；用户直接要求是 UL-02 的非流水席、SaaS式、HTML完整可用。",
+    "REQ-004":"用户后续明确反对‘为了验证而验证’；测试、Gate、PASS只能提供证据和防回归，不拥有商业策略或创意作者权。",
     "REQ-047":"GitHub main 是持续源码真源；release/plugin/交接包是派生物，不得反向覆盖源码权威。",
     "REQ-090":"Provider planning 不等于真实输出；只有真实 Result→Review→Revision→hash/provenance 可以关闭 actual-output boundary。"
   },
