@@ -119,7 +119,7 @@ def test_host_execution_contract_forbids_secret_cli_arguments_and_persistence():
     assert contract['runtime_context']['cli_secret_arguments'] == 'FORBIDDEN'
     assert contract['runtime_context']['host_module_value_is_module_name_not_credentials'] is True
     assert contract['single_execution_chain'].endswith('Production Receipt → Ingest')
-    assert set(contract['commands']) == {'adapter-list', 'provider-execute', 'provider-cancel', 'provider-reconcile'}
+    assert set(contract['commands']) == {'adapter-list', 'provider-execute', 'provider-cancel', 'provider-reconcile', 'revision-execute'}
 
 
 def test_adapter_listing_is_available_without_runtime_credentials():
