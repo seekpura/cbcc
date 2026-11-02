@@ -1,0 +1,29 @@
+name: Phase 5 REQ-086 Baseline Cross-Scope
+
+on:
+  push:
+    branches:
+      - phase5-req086-scene-photo-prompt
+    paths:
+      - '.github/phase5_req086_baseline_trigger.txt'
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3fb0e9bc1d696028062073063a184d5a33c03a5a
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade pip pytest pyyaml
+      - name: Run exact broad baseline
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name 'test_v067*.py' -print | sort)
+          printf 'Baseline files: %s\n' "${files[*]}"
+          test "${#files[@]}" -gt 0
+          pytest -q "${files[@]}"
