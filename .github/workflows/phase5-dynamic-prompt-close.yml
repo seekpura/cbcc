@@ -88,7 +88,7 @@ jobs:
               for rel in paths:
                   assert z.read(prefix+rel)==Path(rel).read_bytes(), rel
           PY
-      - name: Commit durable Phase 5 closure files
+      - name: Commit durable non-workflow Phase 5 closure files
         run: |
           git config user.name 'cbcc-phase5-bot'
           git config user.email 'actions@users.noreply.github.com'
@@ -97,8 +97,7 @@ jobs:
             references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json \
             references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md \
             scripts/check_current_release_package.py \
-            tests/test_current_release_package_checker.py \
-            .github/workflows/current-release-verification.yml
+            tests/test_current_release_package_checker.py
           git diff --cached --check
           git commit -m 'docs(phase5): close canonical dynamic Prompt continuity'
           git push origin HEAD:phase5-dynamic-prompt-continuity
