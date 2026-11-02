@@ -1,1 +1,2 @@
 trigger REQ-082 durable closure
+schema-fix-rerun
