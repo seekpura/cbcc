@@ -6,6 +6,7 @@ from pathlib import Path
 MAP = 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PROMPT_DENSITY.json'
 PRODUCTION = 'b1a8571a6008345808c892a10975ca40188efed3'
 RUN = 41388592372
+PHASE5_STATUS = 'IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_SCENE_PHOTOGRAPHY_AND_BROAD_PROMPT_DENSITY_VERIFIED'
 
 
 def replace_once(path: str, old: str, new: str) -> None:
@@ -22,8 +23,9 @@ ledger_path = Path('references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json')
 ledger = json.loads(ledger_path.read_text(encoding='utf-8'))
 req082 = next(row for row in ledger['new_requirements'] if row.get('req') == 'REQ-082')
 req082['status'] = 'PASS_PHASE5_COMMERCIAL_GRADE_PROMPT_DENSITY_AND_CONCRETE_PARAMETER_CONSUMPTION_TARGETED_VERIFIED_E2E_PENDING'
-phase5 = ledger['phase_execution']['5']
-phase5['status'] = 'IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_SCENE_PHOTOGRAPHY_AND_BROAD_PROMPT_DENSITY_VERIFIED'
+ledger['phase_status']['5'] = PHASE5_STATUS
+phase5 = ledger['phase_evidence']['5']
+phase5['status'] = PHASE5_STATUS
 phase5['subtask'] = 'COMMERCIAL_GRADE_PROMPT_DENSITY_AND_CONCRETE_PARAMETER_CONSUMPTION'
 proofs = phase5.setdefault('proof_objects', [])
 for rel in (
