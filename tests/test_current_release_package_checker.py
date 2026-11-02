@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECKER = ROOT / "scripts" / "check_current_release_package.py"
+CURRENT_RELEASE_WORKFLOW = ROOT / ".github" / "workflows" / "current-release-verification.yml"
 
 
 def _expected_authority() -> str:
@@ -38,7 +39,6 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
         checker = _load_checker()
         required = set(checker.required_release_paths())
         for rel in (
-            "references/REQUIREMENT_AUTHORITY_CURRENT.json",
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json",
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_DYNAMIC_PROMPT_CONTINUITY.json",
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PRODUCT_FIDELITY_REFERENCE.json",
@@ -53,6 +53,13 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
         ):
             self.assertIn(rel, required)
 
+    def test_release_workflow_enforces_requirement_authority_in_exact_zip(self):
+        text = CURRENT_RELEASE_WORKFLOW.read_text(encoding="utf-8")
+        self.assertIn("references/REQUIREMENT_AUTHORITY_CURRENT.json", text)
+        self.assertIn("Prove requirement attribution authority is byte-identical in exact ZIP", text)
+        self.assertIn("/resources/references/REQUIREMENT_AUTHORITY_CURRENT.json", text)
+        self.assertIn("packaged==source", text)
+
     def test_checker_requires_locked_req_061_090_authorities(self):
         checker = _load_checker()
         required = set(checker.required_release_paths())
@@ -66,7 +73,6 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
     def test_checker_text_enforces_same_source_and_locked_plan_tokens(self):
         text = CHECKER.read_text(encoding="utf-8")
         for token in (
-            "REQUIREMENT_AUTHORITY_CURRENT.json",
             "CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md",
             "LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
             "REQUIREMENT_EXECUTION_LEDGER_CURRENT.json",
