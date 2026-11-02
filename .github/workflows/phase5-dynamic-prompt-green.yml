@@ -4,6 +4,7 @@ on:
   push:
     branches: [phase5-dynamic-prompt-continuity]
     paths:
+      - 'tests/test_v0676_phase5_dynamic_prompt_continuity.py'
       - '.github/phase5_patch_dynamic_prompt_continuity.py'
       - '.github/workflows/phase5-dynamic-prompt-green.yml'
   workflow_dispatch:
