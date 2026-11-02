@@ -1,0 +1,39 @@
+name: phase7-req088-fix-candidate-boundary
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [repair-04-phase7-full-materialization]
+    paths:
+      - '.github/workflows/phase7-req088-fix-candidate-boundary.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair-04-phase7-full-materialization
+      - name: Restrict lineage candidates to semantic business rows
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('runtime/cbcc/lineage_normalization_v0681.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''def _is_candidate(row: Mapping[str, Any]) -> bool:\n    if any(key in row for key in LINEAGE_FIELDS):\n        return True\n    evidence = row.get("evidence")\n    return isinstance(evidence, Mapping) and any(key in evidence for key in ("source_ids", "source_cards", "traceability_status"))\n'''
+          new = '''def _is_candidate(row: Mapping[str, Any]) -> bool:\n    # A lineage *business record* must carry decision/fact semantics in addition to lineage metadata.\n    # Nested evidence descriptors may themselves contain source_refs/source_type/recency, but treating\n    # those helper mappings as independent lineage records creates false INCOMPLETE results.\n    semantic_anchors = (\n        "what", "why", "tradeoff", "execution", "measurement", "object_id", "type",\n        "decision", "assumption", "question_id", "domain", "item", "fact",\n    )\n    if not any(key in row for key in semantic_anchors):\n        return False\n    if any(key in row for key in LINEAGE_FIELDS):\n        return True\n    evidence = row.get("evidence")\n    return isinstance(evidence, Mapping) and any(key in evidence for key in ("source_ids", "source_cards", "traceability_status"))\n'''
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'expected one _is_candidate block, found {count}')
+          path.write_text(text.replace(old, new), encoding='utf-8')
+          PY
+      - name: Commit candidate-boundary fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runtime/cbcc/lineage_normalization_v0681.py
+          git diff --cached --check
+          git commit -m "fix(phase7): ignore nested evidence descriptors as lineage rows"
+          git push origin HEAD:repair-04-phase7-full-materialization
