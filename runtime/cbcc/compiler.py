@@ -55,6 +55,7 @@ from .evidence_reconciliation import compile_market_evidence_fit_contract
 from .pricing_economics_authority import compile_pricing_economics_authority
 from .seven_tool_continuity import compile_seven_tool_continuity
 from .operator_execution_board import build_operator_execution_board
+from .canonical_commerce_graph import materialize_canonical_commerce_graph
 from .io import load_tabular, apply_field_map
 
 DEFAULT_FAMILIES=['LISTING','SEARCH','OFFER_PROMOTION','VISUAL','RICH_CONTENT','VIDEO','CREATOR_AFFILIATE','LIVE','PAID','SOCIAL','STORE','CX','LIFECYCLE','MEASUREMENT','COMPLIANCE']
@@ -584,6 +585,10 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
                'strategy_authority':{'status':strategy.get('status'),'artifact':str(p/'artifacts/strategy/MASTER_STRATEGY_CN.md')},'asset_packages':asset_compile,'production_run':production_run,'video_creator_plan':video_plan,'compliance':compliance,'prompt_state_isolation':True,'research_gate':research_gate}
     exp=_write(p/'artifacts/execution_contract.json',execution); execution_ready=creative_ready and compliance.get('status')!='HOLD' and (not request.get('compile_assets') or asset_compile.get('status')=='COMPILED')
     st.set_gate('EXECUTION','READY_REVIEW' if execution_ready else 'PENDING',[exp],execution); st.checkpoint('EXECUTION','READY_REVIEW' if st.data['gates']['EXECUTION']['status']=='READY_REVIEW' else 'PENDING_CONTRACTS')
+
+    # Materialize the relationship-only canonical authority after all project business objects exist.
+    # JSON authorities remain the source of truth; Markdown/HTML/prompts/asset packages are projections.
+    materialize_canonical_commerce_graph(p/'artifacts')
     # final_ready is derived from current-scope closure; never reset it as a static pipeline flag.
     refresh_review_workspace(p,st)
     return st.data
