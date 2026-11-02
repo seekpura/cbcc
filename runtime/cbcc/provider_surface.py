@@ -40,7 +40,7 @@ def _write_json(path: Path, data: Any) -> None:
 def host_execution_contract() -> dict[str, Any]:
     return {
         'version': VERSION,
-        'commands': ['adapter-list', 'provider-execute', 'provider-cancel', 'provider-reconcile'],
+        'commands': ['adapter-list', 'provider-execute', 'provider-cancel', 'provider-reconcile', 'revision-execute'],
         'single_execution_chain': bridge_contract()['single_execution_chain'],
         'runtime_context': {
             'persistence': 'FORBIDDEN',
