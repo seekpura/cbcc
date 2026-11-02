@@ -420,7 +420,7 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     _write(p/'artifacts/creative_opportunity_universe.json',creative_opportunity_universe)
     if 'creative_directions' in request:
         council_directions=request.get('creative_directions')
-    elif 'directions' in creative_scope:
+    elif any(key in creative_scope for key in ('directions','asset_art_directions','per_asset_art_directions')):
         council_directions=agent_creative_directions(agent_plan)
     else:
         council_directions=None

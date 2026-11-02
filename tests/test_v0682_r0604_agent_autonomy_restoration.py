@@ -1,3 +1,5 @@
+import json
+
 from runtime.cbcc.agent_autonomy import (
     agent_creative_directions,
     agent_creative_opportunities,
@@ -7,6 +9,7 @@ from runtime.cbcc.agent_autonomy import (
 )
 from runtime.cbcc.asset_architecture import build_asset_architecture
 from runtime.cbcc.campaign_architecture import compile_paid_campaign_architecture
+from runtime.cbcc.compiler import build_project
 from runtime.cbcc.creative import compile_creative_council
 from runtime.cbcc.creative_opportunity import compile_creative_opportunity_universe
 from runtime.cbcc.decision_authority import derive_task_content_families
@@ -162,3 +165,64 @@ def test_explicit_empty_paid_campaigns_do_not_generate_campaigns_but_missing_may
     assert explicit['status'] == 'NOT_REQUIRED'
     assert missing['dynamic_count'] > 0
     assert missing['status'] == 'COMPILED'
+
+
+def test_compiler_preserves_per_asset_art_direction_without_direction_list(tmp_path):
+    question = 'What proof should the shopper understand?'
+    request = {
+        'project_id': 'r0604-art-only',
+        'sku': 'SKU-1',
+        'product': {'name': 'Demo Serum', 'category': 'Beauty'},
+        'target': {
+            'target_id': 'T1',
+            'market': 'Malaysia',
+            'jurisdiction': 'Malaysia',
+            'platform_family': 'TIKTOK_SHOP',
+            'site': 'MY',
+            'category': 'Beauty',
+            'surfaces': ['GALLERY'],
+            'primary_locale': 'en-MY',
+            'support_locales': ['ms-MY'],
+            'visible_copy_locales': ['en-MY', 'ms-MY'],
+            'delivery_locale': 'zh-CN',
+        },
+        'agent_plan': {
+            'research_requirements': [],
+            'content_scope': {'families': ['VISUAL']},
+            'creative_exploration': {
+                'asset_art_directions': [{
+                    'consumer_question': question,
+                    'visual_carrier': 'EDITORIAL_EVIDENCE_FIELD',
+                    'subject': 'verified evidence field',
+                    'composition_grammar': 'asymmetric evidence field with open negative space',
+                    'product_presence': {
+                        'planning_state': 'FORBIDDEN',
+                        'source_reference_role': 'TRUTH_REFERENCE_ONLY',
+                    },
+                }],
+            },
+        },
+        'asset_jobs': [{
+            'consumer_question': question,
+            'surface': 'GALLERY',
+            'family': 'VISUAL',
+            'strategic_job': 'Resolve proof question',
+        }],
+        'compile_assets': False,
+        'planning_only': True,
+    }
+    packs = tmp_path / 'packs'
+    packs.mkdir()
+    project = tmp_path / 'project'
+
+    build_project(project, request, packs)
+
+    council = json.loads((project / 'artifacts' / 'creative_council.json').read_text(encoding='utf-8'))
+    architecture = json.loads((project / 'artifacts' / 'asset_architecture.json').read_text(encoding='utf-8'))
+    asset = architecture['assets'][0]
+
+    assert council['selected_direction']['direction_id'] == 'DIR-AGENT-ASSET-AUTHORITY'
+    assert council['selected_direction']['source'] == 'HOST_AGENT_AUTHORED'
+    assert asset['art_direction_status'] == 'AUTHORED'
+    assert asset['asset_art_direction']['composition_grammar'] == 'asymmetric evidence field with open negative space'
+    assert asset['product_presence']['planning_state'] == 'FORBIDDEN'
