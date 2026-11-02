@@ -123,7 +123,12 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
     rows=[dict(x) for x in doc.get("requirements",[]) if isinstance(x,Mapping)]
     ids=[str(x.get("req") or "") for x in rows]; expected=[f"REQ-{i:03d}" for i in range(1,91)]
     if ids!=expected or len(set(ids))!=90: add("ACTIVE_REQUIREMENT_ID_SET_MISMATCH")
-    direct=set(doc.get("direct_user_requirement_ids",[])); later=set(doc.get("later_user_requirement_ids",[]))
+    direct=set(str(x) for x in doc.get("direct_user_requirement_ids",[])); later=set(str(x) for x in doc.get("later_user_requirement_ids",[]))
+    assignment_map=doc.get("authority_assignments") or {}
+    expected_direct=set(str(x) for x in assignment_map.get("USER_CANONICAL",[]))
+    expected_later=set(str(x) for x in assignment_map.get("USER_LATER_CLARIFICATION",[]))
+    if direct!=expected_direct: add("DIRECT_USER_SET_MISMATCH",actual=sorted(direct),expected=sorted(expected_direct))
+    if later!=expected_later: add("LATER_USER_SET_MISMATCH",actual=sorted(later),expected=sorted(expected_later))
     anchors={str(x.get("source_id")) for x in doc.get("user_source_anchors",[]) if isinstance(x,Mapping)}
     goals={str(x.get("source_id")) for x in doc.get("product_goal_anchors",[]) if isinstance(x,Mapping)}
     valid=anchors|goals
