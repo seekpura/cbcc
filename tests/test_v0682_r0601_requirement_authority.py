@@ -47,6 +47,13 @@ def test_req013_is_derived_from_price_truth_not_rewritten_as_user_canonical():
 
 def test_derived_and_engineering_rules_require_explicit_lineage():
     doc = load_current_requirement_authority(ROOT)
+    derived_or_guard = [
+        row for row in doc['requirements']
+        if row['authority_class'] in {'DERIVED_PRODUCT_PRINCIPLE', 'ENGINEERING_GUARD'}
+    ]
+    assert derived_or_guard
+    assert all(row['derived_from'] for row in derived_or_guard)
+
     polluted = deepcopy(doc)
     row = next(r for r in polluted['requirements'] if r['authority_class'] in {'DERIVED_PRODUCT_PRINCIPLE', 'ENGINEERING_GUARD'})
     row['derived_from'] = []
@@ -67,6 +74,13 @@ def test_tests_and_workflows_are_proof_only_not_business_authority():
     row = polluted['requirements'][0]
     row.setdefault('business_consumers', []).append('tests/test_fake_business_authority.py')
     assert 'TEST_PATH_AS_BUSINESS_CONSUMER' in _issues(polluted)
+
+
+def test_machine_strategy_consumer_is_not_silently_promoted_to_human_projection():
+    doc = load_current_requirement_authority(ROOT)
+    row = _req(doc, 'REQ-062')
+    assert 'runtime/cbcc/strategy_authority.py' in row['business_consumers']
+    assert row['human_projection'] == ['NOT_DIRECT_HUMAN_FACING']
 
 
 def test_reference_guided_correction_has_later_user_origin_and_supersedes_global_pixel_lock():
