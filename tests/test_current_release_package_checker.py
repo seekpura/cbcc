@@ -38,6 +38,7 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
         checker = _load_checker()
         required = set(checker.required_release_paths())
         for rel in (
+            "references/REQUIREMENT_AUTHORITY_CURRENT.json",
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json",
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_DYNAMIC_PROMPT_CONTINUITY.json",
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PRODUCT_FIDELITY_REFERENCE.json",
@@ -65,6 +66,7 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
     def test_checker_text_enforces_same_source_and_locked_plan_tokens(self):
         text = CHECKER.read_text(encoding="utf-8")
         for token in (
+            "REQUIREMENT_AUTHORITY_CURRENT.json",
             "CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md",
             "LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
             "REQUIREMENT_EXECUTION_LEDGER_CURRENT.json",
