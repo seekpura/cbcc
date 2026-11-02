@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import zipfile
 from pathlib import Path
 
 
@@ -126,3 +127,53 @@ def test_phase6_delivery_family_audit_does_not_accept_archive_only_presence(tmp_
     html_path.write_text(html.replace(marker, 'data-delivery-family-object-removed="LF-01"', 1), encoding="utf-8")
     issues = audit_delivery_family_workspace(package)
     assert any(issue["code"] == "DELIVERY_FAMILY_ROUTED_OBJECT_MISSING_V0680" for issue in issues), issues
+
+
+def test_phase6_final_export_manifest_and_zip_consume_delivery_family_workspace(tmp_path: Path, monkeypatch):
+    import runtime.cbcc.commercial_delivery_continuity as continuity
+    import runtime.cbcc.full_delivery_materialization as full_materialization
+
+    package = _package(tmp_path)
+    zip_path = tmp_path / "phase6-family-delivery.zip"
+    seed_manifest = {
+        "package_dir": str(package),
+        "zip_path": str(zip_path),
+        "workspace_contract": {},
+    }
+    _write_json(package / "DELIVERY_MANIFEST.json", seed_manifest)
+
+    monkeypatch.setattr(continuity, "materialize_commerce_decision_context", lambda project_dir: {})
+    monkeypatch.setattr(continuity, "compile_continuity_audit", lambda project_dir, context: {"status": "PASS"})
+    monkeypatch.setattr(
+        full_materialization,
+        "finalize_full_delivery_materialization",
+        lambda project_dir, manifest: dict(manifest),
+    )
+
+    def base_export(project_dir, output, *args, **kwargs):
+        return dict(seed_manifest)
+
+    exported = continuity.wrap_export_delivery_package(base_export)
+    result = exported(tmp_path / "project", tmp_path / "output")
+
+    assert result["delivery_family_workspace_status"] == "PASS"
+    assert set(result["delivery_family_workspace_families"]) == {"crm", "longform", "store_landing"}
+    assert result["workspace_contract"]["activated_delivery_family_routes"] == "PASS"
+    assert result["workspace_contract"]["delivery_family_menu_is_fixed"] is False
+    assert result["delivery_family_workspace_audit"] == "DELIVERY_FAMILY_WORKSPACE_AUDIT.json"
+    assert zip_path.exists()
+
+    disk_manifest = json.loads((package / "DELIVERY_MANIFEST.json").read_text(encoding="utf-8"))
+    assert disk_manifest["delivery_family_workspace_status"] == "PASS"
+    assert any(row["path"] == "DELIVERY_FAMILY_WORKSPACE_AUDIT.json" for row in disk_manifest["files"])
+
+    prefix = package.name + "/"
+    with zipfile.ZipFile(zip_path) as zf:
+        names = set(zf.namelist())
+        assert prefix + "DELIVERY_FAMILY_WORKSPACE_AUDIT.json" in names
+        assert prefix + "DELIVERY_MANIFEST.json" in names
+        assert prefix + "index.html" in names
+        zipped_html = zf.read(prefix + "index.html").decode("utf-8")
+        assert 'data-delivery-family="longform"' in zipped_html
+        assert 'data-delivery-family="store_landing"' in zipped_html
+        assert 'data-delivery-family="crm"' in zipped_html
