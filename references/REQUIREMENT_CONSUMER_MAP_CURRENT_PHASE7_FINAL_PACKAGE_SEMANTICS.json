@@ -1,14 +1,15 @@
 {
-  "version": "cbcc-current-phase7-final-package-semantics-v2",
+  "version": "cbcc-current-phase7-final-package-semantics-v3",
   "phase": 7,
   "subtask": "Final package semantic object inventory + fail-honest Host/Runtime comparator boundary + actual-output honesty boundary",
   "production_head_sha": "2e0ead508b3d3a9e4e7ac3c6f6b31bdda1bd5b7d",
+  "authority_closure_commit": "cb4e8c74b6242d0e1a132c54b8a19c43dd50dc68",
   "focused_green_head_sha": "bd92bf7c8134e1be2f4b73c8c55b565958b00e25",
   "current_gate_head_sha": "2e0ead508b3d3a9e4e7ac3c6f6b31bdda1bd5b7d",
   "requirements": [
     {
       "requirement_id": "REQ-090",
-      "status": "PARTIAL_PHASE7_SOURCE_PACKAGE_CLOSURE_TARGETED_VERIFIED_HOST_FALSE_PASS_GUARD_VERIFIED_INSTALLED_HOST_E2E_PHASE11_AND_REAL_PROVIDER_OUTPUT_PHASE8_PENDING",
+      "status": "PARTIAL_PHASE7_SOURCE_PACKAGE_CLOSURE_TARGETED_VERIFIED_HOST_FALSE_PASS_GUARD_VERIFIED_INSTALLED_HOST_E2E_PHASE11_REAL_PROVIDER_OUTPUT_PHASE8_AND_FRESH_K01_PHASE10_PENDING",
       "summary": "The final package is re-audited after every Phase 6 projection. FULL_DELIVERY_OBJECT_MANIFEST is derived dynamically from actual canonical business objects and production asset packages rather than a static hand-list. Phase 7 also prevents an arbitrary semantic twin directory from being promoted to verified installed Host-native parity.",
       "consumers": [
         "runtime/cbcc/full_package_semantic_closure_v0681.py",
@@ -54,6 +55,8 @@
     "host_false_pass_green_commit": "2e0ead508b3d3a9e4e7ac3c6f6b31bdda1bd5b7d",
     "host_false_pass_green_run": 41428154926,
     "host_false_pass_green": "Permanent CURRENT completed successfully through Phase 7 verification, requirement accounting, CURRENT builder, exact ZIP checks, v0.6.70-v0.6.75 floors and verified artifact upload.",
+    "authority_closure_workflow_run": 41428582560,
+    "authority_closure_workflow": "One-shot workflow updated the execution ledger and implementation matrix with exact Phase 7 boundary changes, validated them, committed the authority closure, and removed itself from the resulting head.",
     "tests": [
       "tests/test_v0681_phase7_final_package_semantic_closure.py",
       "tests/test_v0681_phase7_final_export_integration.py"
@@ -72,8 +75,7 @@
     "Fresh K01 FULL remains Phase 10 evidence."
   ],
   "next": [
-    "Close Phase 7 at source/package targeted proof level after clean-head CURRENT confirms the recorded authority updates.",
-    "Proceed to Phase 8 Provider Result/Review/Revision actual-output closure without fabricating Provider evidence.",
+    "After the clean-head CURRENT for this frozen closure candidate passes, begin Phase 8 Provider Result/Review/Revision actual-output closure without fabricating Provider evidence.",
     "Consume authenticated installed Host-native readback/provenance in Phase 11 before any Host parity PASS claim."
   ],
   "current_followup": {
@@ -84,6 +86,8 @@
     "pre_false_pass_clean_head_current_green_run": 41419301375,
     "host_false_pass_red_run": 41427949535,
     "host_false_pass_green_run": 41428154926,
+    "authority_map_current_green_run": 41428445252,
+    "authority_closure_commit": "cb4e8c74b6242d0e1a132c54b8a19c43dd50dc68",
     "remaining_installed_host_boundary": "Installed Host-native export provenance/readback is intentionally deferred to Phase 11; Phase 7 no longer permits an unauthenticated candidate directory to satisfy it."
   }
 }
