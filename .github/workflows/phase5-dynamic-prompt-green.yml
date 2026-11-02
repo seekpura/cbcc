@@ -1,0 +1,63 @@
+name: phase5-dynamic-prompt-green
+
+on:
+  push:
+    branches: [phase5-dynamic-prompt-continuity]
+    paths:
+      - '.github/phase5_patch_dynamic_prompt_continuity.py'
+      - '.github/workflows/phase5-dynamic-prompt-green.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase5-dynamic-prompt-continuity
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q pytest pyyaml openpyxl pillow
+      - name: Apply Phase 5 canonical dynamic Prompt patch
+        run: python .github/phase5_patch_dynamic_prompt_continuity.py
+      - name: Focused canonical dynamic Prompt verification
+        run: pytest -q tests/test_v0676_phase5_dynamic_prompt_continuity.py
+      - name: Preserve legacy flat video Prompt compatibility
+        run: pytest -q tests/test_v0631_model_native_prompt_contract.py::test_video_prompt_consumes_motion_timing_and_shot_sequence
+      - name: Preserve Phase 4 authority regressions
+        run: pytest -q tests/test_v0676_phase4_*.py
+      - name: Preserve Fresh K01 v0.6.72 regressions
+        run: |
+          pytest -q \
+            tests/test_v0672_fresh_k01_portfolio_delta.py \
+            tests/test_v0672_fresh_k01_projection_closure.py \
+            tests/test_v0672_global_language_closure.py \
+            tests/test_v0672_canonical_human_compaction.py \
+            tests/test_v0672_fresh_k01_materialization_closure.py \
+            tests/test_v0672_fresh_k01_final_export_closure.py \
+            tests/test_v0672_prompt_relevance_and_nested_execution.py \
+            tests/test_v0672_integrated_copy_negative_constraint.py \
+            tests/test_v0672_nonblocking_platform_research.py
+      - name: Preserve recent Prompt and cross-scope closures
+        run: |
+          pytest -q tests/test_v0673_model_prompt_route_relevance.py
+          pytest -q tests/test_v0674_regression_closure.py
+      - name: Commit GREEN production files only
+        run: |
+          git config user.name 'cbcc-phase5-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add \
+            runtime/cbcc/model_native_prompt_contract.py \
+            runtime/cbcc/model_native_prompt_audit_fix.py \
+            runtime/cbcc/production_parameter_closure.py
+          git diff --cached --check
+          git commit -m 'feat(phase5): consume canonical dynamic prompt decisions'
+          git push origin HEAD:phase5-dynamic-prompt-continuity
