@@ -1,0 +1,29 @@
+name: phase5-product-fidelity-reference-red
+
+on:
+  push:
+    branches: [phase5-product-fidelity-reference]
+    paths:
+      - 'tests/test_v0676_phase5_product_fidelity_reference_prompt.py'
+      - '.github/workflows/phase5-product-fidelity-reference-red.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  red:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase5-product-fidelity-reference
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q pytest pyyaml openpyxl
+      - name: Reproduce canonical Product Presence Fidelity reference authority loss
+        run: pytest -q tests/test_v0676_phase5_product_fidelity_reference_prompt.py
