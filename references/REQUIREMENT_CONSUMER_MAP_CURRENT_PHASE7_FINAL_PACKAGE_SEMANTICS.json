@@ -1,15 +1,15 @@
 {
-  "version": "cbcc-current-phase7-final-package-semantics-v1",
+  "version": "cbcc-current-phase7-final-package-semantics-v2",
   "phase": 7,
-  "subtask": "Final package semantic object inventory + Host/Runtime comparator contract + actual-output honesty boundary",
-  "production_head_sha": "9000474846de7534be8409a9bbfc32c70fa31038",
+  "subtask": "Final package semantic object inventory + fail-honest Host/Runtime comparator boundary + actual-output honesty boundary",
+  "production_head_sha": "2e0ead508b3d3a9e4e7ac3c6f6b31bdda1bd5b7d",
   "focused_green_head_sha": "bd92bf7c8134e1be2f4b73c8c55b565958b00e25",
-  "current_gate_head_sha": "34d51aefb4b4b05e8dfc34842c059c3b28b4d71a",
+  "current_gate_head_sha": "2e0ead508b3d3a9e4e7ac3c6f6b31bdda1bd5b7d",
   "requirements": [
     {
       "requirement_id": "REQ-090",
-      "status": "PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_CLOSURE_REQ088_LINEAGE_AND_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED_HOST_PARITY_PENDING",
-      "summary": "The final package is re-audited after every Phase 6 projection. FULL_DELIVERY_OBJECT_MANIFEST is derived dynamically from actual canonical business objects and production asset packages rather than a static hand-list.",
+      "status": "PARTIAL_PHASE7_SOURCE_PACKAGE_CLOSURE_TARGETED_VERIFIED_HOST_FALSE_PASS_GUARD_VERIFIED_INSTALLED_HOST_E2E_PHASE11_AND_REAL_PROVIDER_OUTPUT_PHASE8_PENDING",
+      "summary": "The final package is re-audited after every Phase 6 projection. FULL_DELIVERY_OBJECT_MANIFEST is derived dynamically from actual canonical business objects and production asset packages rather than a static hand-list. Phase 7 also prevents an arbitrary semantic twin directory from being promoted to verified installed Host-native parity.",
       "consumers": [
         "runtime/cbcc/full_package_semantic_closure_v0681.py",
         "runtime/cbcc/commercial_delivery_continuity.py::wrap_export_delivery_package",
@@ -22,7 +22,7 @@
     {
       "requirement_id": "REQ-088",
       "status": "PASS_PHASE2_PHASE7_RESOLVABLE_SOURCE_EVIDENCE_ASSUMPTION_DECISION_LINEAGE_TARGETED_VERIFIED",
-      "summary": "Stable final semantic object IDs/hashes are now consumed by the separately verified REQ-088 lineage closure recorded in REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json.",
+      "summary": "Stable final semantic object IDs/hashes are consumed by the separately verified REQ-088 lineage closure recorded in REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json.",
       "consumers": [
         "FULL_DELIVERY_OBJECT_MANIFEST.json semantic_objects",
         "final_semantic_signature_sha256",
@@ -33,19 +33,27 @@
   "verified_behavior": [
     "An unknown/new canonical business-object family is automatically included in the final semantic object manifest; a static registry cannot silently omit it.",
     "Removing an object row fails the semantic inventory audit even when the canonical JSON value remains physically present elsewhere in the package.",
-    "Host-native versus Runtime parity compares canonical object IDs and semantic hashes, not file layout, Markdown formatting, headings or raw byte identity.",
-    "A single Runtime export never fabricates Host-native parity; without an independently materialized Host-native package the final manifest records E2E_PENDING_INSTALLED_HOST_EXPORT.",
+    "compare_export_semantics compares canonical object IDs and semantic hashes rather than file layout, Markdown formatting, headings or raw byte identity.",
+    "A semantically identical supplied directory may produce a mechanical candidate-comparison PASS, but that candidate is explicitly marked UNAUTHENTICATED_CANDIDATE_DIRECTORY with verified_host_native_origin=false.",
+    "materialize_final_package_semantics never promotes a supplied candidate directory to installed Host-native proof. Verified Host parity remains E2E_PENDING_INSTALLED_HOST_EXPORT until the Phase 11 build/install/readback path establishes independent Host origin.",
+    "A single Runtime export or Runtime twin can therefore no longer fabricate Host-native parity or E2E_PROVEN.",
     "Provider job materialization/result templates are not actual-output proof. Actual-output status remains E2E_PENDING until real Provider Result, accepted output Review, accepted Local Revision Review, production receipt/output hashes and revised-output lineage hashes are all present.",
     "The final semantic closure executes after REQ-061 canonical parity, REQ-089 routed Human Workspace and activated delivery-family projection, then rebuilds DELIVERY_MANIFEST and the final ZIP from those final bytes.",
     "Earlier FULL materialization audit evidence is preserved as upstream_full_materialization_audit instead of being mistaken for the final Phase 7 audit."
   ],
   "proof": {
-    "focused_red_run": 41406191109,
-    "focused_red": "4 failed because runtime.cbcc.full_package_semantic_closure_v0681 did not exist",
-    "focused_first_green_run": 41406326280,
-    "focused_first_green": "4/4 passed",
-    "focused_integrated_green_run": 41406484829,
-    "focused_integrated_green": "5/5 passed including final export ordering / ZIP integration",
+    "initial_focused_red_run": 41406191109,
+    "initial_focused_red": "4 failed because runtime.cbcc.full_package_semantic_closure_v0681 did not exist",
+    "initial_focused_green_run": 41406326280,
+    "initial_focused_green": "4/4 passed",
+    "initial_integrated_green_run": 41406484829,
+    "initial_integrated_green": "5/5 passed including final export ordering / ZIP integration",
+    "host_false_pass_red_commit": "2f73e410ae90c7c332f2b28df7ad46e02c220bac",
+    "host_false_pass_red_run": 41427949535,
+    "host_false_pass_red": "Permanent CURRENT failed exactly in the Phase 7 verifier after a new test proved an arbitrary Runtime semantic twin could otherwise be authenticated through host_package_dir.",
+    "host_false_pass_green_commit": "2e0ead508b3d3a9e4e7ac3c6f6b31bdda1bd5b7d",
+    "host_false_pass_green_run": 41428154926,
+    "host_false_pass_green": "Permanent CURRENT completed successfully through Phase 7 verification, requirement accounting, CURRENT builder, exact ZIP checks, v0.6.70-v0.6.75 floors and verified artifact upload.",
     "tests": [
       "tests/test_v0681_phase7_final_package_semantic_closure.py",
       "tests/test_v0681_phase7_final_export_integration.py"
@@ -57,20 +65,25 @@
   },
   "invariants": [
     "Final package semantic truth is computed from final bytes after all projections, never from an earlier materialization snapshot.",
-    "Semantic object parity is different from installed-host E2E proof; source comparator implementation cannot be promoted to actual Host-native parity without a second package.",
-    "Planning/provider-job existence is never promoted to actual-output QA.",
-    "REQ-088 is now separately closed at targeted proof level; this semantic map remains the identity/comparator authority consumed by that closure.",
-    "Fresh K01 FULL and Provider actual-output proof remain later-phase evidence."
+    "Mechanical semantic equality is not installed-host provenance. A caller-supplied filesystem directory is diagnostic evidence only unless the later installed-host readback path authenticates its origin.",
+    "Source/package Phase 7 completion cannot be promoted to installed Host-native E2E proof; that boundary remains Phase 11.",
+    "Planning/provider-job existence is never promoted to actual-output QA; real Provider Result/Review/Revision remains Phase 8.",
+    "REQ-088 is separately closed at targeted proof level; this semantic map remains the identity/comparator authority consumed by that closure.",
+    "Fresh K01 FULL remains Phase 10 evidence."
   ],
   "next": [
-    "Consume the existing Host-native/Runtime semantic comparator when an independently materialized Host-native package becomes available; do not infer parity from the Runtime package alone.",
-    "Keep Provider actual-output Result/Review/Revision evidence in Phase 8 and Fresh K01 FULL in Phase 10."
+    "Close Phase 7 at source/package targeted proof level after clean-head CURRENT confirms the recorded authority updates.",
+    "Proceed to Phase 8 Provider Result/Review/Revision actual-output closure without fabricating Provider evidence.",
+    "Consume authenticated installed Host-native readback/provenance in Phase 11 before any Host parity PASS claim."
   ],
   "current_followup": {
     "req088_lineage": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json",
     "final_mature_package_continuity": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_MATURE_PACKAGE_CONTINUITY.json",
     "final_mature_focused_green_run": 41416575861,
-    "permanent_current_green_run": 41416771898,
-    "remaining_phase7_boundary": "independently materialized Host-native versus Runtime semantic parity"
+    "permanent_mature_current_green_run": 41416771898,
+    "pre_false_pass_clean_head_current_green_run": 41419301375,
+    "host_false_pass_red_run": 41427949535,
+    "host_false_pass_green_run": 41428154926,
+    "remaining_installed_host_boundary": "Installed Host-native export provenance/readback is intentionally deferred to Phase 11; Phase 7 no longer permits an unauthenticated candidate directory to satisfy it."
   }
 }
