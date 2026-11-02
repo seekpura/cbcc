@@ -174,7 +174,7 @@ def information_audit_issues(strategy:Mapping[str,Any]) -> list[dict[str,Any]]:
     expected=len(_l(info.get('pending_confirmations')))+len(_l(info.get('pending_confirmations_overflow')))
     if int(info.get('pending_confirmation_total_count') or 0)!=expected: issues.append({'code':'FULL_INFORMATION_AUDIT_UNRESOLVED_COUNT_DRIFT','expected':expected,'actual':info.get('pending_confirmation_total_count')})
     if info.get('continue_under_assumptions') is not True: issues.append({'code':'FULL_INFORMATION_AUDIT_CONTINUATION_RULE_MISSING'})
-    rows=[x for k in ('pending_confirmations','pending_confirmations_overflow','assumption_decision_log') for x in _l(info.get(k)) if isinstance(x,Mapping)]
+    rows=[x for k in ('information_audit_items','pending_confirmations','pending_confirmations_overflow','assumption_decision_log') for x in _l(info.get(k)) if isinstance(x,Mapping)]
     if not rows and (_l(info.get('required_missing')) or _l(info.get('assumptions')) or _l(info.get('decision_log'))): issues.append({'code':'FULL_INFORMATION_AUDIT_ROWS_MISSING'})
     required=set(DENSITY_FIELDS)|set(LINEAGE_FIELDS)
     for i,row in enumerate(rows):

@@ -263,6 +263,10 @@ def materialize_review_analysis_authority(legacy_feedback:Mapping[str,Any],reque
         'asset_dependency':'NOT_REQUIRED_FOR_PHASE2_BUSINESS_AUTHORITY',
         'production_review_dependency':'NOT_REQUIRED_FOR_PHASE2_CUSTOMER_REVIEW_AUTHORITY',
         'repair_rows':rows,
+        'smallest_repair_status':(
+            'TO_VERIFY' if any(r.get('smallest_repair_status')=='TO_VERIFY' for r in rows)
+            else ('READY' if rows and all(r.get('smallest_repair_status') in {'READY','NOT_APPLICABLE_POSITIVE_VALUE'} for r in rows) else 'TO_VERIFY')
+        ),
         'feedback_analysis':base,
         'verification_boundary':{
             'local_repair_verification_contract':'READY' if local_verify_ready else 'TO_VERIFY',
