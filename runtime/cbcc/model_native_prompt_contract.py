@@ -42,6 +42,33 @@ def _first(mapping: Mapping[str, Any] | None, *keys: str) -> Any:
     return None
 
 
+_MODEL_DYNAMIC_METADATA_KEYS = {
+    'authority', 'video_id', 'family', 'surface', 'authored_fields', 'authored_dynamic_fields',
+    'source_asset_id', 'dynamic_art_direction_source_video_id', 'runtime_may_invent_missing_dynamic_art_direction',
+    'provenance', 'sha256', 'hash', 'provider_asset_handle', 'ingest_status',
+}
+
+
+def _model_dynamic_block(value: Any) -> Any:
+    """Keep model-visible temporal/audio decisions while removing runtime/provenance metadata."""
+    if not _meaningful(value):
+        return None
+    if isinstance(value, Mapping):
+        out = {}
+        for key, child in value.items():
+            if str(key) in _MODEL_DYNAMIC_METADATA_KEYS:
+                continue
+            cleaned = _model_dynamic_block(child)
+            if _meaningful(cleaned):
+                out[str(key)] = cleaned
+        return out or None
+    if isinstance(value, (list, tuple)):
+        rows = [_model_dynamic_block(item) for item in value]
+        rows = [item for item in rows if _meaningful(item)]
+        return rows or None
+    return deepcopy(value)
+
+
 def _lang(value: Any, language: str, missing: list[str], field: str) -> Any:
     """Read an Agent-authored bilingual semantic value without runtime translation.
 
@@ -166,6 +193,10 @@ def _model_fields(asset: Mapping[str, Any], card: Mapping[str, Any], language: s
     if isinstance(props_value, Mapping) and str(props_value.get('status') or '').upper() == 'NOT_NEEDED':
         props_value=None
 
+    motion_block=_model_dynamic_block(art.get('motion'))
+    timing_block=_model_dynamic_block(art.get('timing'))
+    audio_block=_model_dynamic_block(art.get('audio'))
+
     fields={
         'output_spec': L(_output_spec(asset, art, card), 'output_spec'),
         'visual_objective': L(_first(art, 'visual_objective', 'objective', 'decision_answer') or card.get('visual_objective'), 'visual_objective'),
@@ -201,7 +232,13 @@ def _model_fields(asset: Mapping[str, Any], card: Mapping[str, Any], language: s
         'typography': L(_first(art, 'typography') or info.get('typography'), 'typography'),
         'copy_zone': L(_first(art, 'copy_zone', 'text_zone', 'safe_zone') or cam.get('safe_zone'), 'copy_zone'),
         'inclusive_human': L(_first(art, 'inclusive_human', 'representation') or inc, 'inclusive_human'),
-        'motion_timing': L(_first(art, 'motion_timing', 'timing', 'duration', 'shot_timing'), 'motion_timing'),
+        # Phase 4 canonical dynamic authority. Runtime/provenance metadata is stripped before
+        # language resolution so only frame/audio-changing decisions enter the acting plane.
+        'motion': L(motion_block, 'motion'),
+        'timing': L(timing_block, 'timing'),
+        'audio': L(audio_block, 'audio'),
+        # Backward-compatible legacy prompt fields remain supported when canonical blocks are absent.
+        'motion_timing': L(_first(art, 'motion_timing', 'duration', 'shot_timing'), 'motion_timing'),
         'shot_sequence': L(_first(art, 'shot_sequence', 'shot_plan', 'storyboard'), 'shot_sequence'),
         'camera_motion': L(_first(art, 'camera_motion', 'motion_program'), 'camera_motion'),
         'transition_audio': L(_first(art, 'transition_audio', 'transitions', 'audio_direction'), 'transition_audio'),
@@ -256,8 +293,19 @@ def _render_prompt(asset: Mapping[str, Any], card: Mapping[str, Any], language: 
         if f.get('inclusive_human'): rows.append(f"人物呈现：{_txt(f['inclusive_human'])}。")
         if is_video:
             video=[]
-            for k,label in [('motion_timing','时长/节奏'),('shot_sequence','镜头顺序'),('camera_motion','镜头运动'),('transition_audio','转场/音频')]:
-                if f.get(k): video.append(f"{label}：{_txt(f[k])}")
+            if f.get('motion'):
+                video.append(f"动作/镜头执行：{_txt(f['motion'])}")
+            else:
+                for k,label in [('shot_sequence','镜头顺序'),('camera_motion','镜头运动')]:
+                    if f.get(k): video.append(f"{label}：{_txt(f[k])}")
+            if f.get('timing'):
+                video.append(f"时长/节奏：{_txt(f['timing'])}")
+            elif f.get('motion_timing'):
+                video.append(f"时长/节奏：{_txt(f['motion_timing'])}")
+            if f.get('audio'):
+                video.append(f"声音/字幕执行：{_txt(f['audio'])}")
+            elif f.get('transition_audio'):
+                video.append(f"转场/音频：{_txt(f['transition_audio'])}")
             if video: rows.append('动态执行：'+'；'.join(video)+'。')
         if f.get('post_look'): rows.append(f"完成质感：{_txt(f['post_look'])}。")
         if copy_mode in {'MODEL_RENDER','HYBRID'} and _meaningful(copy_block.get('target_market_copy')):
@@ -305,8 +353,19 @@ def _render_prompt(asset: Mapping[str, Any], card: Mapping[str, Any], language: 
     if f.get('inclusive_human'): rows.append(f"Human representation: {_txt(f['inclusive_human'])}.")
     if is_video:
         video=[]
-        for k,label in [('motion_timing','duration/rhythm'),('shot_sequence','shot sequence'),('camera_motion','camera motion'),('transition_audio','transitions/audio')]:
-            if f.get(k): video.append(f"{label}: {_txt(f[k])}")
+        if f.get('motion'):
+            video.append(f"motion/shot execution: {_txt(f['motion'])}")
+        else:
+            for k,label in [('shot_sequence','shot sequence'),('camera_motion','camera motion')]:
+                if f.get(k): video.append(f"{label}: {_txt(f[k])}")
+        if f.get('timing'):
+            video.append(f"timing/rhythm: {_txt(f['timing'])}")
+        elif f.get('motion_timing'):
+            video.append(f"duration/rhythm: {_txt(f['motion_timing'])}")
+        if f.get('audio'):
+            video.append(f"voice/subtitle/audio execution: {_txt(f['audio'])}")
+        elif f.get('transition_audio'):
+            video.append(f"transitions/audio: {_txt(f['transition_audio'])}")
         if video: rows.append('Motion execution — '+'; '.join(video)+'.')
     if f.get('post_look'): rows.append(f"Finishing look: {_txt(f['post_look'])}.")
     if copy_mode in {'MODEL_RENDER','HYBRID'} and _meaningful(copy_block.get('target_market_copy')):

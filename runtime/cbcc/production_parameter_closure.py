@@ -62,6 +62,33 @@ def _lang_txt(v: Any, language: str) -> str:
     return _txt(_lang_value(v,language))
 
 
+_DYNAMIC_METADATA_KEYS = {
+    'authority', 'video_id', 'family', 'surface', 'authored_fields', 'authored_dynamic_fields',
+    'source_asset_id', 'dynamic_art_direction_source_video_id', 'runtime_may_invent_missing_dynamic_art_direction',
+    'provenance', 'sha256', 'hash', 'provider_asset_handle', 'ingest_status',
+}
+
+
+def _dynamic_execution_value(value: Any) -> Any:
+    """Keep only model-visible temporal/audio execution decisions from canonical dynamic AD."""
+    if not _meaningful(value):
+        return None
+    if isinstance(value, Mapping):
+        out = {}
+        for key, child in value.items():
+            if str(key) in _DYNAMIC_METADATA_KEYS:
+                continue
+            cleaned = _dynamic_execution_value(child)
+            if _meaningful(cleaned):
+                out[str(key)] = cleaned
+        return out or None
+    if isinstance(value, (list, tuple, set, frozenset)):
+        rows = [_dynamic_execution_value(item) for item in value]
+        rows = [item for item in rows if _meaningful(item)]
+        return rows or None
+    return deepcopy(value)
+
+
 def _art(asset: Mapping[str, Any], card: Mapping[str, Any]) -> dict[str, Any]:
     raw = asset.get('asset_art_direction')
     if not isinstance(raw, Mapping):
@@ -162,13 +189,42 @@ def _selected_parameters(asset: Mapping[str, Any], card: Mapping[str, Any]) -> d
         add('wardrobe_hair_makeup', ('wardrobe_hair_makeup','wardrobe','hair_makeup','styling'), ('human','casting'))
 
     if video:
-        add('duration_timing', ('duration','timing','beat_timing','shot_timing'), ('video','motion'))
-        add('shot_sequence', ('shot_sequence','shot_plan','storyboard'), ('video','motion'))
-        add('camera_motion', ('camera_motion','motion_program'), ('video','motion','camera'))
-        add('subject_motion', ('subject_motion','action_motion'), ('video','motion'))
+        canonical_motion = _dynamic_execution_value(art.get('motion'))
+        canonical_timing = _dynamic_execution_value(art.get('timing'))
+        canonical_audio = _dynamic_execution_value(art.get('audio'))
+
+        if _meaningful(canonical_timing):
+            params['duration_timing'] = canonical_timing
+        else:
+            # Legacy flat schema compatibility; canonical `timing` is handled above so its
+            # authority/provenance envelope can never leak into the model acting plane.
+            add('duration_timing', ('duration','beat_timing','shot_timing'), ('video','motion'))
+
+        if isinstance(canonical_motion, Mapping) and _meaningful(canonical_motion.get('shots')):
+            params['shot_sequence'] = deepcopy(canonical_motion.get('shots'))
+        else:
+            add('shot_sequence', ('shot_sequence','shot_plan','storyboard'), ('video','motion'))
+
+        if isinstance(canonical_motion, Mapping) and _meaningful(canonical_motion.get('camera_motion')):
+            params['camera_motion'] = deepcopy(canonical_motion.get('camera_motion'))
+        else:
+            add('camera_motion', ('camera_motion','motion_program'), ('video','motion','camera'))
+
+        if isinstance(canonical_motion, Mapping) and _meaningful(canonical_motion.get('subject_motion')):
+            params['subject_motion'] = deepcopy(canonical_motion.get('subject_motion'))
+        else:
+            add('subject_motion', ('subject_motion','action_motion'), ('video','motion'))
+
         add('fps', ('fps','frame_rate'), ('video','motion','camera'))
         add('stabilization', ('stabilization','stabilisation'), ('video','motion','camera'))
-        add('transition_audio', ('transition_audio','transitions','audio_direction','music_direction'), ('video','motion','audio'))
+
+        if _meaningful(canonical_audio):
+            # Keep the historical parameter name as the compatibility slot, but consume the whole
+            # canonical audio execution block: voice/subtitles/music/SFX/silence policy.
+            params['transition_audio'] = canonical_audio
+        else:
+            add('transition_audio', ('transition_audio','transitions','audio_direction','music_direction'), ('video','motion','audio'))
+
         add('cta_hold', ('cta_hold','end_frame_hold','final_hold'), ('video','motion'))
         add('subtitle_safe_zone', ('subtitle_safe_zone','caption_safe_zone'), ('video','motion','typography'))
 
