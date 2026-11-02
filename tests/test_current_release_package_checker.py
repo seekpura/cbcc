@@ -40,6 +40,7 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
         for rel in (
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json",
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_DYNAMIC_PROMPT_CONTINUITY.json",
+            "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PRODUCT_FIDELITY_REFERENCE.json",
             "references/CURRENT_CANONICAL_SKILL_BUILD.md",
             "prompts/canonical_authority_loading_map_CURRENT.md",
             "scripts/build_plugin_dist_current.py",

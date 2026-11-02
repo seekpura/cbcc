@@ -25,8 +25,23 @@ def _presence(card:Mapping[str,Any])->tuple[str,bool]:
     return state, visible
 
 
+def _canonical_product_fidelity(asset:Mapping[str,Any], card:Mapping[str,Any]|None=None)->str:
+    art=asset.get('asset_art_direction') if isinstance(asset.get('asset_art_direction'),Mapping) else {}
+    authored=art.get('product_fidelity')
+    if isinstance(authored,Mapping):
+        authored=authored.get('mode') or authored.get('product_fidelity') or authored.get('fidelity_mode')
+    if _meaningful(authored):
+        return str(authored).upper()
+    identity=(card or {}).get('product_identity') if isinstance((card or {}).get('product_identity'),Mapping) else {}
+    if _meaningful(identity.get('product_fidelity')):
+        return str(identity.get('product_fidelity')).upper()
+    if _meaningful(asset.get('product_fidelity')):
+        return str(asset.get('product_fidelity')).upper()
+    return 'REFERENCE_GUIDED'
+
+
 def _explicit_exact_pixel(asset:Mapping[str,Any], card:Mapping[str,Any])->bool:
-    fidelity=str((card.get('product_identity') or {}).get('product_fidelity') or asset.get('product_fidelity') or '').upper()
+    fidelity=_canonical_product_fidelity(asset,card)
     return bool(
         fidelity in _EXACT_PIXEL_COMPOSITE
         or asset.get('exact_pixel_composite') is True
@@ -36,7 +51,7 @@ def _explicit_exact_pixel(asset:Mapping[str,Any], card:Mapping[str,Any])->bool:
 
 
 def normalize_native_reference_fidelity(asset:Mapping[str,Any], card:Mapping[str,Any])->str:
-    raw=str((card.get('product_identity') or {}).get('product_fidelity') or asset.get('product_fidelity') or 'REFERENCE_GUIDED').upper()
+    raw=_canonical_product_fidelity(asset,card)
     if _explicit_exact_pixel(asset,card):
         return 'EXACT_PIXEL_COMPOSITE'
     if raw in _NATIVE_REFERENCE_FIDELITY:
@@ -79,13 +94,16 @@ def apply_reference_guided_native_authority(bundle:Mapping[str,Any], asset:Mappi
     out=deepcopy(dict(bundle))
     card=deepcopy(dict(out.get('design_card') or {}))
     state,visible=_presence(card)
-    exact=_explicit_exact_pixel(asset,card)
+    exact_selected=_explicit_exact_pixel(asset,card)
+    # Presence and fidelity are independent axes: a dormant exact-pixel preference must not make
+    # an intentionally absent product become a required reference/input/layer.
+    exact=bool(visible and exact_selected)
     normalized=normalize_native_reference_fidelity(asset,card)
     sources=list(source_product_assets or (card.get('product_identity') or {}).get('source_product_assets') or [])
 
     identity=deepcopy(dict(card.get('product_identity') or {}))
     identity['product_fidelity']=normalized
-    identity['reference_generation_mode']='EXACT_PIXEL_COMPOSITE' if exact else 'REFERENCE_GUIDED_NATIVE_GENERATION'
+    identity['reference_generation_mode']=('TRUTH_REFERENCE_ONLY' if not visible else ('EXACT_PIXEL_COMPOSITE' if exact else 'REFERENCE_GUIDED_NATIVE_GENERATION'))
     if visible and not exact:
         identity['rule']=_native_reference_instruction('EN',len(sources))
         identity['native_subject_required']=True

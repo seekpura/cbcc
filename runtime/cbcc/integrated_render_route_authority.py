@@ -42,6 +42,18 @@ def _presence(asset: Mapping[str, Any]) -> str:
     return ''
 
 
+def _canonical_product_fidelity(asset: Mapping[str, Any]) -> str:
+    art = asset.get('asset_art_direction') if isinstance(asset.get('asset_art_direction'), Mapping) else {}
+    authored = art.get('product_fidelity')
+    if isinstance(authored, Mapping):
+        authored = authored.get('mode') or authored.get('product_fidelity') or authored.get('fidelity_mode')
+    if _meaningful(authored):
+        return str(authored).upper()
+    if _meaningful(asset.get('product_fidelity')):
+        return str(asset.get('product_fidelity')).upper()
+    return 'REFERENCE_GUIDED'
+
+
 def _strip_legacy_post_copy(prompt: str) -> str:
     patterns = [
         r'生成画面时为锁定文案预留清晰版式区，但不要让图像模型重写包装文字或最终营销文案；精确文案在后期确定性合成。?',
@@ -72,8 +84,9 @@ def finalize_integrated_render_route(asset: Mapping[str, Any], bundle: Mapping[s
 
     presence = _presence(asset)
     visible_product = presence in {'HERO_REQUIRED', 'REQUIRED', 'SUPPORTING', 'DETAIL_ONLY', 'OPTIONAL'}
-    exact_pixel = str(asset.get('product_fidelity') or '').upper() in {
-        'EXACT_PIXEL_COMPOSITE', 'LOCKED_PIXEL', 'LOCKED_SOURCE_COMPOSITE', 'COMPOSITE'
+    fidelity_mode = _canonical_product_fidelity(asset)
+    exact_pixel = fidelity_mode in {
+        'EXACT_PIXEL_COMPOSITE', 'PIXEL_COMPOSITE_EXPLICIT', 'LOCKED_PIXEL', 'LOCKED_SOURCE_COMPOSITE', 'COMPOSITE'
     }
 
     # Product Presence is not invented here. When the Agent selected a visible product and did not

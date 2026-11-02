@@ -147,7 +147,7 @@
       "req": "REQ-084",
       "title": "Product Presence/Fidelity/reference independence",
       "phase": "4,5",
-      "status": "PARTIAL_PHASE4_PRODUCT_PRESENCE_FIDELITY_REFERENCE_INDEPENDENCE_VERIFIED_PHASE5_PROMPT_PENDING"
+      "status": "PASS_PHASE4_PHASE5_PRODUCT_PRESENCE_FIDELITY_REFERENCE_INDEPENDENCE_TARGETED_VERIFIED_E2E_PENDING"
     },
     {
       "req": "REQ-085",
@@ -192,7 +192,7 @@
     "2": "PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED",
     "3": "PASS_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED",
     "4": "PASS_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER_VERIFIED",
-    "5": "IN_PROGRESS_DYNAMIC_PROMPT_CONTINUITY_VERIFIED",
+    "5": "IN_PROGRESS_DYNAMIC_AND_PRODUCT_FIDELITY_PROMPT_CONTINUITY_VERIFIED",
     "6": "NOT_STARTED",
     "7": "NOT_STARTED",
     "8": "NOT_STARTED",
@@ -793,7 +793,7 @@
       }
     },
     "5": {
-      "status": "IN_PROGRESS_DYNAMIC_PROMPT_CONTINUITY_VERIFIED",
+      "status": "IN_PROGRESS_DYNAMIC_AND_PRODUCT_FIDELITY_PROMPT_CONTINUITY_VERIFIED",
       "subtask": "CANONICAL_DYNAMIC_TEMPORAL_PROMPT_CONTINUITY",
       "requirements_advanced": [
         "REQ-082",
@@ -808,7 +808,12 @@
         "tests/test_v0676_phase5_dynamic_prompt_continuity.py",
         "runtime/cbcc/model_native_prompt_contract.py",
         "runtime/cbcc/model_native_prompt_audit_fix.py",
-        "runtime/cbcc/production_parameter_closure.py"
+        "runtime/cbcc/production_parameter_closure.py",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PRODUCT_FIDELITY_REFERENCE.json",
+        "tests/test_v0676_phase5_product_fidelity_reference_prompt.py",
+        "runtime/cbcc/agent_authority_prompt_compiler.py",
+        "runtime/cbcc/reference_guided_native_authority.py",
+        "runtime/cbcc/integrated_render_route_authority.py"
       ],
       "verified_behaviors": [
         "Phase 4 canonical motion/timing/audio concrete values are projected into the model-facing Prompt and concrete consumption audit.",
@@ -831,7 +836,22 @@
         "Fresh real K01 FULL",
         "Provider actual media / pixel-frame Review / smallest Local Revision / provenance"
       ],
-      "source_truth": "GITHUB_BRANCH_VERIFIED_PENDING_CLEAN_MAIN_CLOSURE"
+      "source_truth": "GITHUB_BRANCH_VERIFIED_PENDING_CLEAN_MAIN_CLOSURE",
+      "verified_subtasks": [
+        "Canonical dynamic motion/timing/audio Prompt continuity",
+        "Product Presence × Fidelity × reference independence through final Prompt/render authority"
+      ],
+      "product_fidelity_reference_production_head": "32c46dc40a3e13c15855ad771c014fca77a45a94",
+      "product_fidelity_reference_focused_red": "1 failed / 3 passed after fixture correction",
+      "product_fidelity_reference_focused_green": "4 passed",
+      "product_fidelity_reference_cross_scope": "prior Phase5 dynamic + Phase4 all + native provider + v0673/v0674 passed",
+      "remaining": [
+        "REQ-086 scene-derived camera/lighting/CMF Prompt consumption",
+        "REQ-082 broader commercial Prompt density",
+        "REQ-083 remaining surface-specific Prompt closure",
+        "Fresh real K01 FULL",
+        "Provider actual output / Review / Local Revision / provenance"
+      ]
     }
   },
   "version": "2026-11-02-phase4-closure-v1",
