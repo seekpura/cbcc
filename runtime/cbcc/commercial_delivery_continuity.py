@@ -118,8 +118,22 @@ def wrap_export_delivery_package(fn: Callable[..., dict[str, Any]]):
         manifest = fn(project_dir, output, *args, **kwargs)
         from .full_delivery_materialization import finalize_full_delivery_materialization
         manifest = finalize_full_delivery_materialization(project_dir, manifest)
-        from .canonical_delivery_parity_v0680 import finalize_export_canonical_delivery_parity
-        return finalize_export_canonical_delivery_parity(manifest)
+        from .canonical_delivery_parity_v0680 import finalize_export_canonical_delivery_parity, _rebuild_export_zip
+        manifest = finalize_export_canonical_delivery_parity(manifest)
+
+        from .delivery_family_workspace_v0680 import AUDIT_FILE as FAMILY_AUDIT_FILE
+        from .delivery_family_workspace_v0680 import materialize_delivery_family_workspace
+        family = materialize_delivery_family_workspace(Path(manifest['package_dir']))
+        if family.get('status') != 'PASS':
+            raise RuntimeError('BLOCKED Phase 6 delivery-family Human Workspace projection failed: ' + json.dumps(family.get('issues') or [], ensure_ascii=False))
+        manifest['delivery_family_workspace_audit'] = FAMILY_AUDIT_FILE
+        manifest['delivery_family_workspace_status'] = family.get('status')
+        manifest['delivery_family_workspace_families'] = sorted(family.get('families') or {})
+        workspace = dict(manifest.get('workspace_contract') or {})
+        workspace['activated_delivery_family_routes'] = family.get('status')
+        workspace['delivery_family_menu_is_fixed'] = False
+        manifest['workspace_contract'] = workspace
+        return _rebuild_export_zip(Path(manifest['package_dir']), Path(manifest['zip_path']), manifest)
     return exported
 
 
