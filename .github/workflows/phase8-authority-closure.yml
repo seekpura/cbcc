@@ -33,13 +33,11 @@ jobs:
           PYTHONHASHSEED: '0'
           PYTHONPATH: '.:runtime'
         run: python -m pytest -q tests/test_v0616_provider_host_surface.py tests/test_v0682_*.py
-      - name: Commit authority closure
+      - name: Commit authority docs only
         run: |
           git config user.name seekpura
           git config user.email ercnet@live.cn
-          git rm .github/workflows/phase8-authority-closure.yml scripts/phase8_authority_closure_once.py
           git add references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json
           git add references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md
-          git add .github/workflows/current-release-verification.yml
           git commit -m 'docs(phase8): close actual-output authority ledger'
           git push origin HEAD:repair-05-phase8-provider-true-e2e
