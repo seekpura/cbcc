@@ -139,8 +139,8 @@ def wrap_export_delivery_package(fn: Callable[..., dict[str, Any]]):
         # manifest before final semantic closure so family routing and earlier parity metadata are not
         # lost when the finalizer rebuilds the manifest and ZIP.
         _write_json(package / 'DELIVERY_MANIFEST.json', manifest)
-        from .full_package_semantic_closure_v0681 import materialize_final_package_semantics
-        phase7 = materialize_final_package_semantics(package, zip_path=Path(manifest['zip_path']))
+        from .phase7_lineage_semantic_closure_v0681 import materialize_phase7_lineage_and_semantics
+        phase7 = materialize_phase7_lineage_and_semantics(package, zip_path=Path(manifest['zip_path']))
         return phase7['manifest']
     return exported
 
