@@ -8,7 +8,7 @@ AUTHORITY_CLASSES=("USER_CANONICAL","USER_LATER_CLARIFICATION","DERIVED_PRODUCT_
 ACTIVE_CLASSES=AUTHORITY_CLASSES[:-1]
 AUTHORITY_PATH=Path("references/REQUIREMENT_AUTHORITY_CURRENT.json")
 _TEST=re.compile(r"^(?:tests/|\.github/workflows/)",re.I)
-_HUMAN=re.compile(r"(human|delivery|workspace|html|projection|strategy|listing|culture|visual|content)",re.I)
+_HUMAN=re.compile(r"(human|delivery|workspace|html|projection)",re.I)
 
 def _root(root=None)->Path:
     return Path(root).resolve() if root is not None else Path(__file__).resolve().parents[2]
@@ -78,7 +78,6 @@ def load_current_requirement_authority(root=None)->dict[str,Any]:
     for i in range(1,91):
         req=f"REQ-{i:03d}"; cls=assignments.get(req)
         d=[str(x) for x in derived.get(req,[])]
-        if cls in {"DERIVED_PRODUCT_PRINCIPLE","ENGINEERING_GUARD"} and not d: d=["PG-CBCC-01"]
         business=[str(x) for x in consumers.get(req,[]) if str(x)]
         human=[str(x) for x in human_over.get(req,[]) if str(x)]
         for p in business:
