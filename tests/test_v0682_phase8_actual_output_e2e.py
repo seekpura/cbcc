@@ -187,7 +187,8 @@ def test_provider_result_review_local_revision_review_hash_lineage_reaches_e2e_p
     ingested = ingest_local_revision_results(project, state.data, [revision_id])
     state.save()
     assert ingested['status'] == 'LOCAL_REVISION_RESULTS_INGESTED'
-    assert ingested['revisions'][0]['provider_result_status'] == 'COMPLETE'
+    # A revised provider result is also gated for explicit review; ingest does not self-accept it.
+    assert ingested['revisions'][0]['provider_result_status'] == 'REVIEW_REQUIRED'
     revised_path = Path(ingested['revisions'][0]['output_path'])
     assert revised_path.read_bytes() == b'phase8-provider-revised-output-v2'
     assert ingested['revisions'][0]['output_hash'] == _sha(revised_path.read_bytes())
