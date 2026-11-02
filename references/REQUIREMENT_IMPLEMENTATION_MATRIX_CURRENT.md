@@ -1,6 +1,6 @@
 # CBCC Requirement Implementation Matrix — CURRENT
 
-This is the human-readable status summary for `REQ-001..REQ-090`. REQ-001..060 retain the existing strict consumer-accounting authority in `REQUIREMENT_CONSUMER_MAP_V0664.json` plus CURRENT overrides. REQ-061..090 are newly locked by `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md` and are closed phase-by-phase. Phase 4 requirements have committed targeted proof. Phase 5 is COMPLETE at committed targeted source/CURRENT-package proof level: canonical dynamic motion/timing/audio, Product Presence/Fidelity/reference independence, scene-derived photography/lighting/CMF consumption, broad commercial Prompt density/concrete parameter consumption, and full explicit temporal/surface continuity all have proof. Fresh K01 FULL, Provider actual-output QA, installed-plugin readback, and later JSON/MD/HTML/FULL materialization phases remain separate and are not implied by this Phase 5 closure. This summary never substitutes for the detailed cumulative ledgers, verbatim user authority, machine execution ledger or actual proof objects.
+This is the human-readable status summary for `REQ-001..REQ-090`. REQ-001..060 retain the existing strict consumer-accounting authority in `REQUIREMENT_CONSUMER_MAP_V0664.json` plus CURRENT overrides. REQ-061..090 are newly locked by `CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md` and are closed phase-by-phase. Phase 4 and Phase 5 remain closed at committed targeted proof level. Phase 6 is now **COMPLETE at targeted source/CURRENT-package proof level** for canonical JSON/complete Markdown/HTML same-source projection, routed Human Workspace canonical consumption, and dynamically activated Longform / Store-Landing / CRM delivery-family lenses including final Manifest/ZIP consumption. Fresh K01 FULL, Provider actual-output QA, installed-plugin readback, and Phase 7 FULL materialization/lineage remain separate and are not implied by this Phase 6 closure. This summary never substitutes for the detailed cumulative ledgers, verbatim user authority, machine execution ledger or actual proof objects.
 
 | REQ | Requirement | Human summary | Status |
 |---|---|---|---|
@@ -64,36 +64,36 @@ This is the human-readable status summary for `REQ-001..REQ-090`. REQ-001..060 r
 | REQ-058 | Platform execution + localization | platform/scope + locale + Human projection | CONSUMER MAPPED + E2E_PENDING |
 | REQ-059 | P0/P1/P2 tradeoff | strategy depth/authority + decision authority | CONSUMER MAPPED + E2E_PENDING |
 | REQ-060 | Nine semantic outputs, no fixed shell | strategy depth + workspace + project HTML + FULL audit | CONSUMER MAPPED + E2E_PENDING |
-| REQ-061 | Canonical commerce object graph | JSON authority → MD/HTML/Prompt/Production projections | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-062 | Whole-commerce FULL scope | assets cannot swallow strategy/listing/economics/ads/reviews | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-063 | Explicit family evaluation | each relevant family ACTIVATED/NOT_NEEDED/TO_VERIFY/MISSING_INPUT + WHY | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-064 | Scenario/Lifestyle/Context/Human-use | scene-led decision objects with real strategic roles | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-065 | Negative/Counterexample/Expectation management | 阴性/反例/误区/错误使用/边界 clarification | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-066 | Brand IP/Memory/Brand World | distinctive assets and long-term recall layer evaluation | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-067 | Packaging Trust/Unboxing/Contents/Size/Compatibility | transaction-trust family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-068 | Ingredient/Formula/Material/Texture/Detail/Macro/Proof | evidence/sensory-detail family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-069 | How-to/Routine/Usage/FAQ/Objection/Comparison | education/objection/decision family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-070 | A+/PDP/Longform/Specification/Source-document | long-form surface family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-071 | Paid Media/Performance Creative | audience+tension+hypothesis+offer+landing+economics | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-072 | Social/Seeding/Organic | platform-native social family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-061 | Canonical commerce object graph | JSON authority → complete MD/HTML projection with stable semantic signature | PHASE1_GRAPH_AUTHORITY + PHASE6_SAME_SOURCE_TARGETED_PROOF + PHASE7_PENDING |
+| REQ-062 | Whole-commerce FULL scope | assets cannot swallow strategy/listing/economics/ads/reviews | PHASE1/2_TARGETED_PROOF |
+| REQ-063 | Explicit family evaluation | each relevant family ACTIVATED/NOT_NEEDED/TO_VERIFY/MISSING_INPUT + WHY | PASS_PHASE3_TARGETED_PROOF |
+| REQ-064 | Scenario/Lifestyle/Context/Human-use | scene-led decision objects with real strategic roles | PHASE3/4_TARGETED_PROOF + REAL_FAMILY_E2E_PENDING |
+| REQ-065 | Negative/Counterexample/Expectation management | 阴性/反例/误区/错误使用/边界 clarification | PHASE3/4_TARGETED_PROOF + REAL_FAMILY_E2E_PENDING |
+| REQ-066 | Brand IP/Memory/Brand World | distinctive assets and long-term recall layer evaluation | PHASE3/4_TARGETED_PROOF + REAL_FAMILY_E2E_PENDING |
+| REQ-067 | Packaging Trust/Unboxing/Contents/Size/Compatibility | transaction-trust family | PHASE3/4_TARGETED_PROOF + REAL_FAMILY_E2E_PENDING |
+| REQ-068 | Ingredient/Formula/Material/Texture/Detail/Macro/Proof | evidence/sensory-detail family | PHASE3/4_TARGETED_PROOF + REAL_FAMILY_E2E_PENDING |
+| REQ-069 | How-to/Routine/Usage/FAQ/Objection/Comparison | education/objection/decision family | PHASE3/4_TARGETED_PROOF + REAL_FAMILY_E2E_PENDING |
+| REQ-070 | A+/PDP/Longform/Specification/Source-document | activated long-form family gets a routed Human Delivery lens and final ZIP continuity | PHASE3 + PHASE6_TARGETED_PROOF + PHASE7_PACKAGE_CONTINUITY_PENDING |
+| REQ-071 | Paid Media/Performance Creative | audience+tension+hypothesis+offer+landing+economics | PHASE2/3/4_TARGETED_PROOF + REAL_CAMPAIGN_E2E_PENDING |
+| REQ-072 | Social/Seeding/Organic | platform-native social family | PHASE3/4_TARGETED_PROOF + REAL_SOCIAL_E2E_PENDING |
 | REQ-073 | Creator/UGC/Affiliate | creator performance/script/product handling/affiliate handoff | PARTIAL_PHASE3_PHASE4_VERIFIED + PHASE5_TEMPORAL_PROMPT_TARGETED_PROOF + REAL_OUTPUT_E2E_PENDING |
 | REQ-074 | Product/PDP/Short Video | time-based commercial argument | PARTIAL_PHASE3_PHASE4_VERIFIED + PHASE5_TEMPORAL_PROMPT_TARGETED_PROOF + REAL_OUTPUT_E2E_PENDING |
 | REQ-075 | LIVE commerce | host/demo/objection/offer/Q&A loop | PARTIAL_PHASE3_PHASE4_VERIFIED + PHASE5_TEMPORAL_PROMPT_TARGETED_PROOF + REAL_OUTPUT_E2E_PENDING |
-| REQ-076 | Store/Banner/Landing/Campaign/Seasonal | store/campaign surface family | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-077 | CRM/Lifecycle/Post-purchase | onboarding/education/replenishment/service/review request | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-078 | Test/Rotation/A-B/Multivariate | explicit changed variable/held constants/decision rule | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-079 | Surface-native specialization | capacity only limits activation, not universe | IMPLEMENTED_CODE + PHASE3_PHASE4_TARGETED_PROOF + E2E_PENDING |
-| REQ-080 | Visual Master + portfolio rhythm | project-level visual system separate from per-object AD | IMPLEMENTED_CODE + PHASE4_TARGETED_PROOF + E2E_PENDING |
-| REQ-081 | Per-object Art Direction beyond stills | image/scene/negative/IP/video/creator/etc route-specific AD | IMPLEMENTED_CODE + PHASE4_TARGETED_PROOF + PHASE5_PENDING + E2E_PENDING |
-| REQ-082 | Commercial-grade Prompt density | lossless pixel/frame/audio-changing projection | PHASE5_COMMERCIAL_PROMPT_DENSITY_TARGETED_PROOF + E2E_PENDING |
-| REQ-083 | Dynamic/temporal Prompt continuity | beat/motion/audio/text timing/cover continuity | PHASE5_DYNAMIC_TEMPORAL_PROMPT_PRODUCTION_TARGETED_PROOF + REAL_OUTPUT_E2E_PENDING |
-| REQ-084 | Product Presence/Fidelity/reference independence | presence is creative; fidelity is truth/production | PHASE4_PHASE5_TARGETED_PROOF + E2E_PENDING |
-| REQ-085 | Concrete human/culture/inclusion execution | casting/body/hair/wardrobe/hands/lighting/bias review | IMPLEMENTED_CODE + PHASE4_TARGETED_PROOF + REAL_OUTPUT_E2E_PENDING |
-| REQ-086 | Scene-derived photography/lighting/CMF closure | selected values derive from scene/material and reach acting plane | PHASE4_PHASE5_TARGETED_PROOF + E2E_PENDING |
-| REQ-087 | Non-asset commerce objects remain first-class | Listing/Economics/Ads/Reviews/Research cannot collapse into asset metadata | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-088 | Source/Evidence/Assumption/Decision lineage | exact source→interpretation→decision→proof trace | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-089 | Human Workspace full canonical projection | complete routed HTML; summaries only entrances | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
-| REQ-090 | FULL package lineage + actual-output boundary | machine/human/editable/production package + honest E2E_PENDING | LOCKED_NOT_YET_FULLY_IMPLEMENTED |
+| REQ-076 | Store/Banner/Landing/Campaign/Seasonal | activated store/campaign family gets routed Human Delivery without fixed menu | PHASE3/4/6_TARGETED_PROOF + REAL_FAMILY_E2E_PENDING |
+| REQ-077 | CRM/Lifecycle/Post-purchase | activated lifecycle objects get routed Human Delivery; absent CRM does not create a false workspace | PHASE3/6_TARGETED_PROOF + REAL_FAMILY_E2E_PENDING |
+| REQ-078 | Test/Rotation/A-B/Multivariate | explicit changed variable/held constants/decision rule | PASS_PHASE2_PHASE3_TARGETED_PROOF |
+| REQ-079 | Surface-native specialization | capacity only limits activation, not universe | PASS_PHASE3_PHASE4_TARGETED_PROOF |
+| REQ-080 | Visual Master + portfolio rhythm | project-level visual system separate from per-object AD | PASS_PHASE4_TARGETED_PROOF |
+| REQ-081 | Per-object Art Direction beyond stills | image/scene/negative/IP/video/creator/etc route-specific AD | PASS_PHASE4_TARGETED_PROOF + E2E_PENDING |
+| REQ-082 | Commercial-grade Prompt density | lossless pixel/frame/audio-changing projection | PASS_PHASE5_TARGETED_PROOF + E2E_PENDING |
+| REQ-083 | Dynamic/temporal Prompt continuity | beat/motion/audio/text timing/cover continuity | PASS_PHASE5_TARGETED_PROOF + REAL_OUTPUT_E2E_PENDING |
+| REQ-084 | Product Presence/Fidelity/reference independence | presence is creative; fidelity is truth/production | PASS_PHASE4_PHASE5_TARGETED_PROOF + E2E_PENDING |
+| REQ-085 | Concrete human/culture/inclusion execution | casting/body/hair/wardrobe/hands/lighting/bias review | PASS_PHASE4_TARGETED_PROOF + REAL_OUTPUT_E2E_PENDING |
+| REQ-086 | Scene-derived photography/lighting/CMF closure | selected values derive from scene/material and reach acting plane | PASS_PHASE4_PHASE5_TARGETED_PROOF + E2E_PENDING |
+| REQ-087 | Non-asset commerce objects remain first-class | Listing/Economics/Ads/Reviews/Research cannot collapse into asset metadata | PHASE1/2_FIRST_CLASS_TARGETED_PROOF |
+| REQ-088 | Source/Evidence/Assumption/Decision lineage | exact source→interpretation→decision→proof trace | PHASE2_LINEAGE_TARGETED_PROOF + PHASE7_FULL_LINEAGE_PENDING |
+| REQ-089 | Human Workspace full canonical projection | complete canonical objects must be consumed in semantic routes; Archive is secondary only | PASS_PHASE6_TARGETED_PROOF + FRESH_K01_PHASE10_PENDING |
+| REQ-090 | FULL package lineage + actual-output boundary | machine/human/editable/production package + honest E2E_PENDING | PHASE7/8/10_PENDING |
 
 ## Current evidence boundary
-Phase 4 Art Direction / Photography / Visual Master is closed at committed-code + targeted/cross-scope proof level and is mapped in `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER.json`. Phase 5 is **COMPLETE at targeted source/CURRENT-package proof level**: canonical dynamic motion/timing/audio Prompt continuity is mapped in `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_DYNAMIC_PROMPT_CONTINUITY.json`; Product Presence/Fidelity/reference independence in `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PRODUCT_FIDELITY_REFERENCE.json`; scene-derived camera/lighting/CMF Prompt consumption in `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_SCENE_PHOTOGRAPHY_PROMPT.json`; broad commercial Prompt density/concrete parameter consumption in `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PROMPT_DENSITY.json`; and full explicit dynamic/temporal surface continuity in `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_TEMPORAL_PROMPT_CONTINUITY.json`. This does **not** close Fresh positive K01 FULL, Provider/Result/Review/Revision, or actual-output QA. Cross-phase rows therefore remain partial where later consumer planes are required. The existing 60-row strict Consumer Map remains historical authority for its scope until the cumulative 90-row map supersedes it.
+Phase 4 Art Direction / Photography / Visual Master remains closed at committed-code + targeted/cross-scope proof level and is mapped in `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER.json`. Phase 5 remains **COMPLETE at targeted source/CURRENT-package proof level** across its five CURRENT consumer maps. Phase 6 is now **COMPLETE at targeted source/CURRENT-package proof level** and is mapped by `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE6_CANONICAL_DELIVERY_PARITY.json`, `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE6_ROUTED_HUMAN_WORKSPACE.json`, and `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE6_DELIVERY_FAMILIES.json`. The permanent CURRENT verifier runs REQ-061 same-source parity, REQ-089 routed canonical consumption, and activated Longform/Store-Landing/CRM delivery-family final-export tests before building and checking the CURRENT plugin ZIP. This does **not** close Phase 7 source/evidence/assumption/decision lineage and FULL package continuity, Fresh positive K01 FULL, Provider/Result/Review/Revision, installed-plugin readback, or actual-output QA. Cross-phase rows therefore remain partial where later consumer planes are required. The existing 60-row strict Consumer Map remains historical authority for its scope until the cumulative 90-row map supersedes it.
