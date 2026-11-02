@@ -62,16 +62,26 @@ def _current_builder_target() -> str:
     return match.group(1) if match else ''
 
 
-def _override_document() -> dict:
+def load_current_overrides() -> dict:
+    """Load the CURRENT override authority. The file declares its own effective override set."""
     return _load_json(CURRENT_OVERRIDES)
+
+
+def _override_document() -> dict:
+    return load_current_overrides()
 
 
 def _override_release_version() -> str:
     return str(_override_document().get('current_release_version') or '')
 
 
+def _declared_override_ids() -> list[str]:
+    doc = _override_document()
+    return [str(x) for x in ((doc.get('rules') or {}).get('overrides_base_rows') or []) if str(x)]
+
+
 def effective_requirement_rows() -> list[dict]:
-    """Return the one effective REQ-001..060 map after CURRENT release-process overrides."""
+    """Return the one effective REQ-001..060 map after all CURRENT overrides."""
     base = _load_json(MAP)
     rows = [dict(row) for row in (base.get('requirements') or []) if isinstance(row, dict)]
     by_req = {str(row.get('req') or ''): row for row in rows}
@@ -99,6 +109,7 @@ def audit() -> dict:
     try:
         rows = effective_requirement_rows()
         override_ids = _override_ids()
+        declared_override_ids = _declared_override_ids()
         override_release_version = _override_release_version()
     except Exception as exc:
         return {
@@ -107,6 +118,7 @@ def audit() -> dict:
             'issue_count': 1,
             'issues': [{'code': 'CURRENT_REQUIREMENT_MAP_LOAD_FAILED', 'error': str(exc)}],
             'current_overrides_applied': [],
+            'current_overrides_declared': [],
             'current_version_family': _current_version_family() if VERSION_FILE.exists() else '',
             'current_override_release_version': '',
             'current_builder_target': _current_builder_target() if CURRENT_BUILDER.exists() else '',
@@ -121,9 +133,12 @@ def audit() -> dict:
     if duplicates:
         issues.append({'code':'REQ_DUPLICATES','ids':duplicates})
 
-    expected_overrides = list(CURRENT_RELEASE_REQS)
-    if override_ids != expected_overrides:
-        issues.append({'code':'CURRENT_OVERRIDE_SET_MISMATCH','expected':expected_overrides,'actual':override_ids})
+    if override_ids != declared_override_ids:
+        issues.append({'code':'CURRENT_OVERRIDE_SET_MISMATCH','expected':declared_override_ids,'actual':override_ids})
+    if len(override_ids) != len(set(override_ids)):
+        issues.append({'code':'CURRENT_OVERRIDE_DUPLICATES','actual':override_ids})
+    if not set(CURRENT_RELEASE_REQS).issubset(set(override_ids)):
+        issues.append({'code':'CURRENT_RELEASE_OVERRIDE_MISSING','required':list(CURRENT_RELEASE_REQS),'actual':override_ids})
 
     version_family = _current_version_family()
     builder_target = _current_builder_target()
@@ -185,6 +200,7 @@ def audit() -> dict:
         'issue_count':len(issues),
         'issues':issues,
         'current_overrides_applied':override_ids,
+        'current_overrides_declared':declared_override_ids,
         'current_version_family':version_family,
         'current_override_release_version':override_release_version,
         'current_builder_target':builder_target,
