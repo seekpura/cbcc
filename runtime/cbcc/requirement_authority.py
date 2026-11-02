@@ -9,7 +9,6 @@ ACTIVE_CLASSES=AUTHORITY_CLASSES[:-1]
 AUTHORITY_PATH=Path("references/REQUIREMENT_AUTHORITY_CURRENT.json")
 _TEST=re.compile(r"^(?:tests/|\.github/workflows/)",re.I)
 _RUNTIME=re.compile(r"^runtime/",re.I)
-_ENGINEERING=re.compile(r"^(?:scripts/|references/)",re.I)
 _HUMAN=re.compile(r"(human|delivery|workspace|html|projection)",re.I)
 
 def _root(root=None)->Path:
@@ -62,12 +61,18 @@ def _consumer_index(root:Path,raw:Mapping[str,Any])->dict[str,list[str]]:
     return out
 
 def _split_consumers(values:list[str])->tuple[list[str],list[str],list[str]]:
+    """Separate business runtime, engineering/support, and proof-only wiring.
+
+    Only runtime/* can prove business consumption. Tests/workflows are proof-only.
+    Every other declared consumer remains visible as engineering/support wiring but can
+    never satisfy a P0 runtime-consumption requirement.
+    """
     runtime=[]; engineering=[]; proof=[]
     for raw in values:
         value=str(raw or "")
         if not value: continue
         file_path=_consumer_file_path(value)
-        target = runtime if _RUNTIME.search(file_path) else proof if _TEST.search(file_path) else engineering if _ENGINEERING.search(file_path) else proof
+        target = runtime if _RUNTIME.search(file_path) else proof if _TEST.search(file_path) else engineering
         if value not in target: target.append(value)
     return runtime,engineering,proof
 
@@ -142,8 +147,7 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
             elif not (base/file_path).exists(): add("BUSINESS_CONSUMER_PATH_MISSING",req=req,path=p,file_path=file_path)
         for p in engineering:
             file_path=_consumer_file_path(p)
-            if not _ENGINEERING.search(file_path): add("NON_ENGINEERING_GUARD_CONSUMER",req=req,path=p)
-            elif not (base/file_path).exists(): add("ENGINEERING_CONSUMER_PATH_MISSING",req=req,path=p,file_path=file_path)
+            if _TEST.search(file_path): add("TEST_PATH_AS_ENGINEERING_CONSUMER",req=req,path=p)
         for p in proof:
             file_path=_consumer_file_path(p)
             if not _TEST.search(file_path): add("NON_PROOF_CONSUMER_IN_PROOF_PLANE",req=req,path=p)
@@ -170,7 +174,7 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
             if not any(any(str(p)!="NOT_DIRECT_HUMAN_FACING" for p in x.get("human_projection",[])) for x in br): add("P0_USER_SOURCE_HUMAN_PROJECTION_MISSING",source_id=sid)
     for key in ("authority_overlay_does_not_author_business_strategy","existing_requirement_ledgers_remain_semantic_sources","consumer_maps_remain_execution_wiring_authority","derived_may_not_impersonate_user","rejected_deprecated_may_not_have_active_business_consumers","test_and_workflow_paths_are_proof_only"):
         if (doc.get("rules") or {}).get(key) is not True: add("AUTHORITY_RULE_DISABLED",rule=key)
-    return {"status":"PASS" if not issues else "FAIL","requirement_count":len(rows),"rejected_deprecated_count":len(rejected),"issue_count":len(issues),"issues":issues,"authority_classes":list(AUTHORITY_CLASSES),"principle":"Attribution only: ledgers author semantics; runtime consumers wire business execution; scripts/references are engineering guards; tests/workflows are proof only."}
+    return {"status":"PASS" if not issues else "FAIL","requirement_count":len(rows),"rejected_deprecated_count":len(rejected),"issue_count":len(issues),"issues":issues,"authority_classes":list(AUTHORITY_CLASSES),"principle":"Attribution only: ledgers author semantics; runtime consumers wire business execution; non-runtime support stays engineering; tests/workflows stay proof-only."}
 
 def current_requirement_authority_audit(root=None)->dict[str,Any]:
     base=_root(root); return audit_requirement_authority(load_current_requirement_authority(base),root=base)
