@@ -36,3 +36,9 @@ jobs:
           pytest -q \
             tests/test_v0676_phase5_dynamic_prompt_continuity.py \
             tests/test_v0677_phase5_req086_scene_photo_prompt_consumption.py
+      - name: Complete v067 cross-scope
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name 'test_v067*.py' -print | sort)
+          test "${#files[@]}" -gt 0
+          pytest -q "${files[@]}"
