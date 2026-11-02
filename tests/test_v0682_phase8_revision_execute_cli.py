@@ -54,3 +54,5 @@ def test_revision_execute_cli_routes_to_local_revision_provider_surface(tmp_path
 def test_revision_execute_is_declared_in_host_execution_contract():
     contract = host_execution_contract()
     assert 'revision-execute' in contract['commands']
+    assert 'ingest_local_revision_results' in contract['completion_authority']
+    assert 'revision-output Review' in contract['completion_authority']
