@@ -26,7 +26,8 @@ def test_current_requirement_authority_has_exact_classes_and_req_001_090_once():
     ids = [row['req'] for row in doc['requirements']]
     assert ids == [f'REQ-{i:03d}' for i in range(1, 91)]
     assert len(ids) == len(set(ids)) == 90
-    assert audit_requirement_authority(doc, root=ROOT)['status'] == 'PASS'
+    audit = audit_requirement_authority(doc, root=ROOT)
+    assert audit['status'] == 'PASS', audit['issues']
 
 
 def test_req013_is_derived_from_price_truth_not_rewritten_as_user_canonical():
@@ -88,7 +89,7 @@ def test_all_p0_direct_user_anchors_have_runtime_and_human_consumption():
     for anchor in p0:
         bound = [_req(doc, req) for req in anchor['bound_requirements']]
         assert any(row.get('business_consumers') for row in bound), anchor['source_id']
-        assert any(row.get('human_projection') for row in bound), anchor['source_id']
+        assert any(any(str(path) != 'NOT_DIRECT_HUMAN_FACING' for path in row.get('human_projection', [])) for row in bound), anchor['source_id']
 
 
 def test_authority_overlay_is_not_a_second_business_decision_engine():
