@@ -135,7 +135,7 @@
       "req": "REQ-082",
       "title": "Commercial-grade Prompt density and concrete parameter consumption",
       "phase": "5",
-      "status": "PARTIAL_PHASE5_CANONICAL_DYNAMIC_PARAMETER_CONSUMPTION_VERIFIED_BROAD_PROMPT_DENSITY_PENDING"
+      "status": "PASS_PHASE5_COMMERCIAL_GRADE_PROMPT_DENSITY_AND_CONCRETE_PARAMETER_CONSUMPTION_TARGETED_VERIFIED_E2E_PENDING"
     },
     {
       "req": "REQ-083",
@@ -192,7 +192,7 @@
     "2": "PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED",
     "3": "PASS_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED",
     "4": "PASS_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER_VERIFIED",
-    "5": "IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_AND_SCENE_PHOTOGRAPHY_PROMPT_CONTINUITY_VERIFIED",
+    "5": "IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_SCENE_PHOTOGRAPHY_AND_BROAD_PROMPT_DENSITY_VERIFIED",
     "6": "NOT_STARTED",
     "7": "NOT_STARTED",
     "8": "NOT_STARTED",
@@ -793,8 +793,8 @@
       }
     },
     "5": {
-      "status": "IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_AND_SCENE_PHOTOGRAPHY_PROMPT_CONTINUITY_VERIFIED",
-      "subtask": "CANONICAL_DYNAMIC_TEMPORAL_PROMPT_CONTINUITY",
+      "status": "IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_SCENE_PHOTOGRAPHY_AND_BROAD_PROMPT_DENSITY_VERIFIED",
+      "subtask": "COMMERCIAL_GRADE_PROMPT_DENSITY_AND_CONCRETE_PARAMETER_CONSUMPTION",
       "requirements_advanced": [
         "REQ-082",
         "REQ-083"
@@ -816,7 +816,11 @@
         "runtime/cbcc/integrated_render_route_authority.py",
         "runtime/cbcc/photographic_route_agent_authority.py",
         "tests/test_v0677_phase5_req086_scene_photo_prompt_consumption.py",
-        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_SCENE_PHOTOGRAPHY_PROMPT.json"
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_SCENE_PHOTOGRAPHY_PROMPT.json",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PROMPT_DENSITY.json",
+        "tests/test_v0678_phase5_req082_broad_prompt_density.py",
+        "tests/test_v0678_phase5_req082_static_ad_prompt_consumption.py",
+        "tests/test_v0678_phase5_req082_integrated_render_language_purity.py"
       ],
       "verified_behaviors": [
         "Phase 4 canonical motion/timing/audio concrete values are projected into the model-facing Prompt and concrete consumption audit.",
@@ -826,7 +830,10 @@
         "Unresolved dynamic Agent decisions stay missing; Prompt runtime does not invent audio/motion/timing.",
         "Static assets do not inherit dynamic Prompt requirements.",
         "Per-asset Art Direction camera/lighting/CMF fields explicitly authored by the Agent override stale Strategy/runtime photography values while compatible non-authored fill-ins may remain.",
-        "Final Model Prompt consumption audit proves scene_derived_camera, scene_derived_lighting and scene_derived_cmf by concrete authored values rather than section presence."
+        "Final Model Prompt consumption audit proves scene_derived_camera, scene_derived_lighting and scene_derived_cmf by concrete authored values rather than section presence.",
+        "Rich static Art Direction geometry, scale/depth, focal path, material response, human/culture/inclusion semantics and locked visible copy survive into the final acting Prompt as concrete semantic values.",
+        "A manually supplied short product/background/camera/light Prompt cannot bypass broad-density consumption auditing; unresolved concrete decisions keep the Prompt INCOMPLETE.",
+        "Integrated typography selects already-authored semantics per Prompt language and never dumps locale mappings/Python dict syntax or relabels Chinese-only typography as English."
       ],
       "cross_scope": {
         "phase4": "all tests/test_v0676_phase4_*.py passed",
@@ -835,25 +842,22 @@
         "v0674_regression_closure": "40 passed"
       },
       "deferred_by_plan": [
-        "broader commercial Prompt density across remaining surfaces",
-        "REQ-084 Product Presence/Fidelity/reference Prompt consumption",
-        "REQ-086 scene-derived camera/lighting/CMF Prompt consumption",
+        "REQ-083 remaining surface-specific and temporal Prompt continuity",
         "Fresh real K01 FULL",
         "Provider actual media / pixel-frame Review / smallest Local Revision / provenance"
       ],
-      "source_truth": "GITHUB_BRANCH_VERIFIED_PENDING_CLEAN_MAIN_CLOSURE",
+      "source_truth": "GITHUB_SOURCE_AND_CURRENT_PACKAGE_TARGETED_VERIFIED",
       "verified_subtasks": [
         "Canonical dynamic motion/timing/audio Prompt continuity",
-        "Product Presence × Fidelity × reference independence through final Prompt/render authority"
+        "Product Presence × Fidelity × reference independence through final Prompt/render authority",
+        "Commercial-grade broad Prompt density, concrete static parameter consumption and bilingual integrated typography semantic purity"
       ],
       "product_fidelity_reference_production_head": "32c46dc40a3e13c15855ad771c014fca77a45a94",
       "product_fidelity_reference_focused_red": "1 failed / 3 passed after fixture correction",
       "product_fidelity_reference_focused_green": "4 passed",
       "product_fidelity_reference_cross_scope": "prior Phase5 dynamic + Phase4 all + native provider + v0673/v0674 passed",
       "remaining": [
-        "REQ-086 scene-derived camera/lighting/CMF Prompt consumption",
-        "REQ-082 broader commercial Prompt density",
-        "REQ-083 remaining surface-specific Prompt closure",
+        "REQ-083 remaining surface-specific and temporal Prompt continuity",
         "Fresh real K01 FULL",
         "Provider actual output / Review / Local Revision / provenance"
       ],
@@ -869,14 +873,28 @@
         "verified_boundary": "Per-asset authored camera/lighting/CMF override stale Strategy/runtime photography fields, reach the final acting Model Prompt, and are verified by concrete field-level consumption rows. Fresh K01 FULL and actual Provider output remain pending."
       },
       "source_commits": [
-        "50462319ba376b69bab7d71f7b4dc8620b83bd9d"
-      ]
+        "50462319ba376b69bab7d71f7b4dc8620b83bd9d",
+        "b1a8571a6008345808c892a10975ca40188efed3"
+      ],
+      "commercial_prompt_density": {
+        "requirement": "REQ-082",
+        "status": "PASS_TARGETED_E2E_PENDING",
+        "production_commit": "b1a8571a6008345808c892a10975ca40188efed3",
+        "broad_density_tests": "2/2 passed",
+        "static_art_direction_consumption_tests": "2/2 passed",
+        "integrated_typography_semantic_purity_tests": "3/3 passed",
+        "phase5_adjacent_tests": "7/7 passed",
+        "complete_v067_cross_scope": "341/341 passed",
+        "workflow_run": 41388592372,
+        "consumer_map": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PROMPT_DENSITY.json",
+        "verified_boundary": "Broad static Prompt density and concrete consumption are targeted-verified through the acting Prompt plane, including bilingual integrated typography purity. REQ-083 remaining temporal/surface continuity, Fresh K01 FULL and actual Provider output remain pending."
+      }
     }
   },
-  "version": "2026-11-02-phase4-closure-v1",
-  "current_phase": "PHASE_4_COMPLETE",
-  "previous_phase": "PHASE_3_COMPLETE",
-  "next_phase": "PHASE_5_PROMPT_RENDERER_CPP",
-  "current_head_sha": "63eab0ab46ce5a251592b1a3363b03b99c3b4adf",
-  "current_head_sha_semantics": "Last Phase 4 production-code head. Closure documentation/cleanup commit is intentionally later and verified separately on main."
+  "version": "2026-11-02-phase5-in-progress-v2",
+  "current_phase": "PHASE_5_IN_PROGRESS",
+  "previous_phase": "PHASE_4_COMPLETE",
+  "next_phase": "PHASE_5_REMAINING_REQ_083_PROMPT_CONTINUITY",
+  "current_head_sha": "b1a8571a6008345808c892a10975ca40188efed3",
+  "current_head_sha_semantics": "Latest Phase 5 production-code head proven by focused, adjacent and complete v067 cross-scope verification; durable closure documentation may be committed later."
 }

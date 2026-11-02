@@ -42,6 +42,7 @@ class CurrentReleasePackageCheckerTests(unittest.TestCase):
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_DYNAMIC_PROMPT_CONTINUITY.json",
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PRODUCT_FIDELITY_REFERENCE.json",
             "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_SCENE_PHOTOGRAPHY_PROMPT.json",
+            "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PROMPT_DENSITY.json",
             "references/CURRENT_CANONICAL_SKILL_BUILD.md",
             "prompts/canonical_authority_loading_map_CURRENT.md",
             "scripts/build_plugin_dist_current.py",

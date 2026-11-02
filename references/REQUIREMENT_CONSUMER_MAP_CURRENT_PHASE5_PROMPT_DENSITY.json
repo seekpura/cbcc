@@ -1,0 +1,87 @@
+{
+  "version": "cbcc-current-phase5-prompt-density-v1",
+  "phase": 5,
+  "subtask": "REQ-082 commercial-grade Prompt density and concrete parameter consumption",
+  "production_head_sha": "b1a8571a6008345808c892a10975ca40188efed3",
+  "requirements": [
+    {
+      "requirement_id": "REQ-033",
+      "summary": "Model Prompt CN/EN remains a generation-plane projection of locked Art Direction rather than a short creative recap.",
+      "implementation_status": "PHASE5_STATIC_BROAD_DENSITY_TARGETED_VERIFIED_E2E_PENDING",
+      "consumers": [
+        "runtime/cbcc/prompt_compiler.py",
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py",
+        "runtime/cbcc/integrated_render_route_authority.py"
+      ]
+    },
+    {
+      "requirement_id": "REQ-034",
+      "summary": "A short product/background/camera/light summary cannot masquerade as a complete acting Prompt when locked geometry, material, culture, inclusion or evidence decisions remain unconsumed.",
+      "implementation_status": "PHASE5_BROAD_DENSITY_NEGATIVE_SHORT_PROMPT_TARGETED_VERIFIED",
+      "consumers": [
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py"
+      ]
+    },
+    {
+      "requirement_id": "REQ-035",
+      "summary": "Concrete selected values across static geometry/material/culture/inclusion/copy, dynamic motion/timing/audio, and scene-derived camera/lighting/CMF are consumed by the acting Prompt and auditable as concrete continuity.",
+      "implementation_status": "PHASE5_DYNAMIC_SCENE_STATIC_BROAD_PARAMETER_TARGETED_VERIFIED_E2E_PENDING",
+      "consumers": [
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py",
+        "runtime/cbcc/integrated_render_route_authority.py"
+      ]
+    },
+    {
+      "requirement_id": "REQ-082",
+      "summary": "Commercial-grade Prompt density consumes route-relevant pixel/frame/audio-changing Art Direction decisions without generic-adjective collapse, cross-language typography leakage or governance metadata leakage.",
+      "implementation_status": "PASS_PHASE5_TARGETED_VERIFIED_E2E_PENDING",
+      "upstream_authority": "asset.asset_art_direction plus locked visible-copy/product-reference production constraints",
+      "consumers": [
+        "runtime/cbcc/prompt_compiler.py",
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py",
+        "runtime/cbcc/integrated_render_route_authority.py"
+      ],
+      "evidence": [
+        "tests/test_v0678_phase5_req082_broad_prompt_density.py",
+        "tests/test_v0678_phase5_req082_static_ad_prompt_consumption.py",
+        "tests/test_v0678_phase5_req082_integrated_render_language_purity.py",
+        "tests/test_v0676_phase5_dynamic_prompt_continuity.py",
+        "tests/test_v0677_phase5_req086_scene_photo_prompt_consumption.py",
+        "GitHub Actions run 41388592372: broad density 2 passed; static Art Direction acting-Prompt 2 passed; integrated bilingual semantic purity 3 passed; Phase5 adjacent 7 passed; complete v067 cross-scope 341 passed"
+      ],
+      "verified_behavior": [
+        "Rich static Art Direction geometry, depth, focal path, material response, culture/inclusion and locked visible copy survive into the final acting Prompt as concrete semantic values.",
+        "A manually supplied short Prompt cannot bypass the consumption audit; unresolved concrete Art Direction decisions keep the Prompt INCOMPLETE instead of being silently repaired to READY.",
+        "Provider handles, hashes, ingest status and governance/audit metadata do not leak into the model-facing Prompt.",
+        "Integrated typography selects only already-authored semantics for each Prompt language; Chinese-only typography is not relabelled or machine-translated into English, and locale mappings are never emitted as Python/dict syntax.",
+        "Neutral structured typography values such as weight/alignment remain shared while nested locale-specific values such as font family remain language-pure.",
+        "Existing dynamic motion/timing/audio and scene-derived camera/lighting/CMF concrete-consumption contracts remain green in the same cross-scope run."
+      ],
+      "residual_risk": "Targeted acting-Prompt and package-level proof is complete for REQ-082. REQ-083 remaining temporal/surface continuity, Fresh K01 FULL materialization, Provider Result/actual pixels-or-frames, Review/Revision and installed-plugin readback remain separate later evidence and are not claimed here."
+    }
+  ],
+  "cross_scope_verification": {
+    "broad_density": "2/2 passed",
+    "static_art_direction_consumption": "2/2 passed",
+    "integrated_bilingual_semantic_purity": "3/3 passed",
+    "phase5_adjacent": "7/7 passed",
+    "complete_v067": "341/341 passed",
+    "workflow_run": 41388592372
+  },
+  "invariants": [
+    "Prompt completeness is measured by concrete selected-decision continuity, not word count or section headings.",
+    "Art Direction remains the creative authority; runtime consumes and serializes it but does not invent missing execution decisions.",
+    "Language-specific authored semantics never cross-contaminate the opposite-language acting Prompt and are never machine-translated to fake completeness.",
+    "Governance/provenance/provider locator metadata remains outside the model-facing semantic plane.",
+    "Targeted Prompt proof does not imply Fresh K01 FULL or actual Provider media proof."
+  ],
+  "pending": [
+    "REQ-083 remaining dynamic/temporal and surface-specific Prompt continuity",
+    "Phase 10 Fresh K01 FULL",
+    "Phase 11 Provider Result / actual-output QA / smallest Local Revision / installed-plugin parity"
+  ]
+}
