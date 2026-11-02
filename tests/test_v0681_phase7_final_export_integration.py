@@ -15,6 +15,8 @@ def test_phase7_semantic_closure_runs_after_phase6_final_projection_and_rebuilds
     import runtime.cbcc.full_delivery_materialization as full_materialization
     import runtime.cbcc.canonical_delivery_parity_v0680 as parity
     import runtime.cbcc.delivery_family_workspace_v0680 as family_workspace
+    import runtime.cbcc.phase7_lineage_semantic_closure_v0681 as phase7_closure
+    from runtime.cbcc.full_package_semantic_closure_v0681 import _rebuild_manifest_and_zip
 
     package = tmp_path / "delivery"
     package.mkdir()
@@ -47,6 +49,29 @@ def test_phase7_semantic_closure_runs_after_phase6_final_projection_and_rebuilds
         family_workspace,
         "materialize_delivery_family_workspace",
         lambda package_dir: {"status": "PASS", "families": {"longform": {"status": "PASS"}}, "issues": []},
+    )
+
+    # This test owns only the ordering contract: Phase 6 projections must be visible to the
+    # Phase 7 semantic inventory and the final archive. Mature-package continuity is exercised
+    # independently by test_v0681_phase7_final_mature_package_continuity.py.
+    def mature_passthrough(package_dir, *, semantic_result, zip_path=None):
+        package_path = Path(package_dir)
+        manifest = json.loads((package_path / "DELIVERY_MANIFEST.json").read_text(encoding="utf-8"))
+        final_manifest = _rebuild_manifest_and_zip(
+            package_path,
+            Path(zip_path) if zip_path is not None else None,
+            manifest,
+        )
+        return {
+            **dict(semantic_result),
+            "manifest": final_manifest,
+            "zip_path": str(zip_path) if zip_path is not None else None,
+        }
+
+    monkeypatch.setattr(
+        phase7_closure,
+        "finalize_final_mature_package_continuity",
+        mature_passthrough,
     )
 
     def base_export(project_dir, output, *args, **kwargs):
