@@ -70,6 +70,22 @@ def _art_direction_missing(asset: dict[str, Any]) -> bool:
     return _art_direction_required(asset) and not isinstance(asset.get('asset_art_direction'), dict)
 
 
+def _canonical_product_fidelity(asset: dict[str, Any], fallback: Any = None) -> str:
+    """Resolve Product Fidelity from canonical per-object Art Direction before legacy aliases."""
+    art = asset.get('asset_art_direction') if isinstance(asset.get('asset_art_direction'), dict) else {}
+    authored = art.get('product_fidelity')
+    if isinstance(authored, dict):
+        authored = authored.get('mode') or authored.get('product_fidelity') or authored.get('fidelity_mode')
+    if authored not in (None, '', [], {}):
+        return str(authored)
+    legacy = asset.get('product_fidelity')
+    if legacy not in (None, '', [], {}):
+        return str(legacy)
+    if fallback not in (None, '', [], {}):
+        return str(fallback)
+    return 'REFERENCE_GUIDED'
+
+
 def _product_rule(asset: dict[str, Any], presence: dict[str, Any], product_fidelity: str) -> str:
     """Design-card / production rule. Semantic membrane decides what part reaches Model Prompt."""
     state = _presence_state(presence)
@@ -121,7 +137,8 @@ def _patch_design_card(card: dict[str, Any], asset: dict[str, Any]) -> dict[str,
     card['subject_action_environment_props'] = subject
 
     identity = dict(card.get('product_identity') or {})
-    fidelity = str(identity.get('product_fidelity') or asset.get('product_fidelity') or 'REFERENCE_GUIDED')
+    fidelity = _canonical_product_fidelity(asset, identity.get('product_fidelity'))
+    identity['product_fidelity'] = fidelity
     identity['visual_presence_state'] = _presence_state(presence)
     identity['production_state'] = presence.get('production_state')
     identity['source_reference_role'] = presence.get('source_reference_role')
@@ -201,7 +218,11 @@ def compile_asset_prompt(
     source_assets = card.get('product_identity', {}).get('source_product_assets') or []
     locked_copy = card.get('information_design', {}).get('locked_visible_copy') or {}
     visible_product = _product_visible(card.get('product_presence') or {})
-    locked_fidelity = str(asset.get('product_fidelity') or '').upper() in {'LOCKED_PIXEL', 'LOCKED_SOURCE_COMPOSITE', 'COMPOSITE'}
+    canonical_fidelity = _canonical_product_fidelity(asset, (card.get('product_identity') or {}).get('product_fidelity'))
+    locked_fidelity = canonical_fidelity.upper() in {
+        'LOCKED_PIXEL', 'LOCKED_SOURCE_COMPOSITE', 'COMPOSITE',
+        'EXACT_PIXEL_COMPOSITE', 'PIXEL_COMPOSITE_EXPLICIT',
+    }
     real_master_required = bool(visible_product and locked_fidelity)
 
     machine = legacy._compact({
@@ -209,9 +230,9 @@ def compile_asset_prompt(
         'surface': card.get('surface'),
         'production_mode': asset.get('production_mode'),
         'art_direction_status': card.get('art_direction_status'),
-        'product_fidelity': asset.get('product_fidelity'),
+        'product_fidelity': canonical_fidelity,
         'fidelity': {
-            'mode': asset.get('product_fidelity'),
+            'mode': canonical_fidelity,
             'source_product_asset_ids': [x.get('asset_id') for x in source_assets if isinstance(x, dict) and x.get('asset_id')],
             'real_product_master_required': real_master_required,
             'real_product_master_substitution_allowed': not real_master_required,
@@ -348,7 +369,7 @@ def compile_asset_prompt(
     production_notes_contract = {
         'source_product_bindings': source_bindings,
         'source_truth_and_evidence_authority': 'Resolved upstream from Product Truth / evidence sources; never instruct the generation model to consult Excel or project files.',
-        'product_fidelity': asset.get('product_fidelity'),
+        'product_fidelity': canonical_fidelity,
         'editable_layer_contract': asset.get('editable_layer_contract') or {},
         'copy_render_mode': (asset.get('copy_render_mode') or (card.get('information_design') or {}).get('copy_render_mode')),
         'qa_target_contract_location': 'qa_target_contract',
