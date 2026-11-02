@@ -7,6 +7,7 @@
   "production_head_sha": "170799cb983963a8068c7d421742f3de29204f19",
   "focused_green_head_sha": "3eaf6b6d6274d04a73bf7de624b4bcfbd829e9b4",
   "current_gate_head_sha": "49a64e1fc2ebfdb6ffa285d5991dfe50d7a82ecc",
+  "clean_head_candidate_sha": "6c7a092913516f9de97408266d24f60be0965feb",
   "authority_contract": {
     "module": "runtime/cbcc/information_audit_authority.py",
     "field_authority": "LINEAGE_FIELDS",
@@ -68,6 +69,8 @@
     "focused_final_green": "7/7 passed including mature information_audit_authority regression",
     "current_release_verifier_run": 41410654676,
     "current_release_verifier": "SUCCESS: permanent Phase 7 semantic + REQ-088 lineage step, prior maturity accounting, stable CURRENT build, exact ZIP checker, v0.6.70-v0.6.75 floors and artifact upload all passed",
+    "post_consumer_map_current_green_run": 41410787477,
+    "post_consumer_map_current_green": "SUCCESS after the permanent REQ-088 consumer map entered the CURRENT accounting surface",
     "tests": [
       "tests/test_v0681_phase7_req088_lineage_closure.py",
       "tests/test_v0681_phase7_req088_lineage_export.py",
@@ -81,6 +84,11 @@
       "runtime/cbcc/full_package_semantic_closure_v0681.py",
       "runtime/cbcc/commercial_delivery_continuity.py"
     ]
+  },
+  "cleanup": {
+    "temporary_req088_workflows_present": false,
+    "verified_against_workflow_directory_after_cleanup": true,
+    "candidate_head_before_final_current": "6c7a092913516f9de97408266d24f60be0965feb"
   },
   "invariants": [
     "No business fact, interpretation or assumption payload is re-authored by the lineage index; normalized records store authority bindings and resolution evidence only.",
