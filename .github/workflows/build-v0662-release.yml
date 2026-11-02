@@ -1,20 +1,7 @@
+# Historical v0.6.62 verifier. Manual-only: current main is verified by current-release-verification.
 name: build-v0662-release
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/build-v0662-release.yml'
-      - 'VERSION'
-      - 'SKILL.md'
-      - 'runtime/**'
-      - 'references/**'
-      - 'prompts/**'
-      - 'tests/test_v0662_*.py'
-      - 'scripts/build_plugin_dist_v0662.py'
-      - 'scripts/build_plugin_dist_v0661.py'
-      - 'scripts/build_plugin_dist_v0660.py'
-      - 'scripts/build_plugin_dist_v0659.py'
   workflow_dispatch:
 
 permissions:
