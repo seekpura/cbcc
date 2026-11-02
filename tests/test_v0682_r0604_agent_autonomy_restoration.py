@@ -26,6 +26,16 @@ def test_explicit_empty_agent_research_scope_is_not_repopulated_by_runtime():
     assert research_requirements_from_plan(request, plan) == []
 
 
+def test_explicit_empty_caller_research_scope_is_not_repopulated_by_runtime():
+    request = _request({})
+    request['research_requirements'] = []
+    plan = compile_agent_autonomy_plan(request)
+
+    assert plan['research']['authority'] == 'USER_OR_CALLER_SUPPLIED'
+    assert plan['research']['requirements'] == []
+    assert research_requirements_from_plan(request, plan) == []
+
+
 def test_missing_agent_research_scope_still_allows_decision_gap_fallback():
     request = _request({})
     plan = compile_agent_autonomy_plan(request)
