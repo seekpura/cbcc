@@ -6,10 +6,12 @@ from runtime.cbcc.agent_autonomy import (
     research_requirements_from_plan,
 )
 from runtime.cbcc.asset_architecture import build_asset_architecture
+from runtime.cbcc.campaign_architecture import compile_paid_campaign_architecture
 from runtime.cbcc.creative import compile_creative_council
 from runtime.cbcc.creative_opportunity import compile_creative_opportunity_universe
 from runtime.cbcc.decision_authority import derive_task_content_families
 from runtime.cbcc.research import compile_research_gate
+from runtime.cbcc.video_creator import build_video_creator_plan
 
 
 def _request(agent_plan):
@@ -135,3 +137,28 @@ def test_explicit_empty_asset_jobs_do_not_generate_assets_but_missing_jobs_may_a
     assert explicit['asset_scope_active'] is False
     assert missing['asset_count'] > 0
     assert missing['asset_scope_active'] is True
+
+
+def test_explicit_empty_video_jobs_do_not_generate_video_but_missing_jobs_may_derive():
+    content = [{'object_id': 'O1', 'family': 'VIDEO', 'surface': 'PDP_VIDEO', 'curation_job': 'Explain the decision'}]
+    language = {'primary_locale': 'en-MY'}
+
+    explicit = build_video_creator_plan('P', content, ['Why?'], language, [], assets=[])
+    missing = build_video_creator_plan('P2', content, ['Why?'], language, None, assets=[])
+
+    assert explicit['dynamic_count'] == 0
+    assert explicit['status'] == 'NOT_REQUIRED'
+    assert missing['dynamic_count'] > 0
+    assert missing['status'] == 'COMPILED'
+
+
+def test_explicit_empty_paid_campaigns_do_not_generate_campaigns_but_missing_may_derive():
+    assets = [{'asset_id': 'A1', 'family': 'PAID', 'surface': 'PAID_AD', 'consumer_question': 'Why now?', 'decision_intent': 'RELEVANCE'}]
+
+    explicit = compile_paid_campaign_architecture('P', {'target_id': 'T'}, assets, {}, explicit=[])
+    missing = compile_paid_campaign_architecture('P2', {'target_id': 'T'}, assets, {}, explicit=None)
+
+    assert explicit['dynamic_count'] == 0
+    assert explicit['status'] == 'NOT_REQUIRED'
+    assert missing['dynamic_count'] > 0
+    assert missing['status'] == 'COMPILED'
