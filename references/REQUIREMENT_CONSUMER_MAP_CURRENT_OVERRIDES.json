@@ -1,11 +1,12 @@
 {
-  "authority": "CURRENT release-process overrides for REQUIREMENT_CONSUMER_MAP_V0664.json",
+  "authority": "CURRENT overrides for REQUIREMENT_CONSUMER_MAP_V0664.json; business consumers are execution authorities, tests/workflows are proof-only",
   "current_release_version": "0.6.75",
   "rules": {
-    "overrides_base_rows": ["REQ-046", "REQ-047", "REQ-048"],
+    "overrides_base_rows": ["REQ-046", "REQ-047", "REQ-048", "REQ-050"],
     "release_status_must_be_version_agnostic": true,
     "current_builder_launcher_must_match_VERSION": true,
-    "current_release_version_must_match_VERSION": true
+    "current_release_version_must_match_VERSION": true,
+    "test_and_workflow_paths_are_proof_only": true
   },
   "overrides": [
     {
@@ -28,6 +29,13 @@
       "consumers": ["scripts/check_v0659_authority_source_parity.py", "references/AUTHORITY_SOURCE_PARITY_LOCK.md", "references/HOST_SKILL_SNAPSHOT_PARITY_LOCK_V0664.md", "references/SOURCE_REQUIREMENT_NON_REGRESSION_LOCK.md"],
       "proof_objects": ["actual installed plugin manifest", "actual installed top/deep Skill byte parity", "actual installed resources/VERSION", "changed Runtime readback", "active Host Skill snapshot release-family comparison"],
       "status": "RELEASE_EVIDENCE_REQUIRED_CURRENT"
+    },
+    {
+      "req": "REQ-050",
+      "requirement": "K01 2026-10-30 is a negative regression fixture, not a business authority or system template",
+      "consumers": ["references/K01_2026-10-30_REAL_OUTPUT_REGRESSION.md", "references/REAL_K01_HOST_SHORTCUT_AUDIT_CLOSURE_V0663.md", "runtime/cbcc/long_requirement_full_audit.py"],
+      "proof_objects": ["17 structural negative-fixture issue classes", "tests/test_v0663_real_k01_host_shortcut_audit.py"],
+      "status": "CURRENT_NEGATIVE_FIXTURE_GUARD_TEST_PATH_REMOVED_FROM_BUSINESS_CONSUMERS"
     }
   ]
 }
