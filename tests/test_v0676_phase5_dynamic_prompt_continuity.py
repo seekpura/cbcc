@@ -130,10 +130,15 @@ def test_phase4_canonical_motion_timing_audio_are_losslessly_projected_into_vide
         'hand enters frame from camera-left and pauses over the routine area',
         'two-finger application gesture completes in one continuous believable motion',
         'creator-native conversational',
-        'low-bed only; never mask spoken proof',
+        'low-bed only',
+        'never mask spoken proof',
         'preserve proof pauses',
     ):
         assert concrete in en, (concrete, en)
+
+    # Provenance/orchestration metadata from Phase 4 must not leak into the model-facing plane.
+    assert 'EXPLICIT_AGENT_VIDEO_JOB' not in en
+    assert 'authored_fields' not in en
 
     checks = _checks(out)
     for decision in ('motion', 'timing', 'audio'):
