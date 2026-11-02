@@ -1006,11 +1006,12 @@
         "Independent Host-native package semantic comparison against the Runtime export when a real independently materialized Host-native export is available; do not fabricate this from Runtime-only output."
       ],
       "deferred_by_plan": [
-        "Fresh K01 FULL remains Phase 10.",
-        "Installed-plugin readback and Provider actual-output E2E remain Phase 11 / later proof boundary."
+        "Phase 8 owns real Provider Result / Review / smallest Local Revision / lineage-hash actual-output proof.",
+        "Phase 10 owns Fresh K01 FULL public-path proof.",
+        "Phase 11 owns installed-plugin readback and final independent release verification."
       ],
       "source_truth": "GITHUB_BRANCH_PHASE7_IN_PROGRESS_TARGETED_VERIFIED",
-      "production_head_sha": "9000474846de7534be8409a9bbfc32c70fa31038",
+      "production_head_sha": "c56e6c19043ebc3dabe1bc7f2b45d9e3ac123f0f",
       "current_gate_head_sha": "3b6a0d2f7b52a618316bb880839b4f35aa19e47b",
       "req088_lineage_status": "PASS_TARGETED_RESOLVABLE_LINEAGE",
       "req088_authority_contract": "runtime/cbcc/information_audit_authority.py::LINEAGE_FIELDS",
@@ -1049,13 +1050,15 @@
       "mature_continuity_focused_green": "4/4 dedicated characterization tests passed; GitHub Actions run 41416575861 on head 646f5dfc915642286b80a3aad86c569416cee044",
       "mature_continuity_permanent_current": "Permanent Phase 7 CURRENT step executed seven Phase 7 files and passed 16/16; full CURRENT build/check/floors/artifact upload SUCCESS in run 41416771898 on head 3b6a0d2f7b52a618316bb880839b4f35aa19e47b",
       "host_native_runtime_semantic_parity": "E2E_PENDING_INSTALLED_HOST_EXPORT",
-      "phase7_boundary": "Final semantic inventory, REQ-088 lineage, and final-byte mature package continuity are targeted verified. Phase 7 remains IN_PROGRESS until independently materialized Host-native versus Runtime semantic parity is proven. Provider actual-output belongs to Phase 8; Fresh K01 FULL to Phase 10; installed-plugin readback to Phase 11."
+      "phase7_boundary": "Final semantic inventory, REQ-088 lineage, and final-byte mature package continuity are targeted verified. Phase 7 remains IN_PROGRESS until independently materialized Host-native versus Runtime semantic parity is proven. Provider actual-output belongs to Phase 8; Fresh K01 FULL to Phase 10; installed-plugin readback to Phase 11.",
+      "mature_continuity_module_commit": "bf4071049193ecd710bd65c4ce8349b66f7b4df9",
+      "mature_continuity_orchestrator_commit": "c56e6c19043ebc3dabe1bc7f2b45d9e3ac123f0f"
     }
   },
   "version": "2026-11-02-phase7-mature-continuity-targeted-v2",
   "current_phase": "PHASE_7_IN_PROGRESS_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY_PENDING",
   "previous_phase": "PHASE_6_COMPLETE",
   "next_phase": "PHASE_7_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY",
-  "current_head_sha": "3b6a0d2f7b52a618316bb880839b4f35aa19e47b",
-  "current_head_sha_semantics": "Latest Phase 7 production-code boundary for final package semantic closure; later focused tests, CI, consumer-map and ledger commits do not change this production semantics boundary."
+  "current_head_sha": "c56e6c19043ebc3dabe1bc7f2b45d9e3ac123f0f",
+  "current_head_sha_semantics": "Latest Phase 7 production-code boundary: final mature continuity module is present and the Phase 7 orchestrator gates the definitive ZIP on that final-byte audit. Later tests, CI, maps and ledger commits do not change production semantics."
 }
