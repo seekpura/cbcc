@@ -23,6 +23,9 @@ def _semantic(req:str)->str:
     src="CONVERSATION_REQUIREMENT_AUDIT.md" if n<=50 else ("CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_01.md" if n<=60 else "CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md")
     return f"references/{src}#{req}"
 
+def _consumer_file_path(value:str)->str:
+    return re.split(r"::|#",str(value or ""),maxsplit=1)[0]
+
 def _consumer_index(root:Path,raw:Mapping[str,Any])->dict[str,list[str]]:
     base=_json(root/"references/REQUIREMENT_CONSUMER_MAP_V0664.json")
     over=_json(root/"references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json")
@@ -122,10 +125,12 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
         if not human: add("HUMAN_PROJECTION_BINDING_MISSING",req=req)
         for p in consumers:
             if _TEST.search(p): add("TEST_PATH_AS_BUSINESS_CONSUMER",req=req,path=p)
-            elif p.startswith(("runtime/","references/","scripts/")) and not (base/p).exists(): add("BUSINESS_CONSUMER_PATH_MISSING",req=req,path=p)
+            else:
+                file_path=_consumer_file_path(p)
+                if file_path.startswith(("runtime/","references/","scripts/")) and not (base/file_path).exists(): add("BUSINESS_CONSUMER_PATH_MISSING",req=req,path=p,file_path=file_path)
         for p in human:
-            p=str(p)
-            if p!="NOT_DIRECT_HUMAN_FACING" and p.startswith(("runtime/","references/","scripts/")) and not (base/p).exists(): add("HUMAN_PROJECTION_PATH_MISSING",req=req,path=p)
+            p=str(p); file_path=_consumer_file_path(p)
+            if p!="NOT_DIRECT_HUMAN_FACING" and file_path.startswith(("runtime/","references/","scripts/")) and not (base/file_path).exists(): add("HUMAN_PROJECTION_PATH_MISSING",req=req,path=p,file_path=file_path)
     rejected=[dict(x) for x in doc.get("rejected_deprecated",[]) if isinstance(x,Mapping)]
     seen=set()
     for row in rejected:
