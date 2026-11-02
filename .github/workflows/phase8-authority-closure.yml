@@ -1,0 +1,173 @@
+name: phase8-authority-closure
+
+on:
+  push:
+    branches: [repair-05-phase8-provider-true-e2e]
+    paths:
+      - '.github/workflows/phase8-authority-closure.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  close-phase8-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair-05-phase8-provider-true-e2e
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch machine ledger, human matrix and permanent CURRENT verifier
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          root = Path('.')
+          map_path = 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE8_PROVIDER_ACTUAL_OUTPUT.json'
+
+          # Machine execution ledger: Phase 8 closes its exact provider-boundary scope only.
+          ledger_path = root / 'references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json'
+          ledger = json.loads(ledger_path.read_text(encoding='utf-8'))
+          req90 = next(row for row in ledger['new_requirements'] if row.get('req') == 'REQ-090')
+          req90['status'] = 'PARTIAL_PHASE7_SOURCE_PACKAGE_CLOSURE_AND_PHASE8_PROVIDER_BOUNDARY_ACTUAL_OUTPUT_E2E_PROVEN_FRESH_K01_PHASE10_AND_AUTHENTICATED_INSTALLED_HOST_PHASE11_PENDING'
+          ledger.setdefault('phase_status', {})['8'] = 'PASS_PHASE8_PROVIDER_RESULT_REVIEW_LOCAL_REVISION_HASH_LINEAGE_E2E_PROVEN_AT_PROVIDER_EXECUTION_BOUNDARY'
+          ledger.setdefault('phase_evidence', {})['8'] = {
+              'status': 'PASS_PHASE8_PROVIDER_RESULT_REVIEW_LOCAL_REVISION_HASH_LINEAGE_E2E_PROVEN_AT_PROVIDER_EXECUTION_BOUNDARY',
+              'requirements': ['REQ-038', 'REQ-039', 'REQ-040', 'REQ-041', 'REQ-090'],
+              'consumer_map': map_path,
+              'proof_objects': [
+                  'runtime/cbcc/provider_surface.py',
+                  'runtime/cbcc/cli.py',
+                  'runtime/cbcc/provider_bridge.py',
+                  'runtime/cbcc/provider_executor.py',
+                  'runtime/cbcc/production.py',
+                  'runtime/cbcc/review.py',
+                  'runtime/cbcc/learning_loop.py',
+                  'runtime/cbcc/full_package_semantic_closure_v0681.py',
+                  'tests/test_v0682_phase8_local_revision_provider_execution.py',
+                  'tests/test_v0682_phase8_revision_execute_cli.py',
+                  'tests/test_v0682_phase8_actual_output_e2e.py',
+                  '.github/workflows/v0682-phase8-provider-actual-output.yml'
+              ],
+              'red_evidence': {
+                  'local_revision_execution': {'run': 41444026742, 'failure': 'ProviderExecutionSurface had no execute_local_revision'},
+                  'revision_execute_cli': {'run': 41444302599, 'failure': 'argparse rejected revision-execute'}
+              },
+              'focused_green': {'run': 41445447994, 'result': 'SUCCESS; actual-output lifecycle reached E2E_PROVEN'},
+              'cross_scope_green': {'run': 41445805192, 'result': 'SUCCESS; v0.6.16 host surface + Phase 8 suites together'},
+              'verified_behavior': [
+                  'root and local-revision jobs execute through the same provider adapter/executor boundary',
+                  'actual output bytes and production-receipt SHA256 are materialized and verified',
+                  'locked/reference product routes require provider quality/reference/source-hash evidence before COMPLETE',
+                  'human output review and local-revision output review remain explicit and independently addressable',
+                  'bounded local revision preserves changed field/layer scope and revised-output hash lineage',
+                  'Phase 7 audit_actual_output_boundary reaches E2E_PROVEN only after the complete lifecycle'
+              ],
+              'honesty_boundary': {
+                  'external_vendor_network_call': 'NOT_CLAIMED',
+                  'fresh_k01_full_public_path': 'PENDING_PHASE10',
+                  'authenticated_installed_host_native_export': 'PENDING_PHASE11'
+              },
+              'next_phase': 'PHASE9_REQUIREMENT_CONSUMER_MAP_001_090'
+          }
+          ledger_path.write_text(json.dumps(ledger, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          # Human matrix: update only the rows/boundaries Phase 8 actually changed.
+          matrix_path = root / 'references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md'
+          matrix = matrix_path.read_text(encoding='utf-8')
+          replacements = {
+              '| REQ-038 | Provider→Result→Review→Revision→hash | Provider bridge/executor/transport + production + Review | E2E_PENDING |':
+              '| REQ-038 | Provider→Result→Review→Revision→hash | Provider bridge/executor/transport + production + Review + nested revision execution | PASS_PHASE8_PROVIDER_BOUNDARY_E2E_PROVEN |',
+              '| REQ-039 | Actual-output QA | Review + production + real-output package audit | E2E_PENDING |':
+              '| REQ-039 | Actual-output QA | actual provider-boundary bytes + receipt/hash + machine evidence + human Review + package audit | PASS_PHASE8_ACTUAL_OUTPUT_QA_E2E_PROVEN |',
+              '| REQ-040 | Smallest defect repair | Review + learning loop + production | CONSUMER MAPPED + E2E_PENDING |':
+              '| REQ-040 | Smallest defect repair | Review → bounded Local Revision → same provider surface → revised-output review/hash | PASS_PHASE8_SMALLEST_LAYER_LOCAL_REVISION_E2E_PROVEN |',
+              '| REQ-041 | Measurement/learning loop | learning + feedback + experiment | CONSUMER MAPPED + E2E_PENDING |':
+              '| REQ-041 | Measurement/learning loop | learning + feedback + experiment + production/review/revision lineage | PARTIAL_PHASE2_MEASUREMENT_PHASE8_REVISION_LINEAGE_VERIFIED_REAL_LEARNING_CYCLE_E2E_PENDING |',
+              '| REQ-090 | FULL package lineage + actual-output boundary | final semantic inventory + REQ-088 lineage + final-byte mature FULL-package continuity + honest Host/Provider actual-output boundary | PHASE7_SOURCE_PACKAGE_CLOSURE_AND_HOST_FALSE_PASS_GUARD_TARGETED_PROOF + REAL_PROVIDER_OUTPUT_PHASE8_PENDING + FRESH_K01_PHASE10_PENDING + INSTALLED_HOST_E2E_PHASE11_PENDING |':
+              '| REQ-090 | FULL package lineage + actual-output boundary | final semantic inventory + REQ-088 lineage + final-byte mature FULL-package continuity + Provider Result/Review/Revision/hash boundary | PHASE7_SOURCE_PACKAGE_CLOSURE + PHASE8_PROVIDER_BOUNDARY_ACTUAL_OUTPUT_E2E_PROVEN + FRESH_K01_PHASE10_PENDING + INSTALLED_HOST_E2E_PHASE11_PENDING |'
+          }
+          for old, new in replacements.items():
+              if old not in matrix:
+                  raise SystemExit('matrix row marker missing: ' + old[:80])
+              matrix = matrix.replace(old, new, 1)
+
+          old_intro = 'Phase 7 source/package closure is now complete at targeted proof level; Fresh K01 FULL, Provider actual-output QA, and authenticated installed-plugin/Host-native readback remain later-phase evidence and are not implied by Phase 6 or Phase 7 source/package closure.'
+          new_intro = 'Phase 7 source/package closure is complete at targeted proof level. Phase 8 is now complete at the CBCC provider execution boundary for actual Provider Result bytes → machine evidence → human Review → bounded Local Revision → second Review → receipt/output/revision hash lineage, with the exact package boundary reaching `E2E_PROVEN`. Fresh K01 FULL remains Phase 10 and authenticated installed-plugin/Host-native readback remains Phase 11; external vendor/network execution is not fabricated by this repository CI proof.'
+          if old_intro not in matrix:
+              raise SystemExit('matrix intro marker missing')
+          matrix = matrix.replace(old_intro, new_intro, 1)
+
+          old_boundary = 'Real Provider Result/Review/Revision actual-output evidence remains Phase 8, Fresh positive K01 FULL remains Phase 10, and authenticated installed-plugin/Host-native readback semantic parity remains Phase 11; none is pulled forward or implied by this Phase 7 closure.'
+          new_boundary = 'Phase 8 Provider Result/Review/Revision actual-output lifecycle is now closed at the CBCC provider execution boundary with deterministic host-callback provider execution and real materialized output/revision bytes, machine evidence, two explicit human Reviews and hash lineage. This does not claim an external vendor/network call. Fresh positive K01 FULL remains Phase 10, and authenticated installed-plugin/Host-native readback semantic parity remains Phase 11.'
+          if old_boundary not in matrix:
+              raise SystemExit('matrix boundary marker missing')
+          matrix = matrix.replace(old_boundary, new_boundary, 1)
+          matrix += '\n\n## Phase 8 authority\n`REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE8_PROVIDER_ACTUAL_OUTPUT.json` is the Phase 8 machine-readable authority. Permanent verification runs the Phase 8 E2E suite together with the prior v0.6.16 host-surface regression. The next locked task is Phase 9 cumulative REQ-001..090 consumer accounting; behavioral K01 and installed-host proofs remain Phases 10 and 11.\n'
+          matrix_path.write_text(matrix, encoding='utf-8')
+
+          # Permanent CURRENT release verifier must consume Phase 8 from now on.
+          workflow_path = root / '.github/workflows/current-release-verification.yml'
+          workflow = workflow_path.read_text(encoding='utf-8')
+          marker = "      - 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_*.json'\n"
+          addition = marker + "      - 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE8_*.json'\n"
+          if "REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE8_*.json" not in workflow:
+              if marker not in workflow: raise SystemExit('current workflow Phase7 map marker missing')
+              workflow = workflow.replace(marker, addition, 1)
+          marker = "      - 'tests/test_v0681_phase7_*.py'\n"
+          addition = marker + "      - 'tests/test_v0616_provider_host_surface.py'\n      - 'tests/test_v0682_*.py'\n"
+          if "tests/test_v0682_*.py" not in workflow:
+              if marker not in workflow: raise SystemExit('current workflow Phase7 test marker missing')
+              workflow = workflow.replace(marker, addition, 1)
+          phase8_step = """      - name: Verify CURRENT Phase 8 Provider actual-output execution, Review, Local Revision and hash lineage
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: '.:runtime'}
+        run: |
+          python -m pytest -q \\
+            tests/test_v0616_provider_host_surface.py \\
+            tests/test_v0682_*.py
+"""
+          prior_marker = "      - name: Verify prior maturity and CURRENT requirement accounting\n"
+          if 'Verify CURRENT Phase 8 Provider actual-output execution' not in workflow:
+              if prior_marker not in workflow: raise SystemExit('current workflow prior-maturity marker missing')
+              workflow = workflow.replace(prior_marker, phase8_step + prior_marker, 1)
+          phase7_verified = "'Phase7 final package semantic inventory + host/runtime comparator contract + actual-output E2E boundary + final export ordering + REQ-088 resolvable lineage authority bindings/no-copy invariant + mature information-audit regression + REQ-090 final-byte mature package continuity'"
+          phase8_verified = phase7_verified + ", 'Phase8 provider-boundary actual-output bytes + machine quality/reference evidence + human output Review + bounded Local Revision execution + second Review + production receipt/output/revision hash lineage reaching E2E_PROVEN'"
+          if 'Phase8 provider-boundary actual-output bytes' not in workflow:
+              if phase7_verified not in workflow: raise SystemExit('current workflow verified_by marker missing')
+              workflow = workflow.replace(phase7_verified, phase8_verified, 1)
+          workflow_path.write_text(workflow, encoding='utf-8')
+          PY
+      - name: Validate patched Phase 8 authority before commit
+        env:
+          PYTHONHASHSEED: '0'
+          PYTHONPATH: '.:runtime'
+        run: |
+          python -m pip install pytest pyyaml
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          ledger=json.loads(Path('references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json').read_text(encoding='utf-8'))
+          assert ledger['phase_status']['8'].startswith('PASS_PHASE8_')
+          req90=next(row for row in ledger['new_requirements'] if row['req']=='REQ-090')
+          assert 'PHASE8_PROVIDER_BOUNDARY_ACTUAL_OUTPUT_E2E_PROVEN' in req90['status']
+          matrix=Path('references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md').read_text(encoding='utf-8')
+          assert 'PASS_PHASE8_PROVIDER_BOUNDARY_E2E_PROVEN' in matrix
+          assert 'REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE8_PROVIDER_ACTUAL_OUTPUT.json' in matrix
+          workflow=Path('.github/workflows/current-release-verification.yml').read_text(encoding='utf-8')
+          assert 'tests/test_v0682_*.py' in workflow
+          assert 'Verify CURRENT Phase 8 Provider actual-output execution' in workflow
+          PY
+          python -m pytest -q tests/test_v0616_provider_host_surface.py tests/test_v0682_*.py
+      - name: Commit Phase 8 authority closure and remove one-shot workflow
+        run: |
+          git config user.name 'seekpura'
+          git config user.email 'ercnet@live.cn'
+          git rm .github/workflows/phase8-authority-closure.yml
+          git add references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md .github/workflows/current-release-verification.yml
+          git commit -m 'docs(phase8): close actual-output authority ledger'
+          git push origin HEAD:repair-05-phase8-provider-true-e2e
