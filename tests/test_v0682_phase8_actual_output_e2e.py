@@ -57,12 +57,45 @@ def _asset() -> dict:
     }
 
 
+def _provider_quality_observations(job: dict) -> dict:
+    bindings = job.get('source_product_bindings') or []
+    source_ids = [row.get('asset_id') for row in bindings if row.get('asset_id')]
+    source_hashes = {
+        str(row.get('asset_id')): str(row.get('sha256') or '')
+        for row in bindings
+        if row.get('asset_id')
+    }
+    observations = {}
+    required = (job.get('result_contract') or {}).get('quality_observations_required') or []
+    for key in required:
+        if key == 'source_product_asset_ids_used':
+            observations[key] = source_ids
+        elif key == 'source_product_hashes_used':
+            observations[key] = source_hashes
+        elif key == 'product_layer_operation':
+            observations[key] = 'COMPOSITE_LOCKED'
+        else:
+            observations[key] = {
+                'status': 'PASS',
+                'evidence': f'phase8 host provider observed {key} on resolved output bytes',
+            }
+    return observations
+
+
 def _callbacks(executor: ReferenceMemoryExecutor) -> dict:
+    def collect(external_job_id: str, *, job: dict) -> dict:
+        collected = executor.collect(external_job_id, job=job)
+        collected['quality_observations'] = _provider_quality_observations(job)
+        if job.get('revision_scope'):
+            collected['changed_fields'] = list((job['revision_scope'] or {}).get('allowed_fields') or [])
+            collected['changed_layers'] = list((job['revision_scope'] or {}).get('allowed_layers') or [])
+        return collected
+
     return {
         'ensure_asset': executor.ensure_asset,
         'submit': executor.submit,
         'poll': executor.poll,
-        'collect': executor.collect,
+        'collect': collect,
         'resolve': executor.resolve,
     }
 
@@ -129,16 +162,14 @@ def test_provider_result_review_local_revision_review_hash_lineage_reaches_e2e_p
     project, surface, executor = _build_project(tmp_path)
     policy = ExecutionPolicy(max_attempts=2, max_polls_per_attempt=2)
 
-    # 1) Main provider execution must create actual output bytes through the real adapter/executor bridge.
+    # 1) Main provider execution must create actual output bytes and verifiable quality/reference evidence.
     executed = surface.execute_project(
         project,
         adapter_id='EPV_HOST_CALLBACK_V1',
         policy=policy,
     )
     assert executed['status'] == 'PROVIDER_EXECUTION_COMPLETE'
-    # Provider result ingest is intentionally fail-honest: actual output exists, but it remains
-    # REVIEW_REQUIRED until a human explicitly accepts the addressable output review item.
-    assert executed['ingest_status'] == 'REVIEW_REQUIRED'
+    assert executed['ingest_status'] == 'COMPLETE'
 
     result_path = project / 'artifacts/provider_jobs' / ASSET_ID / 'result.json'
     result = json.loads(result_path.read_text(encoding='utf-8'))
@@ -147,8 +178,10 @@ def test_provider_result_review_local_revision_review_hash_lineage_reaches_e2e_p
     output_path = result_path.parent / artifact['path_or_uri']
     assert output_path.read_bytes() == b'phase8-provider-actual-output-v1'
     assert _sha(output_path.read_bytes()) == artifact['sha256']
+    assert result['quality_observations']['product_identity_preserved']['status'] == 'PASS'
+    assert result['quality_observations']['source_product_asset_ids_used'] == ['MASTER-PHASE8-E2E']
 
-    # 2) Human review accepts the provider output and requests a bounded editable-layer revision.
+    # 2) Machine-valid provider output still requires explicit human acceptance and a bounded revision request.
     state = ProjectState.load(project)
     state.apply_review_decision({
         'project_id': 'PHASE8-E2E',
@@ -187,11 +220,16 @@ def test_provider_result_review_local_revision_review_hash_lineage_reaches_e2e_p
     ingested = ingest_local_revision_results(project, state.data, [revision_id])
     state.save()
     assert ingested['status'] == 'LOCAL_REVISION_RESULTS_INGESTED'
-    # A revised provider result is also gated for explicit review; ingest does not self-accept it.
-    assert ingested['revisions'][0]['provider_result_status'] == 'REVIEW_REQUIRED'
+    assert ingested['revisions'][0]['provider_result_status'] == 'COMPLETE'
     revised_path = Path(ingested['revisions'][0]['output_path'])
     assert revised_path.read_bytes() == b'phase8-provider-revised-output-v2'
     assert ingested['revisions'][0]['output_hash'] == _sha(revised_path.read_bytes())
+
+    revision_result = json.loads(
+        (project / 'artifacts/local_revisions' / revision_id / 'provider_jobs' / ASSET_ID / 'result.json').read_text(encoding='utf-8')
+    )
+    assert revision_result['changed_fields'] == ['headline']
+    assert revision_result['changed_layers'] == ['typography_copy']
 
     # 4) The revised actual output becomes an addressable review item and must be explicitly accepted.
     materialize_review_workspace(project, state.data)
