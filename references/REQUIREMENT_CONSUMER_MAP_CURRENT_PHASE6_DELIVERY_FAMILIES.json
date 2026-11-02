@@ -1,0 +1,81 @@
+{
+  "version": "cbcc-current-phase6-delivery-families-v1",
+  "phase": 6,
+  "subtask": "REQ-070 / REQ-076 / REQ-077 activated delivery-family Human Workspace routes",
+  "production_head_sha": "e2b6ae1237f75e959b81e2254e41ac23a9396306",
+  "focused_test_head_sha": "6634ae695c8fb2155bdcf3358b4b82dcce7933e3",
+  "current_gate_head_sha": "ad2cef840b16687b0c9ee03d9b54726302790b08",
+  "requirements": [
+    {
+      "requirement_id": "REQ-070",
+      "summary": "Activated A+/PDP/Longform/Specification/Source-document family objects receive a real Human Delivery lens instead of surviving only in the generic asset/archive surfaces.",
+      "implementation_status": "PASS_PHASE6_REQ070_TARGETED_DELIVERY_ROUTE_VERIFIED_PHASE7_PACKAGE_LINEAGE_PENDING",
+      "activation_tokens": ["A_PLUS", "PDP", "LONGFORM", "SPECIFICATION", "SOURCE_DOCUMENT", "FAQ", "COMPARISON"],
+      "human_consumer": "dynamic delivery-family lens inside an existing project-authored assets/content/overview route",
+      "final_consumers": ["index.html", "DELIVERY_FAMILY_WORKSPACE_AUDIT.json", "DELIVERY_MANIFEST.json", "final delivery ZIP"]
+    },
+    {
+      "requirement_id": "REQ-076",
+      "summary": "Activated Store/Banner/Landing/Campaign/Seasonal family objects receive a real Human Delivery lens without creating a permanent Store/Landing capability menu.",
+      "implementation_status": "PASS_PHASE6_REQ076_TARGETED_DELIVERY_ROUTE_VERIFIED",
+      "activation_tokens": ["STORE", "STORE_BANNER", "BANNER", "LANDING", "LANDING_PAGE", "LANDING_PAGE_HERO", "CAMPAIGN", "SEASONAL"],
+      "human_consumer": "dynamic delivery-family lens inside an existing project-authored assets/content/overview route",
+      "final_consumers": ["index.html", "DELIVERY_FAMILY_WORKSPACE_AUDIT.json", "DELIVERY_MANIFEST.json", "final delivery ZIP"]
+    },
+    {
+      "requirement_id": "REQ-077",
+      "summary": "Activated CRM/Lifecycle/Post-purchase family objects receive a real Human Delivery lens; absent CRM objects do not create a false CRM workspace.",
+      "implementation_status": "PASS_PHASE6_REQ077_TARGETED_DELIVERY_ROUTE_VERIFIED",
+      "activation_tokens": ["CRM", "EMAIL", "SMS", "LIFECYCLE", "POST_PURCHASE", "POST-PURCHASE", "RETENTION"],
+      "human_consumer": "dynamic delivery-family lens inside an existing project-authored assets/content/overview route",
+      "final_consumers": ["index.html", "DELIVERY_FAMILY_WORKSPACE_AUDIT.json", "DELIVERY_MANIFEST.json", "final delivery ZIP"]
+    }
+  ],
+  "authority_and_implementation": {
+    "upstream": [
+      "runtime/cbcc/canonical_full_parity_v0671.py::build_canonical_human_payload",
+      "runtime/cbcc/workspace_autonomy.py::build_workspace_route_plan",
+      "runtime/cbcc/asset_portfolio_taxonomy.py"
+    ],
+    "implementation": [
+      "runtime/cbcc/delivery_family_workspace_v0680.py",
+      "runtime/cbcc/commercial_delivery_continuity.py::wrap_export_delivery_package"
+    ],
+    "proof": [
+      "tests/test_v0680_phase6_delivery_family_routes.py",
+      "GitHub Actions RED run 41403877395: 3 failed before runtime.cbcc.delivery_family_workspace_v0680 existed",
+      "GitHub Actions first GREEN run 41403967684 after adding the dynamic family router",
+      "GitHub Actions final export/Manifest/ZIP GREEN run 41404690731: 4/4 passed",
+      "CURRENT workflow gate commit ad2cef840b16687b0c9ee03d9b54726302790b08 adds REQ-061 + REQ-089 + delivery-family tests as permanent Phase 6 verification steps"
+    ]
+  },
+  "verified_behavior": [
+    "Family activation is derived from canonical asset object surface/family/type metadata, not from free-text keyword guessing.",
+    "Only families that actually exist in the current project are rendered; an absent CRM family produces no CRM lens or fixed menu entry.",
+    "Each activated canonical asset is represented by a stable data-delivery-family-object marker and the family audit detects removal even when archive bytes still contain the same value.",
+    "The family materializer reuses the existing project-authored IA and inserts lenses into assets/content/overview rather than adding permanent top-level routes.",
+    "Final export is fail-closed: an activated family that cannot be routed blocks the final ZIP.",
+    "DELIVERY_MANIFEST records family audit status, activated family names and delivery_family_menu_is_fixed=false.",
+    "The final ZIP contains DELIVERY_FAMILY_WORKSPACE_AUDIT.json, DELIVERY_MANIFEST.json and the routed index.html bytes."
+  ],
+  "cross_scope_verification": {
+    "focused_red_run": 41403877395,
+    "focused_first_green_run": 41403967684,
+    "focused_final_green_run": 41404690731,
+    "focused_final_green": "4/4 passed",
+    "current_gate_head_sha": "ad2cef840b16687b0c9ee03d9b54726302790b08"
+  },
+  "invariants": [
+    "Delivery-family lenses are projections of canonical activated objects, not independent business truths.",
+    "No fixed Longform/Store/CRM menu is introduced when those objects do not exist.",
+    "Generic Archive or Asset Center presence cannot substitute for family-specific routed consumption.",
+    "Phase 6 family routing does not claim Phase 7 source/evidence/assumption/decision lineage closure.",
+    "Fresh K01 FULL and Provider actual media/output proof remain later-phase evidence."
+  ],
+  "pending": [
+    "Phase 6 master ledger synchronization and final CURRENT verifier on the clean Phase 6 closure head",
+    "Phase 7 REQ-088 / REQ-090 lineage and full materialization/package continuity",
+    "Phase 10 Fresh K01 FULL",
+    "Phase 11 installed-plugin readback and Provider actual-output proof"
+  ]
+}
