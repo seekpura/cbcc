@@ -5,7 +5,7 @@ on:
     branches:
       - phase5-req086-scene-photo-prompt-v2
     paths:
-      - '.github/phase5_req086_closure_trigger.txt'
+      - '.github/phase5_req086_closure_trigger_v2.txt'
 
 permissions:
   contents: write
@@ -91,8 +91,7 @@ jobs:
             references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md \
             references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json \
             scripts/check_current_release_package.py \
-            tests/test_current_release_package_checker.py \
-            .github/workflows/current-release-verification.yml
+            tests/test_current_release_package_checker.py
           git diff --cached --check
           git diff --cached --quiet && { echo 'No durable closure diff'; exit 1; }
           git commit -m "docs(phase5): close scene-derived photography Prompt consumption"
