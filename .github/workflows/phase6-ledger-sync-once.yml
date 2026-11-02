@@ -1,0 +1,30 @@
+name: phase6-ledger-sync-once
+
+on:
+  push:
+    branches: [repair-04-phase6-req061]
+    paths:
+      - 'scripts/phase6_ledger_sync_once.py'
+
+permissions:
+  contents: write
+
+jobs:
+  sync-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair-04-phase6-req061
+          fetch-depth: 1
+      - name: Apply bounded Phase 6 ledger patch
+        run: python scripts/phase6_ledger_sync_once.py
+      - name: Commit only the CURRENT ledger
+        run: |
+          git config user.name 'cbcc-phase6-ledger-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json
+          git diff --cached --check
+          git diff --cached --name-only | grep -Fx 'references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json'
+          git commit -m 'docs(phase6): close CURRENT execution ledger'
+          git push origin HEAD:repair-04-phase6-req061
