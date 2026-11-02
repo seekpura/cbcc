@@ -413,7 +413,14 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
         agent_opportunities=agent_creative_opportunities(agent_plan),
     )
     _write(p/'artifacts/creative_opportunity_universe.json',creative_opportunity_universe)
-    council=compile_creative_council(request.get('creative_directions') or agent_creative_directions(agent_plan),curation,truth,culture,pc,category_family,[a.get('decision_intent') for a in architecture.get('assets') or []],creative_opportunity_universe)
+    creative_scope=agent_plan.get('creative_exploration') if isinstance(agent_plan.get('creative_exploration'),dict) else {}
+    if 'creative_directions' in request:
+        creative_direction_rows=request.get('creative_directions')
+    elif creative_scope:
+        creative_direction_rows=agent_creative_directions(agent_plan)
+    else:
+        creative_direction_rows=None
+    council=compile_creative_council(creative_direction_rows,curation,truth,culture,pc,category_family,[a.get('decision_intent') for a in architecture.get('assets') or []],creative_opportunity_universe)
     _write(p/'artifacts/creative_council.json',council)
     architecture=apply_creative_system_to_assets(architecture,council,cmf,request.get('photography_contract'))
     inclusive=compile_inclusive_photography(culture,request.get('photography_contract'),architecture.get('assets') or [])

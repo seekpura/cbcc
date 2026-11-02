@@ -180,8 +180,8 @@ def _auto_directions(product_truth:dict[str,Any], curation:dict[str,Any], cultur
 
 
 def compile_creative_council(directions:list[dict[str,Any]]|None, curation:dict[str,Any], product_truth:dict[str,Any], culture:dict[str,Any], platform_compile:dict[str,Any], category_family:str|None=None, decision_intents:list[str]|None=None, opportunity_universe:dict[str,Any]|None=None)->dict[str,Any]:
-    supplied=bool(directions)
-    source_rows=list(directions or _auto_directions(product_truth,curation,culture,platform_compile,category_family,decision_intents,opportunity_universe))
+    supplied=directions is not None
+    source_rows=list(directions) if supplied else list(_auto_directions(product_truth,curation,culture,platform_compile,category_family,decision_intents,opportunity_universe))
     rows=[]
     for d in source_rows:
         row=dict(d); row['direction_id']=row.get('direction_id') or 'DIR-'+stable_hash(row)[:8].upper()
