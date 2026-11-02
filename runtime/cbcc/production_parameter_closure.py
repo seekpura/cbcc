@@ -5,6 +5,8 @@ import re
 from copy import deepcopy
 from typing import Any, Mapping
 
+from . import model_native_prompt_contract as native
+
 _CJK_RE = re.compile(r'[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]')
 _LOCKED_FIDELITY = {'LOCKED_PIXEL', 'LOCKED_SOURCE_COMPOSITE', 'COMPOSITE'}
 _PHOTO_HINTS = ('photo','photograph','portrait','camera','lens','macro','still-life','creator','ugc','摄影','人像','镜头','微距','静物')
@@ -162,13 +164,22 @@ def _selected_parameters(asset: Mapping[str, Any], card: Mapping[str, Any]) -> d
         add('wardrobe_hair_makeup', ('wardrobe_hair_makeup','wardrobe','hair_makeup','styling'), ('human','casting'))
 
     if video:
-        add('duration_timing', ('duration','timing','beat_timing','shot_timing'), ('video','motion'))
-        add('shot_sequence', ('shot_sequence','shot_plan','storyboard'), ('video','motion'))
-        add('camera_motion', ('camera_motion','motion_program'), ('video','motion','camera'))
-        add('subject_motion', ('subject_motion','action_motion'), ('video','motion'))
+        canonical_motion=native._dynamic_model_value(art.get('motion'))
+        canonical_timing=native._dynamic_model_value(art.get('timing'))
+        canonical_audio=native._dynamic_model_value(art.get('audio'))
+        if _meaningful(canonical_motion): params['motion']=canonical_motion
+        if _meaningful(canonical_timing): params['timing']=canonical_timing
+        if _meaningful(canonical_audio): params['audio']=canonical_audio
+        if not _meaningful(canonical_timing):
+            add('duration_timing', ('duration','timing','beat_timing','shot_timing'), ('video','motion'))
+        if not _meaningful(canonical_motion):
+            add('shot_sequence', ('shot_sequence','shot_plan','storyboard'), ('video','motion'))
+            add('camera_motion', ('camera_motion','motion_program'), ('video','motion','camera'))
+            add('subject_motion', ('subject_motion','action_motion'), ('video','motion'))
         add('fps', ('fps','frame_rate'), ('video','motion','camera'))
         add('stabilization', ('stabilization','stabilisation'), ('video','motion','camera'))
-        add('transition_audio', ('transition_audio','transitions','audio_direction','music_direction'), ('video','motion','audio'))
+        if not _meaningful(canonical_audio):
+            add('transition_audio', ('transition_audio','transitions','audio_direction','music_direction'), ('video','motion','audio'))
         add('cta_hold', ('cta_hold','end_frame_hold','final_hold'), ('video','motion'))
         add('subtitle_safe_zone', ('subtitle_safe_zone','caption_safe_zone'), ('video','motion','typography'))
 
@@ -218,15 +229,16 @@ def _missing_required(params: Mapping[str, Any], groups: Mapping[str, list[str]]
     return missing
 
 
-def _append_selected(prompt: str, params: Mapping[str, Any], language: str) -> tuple[str, list[str]]:
+def _append_selected(prompt: str, params: Mapping[str, Any], language: str, skip_keys: set[str] | None=None) -> tuple[str, list[str]]:
     out=prompt.rstrip()
     appended=[]
+    skip_keys=set(skip_keys or set())
     label_cn={
-        'composition_grammar':'构图语法','layout_geometry':'相对位置','scale_depth':'尺度与纵深','product_occupancy':'商品占画','focal_path':'视线动线','negative_space':'负空间','copy_zone':'文字安全区','evidence_hierarchy':'证据层级','palette_hex':'配色','cmf':'CMF','material_response':'材质响应','post_look':'完成质感','focal_length':'焦段','lens_family':'镜头类型','working_distance':'工作距离','camera_height':'机位高度','yaw_pitch_roll':'机位角度','shot_size':'景别/取景','focus_plane':'对焦平面','aperture_dof':'光圈/景深','shutter':'快门','iso':'ISO','key_light':'主光','fill_light':'补光','negative_fill':'负补光','rim_light':'轮廓光','modifier_geometry':'控光附件/尺寸','light_distance':'灯距','cct':'色温','white_balance':'白平衡','light_ratio':'光比','shadow_policy':'阴影策略','highlight_policy':'高光策略','exposure_policy':'曝光策略','reflection_control':'反射控制','polarization':'偏振','prelight':'Prelight','color_management':'色彩管理','skin_tone_exposure':'肤色曝光','wardrobe_hair_makeup':'服装/发妆','duration_timing':'时长/节拍','shot_sequence':'镜头序列','camera_motion':'镜头运动','subject_motion':'主体运动','fps':'帧率','stabilization':'稳定方式','transition_audio':'转场/音频','cta_hold':'结尾停帧','subtitle_safe_zone':'字幕安全区'
+        'composition_grammar':'构图语法','layout_geometry':'相对位置','scale_depth':'尺度与纵深','product_occupancy':'商品占画','focal_path':'视线动线','negative_space':'负空间','copy_zone':'文字安全区','evidence_hierarchy':'证据层级','palette_hex':'配色','cmf':'CMF','material_response':'材质响应','post_look':'完成质感','focal_length':'焦段','lens_family':'镜头类型','working_distance':'工作距离','camera_height':'机位高度','yaw_pitch_roll':'机位角度','shot_size':'景别/取景','focus_plane':'对焦平面','aperture_dof':'光圈/景深','shutter':'快门','iso':'ISO','key_light':'主光','fill_light':'补光','negative_fill':'负补光','rim_light':'轮廓光','modifier_geometry':'控光附件/尺寸','light_distance':'灯距','cct':'色温','white_balance':'白平衡','light_ratio':'光比','shadow_policy':'阴影策略','highlight_policy':'高光策略','exposure_policy':'曝光策略','reflection_control':'反射控制','polarization':'偏振','prelight':'Prelight','color_management':'色彩管理','skin_tone_exposure':'肤色曝光','wardrobe_hair_makeup':'服装/发妆','motion':'动作/镜头程序','timing':'时长/节拍','audio':'音频/配音','duration_timing':'时长/节拍','shot_sequence':'镜头序列','camera_motion':'镜头运动','subject_motion':'主体运动','fps':'帧率','stabilization':'稳定方式','transition_audio':'转场/音频','cta_hold':'结尾停帧','subtitle_safe_zone':'字幕安全区'
     }
     label_en={k:k.replace('_',' ') for k in label_cn}
     for key,value in params.items():
-        if key.startswith('_') or not _meaningful(value):
+        if key.startswith('_') or key in skip_keys or not _meaningful(value):
             continue
         raw=_lang_txt(value,language)
         if not raw:
@@ -283,8 +295,12 @@ def apply_production_parameter_closure(bundle: Mapping[str, Any], asset: Mapping
 
     cn=out.get('model_prompt_cn') or out.get('prompt_cn') or ''
     en=out.get('model_prompt_en') or out.get('prompt_en') or ''
-    cn,app_cn=_append_selected(cn,params,'CN')
-    en,app_en=_append_selected(en,params,'EN')
+    # An explicit hand-authored model prompt must prove it already contains canonical dynamic
+    # decisions; closure may not silently repair a lossy manual override and call it authoritative.
+    manual_prompt_override=any(_meaningful(art.get(k)) for k in ('model_prompt_cn','model_prompt_en','generation_prompt_cn','generation_prompt_en'))
+    skip_dynamic={'motion','timing','audio'} if manual_prompt_override else set()
+    cn,app_cn=_append_selected(cn,params,'CN',skip_dynamic)
+    en,app_en=_append_selected(en,params,'EN',skip_dynamic)
 
     comp_cn=_locked_composite_instruction(asset,card,params,'CN')
     comp_en=_locked_composite_instruction(asset,card,params,'EN')
@@ -340,11 +356,14 @@ def apply_production_parameter_closure(bundle: Mapping[str, Any], asset: Mapping
 
     prior_status=str(out.get('model_prompt_status') or '')
     specific_prior={'BILINGUAL_RENDER_SEMANTICS_REQUIRED','COPY_RENDER_MODE_REQUIRED','AGENT_ART_DIRECTION_REQUIRED'}
+    audit_missing=list((out.get('prompt_consumption_audit') or {}).get('missing_decisions') or [])
     if prior_status in specific_prior:
         # Preserve the more precise upstream readiness reason; closure details remain visible alongside it.
         out['model_prompt_status']=prior_status
     elif closure['model_generation_blocking']:
         out['model_prompt_status']='ART_DIRECTION_EXECUTION_DEPTH_REQUIRED'
+    elif audit_missing:
+        out['model_prompt_status']=prior_status if prior_status not in {'','MODEL_NATIVE_PROMPT_READY','MODEL_NATIVE_PROMPT_PARAMETER_CLOSED'} else 'MODEL_PROMPT_NEEDS_AGENT_DECISIONS'
     else:
         out['model_prompt_status']='MODEL_NATIVE_PROMPT_PARAMETER_CLOSED'
     return out

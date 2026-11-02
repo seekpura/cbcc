@@ -90,6 +90,30 @@ def _art(asset: Mapping[str, Any]) -> dict[str, Any]:
     return deepcopy(dict(value)) if isinstance(value, Mapping) else {}
 
 
+_DYNAMIC_NON_ACTING_KEYS = {'authority', 'authored_fields', 'video_id', 'family', 'surface'}
+
+
+def _dynamic_model_value(value: Any) -> Any:
+    """Keep frame/audio-changing dynamic decisions while stripping provenance/orchestration metadata."""
+    if not _meaningful(value):
+        return None
+    if isinstance(value, Mapping):
+        out={}
+        for key, child in value.items():
+            if str(key) in _DYNAMIC_NON_ACTING_KEYS:
+                continue
+            if str(key) == 'narrative_carrier' and isinstance(child, str):
+                child = child.replace('_', ' ').strip().lower()
+            resolved=_dynamic_model_value(child)
+            if _meaningful(resolved):
+                out[key]=resolved
+        return out or None
+    if isinstance(value, (list, tuple)):
+        out=[_dynamic_model_value(x) for x in value]
+        return [x for x in out if _meaningful(x)] or None
+    return value
+
+
 def _visible_copy_block(asset: Mapping[str, Any], card: Mapping[str, Any]) -> dict[str, Any]:
     raw=asset.get('visible_copy')
     if not isinstance(raw, Mapping):
@@ -201,7 +225,13 @@ def _model_fields(asset: Mapping[str, Any], card: Mapping[str, Any], language: s
         'typography': L(_first(art, 'typography') or info.get('typography'), 'typography'),
         'copy_zone': L(_first(art, 'copy_zone', 'text_zone', 'safe_zone') or cam.get('safe_zone'), 'copy_zone'),
         'inclusive_human': L(_first(art, 'inclusive_human', 'representation') or inc, 'inclusive_human'),
-        'motion_timing': L(_first(art, 'motion_timing', 'timing', 'duration', 'shot_timing'), 'motion_timing'),
+        # Phase 4 canonical dynamic authority. These are the same per-object motion/timing/audio
+        # decisions projected from video_creator; provenance fields are intentionally excluded.
+        'motion': L(_dynamic_model_value(art.get('motion')), 'motion'),
+        'timing': L(_dynamic_model_value(art.get('timing')), 'timing'),
+        'audio': L(_dynamic_model_value(art.get('audio')), 'audio'),
+        # Backward-compatible legacy dynamic fields remain consumable when canonical fields are absent.
+        'motion_timing': L(_first(art, 'motion_timing', 'duration', 'shot_timing'), 'motion_timing'),
         'shot_sequence': L(_first(art, 'shot_sequence', 'shot_plan', 'storyboard'), 'shot_sequence'),
         'camera_motion': L(_first(art, 'camera_motion', 'motion_program'), 'camera_motion'),
         'transition_audio': L(_first(art, 'transition_audio', 'transitions', 'audio_direction'), 'transition_audio'),
@@ -256,8 +286,19 @@ def _render_prompt(asset: Mapping[str, Any], card: Mapping[str, Any], language: 
         if f.get('inclusive_human'): rows.append(f"人物呈现：{_txt(f['inclusive_human'])}。")
         if is_video:
             video=[]
-            for k,label in [('motion_timing','时长/节奏'),('shot_sequence','镜头顺序'),('camera_motion','镜头运动'),('transition_audio','转场/音频')]:
-                if f.get(k): video.append(f"{label}：{_txt(f[k])}")
+            if f.get('motion'):
+                video.append(f"动作/镜头程序：{_txt(f['motion'])}")
+            else:
+                for k,label in [('shot_sequence','镜头顺序'),('camera_motion','镜头运动')]:
+                    if f.get(k): video.append(f"{label}：{_txt(f[k])}")
+            if f.get('timing'):
+                video.append(f"时长/节奏：{_txt(f['timing'])}")
+            elif f.get('motion_timing'):
+                video.append(f"时长/节奏：{_txt(f['motion_timing'])}")
+            if f.get('audio'):
+                video.append(f"音频/配音：{_txt(f['audio'])}")
+            elif f.get('transition_audio'):
+                video.append(f"转场/音频：{_txt(f['transition_audio'])}")
             if video: rows.append('动态执行：'+'；'.join(video)+'。')
         if f.get('post_look'): rows.append(f"完成质感：{_txt(f['post_look'])}。")
         if copy_mode in {'MODEL_RENDER','HYBRID'} and _meaningful(copy_block.get('target_market_copy')):
@@ -305,8 +346,19 @@ def _render_prompt(asset: Mapping[str, Any], card: Mapping[str, Any], language: 
     if f.get('inclusive_human'): rows.append(f"Human representation: {_txt(f['inclusive_human'])}.")
     if is_video:
         video=[]
-        for k,label in [('motion_timing','duration/rhythm'),('shot_sequence','shot sequence'),('camera_motion','camera motion'),('transition_audio','transitions/audio')]:
-            if f.get(k): video.append(f"{label}: {_txt(f[k])}")
+        if f.get('motion'):
+            video.append(f"motion/shot program: {_txt(f['motion'])}")
+        else:
+            for k,label in [('shot_sequence','shot sequence'),('camera_motion','camera motion')]:
+                if f.get(k): video.append(f"{label}: {_txt(f[k])}")
+        if f.get('timing'):
+            video.append(f"duration/rhythm: {_txt(f['timing'])}")
+        elif f.get('motion_timing'):
+            video.append(f"duration/rhythm: {_txt(f['motion_timing'])}")
+        if f.get('audio'):
+            video.append(f"audio/voice direction: {_txt(f['audio'])}")
+        elif f.get('transition_audio'):
+            video.append(f"transitions/audio: {_txt(f['transition_audio'])}")
         if video: rows.append('Motion execution — '+'; '.join(video)+'.')
     if f.get('post_look'): rows.append(f"Finishing look: {_txt(f['post_look'])}.")
     if copy_mode in {'MODEL_RENDER','HYBRID'} and _meaningful(copy_block.get('target_market_copy')):

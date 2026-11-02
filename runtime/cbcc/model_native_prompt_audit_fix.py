@@ -107,6 +107,12 @@ def _corrected_audit(asset: Mapping[str, Any], out: Mapping[str, Any]) -> dict[s
         if item not in language_missing:
             language_missing.append(item)
 
+    # Phase 4 may explicitly leave one dynamic decision unresolved. Preserve that boundary here;
+    # Prompt runtime is not allowed to manufacture audio/motion/timing merely to make itself READY.
+    dynamic_missing=[str(x) for x in (asset.get('dynamic_art_direction_missing') or []) if str(x) in {'motion','timing','audio'}]
+    for decision in dynamic_missing:
+        checks.append(_check(decision,'AGENT_DYNAMIC_DECISION_REQUIRED','AGENT_DECISION',False))
+
     missing=[row['decision'] for row in checks if row.get('required',True) and not row.get('projected')]
     missing.extend(language_missing)
     missing=list(dict.fromkeys(missing))

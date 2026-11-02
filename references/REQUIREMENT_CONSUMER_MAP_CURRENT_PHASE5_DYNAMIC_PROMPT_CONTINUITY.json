@@ -1,0 +1,91 @@
+{
+  "version": "2026-11-02-phase5-dynamic-prompt-continuity-v1",
+  "phase": "PHASE_5_COMMERCIAL_GRADE_PROMPT_COMPILER",
+  "subtask": "CANONICAL_DYNAMIC_TEMPORAL_PROMPT_CONTINUITY",
+  "production_head_sha": "8b3ebf11a52d14a3526004b58a1d632444b568fc",
+  "requirements": [
+    {
+      "requirement_id": "REQ-082",
+      "summary": "Commercial-grade Prompt projection must consume concrete pixel/frame/audio-changing decisions rather than collapse Art Direction into a short recap.",
+      "source": "CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md + LOCKED_IMPLEMENTATION_PLAN_CURRENT.md + PROMPT_ART_DIRECTION_MASTER_CONTRACT.md + MODEL_PROMPT_SEMANTIC_MEMBRANE_CONTRACT.md",
+      "implementation_status": "PARTIAL_PHASE5_CANONICAL_DYNAMIC_PARAMETER_CONSUMPTION_VERIFIED_BROAD_PROMPT_DENSITY_PENDING",
+      "upstream_authority": [
+        "asset_art_direction.motion",
+        "asset_art_direction.timing",
+        "asset_art_direction.audio"
+      ],
+      "consumers": [
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py",
+        "runtime/cbcc/production_parameter_closure.py"
+      ],
+      "evidence": [
+        "tests/test_v0676_phase5_dynamic_prompt_continuity.py",
+        "GitHub Actions run 41380596952",
+        "production commit 8b3ebf11a52d14a3526004b58a1d632444b568fc"
+      ],
+      "verified_behavior": [
+        "Phase 4 canonical motion/timing/audio values reach the model-facing Prompt and concrete-consumption audit.",
+        "Governance metadata such as authority/authored_fields/video_id/family/surface is excluded from the model-facing acting plane.",
+        "Legacy flat video fields remain compatible when canonical dynamic fields are absent.",
+        "A manually authored short Prompt cannot be silently repaired by runtime dynamic insertion and then declared complete.",
+        "Static assets do not inherit dynamic Prompt requirements."
+      ],
+      "residual_risk": "Broader static/environment/geometry/light/material/culture/copy Prompt density remains Phase 5 work; Fresh real K01 FULL and provider actual output remain pending."
+    },
+    {
+      "requirement_id": "REQ-083",
+      "summary": "Dynamic/temporal Prompt continuity preserves authored shot motion, duration/beat timing and audio direction from the same per-object Art Direction.",
+      "source": "CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md + LOCKED_IMPLEMENTATION_PLAN_CURRENT.md + PROMPT_ART_DIRECTION_MASTER_CONTRACT.md",
+      "implementation_status": "PARTIAL_PHASE5_CANONICAL_DYNAMIC_TEMPORAL_PROMPT_CONTINUITY_VERIFIED_REMAINING_PHASE5_SURFACE_PROMPT_CLOSURE_PENDING",
+      "upstream_authority": [
+        "runtime/cbcc/video_creator.py -> asset_art_direction.motion",
+        "runtime/cbcc/video_creator.py -> asset_art_direction.timing",
+        "runtime/cbcc/video_creator.py -> asset_art_direction.audio",
+        "runtime/cbcc/compiler.py same-object dynamic Art Direction projection"
+      ],
+      "consumers": [
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py",
+        "runtime/cbcc/production_parameter_closure.py"
+      ],
+      "evidence": [
+        "tests/test_v0676_phase5_dynamic_prompt_continuity.py",
+        "tests/test_v0631_model_native_prompt_contract.py::test_video_prompt_consumes_motion_timing_and_shot_sequence",
+        "GitHub Actions run 41380596952",
+        "production commit 8b3ebf11a52d14a3526004b58a1d632444b568fc"
+      ],
+      "verified_behavior": [
+        "Concrete canonical shot visuals, duration, timing, voice style, music role and silence policy survive the semantic membrane.",
+        "If Phase 4 leaves motion/timing/audio unresolved, Prompt runtime reports the missing Agent decision instead of inventing it or returning a false ready state.",
+        "No parallel dynamic/video schema was introduced."
+      ],
+      "residual_risk": "Remaining Phase 5 surface-specific Prompt closure, cover/text timing where active, Product Presence/Fidelity/reference Prompt consumption, scene-derived camera/light/CMF Prompt consumption, Fresh K01 FULL and provider actual output remain pending."
+    }
+  ],
+  "cross_scope_verification": {
+    "focused_red": "3 failed / 1 passed; static isolation already passed",
+    "focused_green": "4 passed",
+    "legacy_video_compatibility": "passed",
+    "phase4_regressions": "all tests/test_v0676_phase4_*.py passed",
+    "fresh_k01_v0672": "43-test Fresh K01 regression set passed",
+    "v0673_prompt_route": "passed",
+    "v0674_cross_scope": "40-test regression closure passed"
+  },
+  "invariants": [
+    "No parallel video schema.",
+    "Only pixel/frame/audio-changing dynamic decisions cross into Model Prompt; provenance/governance stays outside.",
+    "Manual short prompts cannot hide missing canonical dynamic consumption.",
+    "Missing dynamic decisions remain missing and require Agent authority.",
+    "Static assets receive no synthetic dynamic burden.",
+    "REQ-084 and REQ-086 remain partial until their dedicated Phase 5 Prompt-consumption tasks are proven."
+  ],
+  "pending": [
+    "broader commercial Prompt density across static and non-video surfaces",
+    "visible-copy exactness and separation across active surfaces",
+    "REQ-084 Product Presence/Fidelity/reference Prompt consumption",
+    "REQ-086 scene-derived camera/lighting/CMF Prompt consumption",
+    "Fresh real K01 FULL",
+    "Provider actual media / pixel-frame Review / smallest Local Revision / provenance"
+  ]
+}
