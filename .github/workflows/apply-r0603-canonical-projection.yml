@@ -1,0 +1,53 @@
+name: Apply R06-03 canonical projection repair
+
+on:
+  push:
+    branches: [r06-03-red-staging]
+    paths:
+      - '.github/workflows/apply-r0603-canonical-projection.yml'
+      - 'scripts/apply_r0603_canonical_projection_patch.py'
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ github.token }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply exact repair
+        run: python scripts/apply_r0603_canonical_projection_patch.py
+      - name: Install verification dependencies
+        run: python -m pip install pyyaml pytest
+      - name: Focused RED-to-GREEN
+        env:
+          PYTHONPATH: '.:runtime'
+        run: |
+          python -m py_compile runtime/cbcc/compiler.py runtime/cbcc/canonical_materialization_integrity.py runtime/cbcc/canonical_full_parity_v0671.py
+          pytest -q tests/test_v0682_r0603_canonical_projection_unification.py
+          pytest -q \
+            tests/test_v0676_canonical_commerce_graph.py \
+            tests/test_v0680_phase6_req061_same_source_projection.py \
+            tests/test_v0680_phase6_req089_routed_canonical_workspace.py \
+            tests/test_v0672_fresh_k01_projection_closure.py \
+            tests/test_v0672_fresh_k01_materialization_closure.py \
+            tests/test_v0672_fresh_k01_final_export_closure.py \
+            tests/test_v0670_asset_package_lineage_materialization.py \
+            tests/test_v0681_phase7_req088_lineage_closure.py \
+            tests/test_v0681_phase7_req088_lineage_export.py \
+            tests/test_v0682_r0602_capability_conservation.py \
+            tests/test_v0616_provider_host_surface.py
+      - name: Commit repaired runtime
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add runtime/cbcc/compiler.py runtime/cbcc/canonical_materialization_integrity.py runtime/cbcc/canonical_full_parity_v0671.py
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix(r06-03): unify canonical projection authority'
+          git push origin HEAD:r06-03-red-staging
