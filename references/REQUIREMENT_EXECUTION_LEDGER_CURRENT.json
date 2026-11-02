@@ -183,7 +183,7 @@
       "req": "REQ-090",
       "title": "FULL package lineage and actual-output boundary",
       "phase": "7,8,10",
-      "status": "PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_INVENTORY_REQ088_LINEAGE_AND_ACTUAL_OUTPUT_BOUNDARY_TARGETED_VERIFIED_HOST_PARITY_AND_REAL_PROVIDER_OUTPUT_PENDING"
+      "status": "PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_INVENTORY_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_AND_ACTUAL_OUTPUT_BOUNDARY_TARGETED_VERIFIED_HOST_PARITY_AND_REAL_PROVIDER_OUTPUT_PENDING"
     }
   ],
   "phase_status": {
@@ -194,7 +194,7 @@
     "4": "PASS_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER_VERIFIED",
     "5": "PASS_PHASE5_COMMERCIAL_PROMPT_COMPILER_PARAMETER_CONSUMPTION_VERIFIED",
     "6": "PASS_PHASE6_JSON_MD_HTML_SAME_SOURCE_ROUTED_HUMAN_WORKSPACE_AND_ACTIVATED_DELIVERY_FAMILIES_VERIFIED",
-    "7": "IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_AND_REQ088_LINEAGE_TARGETED_VERIFIED_REQ090_HOST_PARITY_AND_REAL_PROVIDER_OUTPUT_PENDING",
+    "7": "IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY_PENDING",
     "8": "NOT_STARTED",
     "9": "NOT_STARTED",
     "10": "NOT_STARTED",
@@ -995,7 +995,11 @@
         "FULL_DELIVERY_OBJECT_MANIFEST.json",
         "FULL_MATERIALIZATION_AUDIT.json",
         "DELIVERY_MANIFEST.json",
-        "final delivery ZIP"
+        "final delivery ZIP",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_MATURE_PACKAGE_CONTINUITY.json",
+        "runtime/cbcc/final_mature_package_continuity_v0681.py",
+        "tests/test_v0681_phase7_final_mature_package_continuity.py"
       ],
       "remaining_phase7": [
         "REQ-088 complete Source/Evidence/Assumption/Decision lineage chain with downstream-use and proof-object coverage.",
@@ -1040,7 +1044,13 @@
         "Nested evidence descriptors are not double-counted as independent business lineage records.",
         "Production export materializes lineage before final semantic inventory/Manifest/ZIP rebuild."
       ],
-      "remaining_boundary": "Phase 7 remains IN_PROGRESS. Independently materialized Host-native parity and real Provider Result→Review→Revision/hash evidence are not claimed by REQ-088 and remain pending under REQ-090/later planned proof."
+      "remaining_boundary": "Phase 7 remains IN_PROGRESS. Independently materialized Host-native parity and real Provider Result→Review→Revision/hash evidence are not claimed by REQ-088 and remain pending under REQ-090/later planned proof.",
+      "final_mature_package_continuity": "PASS_PHASE7_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED",
+      "mature_continuity_checker": "runtime.cbcc.full_delivery_depth_v3.audit_host_full_package reused on final package bytes",
+      "mature_continuity_focused_green": "4/4 dedicated characterization tests passed; GitHub Actions run 41416575861 on head 646f5dfc915642286b80a3aad86c569416cee044",
+      "mature_continuity_permanent_current": "Permanent Phase 7 CURRENT step executed seven Phase 7 files and passed 16/16; full CURRENT build/check/floors/artifact upload SUCCESS in run 41416771898 on head 3b6a0d2f7b52a618316bb880839b4f35aa19e47b",
+      "host_native_runtime_semantic_parity": "E2E_PENDING_INSTALLED_HOST_EXPORT",
+      "phase7_boundary": "Final semantic inventory, REQ-088 lineage, and final-byte mature package continuity are targeted verified. Phase 7 remains IN_PROGRESS until independently materialized Host-native versus Runtime semantic parity is proven. Provider actual-output belongs to Phase 8; Fresh K01 FULL to Phase 10; installed-plugin readback to Phase 11."
     }
   },
   "version": "2026-11-02-phase7-in-progress-v1",

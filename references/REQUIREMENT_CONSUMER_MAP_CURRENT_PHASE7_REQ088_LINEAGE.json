@@ -101,12 +101,19 @@
   "phase_boundary": {
     "phase7_status": "IN_PROGRESS",
     "req088": "TARGETED_PASS",
-    "req090": "PARTIAL_PENDING_INSTALLED_HOST_AND_ACTUAL_OUTPUT_CONTINUITY",
+    "req090": "PARTIAL_PHASE7_FINAL_SEMANTIC_INVENTORY_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_AND_ACTUAL_OUTPUT_BOUNDARY_TARGETED_VERIFIED_HOST_PARITY_AND_LATER_REAL_PROVIDER_OUTPUT_PENDING",
     "fresh_k01": "NOT_CLAIMED_BY_THIS_SUBTASK",
     "provider_actual_output": "NOT_CLAIMED_BY_THIS_SUBTASK"
   },
   "next": [
-    "Keep REQ-090 fail-honest until independently materialized Host-native semantic parity and real Provider Result/Review/Revision/hash evidence are available in their planned phases.",
-    "Continue Phase 7 package-continuity work without reopening the now-permanent REQ-088 lineage contract."
-  ]
+    "Keep the now-permanent REQ-088 lineage contract closed while Phase 7 waits only for independently materialized Host-native versus Runtime semantic parity.",
+    "Do not promote Phase 8 Provider actual-output, Phase 10 Fresh K01 FULL, or Phase 11 installed-plugin readback into Phase 7 evidence."
+  ],
+  "phase7_followup": {
+    "final_mature_package_continuity": "PASS_PHASE7_TARGETED_VERIFIED",
+    "consumer_map": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_MATURE_PACKAGE_CONTINUITY.json",
+    "focused_green_run": 41416575861,
+    "permanent_current_green_run": 41416771898,
+    "remaining_phase7_boundary": "independently materialized Host-native versus Runtime semantic parity"
+  }
 }

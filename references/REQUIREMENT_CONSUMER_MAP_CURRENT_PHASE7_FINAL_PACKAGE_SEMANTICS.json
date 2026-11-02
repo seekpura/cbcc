@@ -8,7 +8,7 @@
   "requirements": [
     {
       "requirement_id": "REQ-090",
-      "status": "PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_CLOSURE_TARGETED_VERIFIED_REMAINING_PHASE7_LINEAGE_CONTINUITY_PENDING",
+      "status": "PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_CLOSURE_REQ088_LINEAGE_AND_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED_HOST_PARITY_PENDING",
       "summary": "The final package is re-audited after every Phase 6 projection. FULL_DELIVERY_OBJECT_MANIFEST is derived dynamically from actual canonical business objects and production asset packages rather than a static hand-list.",
       "consumers": [
         "runtime/cbcc/full_package_semantic_closure_v0681.py",
@@ -21,8 +21,8 @@
     },
     {
       "requirement_id": "REQ-088",
-      "status": "PARTIAL_PHASE7_PACKAGE_SEMANTIC_IDENTITY_BOUNDARY_VERIFIED_FULL_SOURCE_DECISION_LINEAGE_PENDING",
-      "summary": "Stable package-level canonical object IDs and semantic hashes now provide the final identity plane that the detailed source/evidence/assumption/decision lineage closure will bind to next.",
+      "status": "PASS_PHASE2_PHASE7_RESOLVABLE_SOURCE_EVIDENCE_ASSUMPTION_DECISION_LINEAGE_TARGETED_VERIFIED",
+      "summary": "Stable final semantic object IDs/hashes are now consumed by the separately verified REQ-088 lineage closure recorded in REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json.",
       "consumers": [
         "FULL_DELIVERY_OBJECT_MANIFEST.json semantic_objects",
         "final_semantic_signature_sha256",
@@ -59,12 +59,18 @@
     "Final package semantic truth is computed from final bytes after all projections, never from an earlier materialization snapshot.",
     "Semantic object parity is different from installed-host E2E proof; source comparator implementation cannot be promoted to actual Host-native parity without a second package.",
     "Planning/provider-job existence is never promoted to actual-output QA.",
-    "This subtask does not yet close the complete REQ-088 lineage chain or every Phase 7 package-continuity requirement.",
+    "REQ-088 is now separately closed at targeted proof level; this semantic map remains the identity/comparator authority consumed by that closure.",
     "Fresh K01 FULL and Provider actual-output proof remain later-phase evidence."
   ],
   "next": [
-    "REQ-088 complete Source/Evidence/Assumption/Decision lineage object and downstream-use proof",
-    "Phase 7 package-level lineage coverage from every active semantic object to proof object",
-    "Host-native/Runtime semantic comparator consumption when an independently materialized Host package is available"
-  ]
+    "Consume the existing Host-native/Runtime semantic comparator when an independently materialized Host-native package becomes available; do not infer parity from the Runtime package alone.",
+    "Keep Provider actual-output Result/Review/Revision evidence in Phase 8 and Fresh K01 FULL in Phase 10."
+  ],
+  "current_followup": {
+    "req088_lineage": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json",
+    "final_mature_package_continuity": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_MATURE_PACKAGE_CONTINUITY.json",
+    "final_mature_focused_green_run": 41416575861,
+    "permanent_current_green_run": 41416771898,
+    "remaining_phase7_boundary": "independently materialized Host-native versus Runtime semantic parity"
+  }
 }
