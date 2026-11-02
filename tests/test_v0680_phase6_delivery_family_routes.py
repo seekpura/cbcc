@@ -132,6 +132,8 @@ def test_phase6_delivery_family_audit_does_not_accept_archive_only_presence(tmp_
 def test_phase6_final_export_manifest_and_zip_consume_delivery_family_workspace(tmp_path: Path, monkeypatch):
     import runtime.cbcc.commercial_delivery_continuity as continuity
     import runtime.cbcc.full_delivery_materialization as full_materialization
+    import runtime.cbcc.phase7_lineage_semantic_closure_v0681 as phase7_closure
+    from runtime.cbcc.full_package_semantic_closure_v0681 import _rebuild_manifest_and_zip
 
     package = _package(tmp_path)
     zip_path = tmp_path / "phase6-family-delivery.zip"
@@ -148,6 +150,28 @@ def test_phase6_final_export_manifest_and_zip_consume_delivery_family_workspace(
         full_materialization,
         "finalize_full_delivery_materialization",
         lambda project_dir, manifest: dict(manifest),
+    )
+
+    # This is a Phase 6 integration proof. Phase 7 has its own final-byte mature-package tests and
+    # must not retroactively require this deliberately minimal Phase 6 fixture to satisfy later-phase
+    # materialization contracts. Preserve only the final Manifest/ZIP rebuild that this test consumes.
+    def phase7_passthrough(package_dir, *, zip_path=None, host_package_dir=None):
+        package_path = Path(package_dir)
+        manifest = json.loads((package_path / "DELIVERY_MANIFEST.json").read_text(encoding="utf-8"))
+        final_manifest = _rebuild_manifest_and_zip(
+            package_path,
+            Path(zip_path) if zip_path is not None else None,
+            manifest,
+        )
+        return {
+            "manifest": final_manifest,
+            "zip_path": str(zip_path) if zip_path is not None else None,
+        }
+
+    monkeypatch.setattr(
+        phase7_closure,
+        "materialize_phase7_lineage_and_semantics",
+        phase7_passthrough,
     )
 
     def base_export(project_dir, output, *args, **kwargs):

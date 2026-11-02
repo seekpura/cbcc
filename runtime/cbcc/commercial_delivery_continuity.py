@@ -118,12 +118,13 @@ def wrap_export_delivery_package(fn: Callable[..., dict[str, Any]]):
         manifest = fn(project_dir, output, *args, **kwargs)
         from .full_delivery_materialization import finalize_full_delivery_materialization
         manifest = finalize_full_delivery_materialization(project_dir, manifest)
-        from .canonical_delivery_parity_v0680 import finalize_export_canonical_delivery_parity, _rebuild_export_zip
+        from .canonical_delivery_parity_v0680 import finalize_export_canonical_delivery_parity
         manifest = finalize_export_canonical_delivery_parity(manifest)
 
         from .delivery_family_workspace_v0680 import AUDIT_FILE as FAMILY_AUDIT_FILE
         from .delivery_family_workspace_v0680 import materialize_delivery_family_workspace
-        family = materialize_delivery_family_workspace(Path(manifest['package_dir']))
+        package = Path(manifest['package_dir'])
+        family = materialize_delivery_family_workspace(package)
         if family.get('status') != 'PASS':
             raise RuntimeError('BLOCKED Phase 6 delivery-family Human Workspace projection failed: ' + json.dumps(family.get('issues') or [], ensure_ascii=False))
         manifest['delivery_family_workspace_audit'] = FAMILY_AUDIT_FILE
@@ -133,7 +134,14 @@ def wrap_export_delivery_package(fn: Callable[..., dict[str, Any]]):
         workspace['activated_delivery_family_routes'] = family.get('status')
         workspace['delivery_family_menu_is_fixed'] = False
         manifest['workspace_contract'] = workspace
-        return _rebuild_export_zip(Path(manifest['package_dir']), Path(manifest['zip_path']), manifest)
+
+        # Phase 7 must observe the bytes after every Phase 6 projection. Persist the current in-memory
+        # manifest before final semantic closure so family routing and earlier parity metadata are not
+        # lost when the finalizer rebuilds the manifest and ZIP.
+        _write_json(package / 'DELIVERY_MANIFEST.json', manifest)
+        from .phase7_lineage_semantic_closure_v0681 import materialize_phase7_lineage_and_semantics
+        phase7 = materialize_phase7_lineage_and_semantics(package, zip_path=Path(manifest['zip_path']))
+        return phase7['manifest']
     return exported
 
 
