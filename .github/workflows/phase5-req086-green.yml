@@ -5,7 +5,7 @@ on:
     branches:
       - phase5-req086-scene-photo-prompt
     paths:
-      - '.github/phase5_req086_green_trigger.txt'
+      - '.github/phase5_req086_green_trigger_v2.txt'
   workflow_dispatch:
 
 permissions:
@@ -51,8 +51,10 @@ jobs:
         run: |
           git config user.name "cbcc-phase5-bot"
           git config user.email "cbcc-phase5-bot@users.noreply.github.com"
-          git add runtime/cbcc/prompt_compiler.py
+          git add \
+            runtime/cbcc/photographic_route_agent_authority.py \
+            runtime/cbcc/model_native_prompt_audit_fix.py
           git diff --cached --check
           git diff --cached --quiet && { echo 'No production diff to commit'; exit 1; }
-          git commit -m "feat(phase5): consume scene-derived photography in acting prompts"
+          git commit -m "feat(phase5): prove scene-derived photography prompt consumption"
           git push origin HEAD:phase5-req086-scene-photo-prompt
