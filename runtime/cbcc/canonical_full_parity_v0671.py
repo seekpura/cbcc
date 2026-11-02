@@ -12,6 +12,7 @@ except Exception:  # pragma: no cover - runtime already depends on PyYAML, fallb
     yaml = None
 
 from .canonical_human_workspace_completion import apply_complete_canonical_human_projection
+from .canonical_materialization_integrity import audit_asset_directory
 
 
 MARKER = 'CBCC_CANONICAL_STATIC_PROJECTION_V0671'
@@ -230,7 +231,12 @@ def build_canonical_human_payload(package_dir: Path | str) -> dict[str, Any]:
     universe = _read_json(package / 'ASSET_UNIVERSE.json')
 
     asset_root = package / 'asset_packages'
-    assets = [_asset_payload(d) for d in sorted(asset_root.iterdir()) if d.is_dir()] if asset_root.exists() else []
+    asset_dirs = [d for d in sorted(asset_root.iterdir()) if d.is_dir()] if asset_root.exists() else []
+    asset_projection_issues = [issue for d in asset_dirs for issue in audit_asset_directory(d)]
+    if asset_projection_issues:
+        raise RuntimeError('BLOCKED canonical asset projection drift: ' + json.dumps(asset_projection_issues[:50], ensure_ascii=False))
+    assets = [_asset_payload(d) for d in asset_dirs]
+    canonical_graph = _read_json(support / 'canonical_commerce_graph.json')
 
     product_business = product_truth or _d(human.get('product'))
     listing = _normalized_listing(human)
@@ -315,6 +321,12 @@ def build_canonical_human_payload(package_dir: Path | str) -> dict[str, Any]:
         'universe': universe,
         'assets': assets,
         'canonical_business_objects': business_objects,
+        'projection_authority': ({
+            'source': 'supporting_analysis/canonical_commerce_graph.json',
+            'graph_sha256': canonical_graph.get('graph_sha256'),
+            'schema': canonical_graph.get('schema'),
+            'role': 'PROJECTION_LINEAGE_ONLY',
+        } if canonical_graph.get('graph_sha256') else {}),
         'projection_contract': {
             'version': '0.6.71',
             'source': 'real_final_package_machine_authorities',

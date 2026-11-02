@@ -146,8 +146,73 @@ def audit_prompt_lineage(asset:Mapping[str,Any], bundle:Mapping[str,Any])->list[
     return []
 
 
+
+def _read_json_file(path:Path)->dict[str,Any]:
+    if not path.exists(): return {}
+    try:
+        value=json.loads(path.read_text(encoding='utf-8'))
+        return value if isinstance(value,dict) else {}
+    except Exception:
+        return {}
+
+def _extract_fenced_json(text:str)->dict[str,Any]:
+    match=re.search(r'```json\s*\n(.*?)\n```',str(text or ''),re.S|re.I)
+    if not match: return {}
+    try:
+        value=json.loads(match.group(1))
+        return value if isinstance(value,dict) else {}
+    except Exception:
+        return {}
+
+def _normalized_visible_copy_raw(value:Mapping[str,Any])->dict[str,Any]:
+    out=deepcopy(dict(value or {}))
+    out.pop('copy_render_route',None)
+    return out
+
+def _projection_drift(asset_id:str,code:str,field:str,left:Any,right:Any,why:str)->dict[str,Any]:
+    return {'asset_id':asset_id,'code':code,'field':field,'value':_text({'projection':left,'contract':right})[:500],'why':why}
+
+def audit_asset_projection_parity(asset_dir:Path)->list[dict[str,Any]]:
+    """Reject semantically conflicting projections even when byte lineage was freshly rebuilt."""
+    asset_dir=Path(asset_dir); asset_id=asset_dir.name; issues=[]
+    contract=_read_json_file(asset_dir/'13_prompt_contract.json')
+    card=_read_json_file(asset_dir/'12_design_card.json')
+    visible=_read_json_file(asset_dir/'14_visible_copy_block.json')
+    production=_read_json_file(asset_dir/'15_production_assembly_notes.json')
+
+    contract_card=contract.get('design_card') if isinstance(contract.get('design_card'),Mapping) else {}
+    if card and contract_card and card!=contract_card:
+        issues.append(_projection_drift(asset_id,'ASSET_DESIGN_CARD_PROMPT_CONTRACT_DRIFT','design_card',card,contract_card,'12_design_card.json and 13_prompt_contract.json must project one Design Card authority'))
+
+    contract_visible=contract.get('visible_copy_block') if isinstance(contract.get('visible_copy_block'),Mapping) else {}
+    if visible and contract_visible and visible!=contract_visible:
+        issues.append(_projection_drift(asset_id,'ASSET_VISIBLE_COPY_PROMPT_CONTRACT_DRIFT','visible_copy_block',visible,contract_visible,'14_visible_copy_block.json and the Prompt Contract must project one Visible Copy authority'))
+
+    contract_production=contract.get('production_assembly_notes') if isinstance(contract.get('production_assembly_notes'),Mapping) else {}
+    if production and contract_production and production!=contract_production:
+        issues.append(_projection_drift(asset_id,'ASSET_PRODUCTION_NOTES_PROMPT_CONTRACT_DRIFT','production_assembly_notes',production,contract_production,'15_production_assembly_notes.json and the Prompt Contract must project one production authority'))
+
+    for field,file_name,model_key,canonical_key in (
+        ('prompt_cn','05_prompt_CN.txt','model_prompt_cn','canonical_prompt_cn'),
+        ('prompt_en','06_prompt_EN.txt','model_prompt_en','canonical_prompt_en'),
+    ):
+        path=asset_dir/file_name
+        expected=contract.get(model_key) or contract.get(canonical_key)
+        if path.exists() and isinstance(expected,str):
+            actual=path.read_text(encoding='utf-8',errors='ignore')
+            if actual!=expected:
+                issues.append(_projection_drift(asset_id,'ASSET_PROMPT_CONTRACT_TEXT_DRIFT',field,actual,expected,f'{file_name} must be the exact model-facing projection recorded by 13_prompt_contract.json'))
+
+    copy_path=asset_dir/'08_copy.md'
+    if copy_path.exists() and visible:
+        markdown_copy=_extract_fenced_json(copy_path.read_text(encoding='utf-8',errors='ignore'))
+        visible_raw=visible.get('raw') if isinstance(visible.get('raw'),Mapping) else {}
+        if markdown_copy and _normalized_visible_copy_raw(markdown_copy)!=_normalized_visible_copy_raw(visible_raw):
+            issues.append(_projection_drift(asset_id,'ASSET_VISIBLE_COPY_CANONICAL_DRIFT','visible_copy',markdown_copy,visible_raw,'08_copy.md and 14_visible_copy_block.json must project the same shopper-visible copy truth'))
+    return issues
+
 def audit_asset_directory(asset_dir:Path)->list[dict[str,Any]]:
-    issues=[];card={}
+    issues=list(audit_asset_projection_parity(asset_dir));card={}
     for name in ('12_design_card.json','11_design_card.json'):
         p=asset_dir/name
         if p.exists():
