@@ -1,0 +1,62 @@
+name: Phase 5 REQ-083 Temporal Continuity GREEN
+
+on:
+  push:
+    branches: [phase5-req083-temporal-continuity]
+    paths:
+      - '.github/workflows/phase5-req083-green.yml'
+      - '.github/phase5_req083_green_trigger.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  green:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase5-req083-temporal-continuity
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install -q pytest pyyaml pillow
+      - name: Apply minimal REQ-083 production patch
+        run: python .github/phase5_req083_green_patch.py
+      - name: Verify focused REQ-083
+        run: pytest -q tests/test_v0679_phase5_req083_temporal_surface_continuity.py
+      - name: Verify Phase 4 dynamic authorship compatibility
+        run: pytest -q tests/test_v0676_phase4_dynamic_surface_art_direction.py
+      - name: Verify prior Phase 5 Prompt continuity
+        run: |
+          pytest -q \
+            tests/test_v0676_phase5_dynamic_prompt_continuity.py \
+            tests/test_v0676_phase5_product_fidelity_reference_prompt.py \
+            tests/test_v0677_phase5_req086_scene_photo_prompt_consumption.py \
+            tests/test_v0678_phase5_req082_broad_prompt_density.py \
+            tests/test_v0678_phase5_req082_static_ad_prompt_consumption.py \
+            tests/test_v0678_phase5_req082_integrated_render_language_purity.py
+      - name: Verify complete v067 cross-scope
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name 'test_v067*.py' -print | sort)
+          test "${#files[@]}" -gt 0
+          pytest -q "${files[@]}"
+      - name: Validate production diff hygiene
+        run: git diff --check runtime/cbcc/video_creator.py
+      - name: Commit production file only
+        shell: bash
+        run: |
+          git config user.name "cbcc-phase5-bot"
+          git config user.email "cbcc-phase5-bot@users.noreply.github.com"
+          git add runtime/cbcc/video_creator.py
+          git diff --cached --check
+          git diff --cached --quiet && { echo 'No production diff'; exit 1; }
+          git commit -m "feat(phase5): preserve authored temporal surface continuity"
+          git push origin HEAD:phase5-req083-temporal-continuity
