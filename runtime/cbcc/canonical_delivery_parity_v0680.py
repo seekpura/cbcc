@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-"""Phase 6 REQ-061 canonical JSON / Markdown / HTML same-source delivery projection.
+"""Phase 6 canonical JSON / Markdown / HTML delivery projection.
 
-This module is additive.  v0.6.71 already owns the canonical payload builder and the lossless static
-HTML projection.  Phase 6 reuses that authority, materializes one complete Markdown projection from
-the exact JSON bytes, and records a stable signature proving that all three human surfaces were built
-from the same canonical payload.  It does not replace HUMAN_DELIVERY.json or the existing routed
-workspace.
+v0.6.71 remains the canonical payload builder and lossless static HTML projection authority.  Phase 6
+reuses that authority, materializes a complete Markdown projection from the exact JSON bytes, records a
+stable signature, and requires the same canonical business objects to have real routed Human Workspace
+consumers before the final ZIP is rebuilt.
 """
 
 from pathlib import Path
@@ -95,7 +94,6 @@ def _extract_markdown_payload(text: str) -> dict[str, Any]:
 
 def _apply_html_signature(html_path: Path, signature: str) -> None:
     page = html_path.read_text(encoding="utf-8", errors="ignore")
-    # Replace an earlier Phase 6 signature marker rather than stacking duplicate contracts.
     page = re.sub(
         r"\s*<div id=\"cbcc-canonical-delivery-parity-v0680\"[^>]*>.*?</div>\s*",
         "\n",
@@ -224,16 +222,32 @@ def _rebuild_export_zip(package: Path, zip_path: Path, manifest: dict[str, Any])
 
 def finalize_export_canonical_delivery_parity(export_manifest: Mapping[str, Any]) -> dict[str, Any]:
     manifest = dict(export_manifest or {})
-    package = Path(str(manifest.get("package_dir") or ""))
-    zip_path = Path(str(manifest.get("zip_path") or ""))
+    package_raw = str(manifest.get("package_dir") or "").strip()
+    if not package_raw:
+        raise FileNotFoundError("Delivery package missing for Phase 6 parity: package_dir is empty")
+    package = Path(package_raw)
+    zip_raw = str(manifest.get("zip_path") or "").strip()
+    zip_path = Path(zip_raw) if zip_raw else package.with_suffix(".zip")
     if not package.exists():
-        raise FileNotFoundError(f"Delivery package missing for REQ-061 parity: {package}")
+        raise FileNotFoundError(f"Delivery package missing for Phase 6 parity: {package}")
 
     result = materialize_canonical_delivery_parity(package)
     if result.get("status") != "PASS":
         raise RuntimeError(
             "BLOCKED REQ-061 canonical JSON/Markdown/HTML parity failed: "
             + json.dumps(result.get("issues") or [], ensure_ascii=False)
+        )
+
+    # REQ-089 is stricter than whole-page field presence: the same canonical objects must be consumed
+    # inside the project-authored Human Workspace routes.  The generic Archive remains secondary only.
+    from .canonical_routed_workspace_v0680 import AUDIT_FILE as ROUTED_AUDIT_FILE
+    from .canonical_routed_workspace_v0680 import materialize_routed_canonical_workspace
+
+    routed = materialize_routed_canonical_workspace(package)
+    if routed.get("status") != "PASS":
+        raise RuntimeError(
+            "BLOCKED REQ-089 routed canonical Human Workspace projection failed: "
+            + json.dumps(routed.get("issues") or [], ensure_ascii=False)
         )
 
     disk_manifest = _read_json(package / "DELIVERY_MANIFEST.json") or manifest
@@ -244,13 +258,15 @@ def finalize_export_canonical_delivery_parity(export_manifest: Mapping[str, Any]
             "canonical_delivery_parity_audit": AUDIT_FILE,
             "canonical_delivery_parity_status": result.get("status"),
             "canonical_delivery_signature_sha256": result.get("canonical_signature_sha256"),
+            "canonical_routed_workspace_audit": ROUTED_AUDIT_FILE,
+            "canonical_routed_workspace_status": routed.get("status"),
         }
     )
     workspace = dict(disk_manifest.get("workspace_contract") or {})
     workspace["canonical_json_markdown_html_same_source_parity"] = result.get("status")
     workspace["canonical_delivery_signature_sha256"] = result.get("canonical_signature_sha256")
+    workspace["full_canonical_routed_human_workspace"] = routed.get("status")
+    workspace["archive_is_primary_canonical_consumer"] = False
     disk_manifest["workspace_contract"] = workspace
 
-    if not str(zip_path):
-        zip_path = package.with_suffix(".zip")
     return _rebuild_export_zip(package, zip_path, disk_manifest)
