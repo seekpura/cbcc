@@ -47,11 +47,11 @@ def _package(root: Path) -> Path:
 
 
 def test_req088_lineage_closure_is_materialized_into_final_manifest_and_zip(tmp_path: Path):
-    from runtime.cbcc.full_package_semantic_closure_v0681 import materialize_final_package_semantics
+    from runtime.cbcc.phase7_lineage_semantic_closure_v0681 import materialize_phase7_lineage_and_semantics
 
     package = _package(tmp_path)
     zip_path = tmp_path / "final.zip"
-    result = materialize_final_package_semantics(package, zip_path=zip_path)
+    result = materialize_phase7_lineage_and_semantics(package, zip_path=zip_path)
 
     assert result["status"] == "PASS", result
     assert result["lineage_closure_status"] == "PASS"
