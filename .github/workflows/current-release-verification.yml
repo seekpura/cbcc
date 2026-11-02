@@ -16,6 +16,7 @@ on:
       - 'scripts/check_v0674_release_delta.py'
       - 'scripts/check_v0675_release_delta.py'
       - 'scripts/check_v0664_requirement_consumer_map.py'
+      - 'references/REQUIREMENT_AUTHORITY_CURRENT.json'
       - 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_OVERRIDES.json'
       - 'references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json'
       - 'references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md'
@@ -143,7 +144,7 @@ jobs:
             tests/test_v0681_phase7_req088_wrapper_integration.py \
             tests/test_v0681_phase7_req088_mature_authority_regression.py \
             tests/test_v0681_phase7_final_mature_package_continuity.py
-      - name: Verify CURRENT Phase 8 Provider actual-output execution, Review, Local Revision and hash lineage
+      - name: Verify CURRENT Phase 8 Provider actual-output execution, Review, Local Revision and requirement authority
         env: {PYTHONHASHSEED: '0', PYTHONPATH: '.:runtime'}
         run: |
           python -m pytest -q \
@@ -169,6 +170,21 @@ jobs:
           Path('dist_current/CURRENT_PLUGIN_PATH.txt').write_text(str(files[0])+'\n',encoding='utf-8')
           print(json.dumps({'version':version,'authority':authority,'plugin_zip':str(files[0])},ensure_ascii=False))
           PY
+      - name: Prove requirement attribution authority is byte-identical in exact ZIP
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          plugin=Path(Path('dist_current/CURRENT_PLUGIN_PATH.txt').read_text(encoding='utf-8').strip())
+          source=Path('references/REQUIREMENT_AUTHORITY_CURRENT.json').read_bytes()
+          suffix='/resources/references/REQUIREMENT_AUTHORITY_CURRENT.json'
+          with zipfile.ZipFile(plugin) as z:
+              matches=[name for name in z.namelist() if name.endswith(suffix)]
+              assert len(matches)==1, matches
+              packaged=z.read(matches[0])
+          assert packaged==source, 'packaged requirement authority drift'
+          print({'path':matches[0],'bytes':len(packaged),'byte_identical':True})
+          PY
       - name: Check exact ZIP — CURRENT
         run: python scripts/check_current_release_package.py "$(cat dist_current/CURRENT_PLUGIN_PATH.txt)"
       - name: Check exact ZIP — v0.6.70 floor
@@ -192,7 +208,7 @@ jobs:
           from pathlib import Path
           authority=Path('VERSION').read_text(encoding='utf-8').strip();version=re.match(r'^(\d+\.\d+\.\d+)',authority).group(1)
           plugin=Path(Path('dist_current/CURRENT_PLUGIN_PATH.txt').read_text(encoding='utf-8').strip())
-          payload={'file':plugin.name,'version':version,'authority_version':authority,'bytes':plugin.stat().st_size,'sha256':hashlib.sha256(plugin.read_bytes()).hexdigest(),'verified':True,'verified_by':['v0675 identity source','v0674 regression suite','v0674/v0673/v0672 floors','v0671/v0670 floors','CURRENT package checker','v0675 exact ZIP checker','Phase5 canonical dynamic Prompt continuity','Phase5 scene-derived photography Prompt consumption','Phase5 commercial Prompt density and concrete consumption','Phase5 dynamic temporal surface continuity','Phase6 canonical JSON/Markdown/HTML same-source parity','Phase6 routed canonical Human Workspace','Phase6 activated Longform/Store-Landing/CRM delivery family routes and final ZIP consumption','Phase7 final package semantic inventory + host/runtime comparator contract + actual-output E2E boundary + final export ordering + REQ-088 resolvable lineage authority bindings/no-copy invariant + mature information-audit regression + REQ-090 final-byte mature package continuity','Phase8 provider-boundary actual-output bytes + machine quality/reference evidence + human output Review + bounded Local Revision execution + second Review + production receipt/output/revision hash lineage reaching E2E_PROVEN']}
+          payload={'file':plugin.name,'version':version,'authority_version':authority,'bytes':plugin.stat().st_size,'sha256':hashlib.sha256(plugin.read_bytes()).hexdigest(),'verified':True,'verified_by':['v0675 identity source','v0674 regression suite','v0674/v0673/v0672 floors','v0671/v0670 floors','CURRENT package checker','v0675 exact ZIP checker','R06-01 requirement attribution authority + proof-only test/workflow separation + exact ZIP byte parity','Phase5 canonical dynamic Prompt continuity','Phase5 scene-derived photography Prompt consumption','Phase5 commercial Prompt density and concrete consumption','Phase5 dynamic temporal surface continuity','Phase6 canonical JSON/Markdown/HTML same-source parity','Phase6 routed canonical Human Workspace','Phase6 activated Longform/Store-Landing/CRM delivery family routes and final ZIP consumption','Phase7 final package semantic inventory + host/runtime comparator contract + actual-output E2E boundary + final export ordering + REQ-088 resolvable lineage authority bindings/no-copy invariant + mature information-audit regression + REQ-090 final-byte mature package continuity','Phase8 provider-boundary actual-output bytes + machine quality/reference evidence + human output Review + bounded Local Revision execution + second Review + production receipt/output/revision hash lineage reaching E2E_PROVEN']}
           Path('dist_current/VERIFIED_CURRENT_ARTIFACT.json').write_text(json.dumps(payload,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(json.dumps(payload,ensure_ascii=False))
           PY
