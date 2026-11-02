@@ -5,7 +5,7 @@ on:
     branches:
       - phase5-req086-scene-photo-prompt
     paths:
-      - '.github/phase5_req086_green_trigger_v2.txt'
+      - '.github/phase5_req086_green_trigger_v3.txt'
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,7 @@ jobs:
   req086-green:
     runs-on: ubuntu-latest
     env:
-      PYTHONPATH: runtime
+      PYTHONPATH: .:runtime
     steps:
       - uses: actions/checkout@v4
         with:
