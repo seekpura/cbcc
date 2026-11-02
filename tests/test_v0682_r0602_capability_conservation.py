@@ -99,3 +99,10 @@ def test_positioning_consumer_claims_follow_actual_build_direction(tmp_path):
     assert 'Listing Strategy' not in consumers
     assert 'Asset Portfolio' not in consumers
     assert any('strategy' in x.lower() and 'asset' in x.lower() for x in consumers)
+
+
+def test_provider_layer_manifest_is_explicit_exact_pixel_only():
+    text = (ROOT / 'runtime/cbcc/provider_executor.py').read_text(encoding='utf-8')
+    layer_fn = text.split('def _layer_manifest', 1)[1].split('def _capture_metadata', 1)[0]
+    assert "if fidelity not in {'EXACT_PIXEL_COMPOSITE','PIXEL_COMPOSITE_EXPLICIT'}" in layer_fn
+    assert "fidelity != 'LOCKED_PIXEL'" not in layer_fn
