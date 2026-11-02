@@ -1,4 +1,9 @@
-from runtime.cbcc.agent_autonomy import compile_agent_autonomy_plan, research_requirements_from_plan
+from runtime.cbcc.agent_autonomy import (
+    compile_agent_autonomy_plan,
+    compile_agent_next_action,
+    research_requirements_from_plan,
+)
+from runtime.cbcc.creative import compile_creative_council
 from runtime.cbcc.decision_authority import derive_task_content_families
 from runtime.cbcc.research import compile_research_gate
 
@@ -15,6 +20,23 @@ def _request(agent_plan):
         },
         'agent_plan': agent_plan,
     }
+
+
+def _creative_council(directions):
+    return compile_creative_council(
+        directions,
+        {},
+        {'product': {'name': 'Demo'}},
+        {},
+        {},
+        'GENERAL_COMMERCE',
+        [],
+        {
+            'status': 'AGENT_AUTHORED_CREATIVE_OPPORTUNITY_UNIVERSE',
+            'opportunity_count': 0,
+            'opportunities': [],
+        },
+    )
 
 
 def test_explicit_empty_agent_research_scope_is_not_repopulated_by_runtime():
@@ -59,3 +81,33 @@ def test_explicit_empty_agent_content_family_scope_remains_empty():
         available_families=['LISTING', 'SEARCH', 'VISUAL', 'VIDEO'],
     )
     assert families == []
+
+
+def test_explicit_empty_creative_direction_scope_is_not_repopulated_by_runtime():
+    council = _creative_council([])
+
+    assert council['status'] == 'NO_DIRECTION_AVAILABLE'
+    assert council['directions'] == []
+    assert council['selected_direction'] is None
+
+    plan = compile_agent_autonomy_plan(
+        _request({'creative_exploration': {'directions': []}})
+    )
+    next_action = compile_agent_next_action(
+        plan,
+        request=_request({'creative_exploration': {'directions': []}}),
+        asset_architecture={'assets': [{'asset_id': 'AST-1'}]},
+        creative_council=council,
+    )
+    assert any(
+        row.get('action') == 'AUTHOR_OR_SELECT_CREATIVE_DIRECTION'
+        for row in next_action.get('frontier') or []
+    )
+
+
+def test_missing_creative_direction_scope_still_allows_compatibility_synthesis():
+    council = _creative_council(None)
+
+    assert council['status'] == 'SELECTED'
+    assert council['directions']
+    assert council['selected_direction']
