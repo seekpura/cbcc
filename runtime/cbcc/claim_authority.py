@@ -22,19 +22,31 @@ def compile_claim_authority(claims:list[dict[str,Any]]|None, sources:list[dict[s
         source_blob=' '.join(_blob(x) for x in linked)
         claim_blob=_blob(c)
         combined=(source_blob+' '+claim_blob).upper()
-        explicit=str(c.get('evidence_level') or '').upper()
+        explicit=str(c.get('evidence_grade') or c.get('evidence_level') or '').upper()
         status=str(c.get('status') or '').upper()
         reproducible=bool(c.get('reproducible_measurement') or c.get('test_report') or c.get('official_certification'))
         if status in BLOCKED:
-            grade='C'; pub='BLOCKED'
+            support_grade='C'
         elif (linked and any(m in source_blob for m in A_MARKERS)) or reproducible:
-            grade='A'; pub='HARD_CLAIM_ALLOWED_WITH_SCOPE'
+            support_grade='A'
         elif linked or any(m in combined for m in B_MARKERS):
-            grade='B'; pub='BOUNDED_SUPPORTED_CLAIM'
+            support_grade='B'
         else:
-            grade='C'; pub='SOFT_ONLY_NO_HARD_CLAIM'
-        # An explicit A/B label is not itself evidence. Record drift instead of trusting it.
-        if explicit in {'A','B'} and explicit!=grade:
+            support_grade='C'
+
+        # Declared A/B/C is a ceiling, never proof. Source/reproducible evidence may
+        # downgrade an unsupported declaration, but must never upgrade beyond the
+        # explicitly authored claim boundary (especially C -> B/A).
+        rank={'C':0,'B':1,'A':2}
+        grade=support_grade
+        if explicit in rank and rank[explicit] < rank[support_grade]:
+            grade=explicit
+        pub='BLOCKED' if status in BLOCKED else {
+            'A':'HARD_CLAIM_ALLOWED_WITH_SCOPE',
+            'B':'BOUNDED_SUPPORTED_CLAIM',
+            'C':'SOFT_ONLY_NO_HARD_CLAIM',
+        }[grade]
+        if explicit in rank and rank[explicit] > rank[support_grade]:
             issues.append({'claim_id':cid or None,'code':'DECLARED_EVIDENCE_GRADE_NOT_SUPPORTED','declared':explicit,'normalized':grade,'source_ids':refs})
         if status in {'APPROVED','VERIFIED','ACTIVE'} and grade=='C':
             issues.append({'claim_id':cid or None,'code':'APPROVAL_STATUS_WITHOUT_A_OR_B_EVIDENCE','status':status,'normalized_grade':grade})
@@ -42,6 +54,6 @@ def compile_claim_authority(claims:list[dict[str,Any]]|None, sources:list[dict[s
         c['source_ids']=refs; c['evidence_source_ids']=refs
         c['evidence_grade']=grade; c['evidence_level']=grade; c['publication_status']=pub
         c['publication_rule']={'A':'Hard claim may be used only within the exact tested/certified/measured scope.','B':'Use bounded wording supported by specification/formula/mechanism; do not upgrade to tested outcome.','C':'Subjective/hypothesis/pending only; never a hard claim.'}[grade]
-        c['authority_trace']={'linked_source_ids':[str(x.get('source_id')) for x in linked if x.get('source_id')],'linked_source_count':len(linked),'declared_status':status or None,'declared_evidence_level':explicit or None}
+        c['authority_trace']={'linked_source_ids':[str(x.get('source_id')) for x in linked if x.get('source_id')],'linked_source_count':len(linked),'declared_status':status or None,'declared_evidence_level':explicit or None,'source_supported_grade':support_grade}
         rows.append(c)
     return {'status':'CLAIM_AUTHORITY_COMPILED','claims':rows,'issues':issues,'grade_definition':{'A':'检测报告/官方认证/可复现实测','B':'供应链规格/配方/成分机理支持','C':'主观体验/创意假设/待验证；不得硬宣称'}}
