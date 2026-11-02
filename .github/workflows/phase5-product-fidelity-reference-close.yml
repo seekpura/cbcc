@@ -1,0 +1,100 @@
+name: phase5-product-fidelity-reference-close
+
+on:
+  push:
+    branches: [phase5-product-fidelity-reference]
+    paths:
+      - '.github/phase5_close_product_fidelity_reference.py'
+      - '.github/workflows/phase5-product-fidelity-reference-close.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase5-product-fidelity-reference
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q pytest pyyaml openpyxl pillow
+      - name: Generate Product Fidelity reference closure docs and checker binding
+        run: python .github/phase5_close_product_fidelity_reference.py
+      - name: Verify REQ-084 ledger/map boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          ledger=json.loads(Path('references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json').read_text(encoding='utf-8'))
+          cmap=json.loads(Path('references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PRODUCT_FIDELITY_REFERENCE.json').read_text(encoding='utf-8'))
+          by={x['req']:x for x in ledger['new_requirements']}
+          assert by['REQ-084']['status']=='PASS_PHASE4_PHASE5_PRODUCT_PRESENCE_FIDELITY_REFERENCE_INDEPENDENCE_TARGETED_VERIFIED_E2E_PENDING'
+          assert 'PHASE5_PROMPT_CONSUMPTION_PENDING' in by['REQ-086']['status']
+          assert {r['requirement_id'] for r in cmap['requirements']}=={'REQ-084'}
+          assert cmap['production_head_sha']=='32c46dc40a3e13c15855ad771c014fca77a45a94'
+          PY
+      - name: Re-run focused and cross-scope proof on closure bytes
+        run: |
+          pytest -q tests/test_v0676_phase5_product_fidelity_reference_prompt.py
+          pytest -q tests/test_v0676_phase5_dynamic_prompt_continuity.py
+          pytest -q tests/test_v0676_phase4_inclusion_execution_authority.py tests/test_v0635_native_reference_provider_integrity.py
+          pytest -q tests/test_v0676_phase4_*.py
+          pytest -q tests/test_v0673_model_prompt_route_relevance.py
+          pytest -q tests/test_v0674_regression_closure.py
+      - name: Verify CURRENT checker contracts
+        run: |
+          python -m unittest discover -s tests -p 'test_current_requirement_consumer_freshness.py' -v
+          python -m unittest discover -s tests -p 'test_current_release_package_checker.py' -v
+          python scripts/check_v0664_requirement_consumer_map.py
+      - name: Build exact CURRENT package
+        run: python -m scripts.build_plugin_dist_current --output-dir dist_current
+      - name: Resolve exact CURRENT package and run checker
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          authority=Path('VERSION').read_text(encoding='utf-8').strip()
+          version=re.match(r'^(\d+\.\d+\.\d+)',authority).group(1)
+          files=sorted(Path('dist_current').glob('cross-border-commerce-creative-plugin-v*.zip'))
+          assert len(files)==1, files
+          assert files[0].name==f'cross-border-commerce-creative-plugin-v{version}.zip'
+          Path('dist_current/CURRENT_PLUGIN_PATH.txt').write_text(str(files[0])+'\n',encoding='utf-8')
+          PY
+          python scripts/check_current_release_package.py "$(cat dist_current/CURRENT_PLUGIN_PATH.txt)"
+      - name: Verify closure authorities are byte-identical inside built package
+        run: |
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          plugin=Path(Path('dist_current/CURRENT_PLUGIN_PATH.txt').read_text().strip())
+          prefix='cross-border-commerce-creative/skills/cross-border-commerce-creative/resources/'
+          paths=[
+            'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PRODUCT_FIDELITY_REFERENCE.json',
+            'references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json',
+            'references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md',
+          ]
+          with zipfile.ZipFile(plugin) as z:
+              for rel in paths:
+                  assert z.read(prefix+rel)==Path(rel).read_bytes(), rel
+          PY
+      - name: Commit durable non-workflow closure files
+        run: |
+          git config user.name 'cbcc-phase5-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add \
+            references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PRODUCT_FIDELITY_REFERENCE.json \
+            references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json \
+            references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md \
+            scripts/check_current_release_package.py \
+            tests/test_current_release_package_checker.py
+          git diff --cached --check
+          git commit -m 'docs(phase5): close Product Fidelity reference independence'
+          git push origin HEAD:phase5-product-fidelity-reference
