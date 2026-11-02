@@ -117,7 +117,9 @@ def wrap_export_delivery_package(fn: Callable[..., dict[str, Any]]):
         compile_continuity_audit(project_dir, context)
         manifest = fn(project_dir, output, *args, **kwargs)
         from .full_delivery_materialization import finalize_full_delivery_materialization
-        return finalize_full_delivery_materialization(project_dir, manifest)
+        manifest = finalize_full_delivery_materialization(project_dir, manifest)
+        from .canonical_delivery_parity_v0680 import finalize_export_canonical_delivery_parity
+        return finalize_export_canonical_delivery_parity(manifest)
     return exported
 
 
