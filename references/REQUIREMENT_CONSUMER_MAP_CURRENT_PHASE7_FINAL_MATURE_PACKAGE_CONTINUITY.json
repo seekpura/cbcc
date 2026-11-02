@@ -1,0 +1,84 @@
+{
+  "version": "cbcc-current-phase7-final-mature-package-continuity-v1",
+  "phase": 7,
+  "subtask": "REQ-090 final-byte mature FULL package continuity",
+  "requirement_id": "REQ-090",
+  "status": "PASS_PHASE7_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED",
+  "focused_green_head_sha": "646f5dfc915642286b80a3aad86c569416cee044",
+  "permanent_current_gate_head_sha": "3b6a0d2f7b52a618316bb880839b4f35aa19e47b",
+  "authority_contract": {
+    "final_continuity_module": "runtime/cbcc/final_mature_package_continuity_v0681.py",
+    "reused_checker": "runtime.cbcc.full_delivery_depth_v3.audit_host_full_package",
+    "core_contract_reused": true,
+    "principle": "Phase 7 re-runs the existing mature FULL-package authority against the final mutated package bytes. It does not replace that authority with a second fixed core-file registry, and a canonical semantic inventory alone cannot satisfy mature FULL-package continuity."
+  },
+  "production_sequence": [
+    "Materialize REQ-088 lineage authority bindings and write lineage status into DELIVERY_MANIFEST.json.",
+    "Materialize final semantic inventory on the post-Phase-6 package bytes without emitting the definitive ZIP.",
+    "Re-run mature FULL-package continuity on those final bytes, including existing mature checker issues, activated Listing output and Manifest-declared path resolution.",
+    "Fail closed before final ZIP when mature continuity is INCOMPLETE.",
+    "Only after mature continuity PASS, rebuild DELIVERY_MANIFEST.json and the definitive final ZIP from the verified final bytes."
+  ],
+  "consumers": [
+    "runtime/cbcc/final_mature_package_continuity_v0681.py::audit_final_mature_package_continuity",
+    "runtime/cbcc/final_mature_package_continuity_v0681.py::finalize_final_mature_package_continuity",
+    "runtime/cbcc/phase7_lineage_semantic_closure_v0681.py::materialize_phase7_lineage_and_semantics",
+    "runtime/cbcc/commercial_delivery_continuity.py::wrap_export_delivery_package",
+    "FULL_MATERIALIZATION_AUDIT.json final_mature_package_continuity/final_mature_package_audit",
+    "DELIVERY_MANIFEST.json final_mature_package_continuity/workspace_contract",
+    "final delivery ZIP"
+  ],
+  "verified_behavior": [
+    "A canonical-only shortcut package is rejected by the production Phase 7 orchestrator even when canonical semantic bytes exist.",
+    "The final mature audit delegates the mature core contract to full_delivery_depth_v3.audit_host_full_package instead of maintaining a second hard-coded core-output registry.",
+    "When Listing is activated by the final Manifest/canonical Human Delivery scope, 01_LISTING_UPLOAD_READY.md must exist on final bytes or the package is blocked.",
+    "Every relative package path explicitly promised by the final DELIVERY_MANIFEST must resolve on final bytes; unresolved declarations fail with FINAL_MATURE_DECLARED_PATH_MISSING.",
+    "Final mature continuity is evaluated after Phase 6/REQ-088/semantic mutations and before the definitive ZIP rebuild, closing the earlier timing gap where an early mature audit could be stale.",
+    "Provider planning/job templates remain insufficient for actual-output proof. Production scope explicitly not requested remains fail-honest rather than being promoted to Provider E2E PASS."
+  ],
+  "proof": {
+    "focused_red_run": 41411506549,
+    "focused_red": "The new final-byte mature package characterization failed before the continuity authority was wired into the final Phase 7 path.",
+    "dedicated_intermediate_red_run": 41416410663,
+    "dedicated_intermediate_red": "3/4 behaviors passed; the mature-pass fixture still used legacy shallow READY placeholders, proving the focused gate was independently exercising the existing mature contract rather than being masked by CURRENT.",
+    "dedicated_focused_green_run": 41416575861,
+    "dedicated_focused_green": "SUCCESS on exact head 646f5dfc915642286b80a3aad86c569416cee044; all four final mature package characterization tests passed.",
+    "permanent_current_green_run": 41416771898,
+    "permanent_current_green": "SUCCESS on exact head 3b6a0d2f7b52a618316bb880839b4f35aa19e47b; permanent Phase 7 step explicitly executed seven Phase 7 test files including final mature continuity and reported 16/16 passed, followed by requirement accounting, CURRENT build, exact ZIP checker, v0.6.70-v0.6.75 floors and artifact upload.",
+    "verified_current_artifact_id": 13127059402,
+    "tests": [
+      "tests/test_v0681_phase7_final_mature_package_continuity.py",
+      "tests/test_v0681_phase7_final_package_semantic_closure.py",
+      "tests/test_v0681_phase7_final_export_integration.py",
+      "tests/test_v0681_phase7_req088_lineage_closure.py",
+      "tests/test_v0681_phase7_req088_lineage_export.py",
+      "tests/test_v0681_phase7_req088_wrapper_integration.py",
+      "tests/test_v0681_phase7_req088_mature_authority_regression.py"
+    ],
+    "runtime": [
+      "runtime/cbcc/final_mature_package_continuity_v0681.py",
+      "runtime/cbcc/full_delivery_depth_v3.py",
+      "runtime/cbcc/full_package_semantic_closure_v0681.py",
+      "runtime/cbcc/phase7_lineage_semantic_closure_v0681.py",
+      "runtime/cbcc/commercial_delivery_continuity.py"
+    ]
+  },
+  "invariants": [
+    "Final-byte mature package continuity is a package-structure/business-surface continuity proof, not independently installed Host-native semantic parity.",
+    "A semantic inventory PASS cannot waive missing mature Hub/Strategy/Supporting/Universe/activated delivery surfaces required by the existing FULL package authority.",
+    "A mature package PASS cannot waive REQ-088 source/evidence/assumption/decision lineage; that authority remains separately enforced in the same permanent Phase 7 gate.",
+    "Actual Provider Result/Review/Revision/hash evidence is a later actual-output plane and is not fabricated by this Phase 7 subtask.",
+    "Fresh K01 FULL and installed-plugin readback remain later locked-plan proof and are not claimed here."
+  ],
+  "phase_boundary": {
+    "phase7_status": "IN_PROGRESS_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY_NOT_YET_INDEPENDENTLY_PROVEN",
+    "req090": "PARTIAL_PHASE7_FINAL_SEMANTIC_INVENTORY_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_AND_ACTUAL_OUTPUT_BOUNDARY_TARGETED_VERIFIED_HOST_PARITY_AND_LATER_REAL_PROVIDER_OUTPUT_PENDING",
+    "provider_actual_output": "PHASE8_NOT_CLAIMED_BY_THIS_SUBTASK",
+    "fresh_k01": "PHASE10_NOT_CLAIMED_BY_THIS_SUBTASK",
+    "installed_plugin_readback": "PHASE11_NOT_CLAIMED_BY_THIS_SUBTASK"
+  },
+  "next": [
+    "Keep Phase 7 open until an independently materialized Host-native export can be compared semantically with the Runtime export under the existing comparator contract.",
+    "Do not pull Phase 8 Provider Result/Review/Revision, Phase 10 Fresh K01 FULL or Phase 11 installed-plugin readback forward into this subtask."
+  ]
+}
