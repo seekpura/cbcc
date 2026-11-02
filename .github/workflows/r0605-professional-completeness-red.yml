@@ -1,11 +1,11 @@
-name: R06-05 Professional Completeness RED
+name: R06-05 Professional Completeness Verification
 
 on:
   push:
     branches: [r06-05-professional-completeness-red]
 
 jobs:
-  red:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,7 +15,12 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m pip install --disable-pip-version-check pytest pyyaml openpyxl
-      - name: Reproduce explicit C claim escalation
+      - name: Verify A-K professional input-analysis-decision-downstream behavior
         env:
           PYTHONPATH: .:runtime
-        run: python -m pytest -q tests/test_v0682_r0605_professional_capability_completeness.py
+        run: >-
+          python -m pytest -q
+          tests/test_v0682_r0605_professional_capability_completeness.py
+          tests/test_v0682_r0605_professional_capability_matrix.py
+          tests/test_v065_saas_prompt_integrity.py::test_claim_authority_does_not_trust_labels_without_evidence
+          tests/test_v0676_product_truth_evidence_authority.py
