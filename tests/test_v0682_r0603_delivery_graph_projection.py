@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import zipfile
 
 from runtime.cbcc import delivery_export
 from runtime.cbcc import commercial_delivery_continuity
@@ -73,3 +74,9 @@ def test_final_delivery_preserves_canonical_commerce_graph_lineage(monkeypatch, 
     assert copied.exists(), "final delivery dropped the canonical commerce graph lineage"
     assert copied.read_bytes() == original_bytes
     assert json.loads(copied.read_text(encoding="utf-8"))["graph_sha256"] == graph["graph_sha256"]
+
+    zip_path = Path(manifest["zip_path"])
+    with zipfile.ZipFile(zip_path) as zf:
+        member = f"{output.name}/supporting_analysis/canonical_commerce_graph.json"
+        assert member in zf.namelist(), "final delivery ZIP dropped the canonical commerce graph lineage"
+        assert zf.read(member) == original_bytes
