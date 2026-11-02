@@ -81,6 +81,27 @@ def test_phase7_host_runtime_parity_compares_semantics_not_file_layout(tmp_path:
     assert "canonical_business_object::strategy_authority" in different["changed_object_ids"]
 
 
+def test_phase7_finalizer_does_not_authenticate_a_supplied_runtime_twin_as_host_native(tmp_path: Path):
+    from runtime.cbcc.full_package_semantic_closure_v0681 import materialize_final_package_semantics
+
+    runtime = _package(tmp_path / "runtime", value="SAME")
+    runtime_twin = _package(tmp_path / "runtime-twin", value="SAME")
+
+    result = materialize_final_package_semantics(runtime, host_package_dir=runtime_twin)
+
+    # A filesystem directory with matching semantic bytes is useful comparison evidence,
+    # but it is not proof that an installed Host-native export produced those bytes.
+    assert result["host_native_runtime_export_parity"] == "E2E_PENDING_INSTALLED_HOST_EXPORT", result
+    candidate = result["host_candidate_semantic_comparison"]
+    assert candidate["status"] == "PASS", candidate
+    assert candidate["verification_scope"] == "UNAUTHENTICATED_CANDIDATE_DIRECTORY"
+
+    audit = json.loads((runtime / "FULL_MATERIALIZATION_AUDIT.json").read_text(encoding="utf-8"))
+    assert audit["host_native_runtime_export_parity"] == "E2E_PENDING_INSTALLED_HOST_EXPORT"
+    assert audit["host_candidate_semantic_comparison"]["status"] == "PASS"
+    assert audit["e2e_boundary"] == "E2E_PENDING"
+
+
 def test_phase7_actual_output_boundary_stays_pending_for_planning_only_provider_jobs(tmp_path: Path):
     from runtime.cbcc.full_package_semantic_closure_v0681 import audit_actual_output_boundary
 
