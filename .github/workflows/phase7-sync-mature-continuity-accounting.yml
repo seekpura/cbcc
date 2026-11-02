@@ -1,0 +1,123 @@
+name: phase7-sync-mature-continuity-accounting
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [repair-04-phase7-full-materialization]
+    paths:
+      - '.github/workflows/phase7-sync-mature-continuity-accounting.yml'
+
+jobs:
+  sync-and-clean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair-04-phase7-full-materialization
+          fetch-depth: 0
+      - name: Synchronize REQ-090 Phase 7 accounting surfaces
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          ledger_path = Path('references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json')
+          ledger = json.loads(ledger_path.read_text(encoding='utf-8'))
+          req090 = next((row for row in ledger.get('new_requirements', []) if row.get('req') == 'REQ-090'), None)
+          if not req090:
+              raise SystemExit('REQ-090 not found in execution ledger')
+          req090['status'] = 'PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_INVENTORY_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_AND_ACTUAL_OUTPUT_BOUNDARY_TARGETED_VERIFIED_HOST_PARITY_AND_REAL_PROVIDER_OUTPUT_PENDING'
+          phase_status = ledger.setdefault('phase_status', {})
+          phase_status['7'] = 'IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY_PENDING'
+          phase7 = ledger.setdefault('phase_evidence', {}).setdefault('7', {})
+          phase7.update({
+              'final_mature_package_continuity': 'PASS_PHASE7_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED',
+              'mature_continuity_checker': 'runtime.cbcc.full_delivery_depth_v3.audit_host_full_package reused on final package bytes',
+              'mature_continuity_focused_green': '4/4 dedicated characterization tests passed; GitHub Actions run 41416575861 on head 646f5dfc915642286b80a3aad86c569416cee044',
+              'mature_continuity_permanent_current': 'Permanent Phase 7 CURRENT step executed seven Phase 7 files and passed 16/16; full CURRENT build/check/floors/artifact upload SUCCESS in run 41416771898 on head 3b6a0d2f7b52a618316bb880839b4f35aa19e47b',
+              'host_native_runtime_semantic_parity': 'E2E_PENDING_INSTALLED_HOST_EXPORT',
+              'phase7_boundary': 'Final semantic inventory, REQ-088 lineage, and final-byte mature package continuity are targeted verified. Phase 7 remains IN_PROGRESS until independently materialized Host-native versus Runtime semantic parity is proven. Provider actual-output belongs to Phase 8; Fresh K01 FULL to Phase 10; installed-plugin readback to Phase 11.'
+          })
+          proof_objects = phase7.setdefault('proof_objects', [])
+          for value in [
+              'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_PACKAGE_SEMANTICS.json',
+              'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json',
+              'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_MATURE_PACKAGE_CONTINUITY.json',
+              'runtime/cbcc/final_mature_package_continuity_v0681.py',
+              'tests/test_v0681_phase7_final_mature_package_continuity.py'
+          ]:
+              if value not in proof_objects:
+                  proof_objects.append(value)
+          ledger_path.write_text(json.dumps(ledger, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          matrix_path = Path('references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md')
+          matrix = matrix_path.read_text(encoding='utf-8')
+          old_req090 = '| REQ-090 | FULL package lineage + actual-output boundary | final semantic inventory + REQ-088 lineage + honest Host/Provider actual-output boundary | PHASE7_SEMANTIC_AND_LINEAGE_TARGETED_PROOF + HOST_PARITY/REAL_PROVIDER_OUTPUT_PENDING |'
+          new_req090 = '| REQ-090 | FULL package lineage + actual-output boundary | final semantic inventory + REQ-088 lineage + final-byte mature FULL-package continuity + honest Host/Provider actual-output boundary | PHASE7_SEMANTIC_LINEAGE_AND_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_PROOF + HOST_PARITY/REAL_PROVIDER_OUTPUT_PENDING |'
+          if matrix.count(old_req090) != 1:
+              raise SystemExit('REQ-090 matrix row not found exactly once')
+          matrix = matrix.replace(old_req090, new_req090)
+
+          old_boundary = 'Phase 7 REQ-088 source/evidence/assumption/decision lineage is now closed at targeted source/CURRENT-package proof level by `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json`; Phase 7 itself remains IN_PROGRESS because independently materialized Host-native parity, real Provider/Result/Review/Revision actual-output evidence, remaining FULL package continuity, Fresh positive K01 FULL and installed-plugin readback are still separate pending proof.'
+          new_boundary = 'Phase 7 final semantic inventory, REQ-088 source/evidence/assumption/decision lineage, and final-byte mature FULL-package continuity are now closed at targeted source/CURRENT-package proof level by `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_PACKAGE_SEMANTICS.json`, `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json`, and `REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_MATURE_PACKAGE_CONTINUITY.json`. Phase 7 itself remains IN_PROGRESS only because independently materialized Host-native versus Runtime semantic parity is not yet proven. Provider Result/Review/Revision actual-output evidence remains Phase 8, Fresh positive K01 FULL remains Phase 10, and installed-plugin readback remains Phase 11; none is pulled forward or implied by this Phase 7 targeted closure.'
+          if matrix.count(old_boundary) != 1:
+              raise SystemExit('Phase 7 matrix evidence boundary not found exactly once')
+          matrix = matrix.replace(old_boundary, new_boundary)
+          matrix_path.write_text(matrix, encoding='utf-8')
+
+          semantic_path = Path('references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_PACKAGE_SEMANTICS.json')
+          semantic = json.loads(semantic_path.read_text(encoding='utf-8'))
+          for row in semantic.get('requirements', []):
+              if row.get('requirement_id') == 'REQ-090':
+                  row['status'] = 'PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_CLOSURE_REQ088_LINEAGE_AND_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED_HOST_PARITY_PENDING'
+              elif row.get('requirement_id') == 'REQ-088':
+                  row['status'] = 'PASS_PHASE2_PHASE7_RESOLVABLE_SOURCE_EVIDENCE_ASSUMPTION_DECISION_LINEAGE_TARGETED_VERIFIED'
+                  row['summary'] = 'Stable final semantic object IDs/hashes are now consumed by the separately verified REQ-088 lineage closure recorded in REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json.'
+          semantic['current_followup'] = {
+              'req088_lineage': 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json',
+              'final_mature_package_continuity': 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_MATURE_PACKAGE_CONTINUITY.json',
+              'final_mature_focused_green_run': 41416575861,
+              'permanent_current_green_run': 41416771898,
+              'remaining_phase7_boundary': 'independently materialized Host-native versus Runtime semantic parity'
+          }
+          semantic['invariants'] = [
+              ('REQ-088 is now separately closed at targeted proof level; this semantic map remains the identity/comparator authority consumed by that closure.' if item == 'This subtask does not yet close the complete REQ-088 lineage chain or every Phase 7 package-continuity requirement.' else item)
+              for item in semantic.get('invariants', [])
+          ]
+          semantic['next'] = [
+              'Consume the existing Host-native/Runtime semantic comparator when an independently materialized Host-native package becomes available; do not infer parity from the Runtime package alone.',
+              'Keep Provider actual-output Result/Review/Revision evidence in Phase 8 and Fresh K01 FULL in Phase 10.'
+          ]
+          semantic_path.write_text(json.dumps(semantic, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          req088_path = Path('references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_REQ088_LINEAGE.json')
+          req088 = json.loads(req088_path.read_text(encoding='utf-8'))
+          req088.setdefault('phase_boundary', {})['req090'] = 'PARTIAL_PHASE7_FINAL_SEMANTIC_INVENTORY_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_AND_ACTUAL_OUTPUT_BOUNDARY_TARGETED_VERIFIED_HOST_PARITY_AND_LATER_REAL_PROVIDER_OUTPUT_PENDING'
+          req088['phase7_followup'] = {
+              'final_mature_package_continuity': 'PASS_PHASE7_TARGETED_VERIFIED',
+              'consumer_map': 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_MATURE_PACKAGE_CONTINUITY.json',
+              'focused_green_run': 41416575861,
+              'permanent_current_green_run': 41416771898,
+              'remaining_phase7_boundary': 'independently materialized Host-native versus Runtime semantic parity'
+          }
+          req088['next'] = [
+              'Keep the now-permanent REQ-088 lineage contract closed while Phase 7 waits only for independently materialized Host-native versus Runtime semantic parity.',
+              'Do not promote Phase 8 Provider actual-output, Phase 10 Fresh K01 FULL, or Phase 11 installed-plugin readback into Phase 7 evidence.'
+          ]
+          req088_path.write_text(json.dumps(req088, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Remove temporary Phase 7 construction workflows
+        run: |
+          rm -f .github/workflows/phase7-mature-package-characterization.yml
+          rm -f .github/workflows/phase7-wire-final-mature-package.yml
+          rm -f .github/workflows/phase7-sync-mature-continuity-accounting.yml
+      - name: Commit synchronized accounting and cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "docs(phase7): close mature continuity accounting and cleanup"
+          git push origin HEAD:repair-04-phase7-full-materialization
