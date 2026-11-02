@@ -159,7 +159,7 @@
       "req": "REQ-086",
       "title": "Scene-derived photography/lighting/CMF closure",
       "phase": "4,5",
-      "status": "PARTIAL_PHASE4_SCENE_DERIVED_PHOTOGRAPHY_LIGHTING_CMF_VERIFIED_PHASE5_PROMPT_CONSUMPTION_PENDING"
+      "status": "PASS_PHASE4_PHASE5_SCENE_DERIVED_PHOTOGRAPHY_LIGHTING_CMF_PROMPT_CONSUMPTION_TARGETED_VERIFIED_E2E_PENDING"
     },
     {
       "req": "REQ-087",
@@ -192,7 +192,7 @@
     "2": "PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED",
     "3": "PASS_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED",
     "4": "PASS_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER_VERIFIED",
-    "5": "IN_PROGRESS_DYNAMIC_AND_PRODUCT_FIDELITY_PROMPT_CONTINUITY_VERIFIED",
+    "5": "IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_AND_SCENE_PHOTOGRAPHY_PROMPT_CONTINUITY_VERIFIED",
     "6": "NOT_STARTED",
     "7": "NOT_STARTED",
     "8": "NOT_STARTED",
@@ -793,7 +793,7 @@
       }
     },
     "5": {
-      "status": "IN_PROGRESS_DYNAMIC_AND_PRODUCT_FIDELITY_PROMPT_CONTINUITY_VERIFIED",
+      "status": "IN_PROGRESS_DYNAMIC_PRODUCT_FIDELITY_AND_SCENE_PHOTOGRAPHY_PROMPT_CONTINUITY_VERIFIED",
       "subtask": "CANONICAL_DYNAMIC_TEMPORAL_PROMPT_CONTINUITY",
       "requirements_advanced": [
         "REQ-082",
@@ -813,7 +813,10 @@
         "tests/test_v0676_phase5_product_fidelity_reference_prompt.py",
         "runtime/cbcc/agent_authority_prompt_compiler.py",
         "runtime/cbcc/reference_guided_native_authority.py",
-        "runtime/cbcc/integrated_render_route_authority.py"
+        "runtime/cbcc/integrated_render_route_authority.py",
+        "runtime/cbcc/photographic_route_agent_authority.py",
+        "tests/test_v0677_phase5_req086_scene_photo_prompt_consumption.py",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_SCENE_PHOTOGRAPHY_PROMPT.json"
       ],
       "verified_behaviors": [
         "Phase 4 canonical motion/timing/audio concrete values are projected into the model-facing Prompt and concrete consumption audit.",
@@ -821,7 +824,9 @@
         "Legacy flat video Prompt fields remain compatible.",
         "Manual short Prompt overrides cannot be silently repaired and falsely declared parameter-closed.",
         "Unresolved dynamic Agent decisions stay missing; Prompt runtime does not invent audio/motion/timing.",
-        "Static assets do not inherit dynamic Prompt requirements."
+        "Static assets do not inherit dynamic Prompt requirements.",
+        "Per-asset Art Direction camera/lighting/CMF fields explicitly authored by the Agent override stale Strategy/runtime photography values while compatible non-authored fill-ins may remain.",
+        "Final Model Prompt consumption audit proves scene_derived_camera, scene_derived_lighting and scene_derived_cmf by concrete authored values rather than section presence."
       ],
       "cross_scope": {
         "phase4": "all tests/test_v0676_phase4_*.py passed",
@@ -851,6 +856,20 @@
         "REQ-083 remaining surface-specific Prompt closure",
         "Fresh real K01 FULL",
         "Provider actual output / Review / Local Revision / provenance"
+      ],
+      "scene_photography_prompt_consumption": {
+        "requirement": "REQ-086",
+        "status": "PASS_TARGETED_E2E_PENDING",
+        "production_commit": "50462319ba376b69bab7d71f7b4dc8620b83bd9d",
+        "focused_tests": "3/3 passed",
+        "phase4_adjacent_tests": "18/18 passed",
+        "complete_v067_cross_scope": "334/334 passed",
+        "workflow_run": 41386473797,
+        "consumer_map": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_SCENE_PHOTOGRAPHY_PROMPT.json",
+        "verified_boundary": "Per-asset authored camera/lighting/CMF override stale Strategy/runtime photography fields, reach the final acting Model Prompt, and are verified by concrete field-level consumption rows. Fresh K01 FULL and actual Provider output remain pending."
+      },
+      "source_commits": [
+        "50462319ba376b69bab7d71f7b4dc8620b83bd9d"
       ]
     }
   },

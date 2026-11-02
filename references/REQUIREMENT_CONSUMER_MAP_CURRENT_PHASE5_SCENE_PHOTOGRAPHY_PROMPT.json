@@ -1,0 +1,74 @@
+{
+  "version": "cbcc-current-phase5-scene-photography-prompt-v1",
+  "phase": 5,
+  "subtask": "REQ-086 scene-derived photography / lighting / CMF acting-Prompt consumption",
+  "production_head_sha": "50462319ba376b69bab7d71f7b4dc8620b83bd9d",
+  "requirements": [
+    {
+      "requirement_id": "REQ-031",
+      "summary": "Scene-derived photography decisions must survive from per-asset Art Direction into the acting Prompt plane.",
+      "source": "CONVERSATION_REQUIREMENT_AUDIT.md + PROMPT_ART_DIRECTION_MASTER_CONTRACT.md",
+      "implementation_status": "PHASE4_PHASE5_TARGETED_VERIFIED_E2E_PENDING",
+      "upstream_authority": "asset.asset_art_direction camera_or_view / focal_length_mm / camera_position / focus_dof / lighting / cmf",
+      "consumers": [
+        "runtime/cbcc/photographic_route_agent_authority.py",
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py"
+      ]
+    },
+    {
+      "requirement_id": "REQ-035",
+      "summary": "Concrete pixel-changing photography parameters selected upstream must be consumed by the final acting Prompt and auditable by value, not inferred from section presence.",
+      "source": "CONVERSATION_REQUIREMENT_AUDIT.md + MODEL_PROMPT_SEMANTIC_MEMBRANE_CONTRACT.md",
+      "implementation_status": "SCENE_PHOTOGRAPHY_PARAMETER_CONSUMPTION_TARGETED_VERIFIED_BROADER_PHASE5_PENDING",
+      "consumers": [
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py"
+      ]
+    },
+    {
+      "requirement_id": "REQ-086",
+      "summary": "Scene-derived camera, lighting and CMF remain per-object authority and reach the final acting model Prompt without stale Strategy/runtime override.",
+      "source": "CONVERSATION_REQUIREMENT_LEDGER_EXTENSION_02.md + LOCKED_IMPLEMENTATION_PLAN_CURRENT.md",
+      "implementation_status": "PASS_PHASE4_PHASE5_TARGETED_VERIFIED_E2E_PENDING",
+      "upstream_authority": "PER_ASSET_ART_DIRECTION / AGENT_ASSET_ART_DIRECTION",
+      "consumers": [
+        "runtime/cbcc/photographic_route_agent_authority.py",
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py"
+      ],
+      "evidence": [
+        "tests/test_v0676_phase4_scene_derived_photography_authority.py",
+        "tests/test_v0677_phase5_req086_scene_photo_prompt_consumption.py",
+        "GitHub Actions run 41386473797: focused 3 passed; Phase 4 adjacent 18 passed; complete v067 cross-scope 334 passed"
+      ],
+      "verified_behavior": [
+        "Agent-authored camera fields override stale Strategy/runtime photography fields while non-authored fields may remain compatible fill-ins.",
+        "Agent-authored lighting fields override stale Strategy/runtime fields and carry AGENT_ASSET_ART_DIRECTION provenance plus authored_fields.",
+        "Agent-authored CMF fields override stale Strategy/runtime fields and carry AGENT_ASSET_ART_DIRECTION provenance plus authored_fields.",
+        "The final model-native Prompt contains the authored camera, lighting and CMF leaf values; stale global Strategy tokens are absent in the focused proof.",
+        "Final prompt_consumption_audit emits scene_derived_camera, scene_derived_lighting and scene_derived_cmf checks that verify the exact authored subset by value."
+      ],
+      "residual_risk": "Targeted code/Prompt-consumption proof is complete. Fresh K01 FULL materialization, Provider Result, actual pixels/frames and installed-plugin readback remain Phase 10/11 E2E evidence and are not claimed here."
+    }
+  ],
+  "cross_scope_verification": {
+    "focused": "3/3 passed",
+    "phase4_adjacent": "18/18 passed",
+    "complete_v067": "334/334 passed",
+    "workflow_run": 41386473797,
+    "baseline_repair_note": "Before the final REQ-086 run, two unrelated previously-verified Phase 2 regressions discovered by broad verification were restored on main and then the entire v067 set was rerun green with REQ-086 applied."
+  },
+  "invariants": [
+    "Per-asset Art Direction is the authority for fields it explicitly authored; stale Strategy/runtime defaults cannot override those fields.",
+    "Runtime may preserve compatible fill-ins only for fields not authored by the Agent.",
+    "Prompt-consumption PASS requires concrete authored values to exist in the final acting Prompt; section headings alone are insufficient.",
+    "No Provider/actual-output or Fresh K01 FULL closure is inferred from targeted Prompt tests."
+  ],
+  "pending": [
+    "REQ-082 broader commercial Prompt density",
+    "REQ-083 remaining surface Prompt closure",
+    "Phase 10 Fresh K01 FULL",
+    "Phase 11 installed/release and actual-output evidence"
+  ]
+}
