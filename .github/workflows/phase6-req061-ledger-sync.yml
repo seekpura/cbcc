@@ -1,0 +1,103 @@
+name: phase6-req061-ledger-sync-once
+
+on:
+  push:
+    branches:
+      - repair-04-phase6-req061
+
+permissions:
+  contents: write
+
+jobs:
+  sync-ledger:
+    if: github.event.head_commit.message == 'ci(phase6): sync REQ-061 ledger once'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair-04-phase6-req061
+      - name: Update only REQ-061 and Phase 6 CURRENT ledger keys
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+
+          for row in data.get('new_requirements', []):
+              if row.get('req') == 'REQ-061':
+                  row['status'] = 'PARTIAL_PHASE1_GRAPH_AUTHORITY_PHASE6_JSON_MD_HTML_SAME_SOURCE_PROJECTION_TARGETED_VERIFIED_PHASE7_LINEAGE_E2E_PENDING'
+                  break
+          else:
+              raise SystemExit('REQ-061 missing from CURRENT ledger')
+
+          phase_status = data.setdefault('phase_status', {})
+          phase_status['6'] = 'IN_PROGRESS_REQ061_CANONICAL_JSON_MD_HTML_SAME_SOURCE_PROJECTION_VERIFIED_REMAINING_DELIVERY_ROUTES_PENDING'
+
+          evidence = data.setdefault('phase_evidence', {})
+          evidence['6'] = {
+              'status': 'IN_PROGRESS_REQ061_TARGETED_VERIFIED',
+              'verified_subtasks': [
+                  'REQ-061 canonical JSON/Markdown/HTML same-source projection with deterministic semantic signature',
+                  'Blocking canonical parity audit before final delivery ZIP',
+                  'Final DELIVERY_MANIFEST and ZIP consumption of the same parity artifacts'
+              ],
+              'focused_red': 'GitHub Actions run 41402373737: 2 failed because canonical_delivery_parity_v0680 did not exist',
+              'focused_green': 'GitHub Actions run 41402749660: 3/3 passed including final ZIP/Manifest assertions',
+              'current_release_regression': 'GitHub Actions run 41402589244: SUCCESS after final export wiring',
+              'proof_objects': [
+                  'runtime/cbcc/canonical_delivery_parity_v0680.py',
+                  'runtime/cbcc/commercial_delivery_continuity.py',
+                  'tests/test_v0680_phase6_req061_same_source_projection.py',
+                  'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE6_CANONICAL_DELIVERY_PARITY.json',
+                  'CANONICAL_HUMAN_DATA.json',
+                  'CANONICAL_HUMAN_DATA.md',
+                  'CANONICAL_DELIVERY_PARITY_AUDIT.json',
+                  'index.html',
+                  'DELIVERY_MANIFEST.json',
+                  'final delivery ZIP'
+              ],
+              'verified_behaviors': [
+                  'v0.6.71 canonical payload remains the business authority; Phase 6 reuses it instead of creating a parallel truth.',
+                  'Complete Markdown embeds the exact canonical payload and therefore is no longer limited to Listing-only parity evidence.',
+                  'JSON, Markdown and HTML carry one deterministic semantic SHA-256 signature.',
+                  'Markdown payload drift is detected and HTML retains generic canonical field coverage auditing.',
+                  'Human Delivery, Product Truth, Market, Compliance, Strategy and Visual sentinel values survive into both Markdown and HTML.',
+                  'Final manifest and ZIP contain the parity artifacts and signature-bearing human surfaces; parity failure blocks export.'
+              ],
+              'remaining_phase6': [
+                  'REQ-089 routed Human Workspace full-canonical consumption',
+                  'REQ-070 Longform/Specification/Source-document delivery route',
+                  'REQ-076 Store/Banner/Landing/Campaign/Seasonal delivery route',
+                  'REQ-077 CRM/Lifecycle/Post-purchase delivery route'
+              ],
+              'deferred_by_plan': [
+                  'Phase 7 REQ-088 full source/evidence/assumption/decision lineage closure',
+                  'Phase 7/8 REQ-090 FULL package lineage and actual-output boundary',
+                  'Phase 10 Fresh K01 FULL',
+                  'Phase 11 installed-plugin readback and Provider actual media / Review / Local Revision / provenance'
+              ],
+              'source_truth': 'GITHUB_BRANCH_TARGETED_VERIFIED_CURRENT_INTEGRATION_PENDING_PHASE6_COMPLETION',
+              'production_head_sha': '057b0230d85928418aea51803f775f89bda7dc1e',
+              'focused_test_head_sha': 'c1bcb00d7d115390b5f47a59d3148a965b47d447',
+              'consumer_map': 'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE6_CANONICAL_DELIVERY_PARITY.json'
+          }
+
+          data['version'] = '2026-11-02-phase6-req061-in-progress-v1'
+          data['current_phase'] = 'PHASE_6_IN_PROGRESS_REQ061_VERIFIED'
+          data['previous_phase'] = 'PHASE_5_COMPLETE'
+          data['next_phase'] = 'PHASE_6_REMAINING_HUMAN_WORKSPACE_AND_DELIVERY_ROUTES'
+          data['current_head_sha'] = '057b0230d85928418aea51803f775f89bda7dc1e'
+          data['current_head_sha_semantics'] = 'Latest Phase 6 REQ-061 production-code head proven by focused RED→GREEN, final ZIP/Manifest verification and CURRENT release regression; later documentation/CI commits do not change that production boundary.'
+
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Commit preserved-ledger update
+        run: |
+          git config user.name 'cbcc-phase6-ledger-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json
+          git diff --cached --check
+          git commit -m 'docs(phase6): record REQ-061 targeted ledger closure'
+          git push origin HEAD:repair-04-phase6-req061
