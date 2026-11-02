@@ -21,14 +21,11 @@ def _materialize_mature_surface(package: Path) -> None:
         path = package / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
+
     for rel in (
         "HUMAN_DELIVERY.json",
-        "FULL_DELIVERY_DEPTH_AUDIT.json",
-        "HUMAN_LANGUAGE_AUDIT.json",
-        "DELIVERY_LANGUAGE_MATRIX_AUDIT.json",
         "PLATFORM_SCOPE.json",
         "SOURCE_TRUTH_MEDIA_AUDIT.json",
-        "strategy/strategy_authority.json",
         "strategy/STRATEGY_DECISION_INDEX.json",
         "strategy/COMMERCE_DECISION_CONTEXT.json",
         "strategy/COMMERCIAL_CONTINUITY_AUDIT.json",
@@ -39,6 +36,36 @@ def _materialize_mature_surface(package: Path) -> None:
         "supporting_analysis/seven_agent_synthesis.json",
     ):
         _write_json(package / rel, {"status": "READY"})
+
+    # These are audit surfaces, not generic workfiles: the mature-package checker requires an
+    # explicit PASS rather than a placeholder READY status.
+    for rel in (
+        "FULL_DELIVERY_DEPTH_AUDIT.json",
+        "HUMAN_LANGUAGE_AUDIT.json",
+        "DELIVERY_LANGUAGE_MATRIX_AUDIT.json",
+    ):
+        _write_json(package / rel, {"status": "PASS"})
+
+    # The packaged strategy authority must expose the canonical nine-section contract even for
+    # this task-scoped lineage fixture. We intentionally leave deep FULL-only payloads out here;
+    # REQ-088 is not allowed to invent strategy content merely to satisfy package shape.
+    _write_json(
+        package / "strategy/strategy_authority.json",
+        {
+            "status": "TASK_SCOPED",
+            "sections": {
+                "01_information_completeness_assumptions_decisions": {},
+                "02_product_truth_value_ladder": {},
+                "03_platform_region_audience_culture_insight": {},
+                "04_marketing_core_strategy": {},
+                "05_visual_photography_strategy": {},
+                "06_platform_content_matrix": [],
+                "07_race_execution_table": [],
+                "08_culture_adaptation_checklist": [],
+                "09_risk_measurement_priority_next_steps": {},
+            },
+        },
+    )
     _write_json(
         package / "ASSET_UNIVERSE.json",
         {
