@@ -112,23 +112,25 @@ def load_current_requirement_authority(root=None)->dict[str,Any]:
         meanings=out.get("later_clarification_meanings",{})
         out["user_source_anchors"]=[{"source_id":str(sid),**dict(a),**({"summary":meanings[sid]} if sid in meanings else {})} for sid,a in anchors.items() if isinstance(a,Mapping)]
     out["requirements"]=requirements
-    out["direct_user_requirement_ids"]=list(raw.get("authority_assignments",{}).get("USER_CANONICAL",[]))
-    out["later_user_requirement_ids"]=list(raw.get("authority_assignments",{}).get("USER_LATER_CLARIFICATION",[]))
+    # Independent source declarations: never reconstruct these from authority_assignments,
+    # otherwise an attribution claim can prove itself.
+    out["direct_user_requirement_ids"]=[str(x) for x in raw.get("direct_user_requirement_ids",[]) if str(x)]
+    out["later_user_requirement_ids"]=[str(x) for x in raw.get("later_user_requirement_ids",[]) if str(x)]
     return out
 
 def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str,Any]:
     base=_root(root); doc=deepcopy(dict(document)); issues=[]
-    def add(code,**data): issues.append({"code":code,**data})
+    def add(code,**data): issues.append({"code":code,**data)
     if tuple(doc.get("authority_classes",()))!=AUTHORITY_CLASSES: add("AUTHORITY_CLASS_SET_MISMATCH")
     rows=[dict(x) for x in doc.get("requirements",[]) if isinstance(x,Mapping)]
     ids=[str(x.get("req") or "") for x in rows]; expected=[f"REQ-{i:03d}" for i in range(1,91)]
     if ids!=expected or len(set(ids))!=90: add("ACTIVE_REQUIREMENT_ID_SET_MISMATCH")
-    direct=set(str(x) for x in doc.get("direct_user_requirement_ids",[])); later=set(str(x) for x in doc.get("later_user_requirement_ids",[]))
-    assignment_map=doc.get("authority_assignments") or {}
-    expected_direct=set(str(x) for x in assignment_map.get("USER_CANONICAL",[]))
-    expected_later=set(str(x) for x in assignment_map.get("USER_LATER_CLARIFICATION",[]))
-    if direct!=expected_direct: add("DIRECT_USER_SET_MISMATCH",actual=sorted(direct),expected=sorted(expected_direct))
-    if later!=expected_later: add("LATER_USER_SET_MISMATCH",actual=sorted(later),expected=sorted(expected_later))
+    direct=set(str(x) for x in doc.get("direct_user_requirement_ids",[]) if str(x)); later=set(str(x) for x in doc.get("later_user_requirement_ids",[]) if str(x))
+    actual_direct={str(row.get("req") or "") for row in rows if str(row.get("authority_class") or "")=="USER_CANONICAL"}
+    actual_later={str(row.get("req") or "") for row in rows if str(row.get("authority_class") or "")=="USER_LATER_CLARIFICATION"}
+    if direct!=actual_direct: add("DIRECT_USER_SET_MISMATCH",actual=sorted(actual_direct),expected=sorted(direct))
+    if later!=actual_later: add("LATER_USER_SET_MISMATCH",actual=sorted(actual_later),expected=sorted(later))
+    if direct & later: add("USER_AUTHORITY_SET_OVERLAP",requirements=sorted(direct & later))
     anchors={str(x.get("source_id")) for x in doc.get("user_source_anchors",[]) if isinstance(x,Mapping)}
     goals={str(x.get("source_id")) for x in doc.get("product_goal_anchors",[]) if isinstance(x,Mapping)}
     valid=anchors|goals
@@ -176,9 +178,9 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
             br=[by_req[x] for x in bound if x in by_req]
             if not any(any(_RUNTIME.search(_consumer_file_path(str(p))) for p in x.get("business_consumers",[])) for x in br): add("P0_USER_SOURCE_RUNTIME_CONSUMER_MISSING",source_id=sid)
             if not any(any(str(p)!="NOT_DIRECT_HUMAN_FACING" for p in x.get("human_projection",[])) for x in br): add("P0_USER_SOURCE_HUMAN_PROJECTION_MISSING",source_id=sid)
-    for key in ("authority_overlay_does_not_author_business_strategy","existing_requirement_ledgers_remain_semantic_sources","consumer_maps_remain_execution_wiring_authority","derived_may_not_impersonate_user","rejected_deprecated_may_not_have_active_business_consumers","test_and_workflow_paths_are_proof_only"):
+    for key in ("authority_overlay_does_not_author_business_strategy","existing_requirement_ledgers_remain_semantic_sources","consumer_maps_remain_execution_wiring_authority","derived_may_not_impersonate_user","rejected_deprecated_may_not_have_active_business_consumers","test_and_workflow_paths_are_proof_only","user_attribution_sets_are_source_authored_not_assignment_derived"):
         if (doc.get("rules") or {}).get(key) is not True: add("AUTHORITY_RULE_DISABLED",rule=key)
-    return {"status":"PASS" if not issues else "FAIL","requirement_count":len(rows),"rejected_deprecated_count":len(rejected),"issue_count":len(issues),"issues":issues,"authority_classes":list(AUTHORITY_CLASSES),"principle":"Attribution only: ledgers author semantics; P0 user anchors require runtime consumers; non-runtime support stays engineering; tests/workflows stay proof-only."}
+    return {"status":"PASS" if not issues else "FAIL","requirement_count":len(rows),"rejected_deprecated_count":len(rejected),"issue_count":len(issues),"issues":issues,"authority_classes":list(AUTHORITY_CLASSES),"principle":"Attribution only: user sets are source-authored; ledgers author semantics; P0 user anchors require runtime consumers; non-runtime support stays engineering; tests/workflows stay proof-only."}
 
 def current_requirement_authority_audit(root=None)->dict[str,Any]:
     base=_root(root); return audit_requirement_authority(load_current_requirement_authority(base),root=base)
