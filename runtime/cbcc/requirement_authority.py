@@ -120,7 +120,7 @@ def load_current_requirement_authority(root=None)->dict[str,Any]:
 
 def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str,Any]:
     base=_root(root); doc=deepcopy(dict(document)); issues=[]
-    def add(code,**data): issues.append({"code":code,**data)
+    def add(code,**data): issues.append({"code":code,**data})
     if tuple(doc.get("authority_classes",()))!=AUTHORITY_CLASSES: add("AUTHORITY_CLASS_SET_MISMATCH")
     rows=[dict(x) for x in doc.get("requirements",[]) if isinstance(x,Mapping)]
     ids=[str(x.get("req") or "") for x in rows]; expected=[f"REQ-{i:03d}" for i in range(1,91)]
