@@ -1,0 +1,77 @@
+{
+  "version": "cbcc-current-phase6-routed-human-workspace-v1",
+  "phase": 6,
+  "subtask": "REQ-089 Human Workspace full canonical routed projection",
+  "production_head_sha": "7ec9f14aa73393b18b74b94cc4c3784227ea0ffd",
+  "focused_test_head_sha": "5e6397747a852be8890ac12ff5bb355851e3b558",
+  "requirements": [
+    {
+      "requirement_id": "REQ-089",
+      "summary": "Canonical business objects must be consumed inside project-authored Human Workspace routes; archive/search-only presence is not sufficient proof.",
+      "implementation_status": "PASS_PHASE6_REQ089_TARGETED_VERIFIED_REMAINING_PHASE6_DELIVERY_FAMILIES_PENDING",
+      "upstream_authority": [
+        "runtime/cbcc/canonical_full_parity_v0671.py::build_canonical_human_payload",
+        "runtime/cbcc/workspace_autonomy.py::build_workspace_route_plan",
+        "runtime/cbcc/delivery_html.py",
+        "runtime/cbcc/canonical_human_workspace_projection.py"
+      ],
+      "implementation": [
+        "runtime/cbcc/canonical_routed_workspace_v0680.py",
+        "runtime/cbcc/canonical_delivery_parity_v0680.py"
+      ],
+      "semantic_consumers": {
+        "human_delivery": ["overview"],
+        "product_truth": ["product", "overview fallback"],
+        "target_context": ["market", "overview fallback"],
+        "culture_context": ["market", "overview fallback"],
+        "market_analysis": ["market", "overview fallback"],
+        "strategy_authority": ["strategy", "overview fallback"],
+        "compliance": ["risk", "overview fallback"],
+        "ads": ["content", "strategy", "overview fallback"],
+        "reviews": ["risk", "sources", "overview fallback"],
+        "sources": ["sources", "overview fallback"],
+        "asset_universe": ["assets", "visual", "overview fallback"],
+        "assets": ["assets", "prompts", "overview fallback"]
+      },
+      "evidence": [
+        "tests/test_v0680_phase6_req089_routed_canonical_workspace.py",
+        "GitHub Actions RED run 41403382215: 2 failed / 1 passed before routed canonical consumer existed",
+        "GitHub Actions focused GREEN run 41403642950: routed workspace + archive false-pass defense + dynamic IA + final ZIP/Manifest all passed",
+        "GitHub Actions CURRENT release verification run 41403642919: SUCCESS on the same focused-test head"
+      ],
+      "verified_behavior": [
+        "Every canonical business object emitted by the current payload receives a real Human Workspace route consumer; overview is used only as dynamic fallback when the project-authored IA did not emit the preferred semantic route.",
+        "Archive remains a secondary trace surface and cannot satisfy routed coverage: deleting a routed-path marker fails even while the same value remains elsewhere in the HTML archive.",
+        "Object IDs and canonical leaf paths are preserved as stable data-canonical-routed-object / data-canonical-routed-path contracts.",
+        "Existing dynamic IA remains authoritative: absent capabilities are not promoted into primary navigation and fixed_route_count/fixed_command_count remain null.",
+        "REQ-089 is fail-closed in final export; routed audit failure blocks final ZIP creation.",
+        "DELIVERY_MANIFEST and final ZIP include CANONICAL_ROUTED_WORKSPACE_AUDIT.json and record archive_is_primary_canonical_consumer=false.",
+        "REQ-061 same-source JSON/Markdown/HTML signature parity remains intact after routed projection."
+      ],
+      "residual_risk": "REQ-089 canonical routing is targeted-verified, but activated Longform/Specification/Source-document, Store/Landing/Campaign/Seasonal, and CRM/Lifecycle/Post-purchase object families still require their Phase 6 delivery-route closure. Phase 7 lineage and later Fresh K01/Provider proof are not claimed."
+    }
+  ],
+  "cross_scope_verification": {
+    "focused_red_run": 41403382215,
+    "focused_green_run": 41403642950,
+    "focused_green_expected": "4/4 passed",
+    "current_release_run": 41403642919,
+    "current_release_status": "SUCCESS"
+  },
+  "invariants": [
+    "Canonical JSON remains authority; Human Workspace routing is a projection, not a second business truth.",
+    "Archive/search presence cannot substitute for routed human consumption.",
+    "Navigation remains a projection of business objects actually present in the project, not a permanent fixed capability menu.",
+    "Semantic route fallback must not invent a capability or business object.",
+    "Phase 6 routing does not claim Phase 7 source/evidence/decision lineage closure or Provider actual-output proof."
+  ],
+  "pending": [
+    "REQ-070 Longform/Specification/Source-document Human Delivery route",
+    "REQ-076 Store/Banner/Landing/Campaign/Seasonal Human Delivery route",
+    "REQ-077 CRM/Lifecycle/Post-purchase Human Delivery route",
+    "Phase 6 master ledger safe whole-file synchronization after all Phase 6 subtasks close",
+    "Phase 7 lineage/package continuity",
+    "Phase 10 Fresh K01 FULL",
+    "Phase 11 installed-plugin readback and Provider actual-output proof"
+  ]
+}
