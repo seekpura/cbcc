@@ -408,12 +408,23 @@ def build_project(project_dir:Path,request:dict,packs_dir:Path):
     _write(p/'artifacts/cmf_contract.json',cmf)
     inclusive=compile_inclusive_photography(culture,request.get('photography_contract'),architecture.get('assets') or [])
     _write(p/'artifacts/inclusive_photography.json',inclusive)
+    creative_scope=agent_plan.get('creative_exploration') if isinstance(agent_plan.get('creative_exploration'),dict) else {}
+    if 'opportunities' in creative_scope or 'mechanisms' in creative_scope:
+        agent_opportunity_rows=agent_creative_opportunities(agent_plan)
+    else:
+        agent_opportunity_rows=None
     creative_opportunity_universe=compile_creative_opportunity_universe(
         truth,product_visual_intelligence,category_family,architecture.get('assets') or [],curation,culture,tc,
-        agent_opportunities=agent_creative_opportunities(agent_plan),
+        agent_opportunities=agent_opportunity_rows,
     )
     _write(p/'artifacts/creative_opportunity_universe.json',creative_opportunity_universe)
-    council=compile_creative_council(request.get('creative_directions') or agent_creative_directions(agent_plan),curation,truth,culture,pc,category_family,[a.get('decision_intent') for a in architecture.get('assets') or []],creative_opportunity_universe)
+    if 'creative_directions' in request:
+        council_directions=request.get('creative_directions')
+    elif 'directions' in creative_scope:
+        council_directions=agent_creative_directions(agent_plan)
+    else:
+        council_directions=None
+    council=compile_creative_council(council_directions,curation,truth,culture,pc,category_family,[a.get('decision_intent') for a in architecture.get('assets') or []],creative_opportunity_universe)
     _write(p/'artifacts/creative_council.json',council)
     architecture=apply_creative_system_to_assets(architecture,council,cmf,request.get('photography_contract'))
     inclusive=compile_inclusive_photography(culture,request.get('photography_contract'),architecture.get('assets') or [])
