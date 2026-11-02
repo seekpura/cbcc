@@ -40,8 +40,8 @@
     },
     {
       "requirement_id": "REQ-041",
-      "status": "PASS_PHASE8_PRODUCTION_REVIEW_REVISION_LINEAGE_FEEDS_EXISTING_LEARNING_BOUNDARY_WITHOUT_AUTO_ACCEPT",
-      "summary": "The production/review/revision lineage is persisted with explicit human acceptance and remains compatible with the existing learning-loop authority; Phase 8 does not auto-accept outputs or revisions and does not collapse review into generation.",
+      "status": "PARTIAL_PHASE2_MEASUREMENT_PHASE8_PRODUCTION_REVIEW_REVISION_LINEAGE_VERIFIED_REAL_LEARNING_CYCLE_E2E_PENDING",
+      "summary": "The production/review/revision lineage is persisted with explicit human acceptance and is wired into the existing learning-loop authority. Phase 8 proves the production/review/revision side of the loop, but does not falsely claim a fresh real measurement→learning cycle E2E run.",
       "consumers": [
         "runtime/cbcc/review.py",
         "runtime/cbcc/learning_loop.py",
@@ -51,7 +51,7 @@
     {
       "requirement_id": "REQ-090",
       "status": "PARTIAL_PHASE7_SOURCE_PACKAGE_CLOSURE_AND_PHASE8_PROVIDER_BOUNDARY_ACTUAL_OUTPUT_E2E_PROVEN_FRESH_K01_PHASE10_AND_AUTHENTICATED_INSTALLED_HOST_PHASE11_PENDING",
-      "summary": "The Phase 7 final semantic/package boundary is preserved and its actual-output boundary can now be driven to E2E_PROVEN by a real execution lifecycle inside CBCC: provider result bytes + production receipt/output hashes + accepted output Review + executed bounded Local Revision + revised-output hash + accepted revision Review. Fresh K01 FULL and authenticated installed Host-native parity remain later locked phases.",
+      "summary": "The Phase 7 final semantic/package boundary is preserved and its actual-output boundary can now be driven to E2E_PROVEN by an executed lifecycle inside CBCC: provider result bytes + production receipt/output hashes + accepted output Review + executed bounded Local Revision + revised-output hash + accepted revision Review. Fresh K01 FULL and authenticated installed Host-native parity remain later locked phases.",
       "consumers": [
         "runtime/cbcc/full_package_semantic_closure_v0681.py::audit_actual_output_boundary",
         "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_PACKAGE_SEMANTICS.json",
@@ -81,6 +81,10 @@
     "actual_output_e2e_green_run": 41445447994,
     "provider_cross_scope_compatibility_head": "4beb1688f035e64d45bc71e8f64eecaf20ff2634",
     "provider_cross_scope_compatibility_run": 41445805192,
+    "permanent_current_verifier_commit": "d6b822a87c25cb62017aaab1a3dcbdf5758ee91a",
+    "authority_closure_commit": "eeb18637e099eeda54d22e99b6ecfda157e06c04",
+    "authority_closure_run": 41446577109,
+    "authority_closure_result": "SUCCESS; authority patch validated and provider-boundary regression suite passed before ledger/matrix commit",
     "tests": [
       "tests/test_v0616_provider_host_surface.py",
       "tests/test_v0682_phase8_local_revision_provider_execution.py",
@@ -97,7 +101,8 @@
       "runtime/cbcc/learning_loop.py",
       "runtime/cbcc/full_package_semantic_closure_v0681.py"
     ],
-    "workflow": ".github/workflows/v0682-phase8-provider-actual-output.yml"
+    "workflow": ".github/workflows/v0682-phase8-provider-actual-output.yml",
+    "permanent_release_workflow": ".github/workflows/current-release-verification.yml"
   },
   "honesty_boundary": {
     "provider_execution_boundary": "E2E_PROVEN_WITH_DETERMINISTIC_HOST_CALLBACK_PROVIDER_EXECUTOR_IN_CI",
