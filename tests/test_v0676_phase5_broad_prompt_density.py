@@ -87,6 +87,8 @@ def test_rich_static_art_direction_projects_geometry_material_culture_copy_and_i
     out = _compile(_rich_static_asset())
     en = out['model_prompt_en']
 
+    # Semantic membrane may split semicolon-delimited authored prose into separate model clauses;
+    # verify every authored semantic fragment rather than byte-identical punctuation.
     for concrete in (
         'product at lower-right third',
         'product near plane',
@@ -95,7 +97,8 @@ def test_rich_static_art_direction_projects_geometry_material_culture_copy_and_i
         'real glass and label paper',
         'paper tooth',
         'Protect natural skin-tone detail without over-brightening.',
-        'Natural everyday grooming; no tokenized cultural costume.',
+        'Natural everyday grooming',
+        'no tokenized cultural costume.',
         'SERUM HARIAN',
     ):
         assert concrete in en, concrete
