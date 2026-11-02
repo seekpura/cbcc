@@ -1,16 +1,8 @@
+# Historical v0.6.31 Prompt gate. Manual-only while CURRENT locked plan keeps Phase 5 Prompt work NOT_STARTED.
+# Re-evaluate and explicitly rebind this gate when Phase 5 becomes the active implementation phase.
 name: CBCC v0.6.31 Model-Native Prompt Gate
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'runtime/cbcc/**'
-      - 'prompts/**'
-      - 'SKILL.md'
-      - 'tests/test_v0631_model_native_prompt_contract.py'
-      - 'tests/test_v0631_human_delivery_output.py'
-      - 'tests/test_v0631_capability_layering_continuity.py'
-      - '.github/workflows/v0631-model-native-prompt.yml'
   workflow_dispatch:
 
 permissions:
