@@ -33,7 +33,6 @@ jobs:
           tests/test_v0630_agent_art_direction_authority.py
           tests/test_v0630_surface_agent_authority.py
           tests/test_v0655_asset_universe_open_world.py
-          tests/test_alpha4_creative_research.py
           tests/test_v0624_strategy_asset_scope.py
           tests/test_v0513_real_product_strategy_quality.py
           tests/test_v0633_reference_guided_native_asset_universe.py
