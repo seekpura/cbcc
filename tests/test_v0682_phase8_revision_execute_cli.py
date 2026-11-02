@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'runtime'))
 
 import cbcc.cli as cli
+from cbcc.provider_surface import host_execution_contract
 
 
 class _FakeSurface:
@@ -48,3 +49,8 @@ def test_revision_execute_cli_routes_to_local_revision_provider_surface(tmp_path
         'max_polls_per_attempt': 3,
     }]
     assert 'LOCAL_REVISION_PROVIDER_EXECUTION_COMPLETE' in capsys.readouterr().out
+
+
+def test_revision_execute_is_declared_in_host_execution_contract():
+    contract = host_execution_contract()
+    assert 'revision-execute' in contract['commands']
