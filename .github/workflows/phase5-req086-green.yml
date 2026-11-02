@@ -1,0 +1,58 @@
+name: Phase 5 REQ-086 GREEN
+
+on:
+  push:
+    branches:
+      - phase5-req086-scene-photo-prompt
+    paths:
+      - '.github/phase5_req086_green_trigger.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  req086-green:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase5-req086-scene-photo-prompt
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused test dependencies
+        run: python -m pip install --upgrade pip pytest pyyaml
+      - name: Apply minimal REQ-086 production patch
+        run: python .github/phase5_req086_patch.py
+      - name: Run REQ-086 focused GREEN
+        run: pytest -q tests/test_v0677_phase5_req086_scene_photo_prompt_consumption.py
+      - name: Run adjacent Phase 4 authority regressions
+        run: |
+          pytest -q \
+            tests/test_v0676_phase4_scene_derived_photography_authority.py \
+            tests/test_v0676_phase4_visual_master_runtime_binding.py \
+            tests/test_v0676_phase4_inclusion_execution_authority.py \
+            tests/test_v0635_native_reference_provider_integrity.py
+      - name: Run v067x Prompt/fidelity cross-scope regressions
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name 'test_v067*.py' -print | sort)
+          printf 'Cross-scope files: %s\n' "${files[*]}"
+          test "${#files[@]}" -gt 0
+          pytest -q "${files[@]}"
+      - name: Validate patch hygiene
+        run: git diff --check
+      - name: Commit production GREEN only
+        shell: bash
+        run: |
+          git config user.name "cbcc-phase5-bot"
+          git config user.email "cbcc-phase5-bot@users.noreply.github.com"
+          git add runtime/cbcc/prompt_compiler.py
+          git diff --cached --check
+          git diff --cached --quiet && { echo 'No production diff to commit'; exit 1; }
+          git commit -m "feat(phase5): consume scene-derived photography in acting prompts"
+          git push origin HEAD:phase5-req086-scene-photo-prompt
