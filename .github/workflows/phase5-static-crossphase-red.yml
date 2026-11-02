@@ -1,0 +1,26 @@
+name: phase5-static-crossphase-red
+
+on:
+  push:
+    branches: [phase5-prompt-compiler]
+    paths:
+      - '.github/workflows/phase5-static-crossphase-red.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  red:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q pytest pyyaml pillow
+      - name: Phase4 static AD to Phase5 Prompt proof
+        run: pytest -q tests/test_v0676_phase5_phase4_static_ad_prompt_consumption.py -x
