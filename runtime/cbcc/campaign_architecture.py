@@ -5,8 +5,9 @@ from .models import stable_hash
 
 def compile_paid_campaign_architecture(project_id:str, target:dict[str,Any], assets:list[dict[str,Any]], product_truth:dict[str,Any], economics:dict[str,Any]|None=None, ads:dict[str,Any]|None=None, explicit:list[dict[str,Any]]|None=None, content_objects:list[dict[str,Any]]|None=None)->dict[str,Any]:
     """Paid is an independent campaign system, not a resized PDP image."""
+    explicit_campaigns_supplied=explicit is not None
     jobs=list(explicit or [])
-    if not jobs:
+    if not jobs and not explicit_campaigns_supplied:
         paid=[a for a in assets if str(a.get('family')).upper()=='PAID' or str(a.get('surface')).upper()=='PAID_AD']
         for a in paid:
             jobs.append({'source_asset_id':a.get('asset_id'),'shopper_question':a.get('consumer_question'),'decision_intent':a.get('decision_intent'),'objective':'Move a qualified target shopper from the named tension to the next commerce action.','audience_state':a.get('entry_state'),'target_belief':a.get('belief_target'),'offer':None,'proof':a.get('incremental_information'),'landing_handoff':a.get('handoff') or 'PDP_OR_LANDING_SURFACE'})
