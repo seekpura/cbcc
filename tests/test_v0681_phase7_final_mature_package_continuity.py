@@ -64,6 +64,7 @@ def _mature_package(root: Path, *, include_listing: bool = True, listing_active:
         "supporting_analysis/culture_context.json",
         "supporting_analysis/asset_architecture.json",
         "supporting_analysis/seven_agent_synthesis.json",
+        "FULL_DELIVERY_OBJECT_MANIFEST.json",
     ]
     for rel in json_files:
         _write_json(package / rel, {"status": "READY"})
@@ -113,7 +114,7 @@ def test_phase7_production_orchestrator_rejects_canonical_only_shortcut_package(
 
 
 def test_phase7_final_mature_audit_reuses_existing_host_full_checker_on_final_bytes(tmp_path: Path):
-    from runtime.cbcc.full_package_semantic_closure_v0681 import audit_final_mature_package_continuity
+    from runtime.cbcc.final_mature_package_continuity_v0681 import audit_final_mature_package_continuity
 
     package = _mature_package(tmp_path)
     result = audit_final_mature_package_continuity(package)
@@ -126,7 +127,7 @@ def test_phase7_final_mature_audit_reuses_existing_host_full_checker_on_final_by
 
 
 def test_phase7_listing_activation_requires_final_listing_materialization(tmp_path: Path):
-    from runtime.cbcc.full_package_semantic_closure_v0681 import audit_final_mature_package_continuity
+    from runtime.cbcc.final_mature_package_continuity_v0681 import audit_final_mature_package_continuity
 
     package = _mature_package(tmp_path, include_listing=False, listing_active=True)
     result = audit_final_mature_package_continuity(package)
@@ -137,7 +138,7 @@ def test_phase7_listing_activation_requires_final_listing_materialization(tmp_pa
 
 
 def test_phase7_manifest_declared_mature_paths_must_resolve_on_final_bytes(tmp_path: Path):
-    from runtime.cbcc.full_package_semantic_closure_v0681 import audit_final_mature_package_continuity
+    from runtime.cbcc.final_mature_package_continuity_v0681 import audit_final_mature_package_continuity
 
     package = _mature_package(tmp_path)
     manifest_path = package / "DELIVERY_MANIFEST.json"
