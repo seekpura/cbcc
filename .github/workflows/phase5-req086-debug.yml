@@ -1,0 +1,40 @@
+name: Phase 5 REQ-086 Audit Debug
+
+on:
+  push:
+    branches:
+      - phase5-req086-scene-photo-prompt
+    paths:
+      - '.github/phase5_req086_debug_trigger.txt'
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase5-req086-scene-photo-prompt
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pytest pyyaml
+      - name: Apply patch and inspect loaded audit
+        shell: bash
+        run: |
+          python .github/phase5_req086_patch.py
+          python - <<'PY'
+          import inspect
+          from cbcc import prompt_compiler
+          from tests.test_v0677_phase5_req086_scene_photo_prompt_consumption import _compile
+          src=inspect.getsource(prompt_compiler._prompt_consumption_audit)
+          print('SOURCE_HAS_SCENE_DERIVED=', 'scene_derived_camera' in src)
+          print(src)
+          result=_compile()
+          photo=result['design_card']['photography_execution']
+          print('PHOTO_CAMERA_AUTH=', (photo.get('camera') or {}).get('authority'))
+          print('PHOTO_LIGHT_AUTH=', (photo.get('lighting') or {}).get('authority'))
+          print('PHOTO_CMF_AUTH=', (photo.get('cmf') or {}).get('authority'))
+          print('AUDIT_DECISIONS=', [x.get('decision') for x in result['prompt_consumption_audit']['checks']])
+          PY
