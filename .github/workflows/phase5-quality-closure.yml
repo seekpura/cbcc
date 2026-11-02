@@ -1,0 +1,46 @@
+name: phase5-quality-closure
+
+on:
+  push:
+    branches: [phase5-prompt-quality-closure]
+    paths:
+      - '.github/workflows/phase5-quality-closure.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phase5-quality:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: python -m pip install -q pytest pyyaml pillow
+      - name: Model-native + integrated language purity
+        run: |
+          pytest -q \
+            tests/test_v0631_model_native_prompt_contract.py \
+            tests/test_v0676_phase5_integrated_render_language_purity.py
+      - name: Canonical dynamic Prompt continuity
+        run: pytest -q tests/test_v0676_phase5_dynamic_prompt_continuity.py
+      - name: Phase4 static AD cross-phase Prompt consumption
+        run: pytest -q tests/test_v0676_phase5_phase4_static_ad_prompt_consumption.py
+      - name: Broad static Prompt density and semantic plane
+        run: pytest -q tests/test_v0676_phase5_broad_prompt_density.py
+      - name: Prompt adjacency v0.6.72 and v0.6.73
+        run: |
+          pytest -q \
+            tests/test_v0672_prompt_relevance_and_nested_execution.py \
+            tests/test_v0672_integrated_copy_negative_constraint.py \
+            tests/test_v0673_model_prompt_route_relevance.py
+      - name: Phase4 direct regressions
+        run: pytest -q tests/test_v0676_phase4_*.py
+      - name: v0.6.74 cross-scope closure
+        run: pytest -q tests/test_v0674_regression_closure.py
