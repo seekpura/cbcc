@@ -1,0 +1,68 @@
+name: phase5-product-fidelity-probe
+
+on:
+  push:
+    branches: [phase5-product-fidelity-reference]
+    paths:
+      - '.github/workflows/phase5-product-fidelity-probe.yml'
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase5-product-fidelity-reference
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q pytest pyyaml openpyxl
+      - name: Apply current candidate patch locally
+        run: python .github/phase5_patch_product_fidelity_reference.py
+      - name: Probe fidelity across compiler boundaries
+        run: |
+          python - <<'PY'
+          import inspect, json
+          from tests.test_v0676_phase5_product_fidelity_reference_prompt import _asset, _source
+          import cbcc
+          from cbcc import reference_guided_native_authority as ref
+          from cbcc import agent_authority_prompt_compiler as agent
+          from cbcc import prompt_compiler
+          from cbcc.full_art_direction_preservation import normalize_full_art_direction
+          from cbcc.art_direction_projection import project_art_direction_into_asset
+
+          asset=_asset(fidelity_mode='EXACT_PIXEL_COMPOSITE')
+          norm=normalize_full_art_direction(asset)
+          proj=project_art_direction_into_asset(norm)
+          print('RAW_ART_FIDELITY=', json.dumps(asset['asset_art_direction']['product_fidelity'], ensure_ascii=False, sort_keys=True))
+          print('NORMALIZED_ART_FIDELITY=', json.dumps(norm['asset_art_direction']['product_fidelity'], ensure_ascii=False, sort_keys=True))
+          print('PROJECTED_ART_FIDELITY=', json.dumps(proj['asset_art_direction']['product_fidelity'], ensure_ascii=False, sort_keys=True))
+          print('PROJECTED_TOP_FIDELITY=', proj.get('product_fidelity'))
+          print('REF_HELPER_PRESENT=', hasattr(ref, '_canonical_product_fidelity'))
+          if hasattr(ref, '_canonical_product_fidelity'):
+              print('REF_HELPER_VALUE=', ref._canonical_product_fidelity(proj, {}))
+          print('AGENT_HELPER_PRESENT=', hasattr(agent, '_canonical_product_fidelity'))
+          if hasattr(agent, '_canonical_product_fidelity'):
+              print('AGENT_HELPER_VALUE=', agent._canonical_product_fidelity(proj, None))
+          print('REF_EXACT_DIRECT=', ref._explicit_exact_pixel(proj, {'product_identity': {}}))
+          print('REF_NORMALIZED_DIRECT=', ref.normalize_native_reference_fidelity(proj, {'product_identity': {}}))
+          print('REF_SOURCE_HEAD=', '\n'.join(inspect.getsource(ref._explicit_exact_pixel).splitlines()[:8]))
+          print('AGENT_PATCH_MARKER=', '_canonical_product_fidelity' in inspect.getsource(agent._patch_design_card))
+          out=prompt_compiler.compile_asset_prompt(
+              asset,
+              {'name':'K01'},
+              {'market':'MY','platform_family':'TikTok Shop','site':'MY','category':'skincare'},
+              {},
+              {'primary_locale':'en-MY','delivery_locale':'zh-CN'},
+              {}, None, None, [_source()]
+          )
+          print('FINAL_IDENTITY_FIDELITY=', (out.get('design_card') or {}).get('product_identity',{}).get('product_fidelity'))
+          print('FINAL_REFERENCE_MODE=', (out.get('design_card') or {}).get('product_identity',{}).get('reference_generation_mode'))
+          print('FINAL_RENDERER_MODE=', (out.get('renderer_recipe') or {}).get('product_generation_mode'))
+          print('FINAL_PIXEL_REQUIRED=', (out.get('renderer_recipe') or {}).get('pixel_composite_required'))
+          print('FINAL_STATUS=', out.get('model_prompt_status') or out.get('status'))
+          PY
