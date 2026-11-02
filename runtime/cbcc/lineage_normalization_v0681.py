@@ -186,6 +186,15 @@ def _direct_refs(row: Mapping[str, Any], authority_ref: str) -> tuple[list[str],
 
 
 def _is_candidate(row: Mapping[str, Any]) -> bool:
+    # A lineage *business record* must carry decision/fact semantics in addition to lineage metadata.
+    # Nested evidence descriptors may themselves contain source_refs/source_type/recency, but treating
+    # those helper mappings as independent lineage records creates false INCOMPLETE results.
+    semantic_anchors = (
+        "what", "why", "tradeoff", "execution", "measurement", "object_id", "type",
+        "decision", "assumption", "question_id", "domain", "item", "fact",
+    )
+    if not any(key in row for key in semantic_anchors):
+        return False
     if any(key in row for key in LINEAGE_FIELDS):
         return True
     evidence = row.get("evidence")
