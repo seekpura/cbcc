@@ -58,6 +58,39 @@ def _corrected_audit(asset: Mapping[str, Any], out: Mapping[str, Any]) -> dict[s
         if native._meaningful(en):
             checks.append(_check(key,en,'MODEL_PROMPT_EN',_contains(prompt_en,en),language='EN'))
 
+    # Phase 5 REQ-086: prove that the final acting model Prompt consumed the exact
+    # per-asset camera / lighting / CMF decisions selected by Art Direction. The
+    # generic field checks above prove value presence; these rows preserve source
+    # authority and the authored subset so later wrappers cannot turn that proof
+    # back into a section-title or global-strategy claim.
+    photo=card.get('photography_execution') or {}
+    def across_prompts(value:Any)->bool:
+        if not native._meaningful(value):
+            return True
+        if isinstance(value,Mapping):
+            return all(across_prompts(v) for v in value.values() if native._meaningful(v))
+        if isinstance(value,(list,tuple,set,frozenset)):
+            return all(across_prompts(v) for v in value if native._meaningful(v))
+        token=str(value).strip()
+        return token in prompt_cn or token in prompt_en
+
+    for decision,block_name in (
+        ('scene_derived_camera','camera'),
+        ('scene_derived_lighting','lighting'),
+        ('scene_derived_cmf','cmf'),
+    ):
+        block=photo.get(block_name) or {}
+        if not isinstance(block,Mapping) or block.get('authority')!='AGENT_ASSET_ART_DIRECTION':
+            continue
+        authored=[str(x) for x in (block.get('authored_fields') or []) if str(x)]
+        payload={key:deepcopy(block.get(key)) for key in authored if native._meaningful(block.get(key))}
+        if not payload:
+            continue
+        row=_check(decision,payload,'MODEL_PROMPT_CN+EN',across_prompts(payload))
+        row['authority']='AGENT_ASSET_ART_DIRECTION'
+        row['value']=deepcopy(payload)
+        checks.append(row)
+
     presence=card.get('product_presence') or {}
     if native._meaningful(presence):
         state=str(presence.get('planning_state') or '').upper()

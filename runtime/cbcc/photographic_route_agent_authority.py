@@ -139,5 +139,72 @@ def wrap_derived_photo_contract(fn):
             out.setdefault('authority','AGENT_ASSET_ART_DIRECTION')
             out.setdefault('authority_stage','PER_ASSET_ART_DIRECTION')
             out.setdefault('runtime_may_invent_execution',False)
+
+            # Phase 5 REQ-086: the already-authored per-asset Art Direction is the final
+            # photography execution authority. Strategy/runtime photography may fill fields
+            # that the Agent did not author, but it cannot override camera/light/CMF choices
+            # selected on this asset. Preserve field provenance for downstream Prompt audit.
+            if isinstance(art,Mapping):
+                camera_position=art.get('camera_position') if isinstance(art.get('camera_position'),Mapping) else {}
+                focus_dof=art.get('focus_dof') if isinstance(art.get('focus_dof'),Mapping) else {}
+                camera_authored={
+                    'focal_length_mm':_first(art,'focal_length_mm','focal_length'),
+                    'lens_family':_first(art,'lens_family','lens'),
+                    'preferred_view':_first(art,'camera_or_view','preferred_view','view'),
+                    'working_distance':_first(art,'working_distance') or camera_position.get('working_distance'),
+                    'camera_height':_first(art,'camera_height') or camera_position.get('camera_height'),
+                    'yaw':_first(art,'yaw','camera_yaw') or camera_position.get('yaw'),
+                    'pitch':_first(art,'pitch','camera_pitch') or camera_position.get('pitch'),
+                    'roll':_first(art,'roll','camera_roll') or camera_position.get('roll'),
+                    'shot_size':_first(art,'shot_size') or camera_position.get('shot_size'),
+                    'perspective':_first(art,'perspective','projection') or camera_position.get('perspective'),
+                    'focus_plane':_first(art,'focus_plane') or focus_dof.get('focus_plane'),
+                    'aperture':_first(art,'aperture','f_stop') or focus_dof.get('aperture'),
+                    'dof':_first(art,'dof','depth_of_field') or focus_dof.get('dof'),
+                    'shutter_speed':_first(art,'shutter','shutter_speed') or focus_dof.get('shutter'),
+                    'iso':_first(art,'iso','ISO') or focus_dof.get('iso'),
+                }
+                camera_authored={k:deepcopy(v) for k,v in camera_authored.items() if _meaningful(v)}
+                if camera_authored:
+                    camera=deepcopy(dict(out.get('camera') or {}))
+                    camera.update(camera_authored)
+                    camera['authority']='AGENT_ASSET_ART_DIRECTION'
+                    camera['authored_fields']=list(camera_authored)
+                    out['camera']=camera
+
+                lighting_source=art.get('lighting') if isinstance(art.get('lighting'),Mapping) else {}
+                lighting_authored={
+                    'key':_first(art,'key','key_light') or lighting_source.get('key'),
+                    'fill':_first(art,'fill','fill_light') or lighting_source.get('fill'),
+                    'negative_fill':_first(art,'negative_fill') or lighting_source.get('negative_fill'),
+                    'rim':_first(art,'rim','rim_light') or lighting_source.get('rim'),
+                    'modifier':_first(art,'modifier','modifier_geometry') or lighting_source.get('modifier'),
+                    'modifier_size':_first(art,'modifier_size') or lighting_source.get('modifier_size'),
+                    'modifier_distance':_first(art,'modifier_distance') or lighting_source.get('modifier_distance'),
+                    'modifier_angle':_first(art,'modifier_angle') or lighting_source.get('modifier_angle'),
+                    'cct':_first(art,'cct','CCT') or lighting_source.get('cct'),
+                    'white_balance':_first(art,'white_balance','wb','WB') or lighting_source.get('white_balance'),
+                    'exposure_ratio_plan':_first(art,'light_ratio','exposure_ratio','exposure_ratio_plan') or lighting_source.get('light_ratio') or lighting_source.get('exposure_ratio_plan'),
+                    'shadow':_first(art,'shadow_policy','shadow') or lighting_source.get('shadow_policy') or lighting_source.get('shadow'),
+                    'highlight_policy':_first(art,'highlight_policy') or lighting_source.get('highlight_policy'),
+                    'reflection':_first(art,'reflection','reflection_control') or lighting_source.get('reflection'),
+                    'polarization_plan':_first(art,'polarization','polarization_plan') or lighting_source.get('polarization') or lighting_source.get('polarization_plan'),
+                    'prelight_plan':_first(art,'prelight','prelight_plan') or lighting_source.get('prelight'),
+                }
+                lighting_authored={k:deepcopy(v) for k,v in lighting_authored.items() if _meaningful(v)}
+                if lighting_authored:
+                    lighting=deepcopy(dict(out.get('lighting') or {}))
+                    lighting.update(lighting_authored)
+                    lighting['authority']='AGENT_ASSET_ART_DIRECTION'
+                    lighting['authored_fields']=list(lighting_authored)
+                    out['lighting']=lighting
+
+                if isinstance(art.get('cmf'),Mapping) and _meaningful(art.get('cmf')):
+                    cmf_authored=deepcopy(dict(art.get('cmf') or {}))
+                    cmf=deepcopy(dict(out.get('cmf') or {}))
+                    cmf.update(cmf_authored)
+                    cmf['authority']='AGENT_ASSET_ART_DIRECTION'
+                    cmf['authored_fields']=list(cmf_authored)
+                    out['cmf']=cmf
         return out
     return derived
