@@ -1,0 +1,26 @@
+name: phase5-dynamic-prompt-red
+
+on:
+  push:
+    branches: [phase5-prompt-compiler]
+    paths:
+      - '.github/workflows/phase5-dynamic-prompt-red.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  red:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -q pytest pyyaml pillow
+      - name: Phase4 dynamic AD to Phase5 Prompt RED
+        run: pytest -q tests/test_v0676_phase5_dynamic_art_direction_prompt_consumption.py -x
