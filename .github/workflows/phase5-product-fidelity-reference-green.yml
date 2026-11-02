@@ -44,7 +44,7 @@ jobs:
         run: |
           git config user.name 'cbcc-phase5-bot'
           git config user.email 'actions@users.noreply.github.com'
-          git add runtime/cbcc/agent_authority_prompt_compiler.py runtime/cbcc/reference_guided_native_authority.py
+          git add runtime/cbcc/agent_authority_prompt_compiler.py runtime/cbcc/reference_guided_native_authority.py runtime/cbcc/integrated_render_route_authority.py
           git diff --cached --check
           git commit -m 'feat(phase5): consume canonical product fidelity authority'
           git push origin HEAD:phase5-product-fidelity-reference
