@@ -40,7 +40,7 @@ def _write_json(path: Path, data: Any) -> None:
 def host_execution_contract() -> dict[str, Any]:
     return {
         'version': VERSION,
-        'commands': ['adapter-list', 'provider-execute', 'provider-cancel', 'provider-reconcile'],
+        'commands': ['adapter-list', 'provider-execute', 'provider-cancel', 'provider-reconcile', 'revision-execute'],
         'single_execution_chain': bridge_contract()['single_execution_chain'],
         'runtime_context': {
             'persistence': 'FORBIDDEN',
@@ -49,7 +49,10 @@ def host_execution_contract() -> dict[str, Any]:
             'host_module_value_is_module_name_not_credentials': True,
             'credential_ownership': 'HOST',
         },
-        'completion_authority': 'Existing ingest_provider_job_results + ProjectState PRODUCTION gate',
+        'completion_authority': (
+            'Root provider completion: ingest_provider_job_results + ProjectState PRODUCTION gate; '
+            'Local Revision completion: ingest_local_revision_results + explicit revision-output Review'
+        ),
     }
 
 
@@ -140,20 +143,18 @@ class ProviderExecutionSurface:
             policy=policy,
         )
 
-    def execute_project(
+    def _execute_job_root(
         self,
-        project_dir: Path,
+        jobs_root: Path,
         *,
         asset_ids: list[str] | None = None,
         adapter_id: str | None = None,
         policy: ExecutionPolicy | None = None,
-        ingest_when_complete: bool = True,
-    ) -> dict[str, Any]:
-        project, jobs_root, run_path = self._project_paths(Path(project_dir))
+    ) -> tuple[list[dict[str, Any]], dict[str, int], bool, dict[str, Any]]:
         index = self._job_index(jobs_root)
         selected_ids = set(asset_ids or [])
         policy = policy or ExecutionPolicy()
-        rows = []
+        rows: list[dict[str, Any]] = []
         for row in index.get('jobs') or []:
             aid = str(row.get('asset_id') or '')
             if selected_ids and aid not in selected_ids:
@@ -166,6 +167,24 @@ class ProviderExecutionSurface:
             status = str(row.get('status') or 'UNKNOWN')
             counts[status] = counts.get(status, 0) + 1
         all_selected_complete = bool(rows) and all(x.get('status') == 'COMPLETE' for x in rows)
+        return rows, counts, all_selected_complete, index
+
+    def execute_project(
+        self,
+        project_dir: Path,
+        *,
+        asset_ids: list[str] | None = None,
+        adapter_id: str | None = None,
+        policy: ExecutionPolicy | None = None,
+        ingest_when_complete: bool = True,
+    ) -> dict[str, Any]:
+        project, jobs_root, run_path = self._project_paths(Path(project_dir))
+        rows, counts, all_selected_complete, index = self._execute_job_root(
+            jobs_root,
+            asset_ids=asset_ids,
+            adapter_id=adapter_id,
+            policy=policy,
+        )
         indexed_jobs = list(index.get('jobs') or [])
         all_results_present = bool(indexed_jobs) and all(
             bool(x.get('result_path')) and Path(str(x['result_path'])).exists()
@@ -196,6 +215,46 @@ class ProviderExecutionSurface:
             'counts': counts,
             'ingest': ingest,
             'ingest_status': (ingest or {}).get('status') if ingest else ('DEFERRED_UNTIL_ALL_RESULTS_PRESENT' if ingest_when_complete else 'SKIPPED'),
+            'host_execution_contract': host_execution_contract(),
+        }
+
+    def execute_local_revision(
+        self,
+        project_dir: Path,
+        revision_id: str,
+        *,
+        asset_ids: list[str] | None = None,
+        adapter_id: str | None = None,
+        policy: ExecutionPolicy | None = None,
+    ) -> dict[str, Any]:
+        project = Path(project_dir)
+        revision_root = project / 'artifacts/local_revisions' / str(revision_id)
+        jobs_root = revision_root / 'provider_jobs'
+        run_path = revision_root / 'production_run.json'
+        if not run_path.exists():
+            raise FileNotFoundError(f'No local revision production run found: {run_path}')
+
+        run = _read_json(run_path, {})
+        if str(run.get('revision_id') or revision_id) != str(revision_id):
+            raise ValueError(f'Local revision id mismatch: expected {revision_id}')
+
+        rows, counts, all_selected_complete, _ = self._execute_job_root(
+            jobs_root,
+            asset_ids=asset_ids,
+            adapter_id=adapter_id,
+            policy=policy,
+        )
+        return {
+            'status': (
+                'LOCAL_REVISION_PROVIDER_EXECUTION_COMPLETE'
+                if all_selected_complete
+                else ('NO_LOCAL_REVISION_PROVIDER_JOBS_SELECTED' if not rows else 'LOCAL_REVISION_PROVIDER_EXECUTION_INCOMPLETE')
+            ),
+            'revision_id': str(revision_id),
+            'revision_request_id': run.get('revision_request_id'),
+            'jobs': rows,
+            'counts': counts,
+            'ingest_status': 'DEFERRED_TO_LOCAL_REVISION_INGEST',
             'host_execution_contract': host_execution_contract(),
         }
 

@@ -183,7 +183,7 @@
       "req": "REQ-090",
       "title": "FULL package lineage and actual-output boundary",
       "phase": "7,8,10",
-      "status": "PARTIAL_PHASE7_SOURCE_PACKAGE_CLOSURE_TARGETED_VERIFIED_HOST_FALSE_PASS_GUARD_VERIFIED_INSTALLED_HOST_E2E_PHASE11_REAL_PROVIDER_OUTPUT_PHASE8_AND_FRESH_K01_PHASE10_PENDING"
+      "status": "PARTIAL_PHASE7_SOURCE_PACKAGE_CLOSURE_AND_PHASE8_PROVIDER_BOUNDARY_ACTUAL_OUTPUT_E2E_PROVEN_FRESH_K01_PHASE10_AND_AUTHENTICATED_INSTALLED_HOST_PHASE11_PENDING"
     }
   ],
   "phase_status": {
@@ -195,7 +195,7 @@
     "5": "PASS_PHASE5_COMMERCIAL_PROMPT_COMPILER_PARAMETER_CONSUMPTION_VERIFIED",
     "6": "PASS_PHASE6_JSON_MD_HTML_SAME_SOURCE_ROUTED_HUMAN_WORKSPACE_AND_ACTIVATED_DELIVERY_FAMILIES_VERIFIED",
     "7": "PASS_PHASE7_FINAL_PACKAGE_SEMANTIC_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_AND_HOST_FALSE_PASS_GUARD_TARGETED_VERIFIED_INSTALLED_HOST_E2E_DEFERRED_PHASE11",
-    "8": "NOT_STARTED",
+    "8": "PASS_PHASE8_PROVIDER_RESULT_REVIEW_LOCAL_REVISION_HASH_LINEAGE_E2E_PROVEN_AT_PROVIDER_EXECUTION_BOUNDARY",
     "9": "NOT_STARTED",
     "10": "NOT_STARTED",
     "11": "NOT_STARTED"
@@ -1064,6 +1064,63 @@
       },
       "host_candidate_directory_policy": "UNAUTHENTICATED_CANDIDATE_DIRECTORY_DIAGNOSTIC_ONLY",
       "host_false_pass_guard_commit": "2e0ead508b3d3a9e4e7ac3c6f6b31bdda1bd5b7d"
+    },
+    "8": {
+      "status": "PASS_PHASE8_PROVIDER_RESULT_REVIEW_LOCAL_REVISION_HASH_LINEAGE_E2E_PROVEN_AT_PROVIDER_EXECUTION_BOUNDARY",
+      "requirements": [
+        "REQ-038",
+        "REQ-039",
+        "REQ-040",
+        "REQ-041",
+        "REQ-090"
+      ],
+      "consumer_map": "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE8_PROVIDER_ACTUAL_OUTPUT.json",
+      "proof_objects": [
+        "runtime/cbcc/provider_surface.py",
+        "runtime/cbcc/cli.py",
+        "runtime/cbcc/provider_bridge.py",
+        "runtime/cbcc/provider_executor.py",
+        "runtime/cbcc/production.py",
+        "runtime/cbcc/review.py",
+        "runtime/cbcc/learning_loop.py",
+        "runtime/cbcc/full_package_semantic_closure_v0681.py",
+        "tests/test_v0682_phase8_local_revision_provider_execution.py",
+        "tests/test_v0682_phase8_revision_execute_cli.py",
+        "tests/test_v0682_phase8_actual_output_e2e.py",
+        ".github/workflows/v0682-phase8-provider-actual-output.yml"
+      ],
+      "red_evidence": {
+        "local_revision_execution": {
+          "run": 41444026742,
+          "failure": "ProviderExecutionSurface had no execute_local_revision"
+        },
+        "revision_execute_cli": {
+          "run": 41444302599,
+          "failure": "argparse rejected revision-execute"
+        }
+      },
+      "focused_green": {
+        "run": 41445447994,
+        "result": "SUCCESS; actual-output lifecycle reached E2E_PROVEN"
+      },
+      "cross_scope_green": {
+        "run": 41445805192,
+        "result": "SUCCESS; v0.6.16 host surface + Phase 8 suites together"
+      },
+      "verified_behavior": [
+        "root and local-revision jobs execute through the same provider adapter/executor boundary",
+        "actual output bytes and production-receipt SHA256 are materialized and verified",
+        "locked/reference product routes require provider quality/reference/source-hash evidence before COMPLETE",
+        "human output review and local-revision output review remain explicit and independently addressable",
+        "bounded local revision preserves changed field/layer scope and revised-output hash lineage",
+        "Phase 7 audit_actual_output_boundary reaches E2E_PROVEN only after the complete lifecycle"
+      ],
+      "honesty_boundary": {
+        "external_vendor_network_call": "NOT_CLAIMED",
+        "fresh_k01_full_public_path": "PENDING_PHASE10",
+        "authenticated_installed_host_native_export": "PENDING_PHASE11"
+      },
+      "next_phase": "PHASE9_REQUIREMENT_CONSUMER_MAP_001_090"
     }
   },
   "version": "2026-11-02-phase7-source-package-closure-v3",

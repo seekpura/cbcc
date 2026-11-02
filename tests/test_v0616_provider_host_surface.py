@@ -86,11 +86,36 @@ def _materialize_project(tmp_path: Path, asset_id='AST-V0616'):
 
 
 def _callbacks(reference: ReferenceMemoryExecutor, *, cancel=None, reconcile=None):
+    def collect(external_job_id, *, job):
+        collected = reference.collect(external_job_id, job=job)
+        bindings = job.get('source_product_bindings') or []
+        source_ids = [row.get('asset_id') for row in bindings if row.get('asset_id')]
+        source_hashes = {
+            str(row.get('asset_id')): str(row.get('sha256') or '')
+            for row in bindings
+            if row.get('asset_id')
+        }
+        observations = {}
+        for key in (job.get('result_contract') or {}).get('quality_observations_required') or []:
+            if key == 'source_product_asset_ids_used':
+                observations[key] = source_ids
+            elif key == 'source_product_hashes_used':
+                observations[key] = source_hashes
+            elif key == 'product_layer_operation':
+                observations[key] = 'COMPOSITE_LOCKED'
+            else:
+                observations[key] = {
+                    'status': 'PASS',
+                    'evidence': f'v0616 host callback observed {key} on resolved provider output',
+                }
+        collected['quality_observations'] = observations
+        return collected
+
     rows = {
         'ensure_asset': reference.ensure_asset,
         'submit': reference.submit,
         'poll': reference.poll,
-        'collect': reference.collect,
+        'collect': collect,
         'resolve': reference.resolve,
     }
     if cancel is not None:
@@ -119,7 +144,7 @@ def test_host_execution_contract_forbids_secret_cli_arguments_and_persistence():
     assert contract['runtime_context']['cli_secret_arguments'] == 'FORBIDDEN'
     assert contract['runtime_context']['host_module_value_is_module_name_not_credentials'] is True
     assert contract['single_execution_chain'].endswith('Production Receipt → Ingest')
-    assert set(contract['commands']) == {'adapter-list', 'provider-execute', 'provider-cancel', 'provider-reconcile'}
+    assert set(contract['commands']) == {'adapter-list', 'provider-execute', 'provider-cancel', 'provider-reconcile', 'revision-execute'}
 
 
 def test_adapter_listing_is_available_without_runtime_credentials():
