@@ -26,6 +26,7 @@ def main(argv=None):
     p=sp.add_parser('provider-reconcile'); p.add_argument('--project-dir',required=True); p.add_argument('--asset-id',required=True); p.add_argument('--adapter-id')
     p=sp.add_parser('provider-ingest'); p.add_argument('--project-dir',required=True)
     p=sp.add_parser('revision-compile'); p.add_argument('--project-dir',required=True); p.add_argument('--revision-request-id',action='append')
+    p=sp.add_parser('revision-execute'); p.add_argument('--project-dir',required=True); p.add_argument('--revision-id',required=True); p.add_argument('--asset-id',action='append'); p.add_argument('--adapter-id'); p.add_argument('--max-attempts',type=int,default=3); p.add_argument('--max-polls',type=int,default=8)
     p=sp.add_parser('revision-ingest'); p.add_argument('--project-dir',required=True); p.add_argument('--revision-id',action='append')
     p=sp.add_parser('learning-apply'); p.add_argument('--project-dir',required=True); p.add_argument('--learning-file',required=True)
     p=sp.add_parser('state'); p.add_argument('--project-dir',required=True)
@@ -66,6 +67,8 @@ def main(argv=None):
         project=Path(a.project_dir); st=ProjectState.load(project); req_path=project/'.cbcc/request.json'; req=json.loads(req_path.read_text(encoding='utf-8')) if req_path.exists() else {}
         out=compile_local_revision_jobs(project,st.data,req.get('production_provider_preferences'),a.revision_request_id)
         st.data['local_revision_requests']=st.data.get('local_revision_requests',[]); st.save(); st.checkpoint('LOCAL_REVISION_COMPILE',out.get('status')); refresh_review_workspace(project,st)
+    elif a.cmd=='revision-execute':
+        surface=provider_execution_surface_from_environment(); policy=ExecutionPolicy(max_attempts=max(1,a.max_attempts),max_polls_per_attempt=max(0,a.max_polls)); out=surface.execute_local_revision(Path(a.project_dir),a.revision_id,asset_ids=a.asset_id,adapter_id=a.adapter_id,policy=policy)
     elif a.cmd=='revision-ingest':
         project=Path(a.project_dir); st=ProjectState.load(project); out=ingest_local_revision_results(project,st.data,a.revision_id); st.save(); st.checkpoint('LOCAL_REVISION_INGEST',out.get('status')); refresh_review_workspace(project,st)
     elif a.cmd=='learning-apply':
