@@ -1,5 +1,5 @@
 {
-  "version": "cbcc-current-phase7-final-mature-package-continuity-v1",
+  "version": "cbcc-current-phase7-final-mature-package-continuity-v2",
   "phase": 7,
   "subtask": "REQ-090 final-byte mature FULL package continuity",
   "requirement_id": "REQ-090",
@@ -62,6 +62,19 @@
       "runtime/cbcc/phase7_lineage_semantic_closure_v0681.py",
       "runtime/cbcc/commercial_delivery_continuity.py"
     ]
+  },
+  "accounting_and_cleanup": {
+    "consumer_map_initial_commit": "741375610388681122852a73ac473800a0699e70",
+    "accounting_cleanup_head_sha": "0f4f7387d4a56e049d20d61ef442298c672b6d85",
+    "ledger_matrix_semantic_map_req088_map_synchronized": true,
+    "temporary_phase7_workflows_present": false,
+    "verified_removed_workflows": [
+      ".github/workflows/phase7-mature-package-characterization.yml",
+      ".github/workflows/phase7-wire-final-mature-package.yml",
+      ".github/workflows/phase7-sync-mature-continuity-accounting.yml",
+      ".github/workflows/phase7-normalize-ledger-boundary.yml"
+    ],
+    "clean_head_rule": "This v2 map update is the ordinary-user commit that triggers the permanent CURRENT verifier after all temporary workflows and stale ledger boundary claims have been removed. No production or test semantics are changed by this freeze commit."
   },
   "invariants": [
     "Final-byte mature package continuity is a package-structure/business-surface continuity proof, not independently installed Host-native semantic parity.",
