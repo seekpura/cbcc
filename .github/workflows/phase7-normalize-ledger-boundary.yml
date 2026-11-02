@@ -1,0 +1,59 @@
+name: phase7-normalize-ledger-boundary
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [repair-04-phase7-full-materialization]
+    paths:
+      - '.github/workflows/phase7-normalize-ledger-boundary.yml'
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair-04-phase7-full-materialization
+          fetch-depth: 0
+      - name: Remove stale pre-closure Phase 7 ledger claims
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path('references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          p7 = data['phase_evidence']['7']
+          p7['status'] = 'IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY_PENDING'
+          p7['verified_subtasks'] = [
+              'Final semantic object inventory is dynamically derived from final canonical business objects and production packages.',
+              'REQ-088 source/evidence/assumption/decision lineage resolves to final semantic identities without copying business payload.',
+              'Final-byte mature FULL-package continuity reuses full_delivery_depth_v3.audit_host_full_package after all Phase 6/7 mutations and before the definitive ZIP.',
+              'Activated Listing and DELIVERY_MANIFEST-declared paths are revalidated on final bytes.',
+              'Host-native/Runtime comparator uses canonical object IDs and semantic SHA-256 values and remains fail-honest without an independently materialized Host-native package.',
+              'Provider planning/job templates cannot self-certify actual-output QA; actual Provider Result/Review/Revision evidence remains a later phase.'
+          ]
+          p7['remaining_phase7'] = [
+              'Independent Host-native package semantic comparison against the Runtime export when a real independently materialized Host-native export is available; do not fabricate this from Runtime-only output.'
+          ]
+          p7['remaining_boundary'] = 'Phase 7 remains IN_PROGRESS only because independently materialized Host-native versus Runtime semantic parity is not yet proven. Provider Result/Review/Revision is Phase 8, Fresh K01 FULL is Phase 10, and installed-plugin readback is Phase 11.'
+          p7['current_gate_head_sha'] = '3b6a0d2f7b52a618316bb880839b4f35aa19e47b'
+          p7['current_release_regression'] = 'GitHub Actions run 41416771898: SUCCESS; permanent Phase 7 gate explicitly ran semantic closure, REQ-088 lineage and final-byte mature package continuity (16/16), then requirement accounting, CURRENT build, exact ZIP checker, v0.6.70-v0.6.75 floors and artifact upload.'
+          data['version'] = '2026-11-02-phase7-mature-continuity-targeted-v2'
+          data['current_phase'] = 'PHASE_7_IN_PROGRESS_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY_PENDING'
+          data['previous_phase'] = 'PHASE_6_COMPLETE'
+          data['next_phase'] = 'PHASE_7_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY'
+          data['current_head_sha'] = '3b6a0d2f7b52a618316bb880839b4f35aa19e47b'
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Self-clean and commit
+        run: |
+          rm -f .github/workflows/phase7-normalize-ledger-boundary.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "docs(phase7): normalize remaining host parity boundary"
+          git push origin HEAD:repair-04-phase7-full-materialization
