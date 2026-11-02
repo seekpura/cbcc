@@ -1,5 +1,5 @@
 {
-  "version": "cbcc-current-phase6-routed-human-workspace-v1",
+  "version": "cbcc-current-phase6-routed-human-workspace-v2",
   "phase": 6,
   "subtask": "REQ-089 Human Workspace full canonical routed projection",
   "production_head_sha": "7ec9f14aa73393b18b74b94cc4c3784227ea0ffd",
@@ -8,7 +8,7 @@
     {
       "requirement_id": "REQ-089",
       "summary": "Canonical business objects must be consumed inside project-authored Human Workspace routes; archive/search-only presence is not sufficient proof.",
-      "implementation_status": "PASS_PHASE6_REQ089_TARGETED_VERIFIED_REMAINING_PHASE6_DELIVERY_FAMILIES_PENDING",
+      "implementation_status": "PASS_PHASE6_REQ089_TARGETED_VERIFIED_FRESH_K01_PENDING_PHASE10",
       "upstream_authority": [
         "runtime/cbcc/canonical_full_parity_v0671.py::build_canonical_human_payload",
         "runtime/cbcc/workspace_autonomy.py::build_workspace_route_plan",
@@ -36,8 +36,8 @@
       "evidence": [
         "tests/test_v0680_phase6_req089_routed_canonical_workspace.py",
         "GitHub Actions RED run 41403382215: 2 failed / 1 passed before routed canonical consumer existed",
-        "GitHub Actions focused GREEN run 41403642950: routed workspace + archive false-pass defense + dynamic IA + final ZIP/Manifest all passed",
-        "GitHub Actions CURRENT release verification run 41403642919: SUCCESS on the same focused-test head"
+        "GitHub Actions focused GREEN run 41403642950: 4/4 passed including final export/ZIP consumption",
+        "CURRENT permanent Phase 6 gate run 41404789717: SUCCESS including REQ-061, REQ-089, delivery-family gates, build, release floors and artifact upload"
       ],
       "verified_behavior": [
         "Every canonical business object emitted by the current payload receives a real Human Workspace route consumer; overview is used only as dynamic fallback when the project-authored IA did not emit the preferred semantic route.",
@@ -46,17 +46,18 @@
         "Existing dynamic IA remains authoritative: absent capabilities are not promoted into primary navigation and fixed_route_count/fixed_command_count remain null.",
         "REQ-089 is fail-closed in final export; routed audit failure blocks final ZIP creation.",
         "DELIVERY_MANIFEST and final ZIP include CANONICAL_ROUTED_WORKSPACE_AUDIT.json and record archive_is_primary_canonical_consumer=false.",
-        "REQ-061 same-source JSON/Markdown/HTML signature parity remains intact after routed projection."
+        "REQ-061 same-source JSON/Markdown/HTML signature parity remains intact after routed projection.",
+        "Activated Longform/Store-Landing/CRM delivery-family routing is now independently closed and no longer remains a Phase 6 dependency of REQ-089."
       ],
-      "residual_risk": "REQ-089 canonical routing is targeted-verified, but activated Longform/Specification/Source-document, Store/Landing/Campaign/Seasonal, and CRM/Lifecycle/Post-purchase object families still require their Phase 6 delivery-route closure. Phase 7 lineage and later Fresh K01/Provider proof are not claimed."
+      "residual_risk": "REQ-089 canonical routing is targeted-verified. Fresh K01 FULL remains Phase 10 evidence; Phase 7 lineage/package continuity and later Provider actual-output proof are not claimed."
     }
   ],
   "cross_scope_verification": {
     "focused_red_run": 41403382215,
     "focused_green_run": 41403642950,
-    "focused_green_expected": "4/4 passed",
-    "current_release_run": 41403642919,
-    "current_release_status": "SUCCESS"
+    "focused_green": "4/4 passed",
+    "permanent_current_gate_run": 41404789717,
+    "permanent_current_gate_status": "SUCCESS"
   },
   "invariants": [
     "Canonical JSON remains authority; Human Workspace routing is a projection, not a second business truth.",
@@ -66,10 +67,6 @@
     "Phase 6 routing does not claim Phase 7 source/evidence/decision lineage closure or Provider actual-output proof."
   ],
   "pending": [
-    "REQ-070 Longform/Specification/Source-document Human Delivery route",
-    "REQ-076 Store/Banner/Landing/Campaign/Seasonal Human Delivery route",
-    "REQ-077 CRM/Lifecycle/Post-purchase Human Delivery route",
-    "Phase 6 master ledger safe whole-file synchronization after all Phase 6 subtasks close",
     "Phase 7 lineage/package continuity",
     "Phase 10 Fresh K01 FULL",
     "Phase 11 installed-plugin readback and Provider actual-output proof"
