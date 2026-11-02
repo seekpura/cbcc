@@ -144,13 +144,17 @@ def test_phase4_dynamic_motion_timing_audio_are_consumed_by_model_acting_plane()
     out = _compile(_dynamic_asset())
     en = out['model_prompt_en']
 
+    # Semantic membrane may split authored semicolon clauses into separate provider-facing lines;
+    # require the authored semantics, not byte-identical punctuation.
     for token in (
         'hand enters the real use context and reaches for the bottle',
         'product stays readable during the proof application action',
         '12',
         'ms-MY',
         'creator-native conversational',
-        'low-bed only; never mask spoken proof',
+        'low-bed only',
+        'never mask spoken proof',
+        'product handling only when captured or licensed',
         'preserve proof pauses',
     ):
         assert token in en, token
@@ -177,4 +181,8 @@ def test_source_binding_hash_and_runtime_authority_metadata_stay_out_of_model_pr
 
     notes = out['production_assembly_notes']
     assert notes['source_product_bindings']
-    assert notes['source_product_bindings'][0]['provider_asset_handle'] == 'ref://master-front'
+    binding = notes['source_product_bindings'][0]
+    assert binding['locator']['kind'] == 'PROVIDER_ASSET_HANDLE'
+    assert binding['locator']['value'] == 'ref://master-front'
+    assert binding['sha256'] == 'abc123'
+    assert binding['ingest_status'] == 'HASH_VERIFIED_LOCAL'
