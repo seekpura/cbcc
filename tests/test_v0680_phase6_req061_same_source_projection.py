@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import zipfile
 from pathlib import Path
 
 
@@ -186,3 +187,58 @@ def test_req061_parity_audit_detects_markdown_drift(tmp_path: Path):
     )
     issues = audit_canonical_delivery_parity(package)
     assert any(issue["code"] == "MARKDOWN_CANONICAL_FIELD_DRIFT" for issue in issues), issues
+
+
+def test_req061_final_export_manifest_and_zip_contain_same_source_parity_artifacts(tmp_path: Path):
+    from runtime.cbcc.canonical_delivery_parity_v0680 import finalize_export_canonical_delivery_parity
+
+    package = _package(tmp_path)
+    zip_path = tmp_path / "package.zip"
+    _write_json(
+        package / "DELIVERY_MANIFEST.json",
+        {
+            "status": "DELIVERY_READY",
+            "package_dir": str(package),
+            "zip_path": str(zip_path),
+            "workspace_contract": {"existing_contract": "PASS"},
+            "files": [],
+        },
+    )
+
+    result = finalize_export_canonical_delivery_parity(
+        {
+            "status": "DELIVERY_READY",
+            "package_dir": str(package),
+            "zip_path": str(zip_path),
+            "workspace_contract": {"existing_contract": "PASS"},
+        }
+    )
+
+    assert result["canonical_delivery_parity_status"] == "PASS"
+    signature = result["canonical_delivery_signature_sha256"]
+    assert len(signature) == 64
+    assert result["workspace_contract"]["existing_contract"] == "PASS"
+    assert result["workspace_contract"]["canonical_json_markdown_html_same_source_parity"] == "PASS"
+
+    disk_manifest = json.loads((package / "DELIVERY_MANIFEST.json").read_text(encoding="utf-8"))
+    assert disk_manifest["canonical_human_data_json"] == "CANONICAL_HUMAN_DATA.json"
+    assert disk_manifest["canonical_human_data_markdown"] == "CANONICAL_HUMAN_DATA.md"
+    assert disk_manifest["canonical_delivery_parity_audit"] == "CANONICAL_DELIVERY_PARITY_AUDIT.json"
+    assert disk_manifest["canonical_delivery_signature_sha256"] == signature
+
+    assert zip_path.exists()
+    prefix = package.name + "/"
+    with zipfile.ZipFile(zip_path) as zf:
+        names = set(zf.namelist())
+        for rel in (
+            "CANONICAL_HUMAN_DATA.json",
+            "CANONICAL_HUMAN_DATA.md",
+            "CANONICAL_DELIVERY_PARITY_AUDIT.json",
+            "index.html",
+            "DELIVERY_MANIFEST.json",
+        ):
+            assert prefix + rel in names, rel
+        zipped_md = zf.read(prefix + "CANONICAL_HUMAN_DATA.md").decode("utf-8")
+        zipped_html = zf.read(prefix + "index.html").decode("utf-8")
+        assert f"canonical-signature: {signature}" in zipped_md
+        assert f'data-canonical-signature="{signature}"' in zipped_html
