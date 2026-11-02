@@ -975,17 +975,18 @@
       "source_truth": "GITHUB_BRANCH_PHASE6_TARGETED_VERIFIED"
     },
     "7": {
-      "status": "IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_CLOSURE_TARGETED_VERIFIED",
+      "status": "IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_REQ088_LINEAGE_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY_PENDING",
       "verified_subtasks": [
-        "Final semantic object inventory is derived from final CANONICAL_HUMAN_DATA business objects and production asset packages rather than a static hand-list.",
-        "Host-native/Runtime source-level comparator uses canonical object IDs and semantic SHA-256 values rather than file layout or headings.",
-        "One Runtime package cannot self-certify installed Host-native parity; final manifest records E2E_PENDING_INSTALLED_HOST_EXPORT without a second package.",
-        "Provider planning/job templates cannot self-certify actual-output QA; final package exposes E2E_PENDING until Result→Review→Local Revision→lineage/hash is real.",
-        "Phase 7 semantic closure runs after all Phase 6 final projections and rebuilds the final DELIVERY_MANIFEST / ZIP."
+        "Final semantic object inventory is dynamically derived from final canonical business objects and production packages.",
+        "REQ-088 source/evidence/assumption/decision lineage resolves to final semantic identities without copying business payload.",
+        "Final-byte mature FULL-package continuity reuses full_delivery_depth_v3.audit_host_full_package after all Phase 6/7 mutations and before the definitive ZIP.",
+        "Activated Listing and DELIVERY_MANIFEST-declared paths are revalidated on final bytes.",
+        "Host-native/Runtime comparator uses canonical object IDs and semantic SHA-256 values and remains fail-honest without an independently materialized Host-native package.",
+        "Provider planning/job templates cannot self-certify actual-output QA; actual Provider Result/Review/Revision evidence remains a later phase."
       ],
       "focused_red": "GitHub Actions run 41406191109: 4 failed because full_package_semantic_closure_v0681 did not exist.",
       "focused_green": "GitHub Actions run 41406484829: 5/5 passed including final export ordering and ZIP integration.",
-      "current_release_regression": "GitHub Actions run 41406565002: SUCCESS with permanent Phase 7 semantic-closure gate plus build, release floors and artifact upload.",
+      "current_release_regression": "GitHub Actions run 41416771898: SUCCESS; permanent Phase 7 gate explicitly ran semantic closure, REQ-088 lineage and final-byte mature package continuity (16/16), then requirement accounting, CURRENT build, exact ZIP checker, v0.6.70-v0.6.75 floors and artifact upload.",
       "proof_objects": [
         "runtime/cbcc/full_package_semantic_closure_v0681.py",
         "runtime/cbcc/commercial_delivery_continuity.py",
@@ -1002,9 +1003,7 @@
         "tests/test_v0681_phase7_final_mature_package_continuity.py"
       ],
       "remaining_phase7": [
-        "REQ-088 complete Source/Evidence/Assumption/Decision lineage chain with downstream-use and proof-object coverage.",
-        "REQ-090 full package continuity coverage for all active semantic objects and lineage objects.",
-        "Independent Host-native package semantic comparison when a real Host-native export is available; do not fabricate this from Runtime-only output."
+        "Independent Host-native package semantic comparison against the Runtime export when a real independently materialized Host-native export is available; do not fabricate this from Runtime-only output."
       ],
       "deferred_by_plan": [
         "Fresh K01 FULL remains Phase 10.",
@@ -1012,7 +1011,7 @@
       ],
       "source_truth": "GITHUB_BRANCH_PHASE7_IN_PROGRESS_TARGETED_VERIFIED",
       "production_head_sha": "9000474846de7534be8409a9bbfc32c70fa31038",
-      "current_gate_head_sha": "34d51aefb4b4b05e8dfc34842c059c3b28b4d71a",
+      "current_gate_head_sha": "3b6a0d2f7b52a618316bb880839b4f35aa19e47b",
       "req088_lineage_status": "PASS_TARGETED_RESOLVABLE_LINEAGE",
       "req088_authority_contract": "runtime/cbcc/information_audit_authority.py::LINEAGE_FIELDS",
       "req088_runtime": [
@@ -1044,7 +1043,7 @@
         "Nested evidence descriptors are not double-counted as independent business lineage records.",
         "Production export materializes lineage before final semantic inventory/Manifest/ZIP rebuild."
       ],
-      "remaining_boundary": "Phase 7 remains IN_PROGRESS. Independently materialized Host-native parity and real Provider Result→Review→Revision/hash evidence are not claimed by REQ-088 and remain pending under REQ-090/later planned proof.",
+      "remaining_boundary": "Phase 7 remains IN_PROGRESS only because independently materialized Host-native versus Runtime semantic parity is not yet proven. Provider Result/Review/Revision is Phase 8, Fresh K01 FULL is Phase 10, and installed-plugin readback is Phase 11.",
       "final_mature_package_continuity": "PASS_PHASE7_FINAL_BYTE_MATURE_PACKAGE_CONTINUITY_TARGETED_VERIFIED",
       "mature_continuity_checker": "runtime.cbcc.full_delivery_depth_v3.audit_host_full_package reused on final package bytes",
       "mature_continuity_focused_green": "4/4 dedicated characterization tests passed; GitHub Actions run 41416575861 on head 646f5dfc915642286b80a3aad86c569416cee044",
@@ -1053,10 +1052,10 @@
       "phase7_boundary": "Final semantic inventory, REQ-088 lineage, and final-byte mature package continuity are targeted verified. Phase 7 remains IN_PROGRESS until independently materialized Host-native versus Runtime semantic parity is proven. Provider actual-output belongs to Phase 8; Fresh K01 FULL to Phase 10; installed-plugin readback to Phase 11."
     }
   },
-  "version": "2026-11-02-phase7-in-progress-v1",
-  "current_phase": "PHASE_7_IN_PROGRESS",
+  "version": "2026-11-02-phase7-mature-continuity-targeted-v2",
+  "current_phase": "PHASE_7_IN_PROGRESS_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY_PENDING",
   "previous_phase": "PHASE_6_COMPLETE",
-  "next_phase": "PHASE_7_REQ088_FULL_LINEAGE_CLOSURE",
-  "current_head_sha": "9000474846de7534be8409a9bbfc32c70fa31038",
+  "next_phase": "PHASE_7_HOST_NATIVE_RUNTIME_SEMANTIC_PARITY",
+  "current_head_sha": "3b6a0d2f7b52a618316bb880839b4f35aa19e47b",
   "current_head_sha_semantics": "Latest Phase 7 production-code boundary for final package semantic closure; later focused tests, CI, consumer-map and ledger commits do not change this production semantics boundary."
 }
