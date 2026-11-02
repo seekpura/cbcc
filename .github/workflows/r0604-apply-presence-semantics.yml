@@ -1,0 +1,47 @@
+name: R06-04 Presence Semantics Repair
+
+on:
+  push:
+    branches: [r06-04-agent-autonomy-red]
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: r06-04-agent-autonomy-red
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install focused verification dependencies
+        run: python -m pip install --disable-pip-version-check pytest pyyaml openpyxl
+      - name: Apply unified presence-semantics patch
+        run: python scripts/apply_r0604_presence_semantics_patch.py
+      - name: Focused autonomy verification
+        env:
+          PYTHONPATH: .:runtime
+        run: >-
+          python -m pytest -q
+          tests/test_v0682_r0604_agent_autonomy_restoration.py
+          tests/test_v0621_commerce_agent_autonomy.py
+          tests/test_v0630_agent_art_direction_authority.py
+          tests/test_v0630_surface_agent_authority.py
+          tests/test_v0655_asset_universe_open_world.py
+          tests/test_alpha4_creative_research.py
+          tests/test_v0624_strategy_asset_scope.py
+          tests/test_v0513_real_product_strategy_quality.py
+          tests/test_v0633_reference_guided_native_asset_universe.py
+      - name: Commit source repair
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add runtime/cbcc/agent_autonomy.py runtime/cbcc/creative_opportunity.py runtime/cbcc/creative.py runtime/cbcc/asset_architecture.py runtime/cbcc/compiler.py
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix(r06-04): preserve explicit empty agent decisions'
+          git push origin HEAD:r06-04-agent-autonomy-red
