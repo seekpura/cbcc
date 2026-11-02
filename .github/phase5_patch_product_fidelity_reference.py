@@ -49,3 +49,16 @@ text = replace_once(text, old, new, 'presence-aware identity reference mode')
 
 # The existing notes/renderer/closure expressions already branch on visible/exact after exact is presence-aware.
 path.write_text(text, encoding='utf-8')
+
+
+# Final integrated-render authority must not downgrade an already-authored exact-pixel decision.
+path = Path('runtime/cbcc/integrated_render_route_authority.py')
+text = path.read_text(encoding='utf-8')
+old = """def _presence(asset: Mapping[str, Any]) -> str:\n    presence = asset.get('product_presence')\n    if isinstance(presence, Mapping):\n        return str(presence.get('planning_state') or '').upper()\n    art = asset.get('asset_art_direction') if isinstance(asset.get('asset_art_direction'), Mapping) else {}\n    presence = art.get('product_presence')\n    if isinstance(presence, Mapping):\n        return str(presence.get('planning_state') or '').upper()\n    return ''\n\n\ndef _strip_legacy_post_copy(prompt: str) -> str:\n"""
+new = """def _presence(asset: Mapping[str, Any]) -> str:\n    presence = asset.get('product_presence')\n    if isinstance(presence, Mapping):\n        return str(presence.get('planning_state') or '').upper()\n    art = asset.get('asset_art_direction') if isinstance(asset.get('asset_art_direction'), Mapping) else {}\n    presence = art.get('product_presence')\n    if isinstance(presence, Mapping):\n        return str(presence.get('planning_state') or '').upper()\n    return ''\n\n\ndef _canonical_product_fidelity(asset: Mapping[str, Any]) -> str:\n    art = asset.get('asset_art_direction') if isinstance(asset.get('asset_art_direction'), Mapping) else {}\n    authored = art.get('product_fidelity')\n    if isinstance(authored, Mapping):\n        authored = authored.get('mode') or authored.get('product_fidelity') or authored.get('fidelity_mode')\n    if _meaningful(authored):\n        return str(authored).upper()\n    if _meaningful(asset.get('product_fidelity')):\n        return str(asset.get('product_fidelity')).upper()\n    return 'REFERENCE_GUIDED'\n\n\ndef _strip_legacy_post_copy(prompt: str) -> str:\n"""
+text = replace_once(text, old, new, 'integrated-render canonical fidelity helper')
+
+old = """    presence = _presence(asset)\n    visible_product = presence in {'HERO_REQUIRED', 'REQUIRED', 'SUPPORTING', 'DETAIL_ONLY', 'OPTIONAL'}\n    exact_pixel = str(asset.get('product_fidelity') or '').upper() in {\n        'EXACT_PIXEL_COMPOSITE', 'LOCKED_PIXEL', 'LOCKED_SOURCE_COMPOSITE', 'COMPOSITE'\n    }\n"""
+new = """    presence = _presence(asset)\n    visible_product = presence in {'HERO_REQUIRED', 'REQUIRED', 'SUPPORTING', 'DETAIL_ONLY', 'OPTIONAL'}\n    fidelity_mode = _canonical_product_fidelity(asset)\n    exact_pixel = fidelity_mode in {\n        'EXACT_PIXEL_COMPOSITE', 'PIXEL_COMPOSITE_EXPLICIT', 'LOCKED_PIXEL', 'LOCKED_SOURCE_COMPOSITE', 'COMPOSITE'\n    }\n"""
+text = replace_once(text, old, new, 'integrated-render exact fidelity authority')
+path.write_text(text, encoding='utf-8')
