@@ -1,3 +1,4 @@
+# Focused REQ-088 gate after production wrapper wiring.
 name: phase7-req088-lineage-characterization
 
 on:
