@@ -1,5 +1,6 @@
 from runtime.cbcc.agent_autonomy import compile_agent_autonomy_plan, research_requirements_from_plan
 from runtime.cbcc.decision_authority import derive_task_content_families
+from runtime.cbcc.research import compile_research_gate
 
 
 def _request(agent_plan):
@@ -24,6 +25,10 @@ def test_explicit_empty_agent_research_scope_is_not_repopulated_by_runtime():
     assert plan['research']['authority'] == 'HOST_AGENT_AUTHORED'
     assert plan['research']['requirements'] == []
     assert research_requirements_from_plan(request, plan) == []
+
+    research_gate = compile_research_gate(research_requirements_from_plan(request, plan), [], None)
+    assert research_gate['status'] == 'READY'
+    assert research_gate['actions'] == []
 
 
 def test_explicit_empty_caller_research_scope_is_not_repopulated_by_runtime():
