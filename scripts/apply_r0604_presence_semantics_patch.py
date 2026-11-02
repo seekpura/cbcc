@@ -30,34 +30,6 @@ replace_once(
 )
 
 replace_once(
-    'runtime/cbcc/agent_autonomy.py',
-    """def agent_creative_opportunities(plan: Mapping[str, Any]) -> list[dict[str, Any]]:
-    creative = plan.get('creative_exploration') if isinstance(plan.get('creative_exploration'), Mapping) else {}
-    return _rows(creative.get('opportunities') or creative.get('mechanisms'))
-
-
-def agent_creative_directions(plan: Mapping[str, Any]) -> list[dict[str, Any]]:
-    creative = plan.get('creative_exploration') if isinstance(plan.get('creative_exploration'), Mapping) else {}
-    return _rows(creative.get('directions'))
-""",
-    """def agent_creative_opportunities(plan: Mapping[str, Any]) -> list[dict[str, Any]] | None:
-    creative = plan.get('creative_exploration') if isinstance(plan.get('creative_exploration'), Mapping) else {}
-    if 'opportunities' in creative:
-        return _rows(creative.get('opportunities'))
-    if 'mechanisms' in creative:
-        return _rows(creative.get('mechanisms'))
-    return None
-
-
-def agent_creative_directions(plan: Mapping[str, Any]) -> list[dict[str, Any]] | None:
-    creative = plan.get('creative_exploration') if isinstance(plan.get('creative_exploration'), Mapping) else {}
-    if 'directions' in creative:
-        return _rows(creative.get('directions'))
-    return None
-""",
-)
-
-replace_once(
     'runtime/cbcc/creative_opportunity.py',
     """    if agent_opportunities:
 """,
@@ -90,12 +62,29 @@ replace_once(
 
 replace_once(
     'runtime/cbcc/compiler.py',
-    """    council=compile_creative_council(request.get('creative_directions') or agent_creative_directions(agent_plan),curation,truth,culture,pc,category_family,[a.get('decision_intent') for a in architecture.get('assets') or []],creative_opportunity_universe)
+    """    creative_opportunity_universe=compile_creative_opportunity_universe(
+        truth,product_visual_intelligence,category_family,architecture.get('assets') or [],curation,culture,tc,
+        agent_opportunities=agent_creative_opportunities(agent_plan),
+    )
+    _write(p/'artifacts/creative_opportunity_universe.json',creative_opportunity_universe)
+    council=compile_creative_council(request.get('creative_directions') or agent_creative_directions(agent_plan),curation,truth,culture,pc,category_family,[a.get('decision_intent') for a in architecture.get('assets') or []],creative_opportunity_universe)
 """,
-    """    if 'creative_directions' in request:
-        council_directions=request.get('creative_directions')
+    """    creative_scope=agent_plan.get('creative_exploration') if isinstance(agent_plan.get('creative_exploration'),dict) else {}
+    if 'opportunities' in creative_scope or 'mechanisms' in creative_scope:
+        agent_opportunity_rows=agent_creative_opportunities(agent_plan)
     else:
+        agent_opportunity_rows=None
+    creative_opportunity_universe=compile_creative_opportunity_universe(
+        truth,product_visual_intelligence,category_family,architecture.get('assets') or [],curation,culture,tc,
+        agent_opportunities=agent_opportunity_rows,
+    )
+    _write(p/'artifacts/creative_opportunity_universe.json',creative_opportunity_universe)
+    if 'creative_directions' in request:
+        council_directions=request.get('creative_directions')
+    elif 'directions' in creative_scope:
         council_directions=agent_creative_directions(agent_plan)
+    else:
+        council_directions=None
     council=compile_creative_council(council_directions,curation,truth,culture,pc,category_family,[a.get('decision_intent') for a in architecture.get('assets') or []],creative_opportunity_universe)
 """,
 )
