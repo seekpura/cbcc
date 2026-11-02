@@ -136,7 +136,9 @@ def test_provider_result_review_local_revision_review_hash_lineage_reaches_e2e_p
         policy=policy,
     )
     assert executed['status'] == 'PROVIDER_EXECUTION_COMPLETE'
-    assert executed['ingest_status'] == 'COMPLETE'
+    # Provider result ingest is intentionally fail-honest: actual output exists, but it remains
+    # REVIEW_REQUIRED until a human explicitly accepts the addressable output review item.
+    assert executed['ingest_status'] == 'REVIEW_REQUIRED'
 
     result_path = project / 'artifacts/provider_jobs' / ASSET_ID / 'result.json'
     result = json.loads(result_path.read_text(encoding='utf-8'))
