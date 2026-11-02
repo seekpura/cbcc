@@ -8,6 +8,8 @@ AUTHORITY_CLASSES=("USER_CANONICAL","USER_LATER_CLARIFICATION","DERIVED_PRODUCT_
 ACTIVE_CLASSES=AUTHORITY_CLASSES[:-1]
 AUTHORITY_PATH=Path("references/REQUIREMENT_AUTHORITY_CURRENT.json")
 _TEST=re.compile(r"^(?:tests/|\.github/workflows/)",re.I)
+_RUNTIME=re.compile(r"^runtime/",re.I)
+_ENGINEERING=re.compile(r"^(?:scripts/|references/)",re.I)
 _HUMAN=re.compile(r"(human|delivery|workspace|html|projection)",re.I)
 
 def _root(root=None)->Path:
@@ -59,6 +61,16 @@ def _consumer_index(root:Path,raw:Mapping[str,Any])->dict[str,list[str]]:
                 if v and v not in bucket: bucket.append(v)
     return out
 
+def _split_consumers(values:list[str])->tuple[list[str],list[str],list[str]]:
+    runtime=[]; engineering=[]; proof=[]
+    for raw in values:
+        value=str(raw or "")
+        if not value: continue
+        file_path=_consumer_file_path(value)
+        target = runtime if _RUNTIME.search(file_path) else proof if _TEST.search(file_path) else engineering if _ENGINEERING.search(file_path) else proof
+        if value not in target: target.append(value)
+    return runtime,engineering,proof
+
 def load_current_requirement_authority(root=None)->dict[str,Any]:
     base=_root(root); raw=_json(base/AUTHORITY_PATH)
     assignments={}
@@ -78,7 +90,7 @@ def load_current_requirement_authority(root=None)->dict[str,Any]:
     for i in range(1,91):
         req=f"REQ-{i:03d}"; cls=assignments.get(req)
         d=[str(x) for x in derived.get(req,[])]
-        business=[str(x) for x in consumers.get(req,[]) if str(x)]
+        business,engineering,proof=_split_consumers([str(x) for x in consumers.get(req,[]) if str(x)])
         human=[str(x) for x in human_over.get(req,[]) if str(x)]
         for p in business:
             if _HUMAN.search(p) and p not in human: human.append(p)
@@ -88,7 +100,7 @@ def load_current_requirement_authority(root=None)->dict[str,Any]:
             "req":req,"authority_class":cls,"origin_refs":origins.get(req,[]),"derived_from":d,
             "semantic_source":source,
             "current_interpretation":str(interp.get(req) or f"Apply {req} from {source} with attribution {cls}; this overlay adds no business semantics."),
-            "business_consumers":business,"human_projection":human,
+            "business_consumers":business,"engineering_consumers":engineering,"proof_consumers":proof,"human_projection":human,
         })
     out=deepcopy(raw)
     if isinstance(anchors,Mapping):
@@ -111,7 +123,7 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
     goals={str(x.get("source_id")) for x in doc.get("product_goal_anchors",[]) if isinstance(x,Mapping)}
     valid=anchors|goals
     for row in rows:
-        req=str(row.get("req") or ""); cls=str(row.get("authority_class") or ""); origins=[str(x) for x in row.get("origin_refs",[])]; derived=[str(x) for x in row.get("derived_from",[])]; consumers=[str(x) for x in row.get("business_consumers",[])]; human=row.get("human_projection",[])
+        req=str(row.get("req") or ""); cls=str(row.get("authority_class") or ""); origins=[str(x) for x in row.get("origin_refs",[])]; derived=[str(x) for x in row.get("derived_from",[])]; consumers=[str(x) for x in row.get("business_consumers",[])]; engineering=[str(x) for x in row.get("engineering_consumers",[])]; proof=[str(x) for x in row.get("proof_consumers",[])]; human=row.get("human_projection",[])
         if cls not in ACTIVE_CLASSES: add("ACTIVE_REQUIREMENT_CLASS_INVALID",req=req)
         if cls=="USER_CANONICAL" and (req not in direct or not origins or any(not x.startswith("UC-") for x in origins)): add("DIRECT_USER_ATTRIBUTION_MISMATCH",req=req)
         if cls=="USER_LATER_CLARIFICATION" and (req not in later or not origins or any(not x.startswith("UL-") for x in origins)): add("LATER_USER_ATTRIBUTION_MISMATCH",req=req)
@@ -120,13 +132,21 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
             if ref not in valid: add("UNKNOWN_AUTHORITY_LINEAGE_REF",req=req,ref=ref)
         if not row.get("semantic_source"): add("SEMANTIC_SOURCE_MISSING",req=req)
         if not row.get("current_interpretation"): add("CURRENT_INTERPRETATION_MISSING",req=req)
-        if not consumers: add("BUSINESS_CONSUMER_BINDING_MISSING",req=req)
+        if cls!="ENGINEERING_GUARD" and not consumers: add("BUSINESS_CONSUMER_BINDING_MISSING",req=req)
+        if cls=="ENGINEERING_GUARD" and not (consumers or engineering): add("ENGINEERING_GUARD_CONSUMER_BINDING_MISSING",req=req)
         if not human: add("HUMAN_PROJECTION_BINDING_MISSING",req=req)
         for p in consumers:
-            if _TEST.search(p): add("TEST_PATH_AS_BUSINESS_CONSUMER",req=req,path=p)
-            else:
-                file_path=_consumer_file_path(p)
-                if file_path.startswith(("runtime/","references/","scripts/")) and not (base/file_path).exists(): add("BUSINESS_CONSUMER_PATH_MISSING",req=req,path=p,file_path=file_path)
+            file_path=_consumer_file_path(p)
+            if _TEST.search(file_path): add("TEST_PATH_AS_BUSINESS_CONSUMER",req=req,path=p)
+            elif not _RUNTIME.search(file_path): add("NON_RUNTIME_BUSINESS_CONSUMER",req=req,path=p)
+            elif not (base/file_path).exists(): add("BUSINESS_CONSUMER_PATH_MISSING",req=req,path=p,file_path=file_path)
+        for p in engineering:
+            file_path=_consumer_file_path(p)
+            if not _ENGINEERING.search(file_path): add("NON_ENGINEERING_GUARD_CONSUMER",req=req,path=p)
+            elif not (base/file_path).exists(): add("ENGINEERING_CONSUMER_PATH_MISSING",req=req,path=p,file_path=file_path)
+        for p in proof:
+            file_path=_consumer_file_path(p)
+            if not _TEST.search(file_path): add("NON_PROOF_CONSUMER_IN_PROOF_PLANE",req=req,path=p)
         for p in human:
             p=str(p); file_path=_consumer_file_path(p)
             if p!="NOT_DIRECT_HUMAN_FACING" and file_path.startswith(("runtime/","references/","scripts/")) and not (base/file_path).exists(): add("HUMAN_PROJECTION_PATH_MISSING",req=req,path=p,file_path=file_path)
@@ -146,11 +166,11 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
         if not bound: add("USER_SOURCE_ANCHOR_UNBOUND",source_id=sid)
         if anchor.get("priority")=="P0":
             br=[by_req[x] for x in bound if x in by_req]
-            if not any(x.get("business_consumers") for x in br): add("P0_USER_SOURCE_RUNTIME_CONSUMER_MISSING",source_id=sid)
+            if not any(any(_RUNTIME.search(_consumer_file_path(str(p))) for p in x.get("business_consumers",[])) for x in br): add("P0_USER_SOURCE_RUNTIME_CONSUMER_MISSING",source_id=sid)
             if not any(any(str(p)!="NOT_DIRECT_HUMAN_FACING" for p in x.get("human_projection",[])) for x in br): add("P0_USER_SOURCE_HUMAN_PROJECTION_MISSING",source_id=sid)
     for key in ("authority_overlay_does_not_author_business_strategy","existing_requirement_ledgers_remain_semantic_sources","consumer_maps_remain_execution_wiring_authority","derived_may_not_impersonate_user","rejected_deprecated_may_not_have_active_business_consumers","test_and_workflow_paths_are_proof_only"):
         if (doc.get("rules") or {}).get(key) is not True: add("AUTHORITY_RULE_DISABLED",rule=key)
-    return {"status":"PASS" if not issues else "FAIL","requirement_count":len(rows),"rejected_deprecated_count":len(rejected),"issue_count":len(issues),"issues":issues,"authority_classes":list(AUTHORITY_CLASSES),"principle":"Attribution only: ledgers author semantics; consumer maps wire execution; tests/guards do not author business."}
+    return {"status":"PASS" if not issues else "FAIL","requirement_count":len(rows),"rejected_deprecated_count":len(rejected),"issue_count":len(issues),"issues":issues,"authority_classes":list(AUTHORITY_CLASSES),"principle":"Attribution only: ledgers author semantics; runtime consumers wire business execution; scripts/references are engineering guards; tests/workflows are proof only."}
 
 def current_requirement_authority_audit(root=None)->dict[str,Any]:
     base=_root(root); return audit_requirement_authority(load_current_requirement_authority(base),root=base)
