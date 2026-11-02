@@ -74,3 +74,16 @@ def test_no_culture_input_cannot_be_reported_as_integrated_active(tmp_path):
     assert row['project_input_active'] is False
     assert row['runtime_wiring_status'] == 'INTEGRATED_INACTIVE_NO_PROJECT_INPUT'
     assert row['integrated'] is True
+
+
+def test_positioning_consumer_claims_follow_actual_build_direction(tmp_path):
+    project = tmp_path / 'positioning-consumers'
+    build_project(project, _generic_request(), _pack(tmp_path))
+    consumers = _capability_rows(project)['POSITIONING_MESSAGE']['consumers']
+
+    # Final Strategy Positioning is built after Listing + Asset Architecture.  Those
+    # upstream objects therefore cannot be cited as downstream proof.  The real
+    # downstream consumer is the per-asset package strategy/authority trace.
+    assert 'Listing Strategy' not in consumers
+    assert 'Asset Portfolio' not in consumers
+    assert any('strategy' in x.lower() and 'asset' in x.lower() for x in consumers)
