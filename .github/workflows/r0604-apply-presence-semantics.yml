@@ -36,11 +36,13 @@ jobs:
           tests/test_v0624_strategy_asset_scope.py
           tests/test_v0513_real_product_strategy_quality.py
           tests/test_v0633_reference_guided_native_asset_universe.py
+          tests/test_v0676_phase4_dynamic_surface_art_direction.py
+          tests/test_v0679_phase5_req083_temporal_surface_continuity.py
       - name: Commit source repair
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add runtime/cbcc/agent_autonomy.py runtime/cbcc/creative_opportunity.py runtime/cbcc/creative.py runtime/cbcc/asset_architecture.py runtime/cbcc/compiler.py
+          git add runtime/cbcc/video_creator.py runtime/cbcc/campaign_architecture.py
           git diff --cached --quiet && exit 0
-          git commit -m 'fix(r06-04): preserve explicit empty agent decisions'
+          git commit -m 'fix(r06-04): preserve explicit empty dynamic jobs'
           git push origin HEAD:r06-04-agent-autonomy-red
