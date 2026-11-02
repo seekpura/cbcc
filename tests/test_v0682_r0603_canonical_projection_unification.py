@@ -109,7 +109,6 @@ def test_visible_copy_markdown_and_visible_copy_block_cannot_diverge_under_fresh
     asset_dir = _compiled_asset(tmp_path)
     copy_path = asset_dir / "08_copy.md"
     copy_path.write_text(copy_path.read_text(encoding="utf-8").replace("ORIGINAL HEADLINE", "CONFLICT HEADLINE"), encoding="utf-8")
-    # Re-materialize byte lineage to prove this is not merely an old hash mismatch.
     materialize_full_asset_lineage(asset_dir.parent)
     issues = audit_asset_directory(asset_dir)
     assert any(row.get("code") == "ASSET_VISIBLE_COPY_CANONICAL_DRIFT" for row in issues), issues
@@ -133,3 +132,49 @@ def test_prompt_text_and_prompt_contract_cannot_diverge_under_fresh_lineage(tmp_
     materialize_full_asset_lineage(asset_dir.parent)
     issues = audit_asset_directory(asset_dir)
     assert any(row.get("code") == "ASSET_PROMPT_CONTRACT_TEXT_DRIFT" and row.get("field") == "prompt_en" for row in issues), issues
+
+
+def test_canonical_human_payload_refuses_to_sign_conflicting_asset_projections(tmp_path: Path):
+    from cbcc.canonical_full_parity_v0671 import build_canonical_human_payload
+
+    package = tmp_path / "package"
+    asset_root = package / "asset_packages"
+    asset_root.mkdir(parents=True)
+    compile_asset_packages(
+        asset_root,
+        [_asset()],
+        {"name": "P"},
+        {"platform_family": "tiktok_shop", "site": "MY", "market": "Malaysia"},
+        {},
+        {"visible_copy_locales": ["ms-MY"]},
+        {"profiles": []},
+        strategy_authority=None,
+    )
+    asset_dir = asset_root / "AST-R0603"
+    copy_path = asset_dir / "08_copy.md"
+    copy_path.write_text(copy_path.read_text(encoding="utf-8").replace("ORIGINAL HEADLINE", "CONFLICT HEADLINE"), encoding="utf-8")
+    materialize_full_asset_lineage(asset_root)
+
+    try:
+        build_canonical_human_payload(package)
+    except RuntimeError as exc:
+        assert "ASSET_VISIBLE_COPY_CANONICAL_DRIFT" in str(exc)
+    else:
+        raise AssertionError("canonical payload must not self-sign internally conflicting asset projections")
+
+
+def test_canonical_human_payload_consumes_project_graph_lineage_when_available(tmp_path: Path):
+    from cbcc.canonical_full_parity_v0671 import build_canonical_human_payload
+
+    package = tmp_path / "package"
+    support = package / "supporting_analysis"
+    support.mkdir(parents=True)
+    graph = {"schema": "cbcc-canonical-commerce-graph-v1", "graph_sha256": "a" * 64}
+    (support / "canonical_commerce_graph.json").write_text(json.dumps(graph), encoding="utf-8")
+    payload = build_canonical_human_payload(package)
+    assert payload["projection_authority"] == {
+        "source": "supporting_analysis/canonical_commerce_graph.json",
+        "graph_sha256": "a" * 64,
+        "schema": "cbcc-canonical-commerce-graph-v1",
+        "role": "PROJECTION_LINEAGE_ONLY",
+    }
