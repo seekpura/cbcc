@@ -5,8 +5,65 @@ import re
 from typing import Any, Mapping
 
 
+_LOCALE_KEYS = {'en','EN','en-US','en-GB','cn','CN','zh','zh-CN'}
+_LOCALE_PREFERENCE = {
+    'EN': ('en','EN','en-US','en-GB'),
+    'CN': ('cn','CN','zh-CN','zh'),
+}
+
+
 def _meaningful(value: Any) -> bool:
     return value not in (None, '', [], {})
+
+
+def _contains_cjk(value: str) -> bool:
+    return bool(re.search(r'[\u3400-\u4dbf\u4e00-\u9fff]', str(value or '')))
+
+
+def _localized_semantic(value: Any, language: str) -> Any:
+    """Select already-authored language semantics without translation or cross-locale fallback.
+
+    Locale-keyed objects are authority boundaries: EN may consume only an authored EN value and CN
+    may consume only an authored CN value. Non-locale structured values are recursively preserved.
+    Plain CJK strings are never relabelled as English-ready semantics.
+    """
+    lang = str(language or '').upper()
+    if isinstance(value, Mapping):
+        if any(str(key) in _LOCALE_KEYS for key in value):
+            for key in _LOCALE_PREFERENCE.get(lang, ()):
+                if _meaningful(value.get(key)):
+                    return _localized_semantic(value.get(key), lang)
+            return None
+        out = {}
+        for key, item in value.items():
+            localized = _localized_semantic(item, lang)
+            if _meaningful(localized):
+                out[str(key)] = localized
+        return out or None
+    if isinstance(value, (list, tuple)):
+        rows = [_localized_semantic(item, lang) for item in value]
+        rows = [item for item in rows if _meaningful(item)]
+        return rows or None
+    if isinstance(value, str):
+        text = value.strip()
+        if not text:
+            return None
+        if lang == 'EN' and _contains_cjk(text):
+            return None
+        return text
+    return deepcopy(value) if _meaningful(value) else None
+
+
+def _semantic_text(value: Any) -> str:
+    if isinstance(value, Mapping):
+        return '; '.join(
+            f'{key}: {_semantic_text(item)}'
+            for key, item in value.items()
+            if _meaningful(item)
+        )
+    if isinstance(value, (list, tuple)):
+        return ', '.join(_semantic_text(item) for item in value if _meaningful(item))
+    return str(value or '').strip()
 
 
 def _visible_copy(asset: Mapping[str, Any], bundle: Mapping[str, Any]) -> str:
@@ -106,6 +163,8 @@ def finalize_integrated_render_route(asset: Mapping[str, Any], bundle: Mapping[s
         if visible_copy:
             art = asset.get('asset_art_direction') if isinstance(asset.get('asset_art_direction'), Mapping) else {}
             typography = art.get('typography')
+            typography_cn = _localized_semantic(typography, 'CN')
+            typography_en = _localized_semantic(typography, 'EN')
             cn = (
                 '【最终可见文案 / 一体排版】\n'
                 '请在最终商业画面中直接、准确呈现以下目标市场文案，不改写、不漏字：\n'
@@ -117,9 +176,10 @@ def finalize_integrated_render_route(asset: Mapping[str, Any], bundle: Mapping[s
                 'do not rewrite or omit it:\n'
                 + visible_copy
             )
-            if _meaningful(typography):
-                cn += '\n排版执行：' + str(typography)
-                en += '\nTypography/layout execution: ' + str(typography)
+            if _meaningful(typography_cn):
+                cn += '\n排版执行：' + _semantic_text(typography_cn)
+            if _meaningful(typography_en):
+                en += '\nTypography/layout execution: ' + _semantic_text(typography_en)
             out['prompt_cn'] = out['model_prompt_cn'] = out['prompt_cn'].rstrip() + '\n\n' + cn + '\n'
             out['prompt_en'] = out['model_prompt_en'] = out['prompt_en'].rstrip() + '\n\n' + en + '\n'
 
