@@ -88,8 +88,8 @@ def test_external_provider_contract_exposes_executor_lifecycle():
     assert 'credentials' in contract['executor_contract']['adapter_owns']
 
 
-def test_executor_upload_submit_resume_download_receipt_and_existing_ingest(tmp_path):
-    _, run, jobs, source_sha = _materialize(tmp_path)
+def test_executor_upload_submit_resume_download_receipt_and_review_boundary(tmp_path):
+    _, run, jobs, _ = _materialize(tmp_path)
     job_dir = jobs / 'AST-V0614'
     original_job = json.loads((job_dir / 'job.json').read_text(encoding='utf-8'))
     original_binding_hash = original_job['source_binding_hash']
@@ -111,18 +111,26 @@ def test_executor_upload_submit_resume_download_receipt_and_existing_ingest(tmp_
     assert Path(result['output_path']).read_bytes() == executor.default_output
     assert result['production_receipt']['output_artifacts'][0]['path_or_uri'] == 'outputs/final.bin'
     assert result['production_receipt']['output_artifacts'][0]['sha256'] == hashlib.sha256(executor.default_output).hexdigest()
-    assert result['production_receipt']['layer_manifest'][0]['source_sha256'] == source_sha
+    # Post-migration rule: a pixel/layer manifest is reserved for explicit
+    # EXACT_PIXEL_COMPOSITE / PIXEL_COMPOSITE_EXPLICIT execution. Legacy
+    # LOCKED_PIXEL alone must not fabricate exact-pixel lineage.
+    assert result['production_receipt']['layer_manifest'] == []
     assert result['source_binding_hash'] == original_binding_hash
     assert result['production_receipt']['source_binding_hash'] == original_binding_hash
     assert result['adapter_result']['idempotency_key'] == state['transmission']['idempotency_key']
+    assert result['quality_observations']['product_identity_preserved']['status'] == 'UNVERIFIED'
+    assert result['quality_observations']['source_product_asset_ids_used'] == []
 
     ingested = ingest_provider_job_results(run, jobs)
-    assert ingested['status'] == 'COMPLETE'
+    assert ingested['status'] == 'REVIEW_REQUIRED'
     assert ingested['provider_results_ingested'] == 1
-    assert ingested['issues'] == []
+    codes = {row['code'] for row in ingested['issues']}
+    assert 'REFERENCE_PRODUCT_IDENTITY_NOT_CONFIRMED' in codes
+    assert 'REFERENCE_INPUT_USE_NOT_CONFIRMED' in codes
+    assert 'NATIVE_PRODUCT_RENDER_NOT_CONFIRMED' in codes
 
 
-def test_batch_executor_consumes_materialized_job_index_and_writes_ingestable_result(tmp_path):
+def test_batch_executor_consumes_materialized_job_index_and_requires_identity_evidence_before_acceptance(tmp_path):
     _, run, jobs, _ = _materialize(tmp_path)
     executor = ReferenceMemoryExecutor(poll_sequence=('COMPLETED',))
     execution = execute_materialized_provider_jobs(jobs, {'EPV_ADAPTER': executor})
@@ -132,7 +140,8 @@ def test_batch_executor_consumes_materialized_job_index_and_writes_ingestable_re
     assert (jobs / 'AST-V0614' / 'executor_state.json').exists()
     assert (jobs / 'AST-V0614' / 'result.json').exists()
     ingested = ingest_provider_job_results(run, jobs)
-    assert ingested['status'] == 'COMPLETE'
+    assert ingested['status'] == 'REVIEW_REQUIRED'
+    assert any(row['code'] == 'REFERENCE_PRODUCT_IDENTITY_NOT_CONFIRMED' for row in ingested['issues'])
 
 
 def test_expired_provider_handle_is_refreshed_with_lineage_before_submit(tmp_path):
