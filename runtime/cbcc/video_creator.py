@@ -83,8 +83,9 @@ def _authored_visible_hook(source:dict[str,Any])->tuple[Any,Any]:
 
 
 def build_video_creator_plan(project_id:str, content_objects:list[dict[str,Any]], shopper_questions:list[str], language_contract:dict[str,Any], video_jobs:list[dict[str,Any]]|None=None, *, assets:list[dict[str,Any]]|None=None, creative_council:dict[str,Any]|None=None)->dict[str,Any]:
+    video_jobs_supplied=video_jobs is not None
     jobs=list(video_jobs or [])
-    if not jobs:
+    if not jobs and not video_jobs_supplied:
         for o in content_objects:
             if o.get('family') not in {'VIDEO','CREATOR_AFFILIATE','LIVE'}: continue
             related=_asset_for_video(assets,o.get('family'),o.get('surface'),len(jobs))

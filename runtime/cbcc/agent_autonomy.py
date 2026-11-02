@@ -119,11 +119,14 @@ def compile_agent_autonomy_plan(request: Mapping[str, Any]) -> dict[str, Any]:
     iteration_policy = dict(agent.get('iteration_policy') or {}) if isinstance(agent.get('iteration_policy'), Mapping) else {}
     strategy_frameworks = deepcopy(agent.get('strategy_frameworks') if agent.get('strategy_frameworks') is not None else (request.get('marketing_frameworks') if request.get('marketing_frameworks') is not None else request.get('persuasion_frameworks')))
 
-    stop_conditions = _strings(agent.get('research_stop_conditions')) or [
-        'Stop when additional research is unlikely to change a material strategy, listing, asset, compliance or production decision.',
-        'Stop when decision-critical claims and hard platform/compliance constraints have sufficient current evidence.',
-        'Do not research for quota completion, source-count targets or cosmetic comprehensiveness.',
-    ]
+    if 'research_stop_conditions' in agent:
+        stop_conditions = _strings(agent.get('research_stop_conditions'))
+    else:
+        stop_conditions = [
+            'Stop when additional research is unlikely to change a material strategy, listing, asset, compliance or production decision.',
+            'Stop when decision-critical claims and hard platform/compliance constraints have sufficient current evidence.',
+            'Do not research for quota completion, source-count targets or cosmetic comprehensiveness.',
+        ]
 
     return {
         'version': VERSION,

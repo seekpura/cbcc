@@ -265,9 +265,10 @@ def _context_questions(base:list[str], decision_context:dict[str,Any]|None, cate
 
 def build_asset_architecture(project_id:str,target:dict,questions:list[str],content_objects:list[dict[str,Any]],asset_jobs:list[dict[str,Any]]|None=None,decision_context:dict[str,Any]|None=None,category_family:str='GENERAL_COMMERCE')->dict[str,Any]:
     """Create assets from decision jobs. Explicit asset_jobs override defaults; no target count exists."""
+    asset_jobs_supplied=asset_jobs is not None
     jobs=list(asset_jobs or [])
     asset_scope_active=bool(jobs)
-    if not jobs:
+    if not jobs and not asset_jobs_supplied:
         candidates=[o for o in content_objects if o.get('family') in {'VISUAL','RICH_CONTENT','VIDEO','CREATOR_AFFILIATE','LIVE','PAID','SOCIAL','STORE','CX','LIFECYCLE'}]
         requested=set(target.get('surfaces') or [])
         requested_candidates=[o for o in candidates if not requested or o.get('surface') in requested]

@@ -40,7 +40,7 @@ def compile_creative_opportunity_universe(
 )->dict[str,Any]:
     """Build a search-before-selection universe of visual mechanisms, not a style library."""
     product=_product(product_truth); pvi=product_visual_intelligence or {}; curation=curation or {}; target=target or {}
-    if agent_opportunities:
+    if agent_opportunities is not None:
         authored=[]
         for index,raw in enumerate(agent_opportunities):
             if not isinstance(raw,dict):

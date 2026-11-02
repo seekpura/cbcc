@@ -1,6 +1,17 @@
-from runtime.cbcc.agent_autonomy import compile_agent_autonomy_plan, research_requirements_from_plan
+from runtime.cbcc.agent_autonomy import (
+    agent_creative_directions,
+    agent_creative_opportunities,
+    compile_agent_autonomy_plan,
+    compile_agent_next_action,
+    research_requirements_from_plan,
+)
+from runtime.cbcc.asset_architecture import build_asset_architecture
+from runtime.cbcc.campaign_architecture import compile_paid_campaign_architecture
+from runtime.cbcc.creative import compile_creative_council
+from runtime.cbcc.creative_opportunity import compile_creative_opportunity_universe
 from runtime.cbcc.decision_authority import derive_task_content_families
 from runtime.cbcc.research import compile_research_gate
+from runtime.cbcc.video_creator import build_video_creator_plan
 
 
 def _request(agent_plan):
@@ -49,6 +60,14 @@ def test_missing_agent_research_scope_still_allows_decision_gap_fallback():
     assert plan['research']['requirements'], 'missing research scope may still use compatibility fallback'
 
 
+def test_explicit_empty_research_stop_conditions_are_not_replaced_by_runtime_defaults():
+    explicit = compile_agent_autonomy_plan(_request({'research_stop_conditions': []}))
+    missing = compile_agent_autonomy_plan(_request({}))
+
+    assert explicit['research']['stop_conditions'] == []
+    assert missing['research']['stop_conditions'], 'missing stop conditions may use compatibility defaults'
+
+
 def test_explicit_empty_agent_content_family_scope_remains_empty():
     request = _request({'content_scope': {'families': []}})
     plan = compile_agent_autonomy_plan(request)
@@ -59,3 +78,87 @@ def test_explicit_empty_agent_content_family_scope_remains_empty():
         available_families=['LISTING', 'SEARCH', 'VISUAL', 'VIDEO'],
     )
     assert families == []
+
+
+def test_explicit_empty_agent_opportunity_universe_is_not_autopopulated():
+    plan = compile_agent_autonomy_plan(_request({'creative_exploration': {'opportunities': []}}))
+    authored = agent_creative_opportunities(plan)
+    assert authored == []
+
+    universe = compile_creative_opportunity_universe(
+        {'product': {'name': 'Demo'}}, {}, 'GENERAL_COMMERCE', [], {}, {},
+        {'market': 'Malaysia', 'platform_family': 'TIKTOK_SHOP', 'site': 'MY'},
+        agent_opportunities=authored,
+    )
+    assert universe['status'] == 'AGENT_AUTHORED_CREATIVE_OPPORTUNITY_UNIVERSE'
+    assert universe['opportunity_count'] == 0
+    assert universe['opportunities'] == []
+
+
+def test_explicit_empty_agent_direction_set_is_not_autosynthesized_or_selected():
+    plan = compile_agent_autonomy_plan(_request({'creative_exploration': {'directions': []}}))
+    authored = agent_creative_directions(plan)
+    assert authored == []
+
+    council = compile_creative_council(
+        authored, {}, {'product': {'name': 'Demo'}}, {}, {}, 'GENERAL_COMMERCE', [],
+        {'status': 'AGENT_AUTHORED_CREATIVE_OPPORTUNITY_UNIVERSE', 'opportunity_count': 0, 'opportunities': []},
+    )
+    assert council['status'] == 'NO_DIRECTION_AVAILABLE'
+    assert council['direction_source'] == 'USER_SUPPLIED'
+    assert council['directions'] == []
+    assert council['selected_direction'] is None
+
+    next_action = compile_agent_next_action(
+        plan,
+        request=_request({'creative_exploration': {'directions': []}}),
+        asset_architecture={'assets': [{'asset_id': 'AST-1'}]},
+        creative_council=council,
+    )
+    assert any(row['action'] == 'AUTHOR_OR_SELECT_CREATIVE_DIRECTION' for row in next_action['frontier'])
+
+
+def test_missing_agent_direction_set_still_allows_compatibility_synthesis():
+    council = compile_creative_council(
+        None, {}, {'product': {'name': 'Demo'}}, {}, {}, 'GENERAL_COMMERCE', [], None,
+    )
+    assert council['status'] == 'SELECTED'
+    assert council['directions']
+
+
+def test_explicit_empty_asset_jobs_do_not_generate_assets_but_missing_jobs_may_autocurate():
+    target = {'target_id': 'T', 'surfaces': ['GALLERY']}
+    content = [{'object_id': 'O1', 'family': 'VISUAL', 'surface': 'GALLERY', 'required': True}]
+
+    explicit = build_asset_architecture('P', target, ['What is it?'], content, [], {}, 'GENERAL_COMMERCE')
+    missing = build_asset_architecture('P2', target, ['What is it?'], content, None, {}, 'GENERAL_COMMERCE')
+
+    assert explicit['asset_count'] == 0
+    assert explicit['asset_scope_active'] is False
+    assert missing['asset_count'] > 0
+    assert missing['asset_scope_active'] is True
+
+
+def test_explicit_empty_video_jobs_do_not_generate_video_but_missing_jobs_may_derive():
+    content = [{'object_id': 'O1', 'family': 'VIDEO', 'surface': 'PDP_VIDEO', 'curation_job': 'Explain the decision'}]
+    language = {'primary_locale': 'en-MY'}
+
+    explicit = build_video_creator_plan('P', content, ['Why?'], language, [], assets=[])
+    missing = build_video_creator_plan('P2', content, ['Why?'], language, None, assets=[])
+
+    assert explicit['dynamic_count'] == 0
+    assert explicit['status'] == 'NOT_REQUIRED'
+    assert missing['dynamic_count'] > 0
+    assert missing['status'] == 'COMPILED'
+
+
+def test_explicit_empty_paid_campaigns_do_not_generate_campaigns_but_missing_may_derive():
+    assets = [{'asset_id': 'A1', 'family': 'PAID', 'surface': 'PAID_AD', 'consumer_question': 'Why now?', 'decision_intent': 'RELEVANCE'}]
+
+    explicit = compile_paid_campaign_architecture('P', {'target_id': 'T'}, assets, {}, explicit=[])
+    missing = compile_paid_campaign_architecture('P2', {'target_id': 'T'}, assets, {}, explicit=None)
+
+    assert explicit['dynamic_count'] == 0
+    assert explicit['status'] == 'NOT_REQUIRED'
+    assert missing['dynamic_count'] > 0
+    assert missing['status'] == 'COMPILED'
