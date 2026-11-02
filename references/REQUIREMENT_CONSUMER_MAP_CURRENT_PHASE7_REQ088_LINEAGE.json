@@ -1,0 +1,104 @@
+{
+  "version": "cbcc-current-phase7-req088-lineage-v1",
+  "phase": 7,
+  "subtask": "REQ-088 Source/Evidence/Assumption/Decision resolvable lineage closure",
+  "requirement_id": "REQ-088",
+  "status": "PASS_PHASE7_RESOLVABLE_SOURCE_EVIDENCE_ASSUMPTION_DECISION_LINEAGE_TARGETED_VERIFIED",
+  "production_head_sha": "170799cb983963a8068c7d421742f3de29204f19",
+  "focused_green_head_sha": "3eaf6b6d6274d04a73bf7de624b4bcfbd829e9b4",
+  "current_gate_head_sha": "49a64e1fc2ebfdb6ffa285d5991dfe50d7a82ecc",
+  "authority_contract": {
+    "module": "runtime/cbcc/information_audit_authority.py",
+    "field_authority": "LINEAGE_FIELDS",
+    "fields": [
+      "source_refs",
+      "source_type",
+      "recency",
+      "exact_fact",
+      "interpretation",
+      "confidence",
+      "assumption_boundary",
+      "downstream_use",
+      "conflict_status",
+      "proof_object"
+    ],
+    "principle": "Phase 7 normalizes bindings and resolution evidence only. Existing authority objects remain the sole business-fact/interpretation authority; no second payload is authored."
+  },
+  "consumers": [
+    "runtime/cbcc/lineage_normalization_v0681.py::build_package_lineage_index",
+    "runtime/cbcc/lineage_normalization_v0681.py::materialize_package_lineage_closure",
+    "runtime/cbcc/phase7_lineage_semantic_closure_v0681.py::materialize_phase7_lineage_and_semantics",
+    "runtime/cbcc/commercial_delivery_continuity.py::wrap_export_delivery_package",
+    "LINEAGE_CLOSURE_INDEX.json",
+    "LINEAGE_CLOSURE_AUDIT.json",
+    "DELIVERY_MANIFEST.json lineage_closure_* / workspace_contract.req088_resolvable_lineage_closure",
+    "final delivery ZIP"
+  ],
+  "semantic_resolution_targets": [
+    "canonical_business_object::<key>",
+    "production_asset::<id>"
+  ],
+  "verified_behavior": [
+    "Rich heterogeneous Market Research lineage is normalized to the canonical LINEAGE_FIELDS contract while exact_fact and interpretation remain bound to their original authority paths rather than copied into a second payload.",
+    "A shallow row with source_refs cannot fake PASS when exact_fact, interpretation or downstream_use are unbound.",
+    "source_type and recency may be derived only from resolvable source authority or embedded source cards; unresolved source references remain explicit issues.",
+    "Explicit proof objects and downstream consumers must resolve to final semantic objects; missing proof/downstream targets fail the record instead of being accepted as labels.",
+    "Direct canonical_business_object::<key> and production_asset::<id> downstream targets are checked against the final semantic inventory.",
+    "Explicit TO_VERIFY/UNKNOWN/MISSING_INPUT boundaries remain explicit deferred lineage rather than being promoted to factual certainty.",
+    "Mature information_audit_authority rows remain valid lineage records, while nested evidence/source descriptors are metadata of their parent record and are not double-counted as fake business lineage objects.",
+    "The production export wrapper executes REQ-088 lineage materialization before final semantic closure, so the lineage index/audit and Manifest contract are rebuilt into the final ZIP.",
+    "The final lineage audit records business_payload_copied=false."
+  ],
+  "proof": {
+    "normalization_red_run": 41409131132,
+    "normalization_red": "4 failed because runtime.cbcc.lineage_normalization_v0681 did not exist",
+    "normalization_first_green_run": 41409310465,
+    "normalization_first_green": "4/4 passed",
+    "final_export_red_run": 41409419368,
+    "final_export_red": "Normalization tests remained green while final export lineage consumption was still absent",
+    "orchestrator_export_green_run": 41409620978,
+    "orchestrator_export_green": "REQ-088 lineage + final semantic orchestrator and ZIP materialization passed",
+    "production_wrapper_red_run": 41409703978,
+    "production_wrapper_red": "Production export wrapper still bypassed the REQ-088 orchestrator and called the old semantic finalizer directly",
+    "production_wrapper_green_run": 41409955437,
+    "production_wrapper_green": "6/6 passed across normalization, final ZIP and production wrapper consumption",
+    "mature_authority_scanner_red_run": 41410109202,
+    "mature_authority_scanner_red": "Nested information-audit evidence descriptor was incorrectly eligible as an independent lineage record",
+    "focused_final_green_run": 41410264207,
+    "focused_final_green": "7/7 passed including mature information_audit_authority regression",
+    "current_release_verifier_run": 41410654676,
+    "current_release_verifier": "SUCCESS: permanent Phase 7 semantic + REQ-088 lineage step, prior maturity accounting, stable CURRENT build, exact ZIP checker, v0.6.70-v0.6.75 floors and artifact upload all passed",
+    "tests": [
+      "tests/test_v0681_phase7_req088_lineage_closure.py",
+      "tests/test_v0681_phase7_req088_lineage_export.py",
+      "tests/test_v0681_phase7_req088_wrapper_integration.py",
+      "tests/test_v0681_phase7_req088_mature_authority_regression.py"
+    ],
+    "runtime": [
+      "runtime/cbcc/information_audit_authority.py",
+      "runtime/cbcc/lineage_normalization_v0681.py",
+      "runtime/cbcc/phase7_lineage_semantic_closure_v0681.py",
+      "runtime/cbcc/full_package_semantic_closure_v0681.py",
+      "runtime/cbcc/commercial_delivery_continuity.py"
+    ]
+  },
+  "invariants": [
+    "No business fact, interpretation or assumption payload is re-authored by the lineage index; normalized records store authority bindings and resolution evidence only.",
+    "File existence, source_refs alone, proof labels alone, or downstream labels alone cannot satisfy REQ-088.",
+    "Unknown or assumption states stay explicit and do not become facts merely to make lineage PASS.",
+    "Pure evidence/source descriptors are not independent lineage business records.",
+    "Final semantic identity is the target plane for downstream/proof resolution.",
+    "This REQ-088 closure does not claim an independently installed Host-native export, Provider actual-output Result→Review→Revision proof, Fresh K01 FULL proof, or Phase 7/REQ-090 completion."
+  ],
+  "phase_boundary": {
+    "phase7_status": "IN_PROGRESS",
+    "req088": "TARGETED_PASS",
+    "req090": "PARTIAL_PENDING_INSTALLED_HOST_AND_ACTUAL_OUTPUT_CONTINUITY",
+    "fresh_k01": "NOT_CLAIMED_BY_THIS_SUBTASK",
+    "provider_actual_output": "NOT_CLAIMED_BY_THIS_SUBTASK"
+  },
+  "next": [
+    "Keep REQ-090 fail-honest until independently materialized Host-native semantic parity and real Provider Result/Review/Revision/hash evidence are available in their planned phases.",
+    "Continue Phase 7 package-continuity work without reopening the now-permanent REQ-088 lineage contract."
+  ]
+}
