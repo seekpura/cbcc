@@ -61,6 +61,18 @@ def test_v0511_capability_baseline_is_not_silently_dropped(tmp_path):
     assert HISTORICAL_V0511_CAPABILITIES.issubset(rows), sorted(HISTORICAL_V0511_CAPABILITIES - rows.keys())
 
 
+def test_historical_capabilities_keep_named_runtime_consumers_not_registry_only(tmp_path):
+    project = tmp_path / 'consumer-evidence'
+    build_project(project, _generic_request(), _pack(tmp_path))
+    rows = _capability_rows(project)
+
+    for capability in HISTORICAL_V0511_CAPABILITIES:
+        row = rows[capability]
+        assert row['consumers'], capability
+        assert row['runtime_wiring_status'] != 'INTEGRATION_GAP', capability
+        assert row['integrated'] is True, capability
+
+
 def test_no_culture_input_cannot_be_reported_as_integrated_active(tmp_path):
     req = _generic_request()
     # The container is present, but it deliberately contains no cultural,
