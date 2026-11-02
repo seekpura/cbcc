@@ -1,0 +1,59 @@
+name: Phase 2 Cross-Scope Baseline GREEN
+
+on:
+  push:
+    branches:
+      - repair-phase2-crossscope-baseline
+    paths:
+      - '.github/phase2_crossscope_baseline_trigger.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  baseline-green:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair-phase2-crossscope-baseline
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade pip pytest pyyaml
+      - name: Apply baseline repair
+        run: python .github/phase2_crossscope_baseline_patch.py
+      - name: Run exact baseline regressions
+        run: |
+          pytest -q \
+            tests/test_v0676_information_audit_full_alias_regression.py \
+            tests/test_v0676_review_analysis_review_regressions.py
+      - name: Run Phase 2 adjacent suites
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f \( -name 'test_v0676_information_audit*.py' -o -name 'test_v0676_review_analysis*.py' \) -print | sort)
+          printf 'Adjacent files: %s\n' "${files[*]}"
+          test "${#files[@]}" -gt 0
+          pytest -q "${files[@]}"
+      - name: Run complete v067 cross-scope
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name 'test_v067*.py' -print | sort)
+          printf 'Broad files: %s\n' "${files[*]}"
+          test "${#files[@]}" -gt 0
+          pytest -q "${files[@]}"
+      - name: Validate patch hygiene
+        run: git diff --check
+      - name: Commit baseline repair production files
+        shell: bash
+        run: |
+          git config user.name "cbcc-phase2-bot"
+          git config user.email "cbcc-phase2-bot@users.noreply.github.com"
+          git add runtime/cbcc/information_audit_authority.py runtime/cbcc/review_analysis_authority.py
+          git diff --cached --check
+          git diff --cached --quiet && { echo 'No production diff'; exit 1; }
+          git commit -m "fix(phase2): restore verified audit regression contracts"
+          git push origin HEAD:repair-phase2-crossscope-baseline
