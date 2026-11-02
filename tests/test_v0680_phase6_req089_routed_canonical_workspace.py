@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-import re
+import zipfile
 from pathlib import Path
 
 
@@ -119,8 +119,8 @@ def test_req089_archive_presence_cannot_false_pass_missing_routed_field(tmp_path
     html = html_path.read_text(encoding="utf-8")
     marker = 'data-canonical-routed-path="canonical_business_objects.market_analysis.market"'
     assert marker in html
-    # Delete only the semantic-route marker. The sentinel value and the generic Canonical Archive remain
-    # in the page, so a naive whole-HTML search would still false-pass.
+    # Delete only the semantic-route marker. The sentinel value and generic Canonical Archive remain,
+    # therefore a naive whole-page search would still false-pass.
     html = html.replace(marker, 'data-canonical-routed-path-removed="canonical_business_objects.market_analysis.market"', 1)
     html_path.write_text(html, encoding="utf-8")
     assert "REQ089 MARKET ANALYSIS SENTINEL" in html
@@ -152,3 +152,46 @@ def test_req089_project_authored_ia_stays_dynamic_and_workspace_navigation_contr
     assert [row["route"] for row in plan["secondary_routes"]] == ["archive"]
     assert plan["fixed_route_count"] is None
     assert plan["fixed_command_count"] is None
+
+
+def test_req089_final_export_manifest_and_zip_require_routed_workspace(tmp_path: Path):
+    from runtime.cbcc.canonical_delivery_parity_v0680 import finalize_export_canonical_delivery_parity
+
+    package = _package(tmp_path)
+    zip_path = tmp_path / "package.zip"
+    _write_json(
+        package / "DELIVERY_MANIFEST.json",
+        {
+            "status": "DELIVERY_READY",
+            "package_dir": str(package),
+            "zip_path": str(zip_path),
+            "workspace_contract": {"existing_contract": "PASS"},
+            "files": [],
+        },
+    )
+    result = finalize_export_canonical_delivery_parity(
+        {
+            "status": "DELIVERY_READY",
+            "package_dir": str(package),
+            "zip_path": str(zip_path),
+            "workspace_contract": {"existing_contract": "PASS"},
+        }
+    )
+
+    assert result["canonical_routed_workspace_status"] == "PASS"
+    assert result["canonical_routed_workspace_audit"] == "CANONICAL_ROUTED_WORKSPACE_AUDIT.json"
+    assert result["workspace_contract"]["existing_contract"] == "PASS"
+    assert result["workspace_contract"]["full_canonical_routed_human_workspace"] == "PASS"
+    assert result["workspace_contract"]["archive_is_primary_canonical_consumer"] is False
+
+    disk_manifest = json.loads((package / "DELIVERY_MANIFEST.json").read_text(encoding="utf-8"))
+    assert disk_manifest["canonical_routed_workspace_status"] == "PASS"
+    assert any(row["path"] == "CANONICAL_ROUTED_WORKSPACE_AUDIT.json" for row in disk_manifest["files"])
+
+    prefix = package.name + "/"
+    with zipfile.ZipFile(zip_path) as zf:
+        names = set(zf.namelist())
+        assert prefix + "CANONICAL_ROUTED_WORKSPACE_AUDIT.json" in names
+        html = zf.read(prefix + "index.html").decode("utf-8")
+        assert "CBCC_CANONICAL_ROUTED_WORKSPACE_V0680" in html
+        assert 'data-canonical-routed-object="market_analysis"' in html
