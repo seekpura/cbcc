@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+# Dedicated focused characterization for REQ-090 final-byte mature package continuity.
 import json
 from pathlib import Path
 
