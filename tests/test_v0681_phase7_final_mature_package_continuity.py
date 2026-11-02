@@ -36,7 +36,7 @@ def _shortcut_package(root: Path, *, listing_active: bool = False) -> Path:
 
 def _mature_package(root: Path, *, include_listing: bool = True, listing_active: bool = True) -> Path:
     package = _shortcut_package(root, listing_active=listing_active)
-    # Reuse the mature package contract owned by full_delivery_depth_v3.  This fixture intentionally
+    # Reuse the mature package contract owned by full_delivery_depth_v3. This fixture intentionally
     # supplies only the minimum valid bytes needed by that existing checker; Phase 7 must not author a
     # second hand-maintained list of core files.
     text_files = {
@@ -49,14 +49,10 @@ def _mature_package(root: Path, *, include_listing: bool = True, listing_active:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
 
-    json_files = [
+    for rel in (
         "HUMAN_DELIVERY.json",
-        "FULL_DELIVERY_DEPTH_AUDIT.json",
-        "HUMAN_LANGUAGE_AUDIT.json",
-        "DELIVERY_LANGUAGE_MATRIX_AUDIT.json",
         "PLATFORM_SCOPE.json",
         "SOURCE_TRUTH_MEDIA_AUDIT.json",
-        "strategy/strategy_authority.json",
         "strategy/STRATEGY_DECISION_INDEX.json",
         "strategy/COMMERCE_DECISION_CONTEXT.json",
         "strategy/COMMERCIAL_CONTINUITY_AUDIT.json",
@@ -66,9 +62,46 @@ def _mature_package(root: Path, *, include_listing: bool = True, listing_active:
         "supporting_analysis/asset_architecture.json",
         "supporting_analysis/seven_agent_synthesis.json",
         "FULL_DELIVERY_OBJECT_MANIFEST.json",
-    ]
-    for rel in json_files:
+    ):
         _write_json(package / rel, {"status": "READY"})
+
+    # These files are audit surfaces. The reused Host/FULL checker requires an explicit PASS rather
+    # than a generic READY placeholder.
+    for rel in (
+        "FULL_DELIVERY_DEPTH_AUDIT.json",
+        "HUMAN_LANGUAGE_AUDIT.json",
+        "DELIVERY_LANGUAGE_MATRIX_AUDIT.json",
+    ):
+        _write_json(package / rel, {"status": "PASS"})
+
+    # The existing packaged Strategy Authority contract always exposes the canonical nine sections.
+    # TASK_SCOPED prevents this fixture from fabricating deep FULL strategy payload solely for a
+    # package-continuity test.
+    _write_json(
+        package / "strategy/strategy_authority.json",
+        {
+            "status": "TASK_SCOPED",
+            "sections": {
+                "01_information_completeness_assumptions_decisions": {},
+                "02_product_truth_value_ladder": {},
+                "03_platform_region_audience_culture_insight": {},
+                "04_marketing_core_strategy": {},
+                "05_visual_photography_strategy": {},
+                "06_platform_content_matrix": [],
+                "07_race_execution_table": [],
+                "08_culture_adaptation_checklist": [],
+                "09_risk_measurement_priority_next_steps": {},
+            },
+        },
+    )
+
+    # Provider/generated-output E2E is a later phase. Make that scope boundary explicit so this
+    # focused Phase-7 mature-package fixture cannot accidentally promote Phase-11 evidence to a
+    # current blocker or fake a provider result.
+    _write_json(
+        package / "supporting_analysis/gate_scope.json",
+        {"gates": {"PRODUCTION": {"required_for_current_scope": False}}},
+    )
 
     _write_json(
         package / "ASSET_UNIVERSE.json",
@@ -120,7 +153,7 @@ def test_phase7_final_mature_audit_reuses_existing_host_full_checker_on_final_by
     package = _mature_package(tmp_path)
     result = audit_final_mature_package_continuity(package)
 
-    assert result["status"] == "PASS", result
+    assert result["status"] == "PASS", result["issues"]
     assert result["checker"] == "runtime.cbcc.full_delivery_depth_v3.audit_host_full_package"
     assert result["core_contract_reused"] is True
     assert result["final_package_bytes"] is True
