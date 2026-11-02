@@ -49,7 +49,10 @@ def host_execution_contract() -> dict[str, Any]:
             'host_module_value_is_module_name_not_credentials': True,
             'credential_ownership': 'HOST',
         },
-        'completion_authority': 'Existing ingest_provider_job_results + ProjectState PRODUCTION gate',
+        'completion_authority': (
+            'Root provider completion: ingest_provider_job_results + ProjectState PRODUCTION gate; '
+            'Local Revision completion: ingest_local_revision_results + explicit revision-output Review'
+        ),
     }
 
 
