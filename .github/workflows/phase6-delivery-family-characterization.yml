@@ -1,0 +1,18 @@
+name: phase6-delivery-family-characterization
+
+on:
+  push:
+    branches: [repair-04-phase6-req061]
+  workflow_dispatch:
+
+jobs:
+  delivery-family-routes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: python -m pip install pyyaml pytest
+      - name: Verify Longform Store Landing CRM dynamic Human Delivery routes
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: '.:runtime'}
+        run: python -m pytest -q tests/test_v0680_phase6_delivery_family_routes.py
