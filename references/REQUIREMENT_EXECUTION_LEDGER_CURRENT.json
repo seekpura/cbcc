@@ -135,13 +135,13 @@
       "req": "REQ-082",
       "title": "Commercial-grade Prompt density and concrete parameter consumption",
       "phase": "5",
-      "status": "LOCKED_NOT_YET_FULLY_IMPLEMENTED"
+      "status": "PARTIAL_PHASE5_CANONICAL_DYNAMIC_PARAMETER_CONSUMPTION_VERIFIED_BROAD_PROMPT_DENSITY_PENDING"
     },
     {
       "req": "REQ-083",
       "title": "Dynamic/temporal prompt continuity",
       "phase": "5",
-      "status": "LOCKED_NOT_YET_FULLY_IMPLEMENTED"
+      "status": "PARTIAL_PHASE5_CANONICAL_DYNAMIC_TEMPORAL_PROMPT_CONTINUITY_VERIFIED_REMAINING_PHASE5_SURFACE_PROMPT_CLOSURE_PENDING"
     },
     {
       "req": "REQ-084",
@@ -192,7 +192,7 @@
     "2": "PASS_PHASE2_FULL_BUSINESS_OBJECT_DENSITY_VERIFIED",
     "3": "PASS_PHASE3_OPPORTUNITY_FAMILY_EVALUATION_VERIFIED",
     "4": "PASS_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER_VERIFIED",
-    "5": "NOT_STARTED",
+    "5": "IN_PROGRESS_DYNAMIC_PROMPT_CONTINUITY_VERIFIED",
     "6": "NOT_STARTED",
     "7": "NOT_STARTED",
     "8": "NOT_STARTED",
@@ -791,6 +791,47 @@
         "inclusion_scope": "Concrete inclusion is covered by the Phase 4 focused inclusion authority test; legacy Human Workspace HTML projection is outside Phase 4 closure.",
         "historical_test_boundary": "Older Phase 3 multi-generation wrapper/import tests were diagnostically exercised and shown to be isolation-sensitive when combined. They are not used as Phase 4 completion evidence; Phase 3 remains governed by its own prior closure evidence."
       }
+    },
+    "5": {
+      "status": "IN_PROGRESS_DYNAMIC_PROMPT_CONTINUITY_VERIFIED",
+      "subtask": "CANONICAL_DYNAMIC_TEMPORAL_PROMPT_CONTINUITY",
+      "requirements_advanced": [
+        "REQ-082",
+        "REQ-083"
+      ],
+      "focused_red": "3 failed / 1 passed; static isolation already passed",
+      "focused_green": "4 passed",
+      "production_commit": "8b3ebf11a52d14a3526004b58a1d632444b568fc",
+      "github_actions_run": "41380596952",
+      "proof_objects": [
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_DYNAMIC_PROMPT_CONTINUITY.json",
+        "tests/test_v0676_phase5_dynamic_prompt_continuity.py",
+        "runtime/cbcc/model_native_prompt_contract.py",
+        "runtime/cbcc/model_native_prompt_audit_fix.py",
+        "runtime/cbcc/production_parameter_closure.py"
+      ],
+      "verified_behaviors": [
+        "Phase 4 canonical motion/timing/audio concrete values are projected into the model-facing Prompt and concrete consumption audit.",
+        "Prompt semantic membrane strips governance/provenance metadata from the model-facing acting plane.",
+        "Legacy flat video Prompt fields remain compatible.",
+        "Manual short Prompt overrides cannot be silently repaired and falsely declared parameter-closed.",
+        "Unresolved dynamic Agent decisions stay missing; Prompt runtime does not invent audio/motion/timing.",
+        "Static assets do not inherit dynamic Prompt requirements."
+      ],
+      "cross_scope": {
+        "phase4": "all tests/test_v0676_phase4_*.py passed",
+        "fresh_k01_v0672": "43-test set passed",
+        "v0673_prompt_route": "passed",
+        "v0674_regression_closure": "40 passed"
+      },
+      "deferred_by_plan": [
+        "broader commercial Prompt density across remaining surfaces",
+        "REQ-084 Product Presence/Fidelity/reference Prompt consumption",
+        "REQ-086 scene-derived camera/lighting/CMF Prompt consumption",
+        "Fresh real K01 FULL",
+        "Provider actual media / pixel-frame Review / smallest Local Revision / provenance"
+      ],
+      "source_truth": "GITHUB_BRANCH_VERIFIED_PENDING_CLEAN_MAIN_CLOSURE"
     }
   },
   "version": "2026-11-02-phase4-closure-v1",
