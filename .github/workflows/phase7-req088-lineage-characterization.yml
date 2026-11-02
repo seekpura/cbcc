@@ -5,9 +5,12 @@ on:
     branches: [repair-04-phase7-full-materialization]
     paths:
       - 'runtime/cbcc/lineage_normalization_v0681.py'
+      - 'runtime/cbcc/phase7_lineage_semantic_closure_v0681.py'
       - 'runtime/cbcc/full_package_semantic_closure_v0681.py'
+      - 'runtime/cbcc/commercial_delivery_continuity.py'
       - 'tests/test_v0681_phase7_req088_lineage_closure.py'
       - 'tests/test_v0681_phase7_req088_lineage_export.py'
+      - 'tests/test_v0681_phase7_req088_wrapper_integration.py'
       - '.github/workflows/phase7-req088-lineage-characterization.yml'
   workflow_dispatch:
 
@@ -25,4 +28,5 @@ jobs:
         run: |
           python -m pytest -q \
             tests/test_v0681_phase7_req088_lineage_closure.py \
-            tests/test_v0681_phase7_req088_lineage_export.py
+            tests/test_v0681_phase7_req088_lineage_export.py \
+            tests/test_v0681_phase7_req088_wrapper_integration.py
