@@ -171,7 +171,7 @@
       "req": "REQ-088",
       "title": "Source/Evidence/Assumption/Decision lineage",
       "phase": "1,2,7",
-      "status": "PARTIAL_PHASE2_INFORMATION_AUDIT_PRODUCT_TRUTH_RESEARCH_CONTEXT_WHY_INTERSECTIONALITY_CULTURE_STRATEGY_FRAMEWORK_ECONOMICS_LISTING_SEARCH_CONTENT_MATRIX_RACE_ADS_OPTIMIZATION_REVIEW_ANALYSIS_AND_MEASUREMENT_LINEAGE_VERIFIED"
+      "status": "PARTIAL_PHASE2_LINEAGE_PHASE7_FINAL_SEMANTIC_IDENTITY_BOUNDARY_TARGETED_VERIFIED_FULL_SOURCE_EVIDENCE_ASSUMPTION_DECISION_LINEAGE_PENDING"
     },
     {
       "req": "REQ-089",
@@ -183,7 +183,7 @@
       "req": "REQ-090",
       "title": "FULL package lineage and actual-output boundary",
       "phase": "7,8,10",
-      "status": "LOCKED_NOT_YET_FULLY_IMPLEMENTED"
+      "status": "PARTIAL_PHASE7_FINAL_PACKAGE_SEMANTIC_INVENTORY_ACTUAL_OUTPUT_BOUNDARY_TARGETED_VERIFIED_HOST_PARITY_AND_FULL_LINEAGE_PENDING"
     }
   ],
   "phase_status": {
@@ -194,7 +194,7 @@
     "4": "PASS_PHASE4_ART_DIRECTION_PHOTOGRAPHY_VISUAL_MASTER_VERIFIED",
     "5": "PASS_PHASE5_COMMERCIAL_PROMPT_COMPILER_PARAMETER_CONSUMPTION_VERIFIED",
     "6": "PASS_PHASE6_JSON_MD_HTML_SAME_SOURCE_ROUTED_HUMAN_WORKSPACE_AND_ACTIVATED_DELIVERY_FAMILIES_VERIFIED",
-    "7": "NOT_STARTED",
+    "7": "IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_CLOSURE_TARGETED_VERIFIED_REQ088_REQ090_REMAINING",
     "8": "NOT_STARTED",
     "9": "NOT_STARTED",
     "10": "NOT_STARTED",
@@ -973,12 +973,48 @@
         "Phase 11 installed-plugin readback and Provider actual media / Review / Local Revision / provenance proof"
       ],
       "source_truth": "GITHUB_BRANCH_PHASE6_TARGETED_VERIFIED"
+    },
+    "7": {
+      "status": "IN_PROGRESS_FINAL_PACKAGE_SEMANTIC_CLOSURE_TARGETED_VERIFIED",
+      "verified_subtasks": [
+        "Final semantic object inventory is derived from final CANONICAL_HUMAN_DATA business objects and production asset packages rather than a static hand-list.",
+        "Host-native/Runtime source-level comparator uses canonical object IDs and semantic SHA-256 values rather than file layout or headings.",
+        "One Runtime package cannot self-certify installed Host-native parity; final manifest records E2E_PENDING_INSTALLED_HOST_EXPORT without a second package.",
+        "Provider planning/job templates cannot self-certify actual-output QA; final package exposes E2E_PENDING until Result→Review→Local Revision→lineage/hash is real.",
+        "Phase 7 semantic closure runs after all Phase 6 final projections and rebuilds the final DELIVERY_MANIFEST / ZIP."
+      ],
+      "focused_red": "GitHub Actions run 41406191109: 4 failed because full_package_semantic_closure_v0681 did not exist.",
+      "focused_green": "GitHub Actions run 41406484829: 5/5 passed including final export ordering and ZIP integration.",
+      "current_release_regression": "GitHub Actions run 41406565002: SUCCESS with permanent Phase 7 semantic-closure gate plus build, release floors and artifact upload.",
+      "proof_objects": [
+        "runtime/cbcc/full_package_semantic_closure_v0681.py",
+        "runtime/cbcc/commercial_delivery_continuity.py",
+        "tests/test_v0681_phase7_final_package_semantic_closure.py",
+        "tests/test_v0681_phase7_final_export_integration.py",
+        "references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE7_FINAL_PACKAGE_SEMANTICS.json",
+        "FULL_DELIVERY_OBJECT_MANIFEST.json",
+        "FULL_MATERIALIZATION_AUDIT.json",
+        "DELIVERY_MANIFEST.json",
+        "final delivery ZIP"
+      ],
+      "remaining_phase7": [
+        "REQ-088 complete Source/Evidence/Assumption/Decision lineage chain with downstream-use and proof-object coverage.",
+        "REQ-090 full package continuity coverage for all active semantic objects and lineage objects.",
+        "Independent Host-native package semantic comparison when a real Host-native export is available; do not fabricate this from Runtime-only output."
+      ],
+      "deferred_by_plan": [
+        "Fresh K01 FULL remains Phase 10.",
+        "Installed-plugin readback and Provider actual-output E2E remain Phase 11 / later proof boundary."
+      ],
+      "source_truth": "GITHUB_BRANCH_PHASE7_IN_PROGRESS_TARGETED_VERIFIED",
+      "production_head_sha": "9000474846de7534be8409a9bbfc32c70fa31038",
+      "current_gate_head_sha": "34d51aefb4b4b05e8dfc34842c059c3b28b4d71a"
     }
   },
-  "version": "2026-11-02-phase6-complete-v1",
-  "current_phase": "PHASE_6_COMPLETE",
-  "previous_phase": "PHASE_5_COMPLETE",
-  "next_phase": "PHASE_7_FULL_MATERIALIZATION_PACKAGE_CONTINUITY",
-  "current_head_sha": "e2b6ae1237f75e959b81e2254e41ac23a9396306",
-  "current_head_sha_semantics": "Latest Phase 6 production-code boundary; later focused tests, consumer maps, CI-gate and ledger-only commits do not change Phase 6 production semantics."
+  "version": "2026-11-02-phase7-in-progress-v1",
+  "current_phase": "PHASE_7_IN_PROGRESS",
+  "previous_phase": "PHASE_6_COMPLETE",
+  "next_phase": "PHASE_7_REQ088_FULL_LINEAGE_CLOSURE",
+  "current_head_sha": "9000474846de7534be8409a9bbfc32c70fa31038",
+  "current_head_sha_semantics": "Latest Phase 7 production-code boundary for final package semantic closure; later focused tests, CI, consumer-map and ledger commits do not change this production semantics boundary."
 }
