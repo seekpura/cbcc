@@ -1,0 +1,59 @@
+name: phase7-req088-promote-current
+
+permissions:
+  contents: write
+
+on:
+  push:
+    branches: [repair-04-phase7-full-materialization]
+    paths:
+      - '.github/workflows/phase7-req088-promote-current.yml'
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: repair-04-phase7-full-materialization
+      - name: Promote REQ-088 tests into CURRENT verifier
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/workflows/current-release-verification.yml')
+          text = path.read_text(encoding='utf-8')
+          old_step = '''      - name: Verify CURRENT Phase 7 final package semantic closure
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: '.:runtime'}
+        run: |
+          python -m pytest -q \\
+            tests/test_v0681_phase7_final_package_semantic_closure.py \\
+            tests/test_v0681_phase7_final_export_integration.py
+'''
+          new_step = '''      - name: Verify CURRENT Phase 7 final semantic and REQ-088 lineage closure
+        env: {PYTHONHASHSEED: '0', PYTHONPATH: '.:runtime'}
+        run: |
+          python -m pytest -q \\
+            tests/test_v0681_phase7_final_package_semantic_closure.py \\
+            tests/test_v0681_phase7_final_export_integration.py \\
+            tests/test_v0681_phase7_req088_lineage_closure.py \\
+            tests/test_v0681_phase7_req088_lineage_export.py \\
+            tests/test_v0681_phase7_req088_wrapper_integration.py \\
+            tests/test_v0681_phase7_req088_mature_authority_regression.py
+'''
+          if text.count(old_step) != 1:
+              raise SystemExit('expected exactly one old Phase 7 CURRENT step')
+          text = text.replace(old_step, new_step)
+          old_meta = "'Phase7 final package semantic inventory + host/runtime comparator contract + actual-output E2E boundary + final export ordering'"
+          new_meta = "'Phase7 final package semantic inventory + host/runtime comparator contract + actual-output E2E boundary + final export ordering + REQ-088 resolvable lineage authority bindings/no-copy invariant + mature information-audit regression'"
+          if text.count(old_meta) != 1:
+              raise SystemExit('expected exactly one old Phase 7 verified_by entry')
+          path.write_text(text.replace(old_meta, new_meta), encoding='utf-8')
+          PY
+      - name: Commit permanent CURRENT gate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/current-release-verification.yml
+          git diff --cached --check
+          git commit -m "test(phase7): promote REQ-088 lineage closure into CURRENT gate"
+          git push origin HEAD:repair-04-phase7-full-materialization
