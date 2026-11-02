@@ -137,7 +137,6 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
             if ref not in valid: add("UNKNOWN_AUTHORITY_LINEAGE_REF",req=req,ref=ref)
         if not row.get("semantic_source"): add("SEMANTIC_SOURCE_MISSING",req=req)
         if not row.get("current_interpretation"): add("CURRENT_INTERPRETATION_MISSING",req=req)
-        if cls!="ENGINEERING_GUARD" and not consumers: add("BUSINESS_CONSUMER_BINDING_MISSING",req=req)
         if cls=="ENGINEERING_GUARD" and not (consumers or engineering): add("ENGINEERING_GUARD_CONSUMER_BINDING_MISSING",req=req)
         if not human: add("HUMAN_PROJECTION_BINDING_MISSING",req=req)
         for p in consumers:
@@ -174,7 +173,7 @@ def audit_requirement_authority(document:Mapping[str,Any],*,root=None)->dict[str
             if not any(any(str(p)!="NOT_DIRECT_HUMAN_FACING" for p in x.get("human_projection",[])) for x in br): add("P0_USER_SOURCE_HUMAN_PROJECTION_MISSING",source_id=sid)
     for key in ("authority_overlay_does_not_author_business_strategy","existing_requirement_ledgers_remain_semantic_sources","consumer_maps_remain_execution_wiring_authority","derived_may_not_impersonate_user","rejected_deprecated_may_not_have_active_business_consumers","test_and_workflow_paths_are_proof_only"):
         if (doc.get("rules") or {}).get(key) is not True: add("AUTHORITY_RULE_DISABLED",rule=key)
-    return {"status":"PASS" if not issues else "FAIL","requirement_count":len(rows),"rejected_deprecated_count":len(rejected),"issue_count":len(issues),"issues":issues,"authority_classes":list(AUTHORITY_CLASSES),"principle":"Attribution only: ledgers author semantics; runtime consumers wire business execution; non-runtime support stays engineering; tests/workflows stay proof-only."}
+    return {"status":"PASS" if not issues else "FAIL","requirement_count":len(rows),"rejected_deprecated_count":len(rejected),"issue_count":len(issues),"issues":issues,"authority_classes":list(AUTHORITY_CLASSES),"principle":"Attribution only: ledgers author semantics; P0 user anchors require runtime consumers; non-runtime support stays engineering; tests/workflows stay proof-only."}
 
 def current_requirement_authority_audit(root=None)->dict[str,Any]:
     base=_root(root); return audit_requirement_authority(load_current_requirement_authority(base),root=base)
