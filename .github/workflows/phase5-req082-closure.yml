@@ -1,0 +1,103 @@
+name: Phase 5 REQ-082 Durable Closure
+
+on:
+  push:
+    branches:
+      - phase5-req082-prompt-density
+    paths:
+      - '.github/phase5_req082_closure_trigger.txt'
+
+permissions:
+  contents: write
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:runtime
+      PYTHONHASHSEED: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: phase5-req082-prompt-density
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install verification dependencies
+        run: python -m pip install --upgrade pip pytest pyyaml pillow
+      - name: Apply durable closure patch
+        run: python .github/phase5_req082_closure_patch.py
+      - name: Verify focused REQ-082 and release-checker contract
+        run: |
+          python -m pytest -q \
+            tests/test_v0678_phase5_req082_broad_prompt_density.py \
+            tests/test_v0678_phase5_req082_static_ad_prompt_consumption.py \
+            tests/test_v0678_phase5_req082_integrated_render_language_purity.py
+          python -m pytest -q tests/test_current_release_package_checker.py
+      - name: Verify complete v067 cross-scope after ledger/checker changes
+        shell: bash
+        run: |
+          mapfile -t files < <(find tests -maxdepth 1 -type f -name 'test_v067*.py' -print | sort)
+          test "${#files[@]}" -gt 0
+          python -m pytest -q "${files[@]}"
+      - name: Build exact CURRENT plugin ZIP
+        run: python -m scripts.build_plugin_dist_current --output-dir dist_req082
+      - name: Resolve and check exact CURRENT ZIP
+        shell: bash
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          authority=Path('VERSION').read_text(encoding='utf-8').strip()
+          version=re.match(r'^(\d+\.\d+\.\d+)',authority).group(1)
+          files=sorted(Path('dist_req082').glob('cross-border-commerce-creative-plugin-v*.zip'))
+          assert len(files)==1, files
+          expected=f'cross-border-commerce-creative-plugin-v{version}.zip'
+          assert files[0].name==expected,(files[0].name,expected)
+          Path('dist_req082/CURRENT_PLUGIN_PATH.txt').write_text(str(files[0])+'\n',encoding='utf-8')
+          print(files[0])
+          PY
+          python scripts/check_current_release_package.py "$(cat dist_req082/CURRENT_PLUGIN_PATH.txt)"
+      - name: Prove source-to-ZIP closure authorities are byte-identical
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import zipfile
+          zip_path=Path(Path('dist_req082/CURRENT_PLUGIN_PATH.txt').read_text(encoding='utf-8').strip())
+          rels=[
+            'references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PROMPT_DENSITY.json',
+            'references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md',
+            'references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json',
+            'scripts/check_current_release_package.py',
+            'runtime/cbcc/integrated_render_route_authority.py',
+          ]
+          with zipfile.ZipFile(zip_path) as zf:
+            names=set(zf.namelist())
+            for rel in rels:
+              suffix='/resources/'+rel
+              matches=[n for n in names if n.endswith(suffix)]
+              assert len(matches)==1,(rel,matches)
+              source=Path(rel).read_bytes()
+              packed=zf.read(matches[0])
+              assert packed==source,rel
+              print('BYTE_IDENTICAL',rel,len(source))
+          PY
+      - name: Validate durable diff hygiene
+        run: git diff --check
+      - name: Commit durable REQ-082 closure files only
+        shell: bash
+        run: |
+          git config user.name "cbcc-phase5-bot"
+          git config user.email "cbcc-phase5-bot@users.noreply.github.com"
+          git add \
+            references/REQUIREMENT_CONSUMER_MAP_CURRENT_PHASE5_PROMPT_DENSITY.json \
+            references/REQUIREMENT_IMPLEMENTATION_MATRIX_CURRENT.md \
+            references/REQUIREMENT_EXECUTION_LEDGER_CURRENT.json \
+            scripts/check_current_release_package.py \
+            tests/test_current_release_package_checker.py
+          git diff --cached --check
+          git diff --cached --quiet && { echo 'No durable closure diff'; exit 1; }
+          git commit -m "docs(phase5): close commercial Prompt density and concrete consumption"
+          git push origin HEAD:phase5-req082-prompt-density
