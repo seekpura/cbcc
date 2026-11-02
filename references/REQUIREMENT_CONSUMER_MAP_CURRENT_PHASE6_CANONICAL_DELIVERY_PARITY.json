@@ -1,5 +1,5 @@
 {
-  "version": "cbcc-current-phase6-canonical-delivery-parity-v1",
+  "version": "cbcc-current-phase6-canonical-delivery-parity-v2",
   "phase": 6,
   "subtask": "REQ-061 canonical JSON/Markdown/HTML same-source delivery projection",
   "production_head_sha": "057b0230d85928418aea51803f775f89bda7dc1e",
@@ -31,7 +31,7 @@
         "GitHub Actions first GREEN run 41402544186 after adding the Phase 6 materializer",
         "GitHub Actions integrated-export GREEN run 41402589255 after wiring final delivery export",
         "GitHub Actions ZIP/Manifest GREEN run 41402749660: 3/3 passed",
-        "CURRENT release verification run 41402589244: SUCCESS after final export wiring"
+        "CURRENT permanent Phase 6 gate run 41404789717: SUCCESS including REQ-061, REQ-089, delivery-family gates, build, release floors and artifact upload"
       ],
       "verified_behavior": [
         "v0.6.71 remains the canonical payload and lossless HTML projection authority; Phase 6 does not fork or reinterpret that business payload.",
@@ -41,17 +41,18 @@
         "Representative values from Human Delivery, Product Truth, Market, Compliance, Strategy and Visual families survive into both human surfaces, proving broader-than-Listing coverage.",
         "Final DELIVERY_MANIFEST.json records the JSON/Markdown/audit paths, parity PASS state and canonical signature without removing pre-existing workspace-contract entries.",
         "Final ZIP contains CANONICAL_HUMAN_DATA.json, CANONICAL_HUMAN_DATA.md, CANONICAL_DELIVERY_PARITY_AUDIT.json, index.html and DELIVERY_MANIFEST.json with the same signature-bearing Markdown and HTML bytes.",
-        "A parity failure blocks the final Phase 6 export instead of allowing a silently divergent delivery package."
+        "A parity failure blocks the final Phase 6 export instead of allowing a silently divergent delivery package.",
+        "Sibling Phase 6 routed Human Workspace and activated delivery-family consumers are now independently closed and permanently gated; REQ-061 is no longer carrying those as pending work."
       ],
       "residual_risk": "REQ-061 Phase 6 projection is targeted-verified. Phase 7 source/evidence/assumption/decision lineage closure, Fresh K01 FULL materialization, installed-plugin readback and Provider Result/actual-output proof remain explicitly pending and are not claimed by this unit."
     }
   ],
   "cross_scope_verification": {
     "focused_req061": "3/3 passed",
-    "current_release_after_export_wiring": "SUCCESS",
     "focused_red_run": 41402373737,
     "focused_green_run": 41402749660,
-    "current_release_run": 41402589244
+    "permanent_current_gate_run": 41404789717,
+    "permanent_current_gate_status": "SUCCESS"
   },
   "invariants": [
     "JSON remains canonical authority; Markdown and HTML are projections, not parallel authoring surfaces.",
@@ -61,10 +62,6 @@
     "Targeted package parity does not claim Fresh K01 or actual Provider media evidence."
   ],
   "pending": [
-    "Remaining Phase 6 REQ-089 Human Workspace routed full-canonical consumption",
-    "Remaining Phase 6 REQ-070 Longform/Specification/Source-document delivery routing",
-    "Remaining Phase 6 REQ-076 Store/Banner/Landing/Campaign/Seasonal delivery routing",
-    "Remaining Phase 6 REQ-077 CRM/Lifecycle/Post-purchase delivery routing",
     "Phase 7 REQ-088/REQ-090 lineage and package continuity",
     "Phase 10 Fresh K01 FULL",
     "Phase 11 installed-plugin readback and Provider actual-output proof"
