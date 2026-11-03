@@ -200,7 +200,7 @@ def test_two_full_goals_change_actual_asset_and_prompt_consumers_without_changin
         assert "recommended_next_action" in next_action
         package = folder / "artifacts" / "asset_packages" / _artifact(folder, "asset_architecture.json")["assets"][0]["asset_id"]
         prompt_contract = json.loads((package / "13_prompt_contract.json").read_text(encoding="utf-8"))
-        assert "product_presence" in prompt_contract["design_card"], prompt_contract.get("prompt_consumption_audit")
+        assert "product_presence" in prompt_contract["design_card"], (prompt_contract.get("prompt_consumption_audit") or {}).get("error")
     tension_pkg = second / "artifacts" / "asset_packages" / at["asset_id"]
     tension_prompt = (tension_pkg / "06_prompt_EN.txt").read_text(encoding="utf-8")
     assert "Product is intentionally absent in this asset." in tension_prompt
