@@ -1,0 +1,30 @@
+name: SK-01 host-authored consumer behavior
+
+on:
+  pull_request:
+    paths:
+      - 'SKILL.md'
+      - 'tests/business_contracts/test_01_sk_01.py'
+      - '.github/workflows/sk01-host-authoring-behavior.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused-consumer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install tests
+        run: python -m pip install pytest PyYAML
+      - name: Compile and run SK-01 existing regressions and counterfactual consumers
+        env:
+          PYTHONHASHSEED: '0'
+          PYTHONPATH: '.:runtime'
+        run: |
+          python -m compileall -q runtime/cbcc
+          python -m pytest -q tests/business_contracts/test_01_sk_01.py tests/test_v0682_r0604_agent_autonomy_restoration.py tests/test_v0630_agent_art_direction_e2e.py
