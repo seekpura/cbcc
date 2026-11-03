@@ -78,7 +78,7 @@ def _direction(composition, *, presence, visual_carrier, why):
 
 
 def _request(project_id, *, market, locale, scope, goal, why, chosen, rejected,
-             composition, presence, carrier, budget):
+             composition, presence, carrier, budget, metric):
     art = _direction(composition, presence=presence, visual_carrier=carrier, why=why)
     return {
         "project_id": project_id,
@@ -115,6 +115,7 @@ def _request(project_id, *, market, locale, scope, goal, why, chosen, rejected,
             "strategic_job": "Resolve the specific choice barrier in the goal",
             "reason_to_exist": why,
             "production_mode": "GRAPHIC_DESIGN",
+            "success_metric": metric,
         }],
         "agent_plan": {
             "decision_trace": [{
@@ -148,6 +149,7 @@ def test_missing_host_plan_is_fallback_not_agent_authoring():
         chosen="physical fit interface", rejected="unproven performance badge",
         composition=FIT_COMPOSITION, presence="REQUIRED",
         carrier="FUNCTIONAL_INTERFACE_VIEW", budget="one still asset",
+        metric="correct placement comprehension rate (%) in a controlled review",
     )
     request.pop("agent_plan")
     compiled = compile_agent_autonomy_plan(request)
@@ -165,6 +167,7 @@ def test_two_full_goals_change_actual_asset_and_prompt_consumers_without_changin
         chosen="functional interface proof", rejected="atmospheric desk awareness",
         composition=FIT_COMPOSITION, presence="REQUIRED",
         carrier="FUNCTIONAL_INTERFACE_VIEW", budget="P0 one still, no paid creator shoot",
+        metric="correct placement comprehension rate (%) in a controlled review",
     )
     tension = _request(
         "sk01-awareness", market="Malaysia", locale="en-MY", scope="FULL",
@@ -173,6 +176,7 @@ def test_two_full_goals_change_actual_asset_and_prompt_consumers_without_changin
         chosen="problem-context visual", rejected="functional product close-up",
         composition=TENSION_COMPOSITION, presence="FORBIDDEN",
         carrier="ENVIRONMENTAL_TENSION_STILL", budget="P0 one context still, no model, no video",
+        metric="three-second view retention rate (%) measured in a platform test",
     )
     first = tmp_path / "fit"
     second = tmp_path / "tension"
@@ -214,6 +218,7 @@ def test_task_scoped_one_image_does_not_become_full_campaign(tmp_path):
         chosen="localized crop and copy-safe margin", rejected="full campaign re-curation",
         composition=LOCAL_REVISION_COMPOSITION, presence="FORBIDDEN",
         carrier="INFORMATION_GRAPHIC", budget="one existing asset revision",
+        metric="correct content recognition rate (%) in the one-image review",
     )
     request["compile_assets"] = False
     folder = tmp_path / "scoped"
