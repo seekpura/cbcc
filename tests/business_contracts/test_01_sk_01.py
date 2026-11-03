@@ -71,7 +71,7 @@ def _direction(composition, *, presence, visual_carrier, why):
         "product_presence": {
             "planning_state": presence,
             "product_role": "HERO" if presence == "REQUIRED" else "ABSENT",
-            "source_reference_role": "TRUTH_REFERENCE_ONLY",
+            "source_reference_role": "SUBJECT_REFERENCE" if presence == "REQUIRED" else "TRUTH_REFERENCE_ONLY",
             "presence_why": why,
         },
     }
@@ -205,6 +205,10 @@ def test_two_full_goals_change_actual_asset_and_prompt_consumers_without_changin
         package = folder / "artifacts" / "asset_packages" / _artifact(folder, "asset_architecture.json")["assets"][0]["asset_id"]
         prompt_contract = json.loads((package / "13_prompt_contract.json").read_text(encoding="utf-8"))
         assert "product_presence" in prompt_contract["design_card"], (prompt_contract.get("prompt_consumption_audit") or {}).get("error")
+        assert prompt_contract["status"] == "CANONICAL_PROMPT_COMPILED_AGENT_AUTHORITY"
+        assert prompt_contract["design_card"]["product_identity"]["visible_product_required"] is (folder == first)
+        layers = prompt_contract["renderer_recipe"]["layer_plan"]
+        assert ("product_subject_or_reference_layer" in layers) is (folder == first)
     tension_pkg = second / "artifacts" / "asset_packages" / at["asset_id"]
     tension_prompt = (tension_pkg / "06_prompt_EN.txt").read_text(encoding="utf-8")
     assert "Product is intentionally absent in this asset." in tension_prompt
@@ -231,3 +235,44 @@ def test_task_scoped_one_image_does_not_become_full_campaign(tmp_path):
     assert plan["host_agent_trace"][0]["rejected_route"] == "full campaign re-curation"
     assert _artifact(folder, "asset_compile.json")["status"] == "NOT_REQUESTED"
     assert _artifact(folder, "product_truth.json")["product"] == PRODUCT
+
+
+def test_consumer_failure_recovery_requires_reauthoring_the_business_metric(tmp_path):
+    packs = _pack(tmp_path)
+    request = _request(
+        "sk01-metric-red", market="US", locale="en-US", scope="TASK_SCOPED",
+        goal="One truthful product fit image with explicit comprehension measurement",
+        why="The buyer must understand where the guide attaches, without fake product dimensions",
+        chosen="functional placement information", rejected="visual mood-only image",
+        composition=FIT_COMPOSITION, presence="REQUIRED",
+        carrier="FUNCTIONAL_INTERFACE_VIEW", budget="one image",
+        metric="surface-native decision metric",
+    )
+    broken = tmp_path / "broken"
+    build_project(broken, request, packs)
+    asset = _artifact(broken, "asset_architecture.json")["assets"][0]
+    broken_contract = json.loads(
+        (broken / "artifacts" / "asset_packages" / asset["asset_id"] / "13_prompt_contract.json").read_text(encoding="utf-8")
+    )
+    assert broken_contract["status"] == "OPTIONAL_PROMPT_NOT_READY"
+    assert "success_metric" in broken_contract["prompt_consumption_audit"]["error"]
+
+    # A host must read the consumer's concrete failure and re-author a real measurable criterion.
+    # This deterministic test checks the recompile consumer only, not live autonomous host continuation.
+    repair = copy.deepcopy(request)
+    repair["project_id"] = "sk01-metric-green"
+    repair["asset_jobs"][0]["success_metric"] = "correct placement recognition rate (%) from a controlled comprehension review"
+    repair["agent_plan"]["decision_trace"].append({
+        "observed_consumer_failure": "success_metric did not describe a measurable outcome",
+        "redecision": "measure correct placement recognition rate rather than a generic surface metric",
+        "why": "The image's business purpose is to resolve fit doubt; the outcome must test understanding",
+    })
+    repaired = tmp_path / "repaired"
+    build_project(repaired, repair, packs)
+    new_asset = _artifact(repaired, "asset_architecture.json")["assets"][0]
+    new_contract = json.loads(
+        (repaired / "artifacts" / "asset_packages" / new_asset["asset_id"] / "13_prompt_contract.json").read_text(encoding="utf-8")
+    )
+    assert new_contract["status"] == "CANONICAL_PROMPT_COMPILED_AGENT_AUTHORITY"
+    assert new_contract["design_card"]["product_presence"]["planning_state"] == "REQUIRED"
+    assert _artifact(repaired, "product_truth.json")["product"] == _artifact(broken, "product_truth.json")["product"]
